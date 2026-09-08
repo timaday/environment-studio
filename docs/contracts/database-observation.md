@@ -93,8 +93,17 @@ binding. It does not permit writes to managed data. Reject all other effective
 write/admin paths, including explicit privileged parameter grants. Vendor object
 integrity remains part of the identified provisioning policy.
 
-Oracle rejects applicable enabled VPD, label-security/redaction or other
-unqualified policy mechanisms. Obtain the metadata needed to prove policy
+Oracle rejects applicable enabled VPD, label-security/redaction, fine-grained
+auditing (FGA), or other unqualified policy mechanisms. Before reading any bound
+source row, require complete `SYS.DBA_AUDIT_POLICIES` metadata and reject any
+enabled policy on the bound owner/table, including policies without a handler
+or with non-SELECT statement declarations. Do not evaluate policy conditions or
+infer that a handler is harmless. Unavailable catalog access is
+`METADATA_UNAVAILABLE`; a present enabled policy is `VISIBILITY_UNQUALIFIED`.
+Disabled policies do not authorize any other unsupported mechanism. Qualify
+clean-table success, enabled-policy refusal before source SELECT, denied catalog
+access and an independent handler canary. Account READ ONLY does not establish
+absence of external handler effects. Obtain the metadata needed to prove policy
 coverage using explicitly provisioned read-only grants. Absence in a restricted
 view is not proof of absence. Reject table ownership and effective object,
 column, schema or system write/admin privileges, including active roles/PUBLIC.
@@ -265,6 +274,8 @@ Primary references: [PostgreSQL isolation](https://www.postgresql.org/docs/18/tr
 [pgJDBC settings](https://jdbc.postgresql.org/documentation/use/),
 [Oracle read transactions](https://docs.oracle.com/en/database/oracle/oracle-database/26/sqlrf/SET-TRANSACTION.html),
 [Oracle policy metadata](https://docs.oracle.com/en/database/oracle/oracle-database/26/refrn/ALL_POLICIES.html),
+[Oracle FGA metadata](https://docs.oracle.com/en/database/oracle/oracle-database/26/refrn/DBA_AUDIT_POLICIES.html),
+[Oracle FGA handlers](https://docs.oracle.com/en/database/oracle/oracle-database/26/arpls/DBMS_FGA.html),
 [Oracle PUBLIC privileges](https://docs.oracle.com/en/database/oracle/oracle-database/26/dbseg/configuring-privilege-and-role-authorization.html),
 [Oracle PUBLIC grant restriction](https://docs.oracle.com/en/database/oracle/oracle-database/26/sqlrf/GRANT.html),
 [Oracle grant metadata](https://docs.oracle.com/en/database/oracle/oracle-database/26/refrn/DBA_TAB_PRIVS.html),

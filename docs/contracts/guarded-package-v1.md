@@ -202,7 +202,11 @@ immediate valid uniqueness and built-in plain btree indexes: no predicates,
 expressions, custom access methods/operator classes or unqualified collations.
 Oracle requires an ordinary permanent local heap: no IOT, partition/external/
 nested/temporary storage, triggers, VPD/redaction, virtual/identity columns,
-domain/function indexes or unqualified constraint expressions. Initial constraints
+domain/function indexes or unqualified constraint expressions. Also reject
+materialized-view logs, Flashback Data Archive enrollment and FGA policies on
+the bound table using complete DBA catalog visibility. These conservative
+write-effect exclusions do not assert that each feature affects ordinary reads.
+Initial constraints
 are qualified NOT NULL and immediate plain key uniqueness; foreign keys and
 other check expressions refuse. Require AL32UTF8 and qualified binary key
 comparisons. Checks apply to the complete table, including unselected columns
