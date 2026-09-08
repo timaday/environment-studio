@@ -9,8 +9,19 @@
     <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-actuator</artifactId></dependency>
     <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-security</artifactId></dependency>
     <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-test</artifactId><scope>test</scope></dependency>
+    <dependency>
+      <groupId>com.networknt</groupId><artifactId>json-schema-validator</artifactId><version>3.0.7</version>
+      <exclusions>
+        <!-- YAML is consumed only through the bounded SnakeYAML Engine event adapter. -->
+        <exclusion><groupId>tools.jackson.dataformat</groupId><artifactId>jackson-dataformat-yaml</artifactId></exclusion>
+      </exclusions>
+    </dependency>
+    <dependency><groupId>org.snakeyaml</groupId><artifactId>snakeyaml-engine</artifactId><version>3.1.1</version></dependency>
   </dependencies>
-  <build><finalName>environment-studio</finalName><plugins>
+  <build><resources>
+    <resource><directory>src/main/resources</directory></resource>
+    <resource><directory>../../schemas</directory><targetPath>schemas</targetPath><includes><include>definition.schema.json</include></includes></resource>
+  </resources><finalName>environment-studio</finalName><plugins>
     <plugin><groupId>org.springframework.boot</groupId><artifactId>spring-boot-maven-plugin</artifactId><version>${spring-boot.version}</version><executions><execution><goals><goal>repackage</goal></goals></execution></executions></plugin>
   </plugins></build>
 </project>

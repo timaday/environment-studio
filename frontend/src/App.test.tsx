@@ -36,4 +36,19 @@ describe("synthetic comparison workbench", () => {
     expect(within(bindings).getByText("qa-01")).toBeInTheDocument();
     expect(within(bindings).getByText("qa-02")).toBeInTheDocument();
   });
+  it("opens a synthetic definition preview and returns to the selected comparison", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await user.click(screen.getByRole("button", { name: /workloads.xml/ }));
+    await user.click(screen.getByRole("button", { name: "Definitions" }));
+    expect(screen.getByText("Synthetic definition preview")).toBeVisible();
+    expect(screen.getByRole("tabpanel", { name: "Model" })).toBeVisible();
+    expect(screen.queryByRole("button", { name: /Upload|Save|Publish/ })).not.toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Comparison" }));
+    expect(screen.getByRole("region", { name: "Current XML" })).toHaveTextContent('node="old-01"');
+    expect(screen.getByRole("region", { name: "Target XML" })).toHaveTextContent('node="qa-02"');
+    await user.click(screen.getByRole("button", { name: "Formatted" }));
+    expect(screen.getByText(/Display projection/)).toBeVisible();
+    expect(screen.getByRole("button", { name: "Export SQL" })).toBeDisabled();
+  });
 });

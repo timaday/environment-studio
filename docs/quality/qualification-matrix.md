@@ -8,7 +8,8 @@ with exact versions and evidence; never fill the matrix from driver availability
 | Oracle | Version unknown; CLOB; exact SQL*Plus/SQLcl unknown | Qualified application family + structural/scalar operations | NOT RUN |
 | PostgreSQL | Version unknown; text; exact psql unknown | Same logical family where capabilities overlap | NOT RUN |
 | PostgreSQL xml/OID | Not selected | Separate storage contract required | UNSUPPORTED |
-| Native YAML/JSON definitions | Version 1 draft meta-schema | Shape checks exist; semantic compiler missing | INCOMPLETE |
+| Native YAML/JSON definitions | Version 1 draft meta-schema; D01a Java compiler | Bounded parsing, shape/semantic checks and immutable incomplete result; publication/upload absent | INCOMPLETE |
+| Definition inspector | Synthetic version 1 projection | Component behavior and desktop/390px keyboard/axe checks; no integrated editing or operator rehearsal | COMPONENT CHECKS PASS |
 | XSD import | Dialect/features not selected | Supported subset into draft, no semantic guessing | NOT IMPLEMENTED |
 | HiveForge | Platform/config unknown; OCI linux/amd64 candidate | Actual registry pull, TLS/identity/probes/restart | NOT RUN |
 

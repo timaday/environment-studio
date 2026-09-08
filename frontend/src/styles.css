@@ -404,3 +404,63 @@ tbody th {
   overflow: visible;
   min-width: max-content;
 }
+
+.workspace-navigation {
+  margin: 20px 36px 0;
+  width: fit-content;
+}
+.definition-inspector {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.definition-inspector > p {
+  padding: 16px 24px;
+}
+.definition-blockers {
+  padding: 20px 24px;
+  border-block: 1px solid var(--border);
+}
+.definition-blockers ul,
+.definition-panel ul {
+  padding-left: 24px;
+}
+.definition-blockers li,
+.definition-panel li {
+  margin-block: 12px;
+  line-height: 1.6;
+}
+.definition-blockers li > span {
+  color: var(--muted);
+  font-size: 13px;
+}
+.definition-tabs {
+  margin: 20px 24px;
+  width: fit-content;
+}
+.segmented button[aria-selected="true"] {
+  background: #314162;
+  color: #edf3fd;
+}
+.definition-panel {
+  overflow: auto;
+  padding: 0 24px 24px;
+}
+.definition-panel pre {
+  min-width: max-content;
+  overflow: visible;
+}
+@media (max-width: 650px) {
+  .workspace-navigation {
+    margin-left: 20px;
+  }
+  .definition-blockers,
+  .definition-panel {
+    padding-inline: 16px;
+  }
+  .definition-tabs {
+    margin-inline: 16px;
+  }
+}

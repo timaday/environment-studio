@@ -7,11 +7,12 @@ Oracle or PostgreSQL database is copied. Operators reuse value-free profiles,
 map current configuration to a target, supply environment values and export
 guarded SQL for their existing database deployment process.
 
-**Status: implementation starter.** This repository contains the build plan,
-contracts, agent rules, a Java/React scaffold, a synthetic comparison view and
-test/CI foundations. Database inspection, definition compilation, profile
-persistence, lossless XML transformation and executable SQL export are **not
-implemented or qualified**. The starter deliberately cannot export SQL.
+**Status: implementation in progress.** Bounded JSON/YAML definition compilation
+now checks the version 1 draft contract in Java. The UI includes a synthetic
+definition inspector alongside the comparison preview. Publication, hosted
+persistence, database inspection, lossless transformation and executable SQL
+export remain **unavailable**. Valid drafts are explicitly incomplete; the
+application cannot export SQL. See [D01a evidence](docs/evidence/d01a-integration.md).
 
 Starter CI and GHCR publication have passed. [Verification evidence](docs/evidence/starter-verification.md) includes the tested source and image digest.
 
@@ -66,6 +67,10 @@ Pull requests run repository, Java, frontend and container checks. Successful
 `main`, with SBOM/provenance. HiveForge should deploy the emitted immutable
 `ghcr.io/timaday/environment-studio@sha256:…` reference. Publication does not
 declare database functionality ready; version tags require release evidence.
+
+The browser gate builds the frontend and checks definition review at desktop
+and narrow widths using Playwright keyboard actions and axe. Run it locally with
+`docker build --target browser-check -t environment-studio:browser-check .`.
 
 The actual HiveForge manifest/API has not been supplied. [The deployment
 contract](deploy/README.md) and Compose example expose standard OCI settings

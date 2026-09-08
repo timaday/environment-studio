@@ -44,6 +44,8 @@ jobs:
           cache-to: type=gha,mode=max,scope=studio
       - name: Container contract smoke test
         run: bash scripts/container_smoke.sh environment-studio:ci
+      - name: Browser keyboard and accessibility checks
+        run: docker build --target browser-check -t environment-studio:browser-check .
 
   publish:
     needs: quality

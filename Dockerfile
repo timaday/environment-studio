@@ -14,9 +14,14 @@ COPY schemas/ /build/schemas/
 COPY scripts/schema.test.mjs /build/scripts/schema.test.mjs
 RUN npm run check && npm test && npm run build
 
+FROM ui AS browser-check
+RUN npx playwright install --with-deps chromium
+RUN npm run test:e2e
+
 FROM ${MAVEN_IMAGE} AS java-build
 WORKDIR /build
 COPY backend/ ./backend/
+COPY schemas/ ./schemas/
 COPY --from=ui /build/frontend/dist/ ./backend/server/src/main/resources/static/
 RUN mvn -B -ntp -f backend/pom.xml verify
 COPY deploy/HealthProbe.java /build/HealthProbe.java
