@@ -141,6 +141,18 @@ No inherited `JAVA_TOOL_OPTIONS`, `JDK_JAVA_OPTIONS`, startup paths, tracing,
 service files, passwords or arbitrary library paths enter the child. Qualify the
 complete effective environment, startup suppression, empty owned working
 directory and closed descriptors; executable hashing alone is insufficient.
+The fixed launcher sets a zero core-file limit for itself and descendants; runtime
+admission verifies that limit, including direct Java invocation. Zero
+`RLIMIT_CORE` alone is insufficient when Linux pipes dumps to a collector.
+Qualification must establish the effective kernel/collector policy or another
+verified suppression mechanism across Java, terminal helper and native-client
+execution; missing or stale evidence refuses admission. Checking only an owned
+working directory does not establish absence of collector output. No global
+kernel or collector configuration change is authorized by this contract.
+JVM fatal-error files, heap dumps and native client diagnostic/log
+files must be suppressed by the qualified fixed startup settings. A clean
+environment alone does not establish this: exercise credential-free native
+crashes and startup failures before any credential-bearing qualification.
 
 The parent requires a controlling console for ordinary credential entry, disables
 echo and owns mutable bounded buffers. Bound allocation while reading, not only
@@ -155,6 +167,25 @@ and explicitly accepted in the external account/privacy qualification. It cannot
 qualify a confidential username by silently calling it non-secret. Account names
 remain absent from supervisor output, stored configuration and packages. The
 supervisor's public invocation still accepts no username argument.
+The qualified terminal helper inherits the parent's foreground process group and
+verifies the same controlling terminal and session. Before changing echo, it sends
+a bounded initialized state snapshot and waits for the parent's acknowledgement
+that the snapshot is retained in memory. Input uses bounded mutable buffers and
+direct owned pipes, with an absolute 120-second entry deadline and no retry.
+Physical CR or LF ends a terminal entry and is not credential data; ordinary
+Enter works. Other bytes are not normalized or trimmed. Flush pending input
+between account/password prompts and before restoration, including a CRLF or
+pasted suffix. Disable terminal signal-character interpretation while reading
+so otherwise permitted password control bytes remain data; externally delivered
+signals still cancel. Prompts explain the entry delimiter and fixed deadline.
+Parent-pipe closure, interruption, overflow or invalid input discards pending
+terminal input and triggers restoration. Restoration has a separate 10-second
+deadline and must verify the original terminal identity and exact captured state.
+If the helper dies, the parent may invoke only the same pinned helper's fixed
+restore operation with that original in-memory snapshot. Neither configuration
+nor operator input may supply a replacement state or command. Simultaneous
+unrecoverable termination of parent and helper, or power loss, cannot guarantee
+terminal restoration; an observed restoration failure is never Complete.
 The child has no controlling terminal, one owned stdin and one merged output pipe.
 All prompt, encoding, time/frame limits and one-commit rules remain those of the
 parent protocol. No asynchronous credential or request queue is introduced.
@@ -184,3 +215,5 @@ Trust references: [libpq verification](https://www.postgresql.org/docs/18/libpq-
 and [Oracle TLS configuration](https://docs.oracle.com/en/database/oracle/oracle-database/26/dbseg/configuring-transport-layer-security-encryption.html).
 These references define candidate controls; actual pinned-client behavior remains
 part of qualification.
+Crash suppression also follows the [Linux core-dump semantics](https://man7.org/linux/man-pages/man5/core.5.html),
+including collectors outside a process's namespaces.
