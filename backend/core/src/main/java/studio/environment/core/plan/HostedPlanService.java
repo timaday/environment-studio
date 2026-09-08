@@ -108,6 +108,7 @@ public final class HostedPlanService {
     private long enteredBytes;
     private boolean materializationScratch;
     private CommandAdmission commandScratch;
+    private ViewAdmission viewScratch;
     private int observationScratch;
     public HostedPlanService(Authority authority, Workspace workspace, Map<String,Destination> destinations,
             ContentAdapter content, LongSupplier monotonic) {
@@ -447,6 +448,80 @@ public final class HostedPlanService {
         synchronized(lock) { leases.remove(lease.id()); }
     }
 
+    /** Internal immutable source for bounded view adapters; never an HTTP authority token. */
+    public record ViewSnapshot(String revision,PublishedDefinition definition,String binding,Optional<Content> current,
+            Optional<Content> target,Draft draft,Map<studio.environment.core.planning.TargetIntent.Ref,PlanCommand.Ref> references) {
+        public ViewSnapshot { references=Map.copyOf(references); }
+        @Override public String toString() { return "ViewSnapshot[redacted]"; }
+        public Content selected(boolean targetSide) { return (targetSide?target:current).orElseThrow(()->new PlanRefusal(targetSide?INCOMPLETE_TARGET:INSPECTION_REQUIRED)); }
+        public PlanCommand.Ref reference(studio.environment.core.planning.TargetIntent.Ref ref) {
+            if(ref instanceof studio.environment.core.planning.TargetIntent.Ref.Fresh fresh) return new PlanCommand.Ref.Fresh(fresh.slot(),fresh.type());
+            var found=references.get(ref); if(found==null) throw new PlanRefusal(PROJECTION_REFUSED); return found;
+        }
+    }
+    public ViewAdmission reserveView(SessionLedger.Lease lease,String planId) {
+        return guarded(lease,()->{
+            var state=ownedState(lease,planId);
+            if(materializationScratch) throw new PlanRefusal(CAPACITY);
+            materializationScratch=true; state.commandReaders++;
+            viewScratch=new ViewAdmission(lease,planId,state); return viewScratch;
+        });
+    }
+    public final class ViewAdmission implements AutoCloseable {
+        private final SessionLedger.Lease lease; private final String planId; private final LeaseState state;
+        private boolean used,executing,closed,released; private Plan pinned; private String revision; private long generation; private boolean inspection; private Operation active;
+        private ViewAdmission(SessionLedger.Lease lease,String planId,LeaseState state) {this.lease=lease;this.planId=planId;this.state=state;}
+        public boolean live() { return authority.guard(lease,()->{synchronized(lock){return !closed;}}).orElse(false); }
+        public <T> T run(java.util.function.Supplier<T> action) {
+            synchronized(lock) {if(closed || used || viewScratch!=this) throw new PlanRefusal(INVALID_REQUEST);used=true;executing=true;}
+            try {return action.get();} finally {synchronized(lock){executing=false;if(closed)release();}}
+        }
+        public void pin(String requestedRevision) {
+            guarded(lease,()->{
+                if(closed || !executing || pinned!=null) throw new PlanRefusal(INVALID_REQUEST);
+                var plan=plan(lease,planId);if(!plan.revision.toString().equals(requestedRevision))throw new PlanRefusal(CONFLICT);
+                pinned=plan; revision=requestedRevision; generation=plan.generation; inspection=plan.inspectionValid; active=plan.active; plan.readers++;return true;
+            });
+        }
+        public void verify() {guarded(lease,()->{check();return true;});}
+        private void check() {
+            if(closed || !executing || pinned==null || pinned.retired || pinned.generation!=generation || pinned.inspectionValid!=inspection || pinned.active!=active || !pinned.revision.toString().equals(revision)) throw new PlanRefusal(CONFLICT);
+        }
+        public ViewSnapshot snapshot() {
+            return guarded(lease,()->{
+                check();var refs=new HashMap<studio.environment.core.planning.TargetIntent.Ref,PlanCommand.Ref>();
+                pinned.originals.forEach((handle,ref)->refs.put(ref,new PlanCommand.Ref.Existing(handle)));
+                return new ViewSnapshot(revision,pinned.definition,pinned.binding,Optional.ofNullable(pinned.current),Optional.ofNullable(pinned.target),pinned.draft,refs);
+            });
+        }
+        public studio.environment.core.graph.ObservedGraph.Key observed(String handle) {
+            return guarded(lease,()->{check();var ref=pinned.originals.get(handle);if(ref==null)throw new PlanRefusal(INVALID_REQUEST);return ref.key();});
+        }
+        public Materialization materialize() {verify();var result=HostedPlanService.this.materialize(lease,planId,revision,this);verify();return result;}
+        public Validation validation() {verify();var result=validate(lease,planId,revision);verify();return result;}
+        public DocumentView document(boolean targetSide,String documentId,ViewMode mode,boolean disclosed) {
+            if(!disclosed)throw new PlanRefusal(DISCLOSURE_REQUIRED);
+            var snap=snapshot();var source=snap.selected(targetSide).sources().stream().filter(s->s.documentId().equals(documentId)).findFirst().orElseThrow(()->new PlanRefusal(NOT_FOUND));
+            var result=content.compare(snap.definition(),snap.binding(),source,mode);verify();return result;
+        }
+        public CapturedProfile capture(studio.environment.core.profile.ProfileCapture.Command command) {
+            var snap=snapshot();guarded(lease,()->{check();inspected(pinned);if(pinned.active!=null || pinned.rendering)throw new PlanRefusal(PLAN_BUSY);return true;});
+            var result=content.capture(snap.definition(),snap.binding(),snap.selected(false),command);
+            if(utf8(result.source())>MIB)throw new PlanRefusal(RESOURCE_LIMIT);verify();return new CapturedProfile(result,snap.definition().reference());
+        }
+        public CompositionPreview preview(NativeCommand.Reference reference,List<String> roots) {
+            var work=guarded(lease,()->{check();inspected(pinned);if(pinned.active!=null || pinned.rendering)throw new PlanRefusal(PLAN_BUSY);if(pinned.target==null)throw new PlanRefusal(INCOMPLETE_TARGET);return new CompositionSnapshot(pinned,revision,generation,pinned.target,pinned.draft,true);});
+            var profile=workspace.profile(lease.owner(),reference,work.plan.definition);
+            var result=HostedPlanService.preview(work,profile,roots);verify();return result;
+        }
+        @Override public void close() {synchronized(lock){if(closed)return;closed=true;if(!executing)release();}}
+        private void release() {
+            if(released)return;released=true;state.commandReaders--;
+            if(pinned!=null){pinned.readers--;clearRetired(pinned);}
+            if(viewScratch==this){viewScratch=null;materializationScratch=false;}
+        }
+        @Override public String toString(){return "ViewAdmission[redacted]";}
+    }
     public boolean live(SessionLedger.Lease lease) { return authority.guard(lease,()->true).orElse(false); }
     public void requireOwned(SessionLedger.Lease lease,String planId) { guarded(lease,()->ownedState(lease,planId)); }
     /** Reserves the sole full materialization/command scratch before an HTTP body can be decoded. */
@@ -616,13 +691,17 @@ public final class HostedPlanService {
             long bytes=sourceBytes(plan.target); plan.retainedBytes-=bytes; retainedBytes-=bytes; plan.target=null;
         }
     }
+    private boolean ownsScratch(Object admission) {
+        return admission instanceof CommandAdmission command && commandScratch==command && !command.closed
+            || admission instanceof ViewAdmission view && viewScratch==view && !view.closed;
+    }
     public Materialization materialize(SessionLedger.Lease lease,String planId,String revision) { return materialize(lease,planId,revision,null); }
-    private Materialization materialize(SessionLedger.Lease lease,String planId,String revision,CommandAdmission admission) {
+    private Materialization materialize(SessionLedger.Lease lease,String planId,String revision,Object admission) {
         var render=guarded(lease,()-> {
             var plan=plan(lease,planId); inspected(plan);
             if(!plan.revision.toString().equals(revision)) throw new PlanRefusal(CONFLICT);
             if(plan.active!=null || plan.rendering) throw new PlanRefusal(PLAN_BUSY);
-            if(materializationScratch && (admission==null || commandScratch!=admission || admission.closed)) throw new PlanRefusal(CAPACITY);
+            if(materializationScratch && !ownsScratch(admission)) throw new PlanRefusal(CAPACITY);
             // A single full old/new target scratch reservation exists before calling any XML adapter.
             materializationScratch=true; plan.rendering=true;
             return new Render(plan,revision,plan.generation,plan.current,plan.draft);

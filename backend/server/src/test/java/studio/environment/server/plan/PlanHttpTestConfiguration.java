@@ -27,6 +27,14 @@ public class PlanHttpTestConfiguration {
     public static final java.util.concurrent.ConcurrentHashMap<String,studio.environment.core.session.SessionLedger.Lease> leases=new java.util.concurrent.ConcurrentHashMap<>();
     public static final java.util.concurrent.atomic.AtomicBoolean exactCredentials=new java.util.concurrent.atomic.AtomicBoolean();
     public static final AtomicInteger connections=new AtomicInteger();
+    /** Synchronization only; observable capacity/deadline assertions remain actual HTTP requests. */
+    public static void awaitViewScratch(boolean reading)throws Exception {
+        var lockField=HostedPlanService.class.getDeclaredField("lock");lockField.setAccessible(true);var scratchField=HostedPlanService.class.getDeclaredField("viewScratch");scratchField.setAccessible(true);
+        var pinnedField=HostedPlanService.ViewAdmission.class.getDeclaredField("pinned");pinnedField.setAccessible(true);var executingField=HostedPlanService.ViewAdmission.class.getDeclaredField("executing");executingField.setAccessible(true);
+        long end=System.nanoTime()+2_000_000_000L;
+        while(System.nanoTime()<end){synchronized(lockField.get(installed)){Object admission=scratchField.get(installed);if(!reading && admission==null || reading && admission!=null && pinnedField.get(admission)==null && executingField.getBoolean(admission))return;}Thread.sleep(5);}
+        throw new AssertionError("MOCK_VIEW_READER_STATE_TIMEOUT");
+    }
     @Bean @Primary PlanRuntime mockPlanRuntime(HostedSessions sessions,WorkspaceRuntime workspace) {
         ObservationPort port=new ObservationPort() {
             public ObservationResult observe(Selection selection,TransientCredentials credentials,Cancellation cancellation) {throw new AssertionError("RESERVATION_REQUIRED");}
@@ -39,7 +47,8 @@ public class PlanHttpTestConfiguration {
                         finally {Arrays.fill(user,'\0');Arrays.fill(password,'\0');credentials.close();}
                         try {
                             var definition=new PlanPorts.PublishedDefinition(new studio.environment.core.workspace.NativeCommand.Reference("00000000-0000-4000-8000-000000000099","2"),"mock",selection.compiled(),List.of());
-                            return new ObservationResult.Complete(new PlanContentAdapterTest().observation(definition));
+                            var observed=new PlanContentAdapterTest().observation(definition);
+                            return new ObservationResult.Complete(new ObservationResult.Observation("a".repeat(64),observed.logicalDigest(),observed.bindingDigest(),observed.documents(),observed.evidence()));
                         } catch(Exception failure) {throw new AssertionError("MOCK_OBSERVATION_UNAVAILABLE");}
                     }
                     public void close() { }

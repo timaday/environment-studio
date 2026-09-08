@@ -30,11 +30,12 @@ public final class PlanHttpSocketClient {
             if(csrf && csrfHeader!=null) headers.append(csrfHeader).append(": ").append(csrfValue).append("\r\n");
         }
         headers.append("\r\n");output.write(headers.toString().getBytes(StandardCharsets.US_ASCII));output.flush();
-        return new Pending(socket);
+        return new Pending(socket,PlanViewWireAssertions.schema(path));
     }
     public final class Pending implements AutoCloseable {
-        private final Socket socket;
-        private Pending(Socket socket){this.socket=socket;}
+        private final Socket socket;private final String viewSchema;
+        private Pending(Socket socket,String viewSchema){this.socket=socket;this.viewSchema=viewSchema;}
+        public void timeout(int milliseconds)throws java.net.SocketException{socket.setSoTimeout(milliseconds);}
         public void write(byte[] bytes) throws IOException {socket.getOutputStream().write(bytes);socket.getOutputStream().flush();}
         public Response response() throws IOException {
             var input=socket.getInputStream();String first=line(input);String[] status=first.split(" ",3);
@@ -56,9 +57,10 @@ public final class PlanHttpSocketClient {
                     if(!line(input).isEmpty())throw new IOException("MOCK_CHUNK_INVALID");
                 }
             } else if(headers.containsKey("content-length")) {
-                int size=Integer.parseInt(headers.get("content-length"));if(size>1_048_576)throw new IOException("MOCK_RESPONSE_LIMIT");body.write(input.readNBytes(size));
+                int size=Integer.parseInt(headers.get("content-length"));if(size>1_048_576)throw new IOException("MOCK_RESPONSE_LIMIT");byte[] bytes=input.readNBytes(size);if(bytes.length!=size)throw new IOException("MOCK_RESPONSE_TRUNCATED");body.write(bytes);
             } else {body.write(input.readNBytes(1_048_577));if(body.size()>1_048_576)throw new IOException("MOCK_RESPONSE_LIMIT");}
-            return new Response(Integer.parseInt(status[1]),Map.copyOf(headers),body.toString(StandardCharsets.UTF_8));
+            String text=body.toString(StandardCharsets.UTF_8);int code=Integer.parseInt(status[1]);PlanViewWireAssertions.verify(viewSchema,code,text);
+            return new Response(code,Map.copyOf(headers),text);
         }
         public void close() throws IOException {socket.close();}
     }

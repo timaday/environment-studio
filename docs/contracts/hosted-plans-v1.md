@@ -1,10 +1,11 @@
-# Hosted plans and transient operation authority — planned D06b
+# Hosted plans and transient operation authority — D06b
 
 This extends [planning](planning.md), [hosted sessions](hosted-session.md),
 [native workspace](native-workspace-v2.md), [observation](database-observation.md),
 [profiles](profile-v2.md) and [structural targets](structural-target.md).
-It specifies application behavior before HTTP/UI implementation. Routes remain
-unavailable until their closed wire contracts and qualification land. No caller
+The application service and its initial HTTP/view boundaries are implemented;
+see [delivery evidence](../delivery/progress.md) for qualification and remaining
+browser/export work. Installed routes do not override advertised capabilities. No caller
 can submit an observation, projection, validation result or export capability.
 
 ## Plan ownership, revisions and budgets

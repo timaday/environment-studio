@@ -75,20 +75,20 @@ public final class PlanController {
         var lease=lease(request); var admission=runtime.service().reserveCommand(lease,planId);
         start(lease,request,response,admission,()->!admission.live(),134_217_728,30,200,body->ack(admission.execute(new PlanCommandReader().read(body))));
     }
-    private static SessionLedger.Lease lease(HttpServletRequest request) {
+    static SessionLedger.Lease lease(HttpServletRequest request) {
         if(!(request.getAttribute(HostedSessions.REQUEST_LEASE) instanceof SessionLedger.Lease lease)) throw new PlanRefusal(PlanRefusal.Code.SESSION_REQUIRED);
         return lease;
     }
-    private interface BodyAction { Object apply(OwnedServletBody body); }
-    private static MetadataSlot metadata() {
+    interface BodyAction { Object apply(OwnedServletBody body); }
+    static MetadataSlot metadata() {
         if(!METADATA_READERS.tryAcquire()) throw new PlanRefusal(PlanRefusal.Code.CAPACITY);
         return new MetadataSlot();
     }
-    private static final class MetadataSlot implements AutoCloseable {
+    static final class MetadataSlot implements AutoCloseable {
         private final AtomicBoolean closed=new AtomicBoolean();
         public void close(){if(closed.compareAndSet(false,true))METADATA_READERS.release();}
     }
-    private void start(SessionLedger.Lease lease,HttpServletRequest request,HttpServletResponse response,AutoCloseable admission,BooleanSupplier cancelled,
+    void start(SessionLedger.Lease lease,HttpServletRequest request,HttpServletResponse response,AutoCloseable admission,BooleanSupplier cancelled,
             int limit,int seconds,int success,BodyAction action) throws IOException {
         AsyncContext context=null; OwnedServletBody body=null; boolean started=false;
         try {
@@ -136,6 +136,7 @@ public final class PlanController {
         write(response,status,Map.of("code",code));
     }
     private static void write(HttpServletResponse response,int status,Object value) throws IOException {
+        if(value instanceof PlanResponse owned){owned.write(response,status);return;}
         response.setStatus(status); response.setHeader("Cache-Control","no-store"); response.setContentType("application/json");
         JSON.writeValue(response.getOutputStream(),value);
     }

@@ -38,7 +38,8 @@ class HostedBoundaryTest {
 
     @DynamicPropertySource static void properties(DynamicPropertyRegistry properties) { properties.add("studio.security.issuer", issuer::issuer); properties.add("studio.workspace.directory", () -> workspace.toString()); properties.add("studio.workspace.definition-publishers[0].issuer", issuer::issuer); properties.add("studio.workspace.definition-publishers[0].subject", () -> "workspace-maintainer");
         properties.add("studio.workspace.definition-publishers[1].issuer", issuer::issuer);properties.add("studio.workspace.definition-publishers[1].subject",()->"plan-maintainer");
-        properties.add("studio.workspace.definition-publishers[2].issuer", issuer::issuer);properties.add("studio.workspace.definition-publishers[2].subject",()->"transport-maintainer"); }
+        properties.add("studio.workspace.definition-publishers[2].issuer", issuer::issuer);properties.add("studio.workspace.definition-publishers[2].subject",()->"transport-maintainer");
+        properties.add("studio.workspace.definition-publishers[3].issuer",issuer::issuer);properties.add("studio.workspace.definition-publishers[3].subject",()->"view-maintainer"); }
     @org.springframework.boot.test.web.server.LocalServerPort int port;
     @Autowired WebApplicationContext context;
     @Autowired CleanupProbe cleanupProbe;
@@ -66,6 +67,7 @@ class HostedBoundaryTest {
         assertFalse(output.getAll().contains("code_verifier=["),"PKCE verifier form field leaked to logs");
         assertFalse(output.getAll().contains("Db-Password-Canary"),"Database credential canary leaked to logs");
         assertFalse(output.getAll().contains("second-palette"),"Entered plan value leaked to logs");
+        assertFalse(output.getAll().contains("Hidden-View-Canary"),"Masked view value leaked to logs");
         assertFalse(output.getAll().contains("workspace-source-canary"), "Synthetic workspace source leaked to logs");
         for (String token : csrfCanaries) assertFalse(output.getAll().contains(token.substring(0, 12)), "Session CSRF token prefix leaked to logs");
         assertFalse(output.getAll().contains("mock-platform-secret"), "Synthetic client secret leaked to logs");
@@ -88,7 +90,8 @@ class HostedBoundaryTest {
         mvc = MockMvcBuilders.webAppContextSetup(context).apply(springSecurity()).build();
     }
     @AfterAll static void stopIssuer() { issuer.close(); }
-    studio.environment.server.plan.PlanHttpSocketClient socketLogin(String subject) throws Exception {
+    studio.environment.server.plan.PlanHttpSocketClient socketLogin(String subject) throws Exception {return socketLogin(subject,302);}
+    studio.environment.server.plan.PlanHttpSocketClient socketLogin(String subject,int callbackStatus) throws Exception {
         issuer.subject=subject;
         var client=new studio.environment.server.plan.PlanHttpSocketClient(port);
         var start=client.get("/oauth2/authorization/studio");assertEquals(302,start.status());
@@ -96,17 +99,18 @@ class HostedBoundaryTest {
         assertEquals(302,provider.statusCode());
         var callback=URI.create(provider.headers().firstValue("Location").orElseThrow());
         authorizationCodeCanaries.add(MockIssuer.parameters(callback.getRawQuery()).get("code"));
-        assertEquals(302,client.get(callback.getRawPath()+"?"+callback.getRawQuery()).status());
+        assertEquals(callbackStatus,client.get(callback.getRawPath()+"?"+callback.getRawQuery()).status());
+        if(callbackStatus!=302)return client;
         var session=client.get("/api/v1/session");assertEquals(200,session.status());
         var tree=tools.jackson.databind.json.JsonMapper.builder().build().readTree(session.body());
         String token=tree.get("csrfToken").asString();csrfCanaries.add(token);client.csrf(tree.get("csrfHeaderName").asString(),token);
         return client;
     }
     record SocketPlan(studio.environment.server.plan.PlanHttpSocketClient client,String planId) { }
-    SocketPlan socketPlan(String owner) throws Exception {
+    SocketPlan socketPlan(String owner) throws Exception {return socketPlan(owner,java.nio.file.Files.readString(java.nio.file.Path.of("../../fixtures/native-v2/definition.json")));}
+    SocketPlan socketPlan(String owner,String source) throws Exception {
         var client=socketLogin(owner);var json=tools.jackson.databind.json.JsonMapper.builder().build();
         String objectId=java.util.UUID.randomUUID().toString(),path="/api/v2/definitions/"+objectId;
-        String source=java.nio.file.Files.readString(java.nio.file.Path.of("../../fixtures/native-v2/definition.json"));
         var saved=client.request("PUT",path,json.writeValueAsString(Map.of("expectedRevision","0","requestId",java.util.UUID.randomUUID().toString(),"format","JSON","source",source)),true);
         assertEquals(200,saved.status());
         var definition=json.readTree(saved.body());var policies=new java.util.ArrayList<Map<String,String>>();
@@ -123,11 +127,39 @@ class HostedBoundaryTest {
     static String mockCredentials() {return "{\"username\":\"MockReader\",\"password\":\"Db-Password-Canary-𐀀\"}";}
     @Test void actualHttpOneToTwoCrossDocumentTargetReplayForeignBodyAndFailedInspection() throws Exception {
         var plan=socketPlan("plan-maintainer");var client=plan.client;var json=tools.jackson.databind.json.JsonMapper.builder().build();
+        String views="/api/v1/plans/"+plan.planId+"/views/";
+        assertEquals(422,client.request("POST",views+"entities","{\"revision\":\"1\",\"side\":\"current\",\"offset\":0,\"limit\":1}",true).status());
         String operation=reserve(plan,"1");
         assertEquals(403,client.request("POST","/api/v1/operations/"+operation+"/credentials",mockCredentials(),false).status());
         var inspected=client.request("POST","/api/v1/operations/"+operation+"/credentials",mockCredentials(),true);assertEquals(200,inspected.status());
         assertEquals("succeeded",json.readTree(inspected.body()).get("phase").asString());
         assertTrue(studio.environment.server.plan.PlanHttpTestConfiguration.exactCredentials.get(),"Credential values changed across HTTP boundary");
+        var inventory=client.request("POST",views+"documents","{\"revision\":\"2\"}",true);assertEquals(200,inventory.status());
+        assertEquals(2,json.readTree(inventory.body()).get("documents").size());
+        assertEquals(403,client.request("POST",views+"documents","{\"revision\":\"2\"}",false).status());
+        assertEquals(403,client.get(views+"documents").status());
+        var entityPage=json.readTree(client.request("POST",views+"entities","{\"revision\":\"2\",\"side\":\"current\",\"offset\":0,\"limit\":100}",true).body());
+        assertEquals(3,entityPage.get("total").asInt());var mappings=new java.util.ArrayList<Map<String,Object>>();String selectedSlot=null;int slot=0;
+        for(var entity:entityPage.get("items")){String slotId="neutral-"+slot++;mappings.add(Map.of("entity",Map.of("kind","existing","handle",entity.get("entity").get("handle").asString()),"slotId",slotId,"label","Neutral slot "+slot));if(entity.get("typeId").asString().equals("glyph"))selectedSlot=slotId;}
+        String catalogBefore=client.get("/api/v2/profiles").body();
+        var captured=client.request("POST","/api/v1/plans/"+plan.planId+"/profile-captures",json.writeValueAsString(Map.of("revision","2","profileId","neutral-capture","profileRevision","1","mappings",mappings)),true);assertEquals(200,captured.status());
+        assertEquals(catalogBefore,client.get("/api/v2/profiles").body(),"Capture must not save a profile");
+        var portable=json.readTree(captured.body());String portableSource=portable.get("source").asString();assertFalse(portableSource.contains("alpha"));assertFalse(portableSource.contains("shared"));assertFalse(portableSource.contains("warm"));
+        String profileId=java.util.UUID.randomUUID().toString();var definitionRef=Map.of("objectId",portable.get("definition").get("objectId").asString(),"workspaceRevision",portable.get("definition").get("workspaceRevision").asString());
+        assertEquals(200,client.request("PUT","/api/v2/profiles/"+profileId,json.writeValueAsString(Map.of("expectedRevision","0","requestId",java.util.UUID.randomUUID().toString(),"format","JSON","source",portableSource,"definition",definitionRef)),true).status());
+        assertEquals(200,client.request("POST","/api/v2/profiles/"+profileId+"/publish",json.writeValueAsString(Map.of("expectedRevision","1","requestId",java.util.UUID.randomUUID().toString())),true).status());
+        var profileRef=Map.of("objectId",profileId,"workspaceRevision","2");String previewPath="/api/v1/plans/"+plan.planId+"/profile-previews";
+        var allPreview=json.readTree(client.request("POST",previewPath,json.writeValueAsString(Map.of("revision","2","profile",profileRef,"selection",Map.of("kind","all"),"section","included","offset",0,"limit",1)),true).body());
+        assertEquals(3,allPreview.get("total").asInt());assertEquals(1,allPreview.get("nextOffset").asInt());assertEquals(1,allPreview.get("items").size());
+        String previewToken=allPreview.get("previewDigest").asString();
+        var secondPage=json.readTree(client.request("POST",previewPath,json.writeValueAsString(Map.of("revision","2","profile",profileRef,"selection",Map.of("kind","all"),"section","included","offset",1,"limit",1)),true).body());assertEquals(previewToken,secondPage.get("previewDigest").asString());
+        for(String section:java.util.List.of("included","dependencies","relations","conflicts")){
+            var partial=client.request("POST",previewPath,json.writeValueAsString(Map.of("revision","2","profile",profileRef,"selection",Map.of("kind","selected","roots",java.util.List.of(selectedSlot)),"section",section,"offset",0,"limit",100)),true);assertEquals(200,partial.status());
+            int total=json.readTree(partial.body()).get("total").asInt();assertEquals(section.equals("included")?2:section.equals("conflicts")?0:1,total);
+        }
+        var parents=json.readTree(client.request("POST",views+"placements","{\"revision\":\"2\",\"documentId\":\"palette-sheet\",\"projectionId\":\"palettes\",\"offset\":0,\"limit\":100}",true).body());assertEquals(1,parents.get("total").asInt());assertEquals("0",parents.get("items").get(0).get("elementIndex").asString());
+
+
         var service=studio.environment.server.plan.PlanHttpTestConfiguration.installed;
         var lease=studio.environment.server.plan.PlanHttpTestConfiguration.leases.get("plan-maintainer");
         String alpha=service.entities(lease,plan.planId,"2",false,0,100).entities().stream().filter(e->e.type().equals("glyph") && e.fields().stream().anyMatch(f->f.field().equals("tag") && f.value().orElse("").equals("alpha"))).findFirst().orElseThrow().handle();
@@ -145,10 +177,23 @@ class HostedBoundaryTest {
         var summary=json.readTree(client.get("/api/v1/plans/"+plan.planId).body());assertTrue(summary.get("targetComplete").asBoolean());assertEquals(4,summary.get("targetCounts").get("entities").asInt());
         for(var pair:java.util.List.of(java.util.List.of("glyph-sheet","expected-glyphs.xml"),java.util.List.of("palette-sheet","expected-palettes.xml")))
             assertEquals(java.nio.file.Files.readString(java.nio.file.Path.of("../../fixtures/structural-target",pair.get(1))),service.comparison(lease,plan.planId,"3",true,pair.getFirst(),studio.environment.core.plan.PlanPorts.ViewMode.RAW,true).text());
+        for(String mode:java.util.List.of("raw","placeholders","formatted")){
+            var document=client.request("POST",views+"document",json.writeValueAsString(Map.of("revision","3","side","target","documentId","palette-sheet","mode",mode,"completeDocumentDisclosure",true)),true);assertEquals(200,document.status());var display=json.readTree(document.body());
+            assertTrue(display.get("unmappedConcreteMayRemain").asBoolean());if(mode.equals("raw"))assertEquals(java.nio.file.Files.readString(java.nio.file.Path.of("../../fixtures/structural-target/expected-palettes.xml")),display.get("text").asString());
+        }
+        assertEquals(400,client.request("POST",views+"document","{\"revision\":\"3\",\"side\":\"target\",\"documentId\":\"palette-sheet\",\"mode\":\"raw\",\"completeDocumentDisclosure\":false}",true).status());
+        assertEquals(409,client.request("POST",previewPath,json.writeValueAsString(Map.of("revision","2","profile",profileRef,"selection",Map.of("kind","all"),"section","included","offset",0,"limit",1)),true).status());
+        for(String section:java.util.List.of("draft","containment")){var page=json.readTree(client.request("POST",views+section,"{\"revision\":\"3\",\"offset\":0,\"limit\":100}",true).body());assertEquals(section.equals("draft")?2:0,page.get("total").asInt());}
+        var relations=json.readTree(client.request("POST",views+"relations","{\"revision\":\"3\",\"side\":\"target\",\"offset\":0,\"limit\":100}",true).body());assertEquals(2,relations.get("total").asInt());
+        assertTrue(relations.get("items").toString().contains("fresh"));
+        var validation=json.readTree(client.request("POST","/api/v1/plans/"+plan.planId+"/validations","{\"revision\":\"3\"}",true).body());assertEquals(10,validation.get("checks").size());assertEquals(2,validation.get("applicationRules").size());assertFalse(validation.get("exportAvailable").asBoolean());
+        assertEquals(200,client.request("POST","/api/v1/plans/"+plan.planId+"/materializations","{\"revision\":\"3\"}",true).status());
         assertEquals(changed.body(),client.request("POST",commands,body,true).body());
         assertEquals(409,client.request("POST",commands,json.writeValueAsString(Map.of("kind","discard","expectedRevision","2","requestId",requestId)),true).status());
         var foreign=socketLogin("foreign-plan-"+java.util.UUID.randomUUID());
         assertEquals(404,foreign.get("/api/v1/plans/"+plan.planId).status());
+        try(var pending=foreign.begin("POST",views+"document",16_384,true)){assertEquals(404,pending.response().status());}
+
         long before=System.nanoTime();try(var pending=foreign.begin("POST","/api/v1/operations/"+operation+"/credentials",16_384,true)){assertEquals(404,pending.response().status());}
         assertTrue(System.nanoTime()-before<2_000_000_000L,"Foreign body was awaited");
         int calls=studio.environment.server.plan.PlanHttpTestConfiguration.connections.get();
@@ -164,6 +209,49 @@ class HostedBoundaryTest {
         assertEquals(200,client.request("POST","/api/v1/operations/"+malformed+"/cancel","{}",true).status());
         assertEquals(204,client.request("POST","/api/v1/session/logout","{}",true).status());
         assertEquals(204,foreign.request("POST","/api/v1/session/logout","{}",true).status());
+    }
+    @Test void maskedDraftChoicesSurviveEditsAndViewReadersRetainAdmissionUntilDeadlineOrLogout() throws Exception {
+        var json=tools.jackson.databind.json.JsonMapper.builder().build();var definition=json.readTree(java.nio.file.Files.readAllBytes(java.nio.file.Path.of("../../fixtures/native-v2/definition.json")));
+        for(var type:definition.get("logical").get("entityTypes"))if(type.get("id").asString().equals("glyph"))for(var field:type.get("fields"))if(field.get("id").asString().equals("tone")){var value=(tools.jackson.databind.node.ObjectNode)field;value.put("readable",true);value.put("sensitivity","secret");}
+        var plan=socketPlan("view-maintainer",json.writeValueAsString(definition));var client=plan.client;String path="/api/v1/plans/"+plan.planId,views=path+"/views/";
+        String operation=reserve(plan,"1");assertEquals(200,client.request("POST","/api/v1/operations/"+operation+"/credentials",mockCredentials(),true).status());
+        var entities=json.readTree(client.request("POST",views+"entities","{\"revision\":\"2\",\"side\":\"current\",\"offset\":0,\"limit\":100}",true).body());String alpha=null;
+        for(var entity:entities.get("items"))if(entity.get("typeId").asString().equals("glyph"))for(var field:entity.get("fields")){if(field.get("fieldId").asString().equals("tone")){assertTrue(field.get("masked").asBoolean());assertTrue(field.get("value").isNull());}if(field.get("fieldId").asString().equals("tag") && field.get("value").asString().equals("alpha"))alpha=entity.get("entity").get("handle").asString();}
+        var ref=Map.of("kind","existing","handle",alpha);var keep=Map.of("kind","keep-observed");
+        assertEquals(200,client.request("POST",path+"/commands",json.writeValueAsString(Map.of("kind","upsert-entity","expectedRevision","2","requestId",java.util.UUID.randomUUID().toString(),"decision",Map.of("kind","retain","entity",ref,"fields",Map.of("tag",keep,"tone",Map.of("kind","entered","text","Hidden-View-Canary")),"references",Map.of("uses",keep)),"placements",java.util.List.of())),true).status());
+        var draft=json.readTree(client.request("POST",views+"draft","{\"revision\":\"3\",\"offset\":0,\"limit\":100}",true).body());
+        for(var field:draft.get("items").get(0).get("fields"))if(field.get("fieldId").asString().equals("tone")){assertEquals("entered",field.get("kind").asString());assertTrue(field.get("masked").asBoolean());assertTrue(field.get("value").isNull());}
+        assertFalse(draft.toString().contains("Hidden-View-Canary"));
+        assertEquals(200,client.request("POST",path+"/commands",json.writeValueAsString(Map.of("kind","bind-field","expectedRevision","3","requestId",java.util.UUID.randomUUID().toString(),"entity",ref,"fieldId","tag","state",keep)),true).status());
+        var service=studio.environment.server.plan.PlanHttpTestConfiguration.installed;var lease=studio.environment.server.plan.PlanHttpTestConfiguration.leases.get("view-maintainer");
+        try(var admission=service.reserveView(lease,plan.planId)){admission.run(()->{admission.pin("4");var target=admission.snapshot().selected(true);assertTrue(target.graph().entities().stream().anyMatch(e->e.key().identity().equals("alpha") && "Hidden-View-Canary".equals(e.fields().get("tone"))),"Unmentioned masked value was not preserved");return true;});}
+        for(String mode:java.util.List.of("raw","formatted","placeholders")){var response=client.request("POST",views+"document",json.writeValueAsString(Map.of("revision","4","side","target","documentId","glyph-sheet","mode",mode,"completeDocumentDisclosure",true)),true);assertEquals(200,response.status());assertEquals(!mode.equals("placeholders"),response.body().contains("Hidden-View-Canary"));}
+        studio.environment.server.plan.PlanHttpTestConfiguration.awaitViewScratch(false);
+        long started=System.nanoTime();try(var pending=client.begin("POST",path+"/profile-captures",67_108_864,true)){
+            pending.timeout(40_000);awaitViewCapacity(client,views,"4");
+            try(var fifth=client.begin("POST",path+"/profile-previews",67_108_864,true)){assertEquals(429,fifth.response().status());}
+            assertEquals(400,pending.response().status());double seconds=(System.nanoTime()-started)/1_000_000_000.0;assertTrue(seconds>=29 && seconds<34,"Collection deadline changed or renewed");
+        }
+        assertEquals(200,client.request("POST",views+"documents","{\"revision\":\"4\"}",true).status());
+        studio.environment.server.plan.PlanHttpTestConfiguration.awaitViewScratch(false);
+        try(var pending=client.begin("POST",path+"/profile-captures",67_108_864,true)){
+            awaitViewCapacity(client,views,"4");int logout=client.request("POST","/api/v1/session/logout","{}",true).status();assertTrue(logout==503 || logout==204,"Logout must report its actual cleanup result");assertEquals(401,pending.response().status());
+        }
+        studio.environment.server.plan.PlanHttpTestConfiguration.awaitViewScratch(false);
+        var hostedSessions=context.getBean(studio.environment.server.session.HostedSessions.class);
+        var quarantine=hostedSessions.cleanupReports().stream().filter(report->report.sessionId().equals(lease.id())).findFirst();
+        if(quarantine.isPresent()){
+            assertEquals(studio.environment.core.session.SessionLedger.CleanupState.INCONCLUSIVE,quarantine.get().state());assertEquals(1,quarantine.get().attempts());
+            socketLogin("view-maintainer",403);
+            assertEquals(studio.environment.core.session.SessionLedger.CleanupState.COMPLETE,hostedSessions.retryCleanup(lease.id()).orElseThrow().state());
+        }
+        var fresh=socketLogin("view-maintainer");assertEquals(404,fresh.request("POST",views+"documents","{\"revision\":\"4\"}",true).status());assertEquals(204,fresh.request("POST","/api/v1/session/logout","{}",true).status());
+    }
+    private void awaitViewCapacity(studio.environment.server.plan.PlanHttpSocketClient client,String views,String revision)throws Exception {
+        studio.environment.server.plan.PlanHttpTestConfiguration.awaitViewScratch(true);
+        long end=System.nanoTime()+2_000_000_000L;
+        while(System.nanoTime()<end){int status=client.request("POST",views+"documents","{\"revision\":\""+revision+"\"}",true).status();if(status==429)return;assertEquals(200,status);Thread.sleep(10);}
+        fail("View scratch was not held by admitted reader");
     }
     @Test void actualQuietTrickleDisconnectCancelAndMetadataCapacityStayBounded() throws Exception {
         var plan=socketPlan("transport-maintainer");var client=plan.client;var json=tools.jackson.databind.json.JsonMapper.builder().build();

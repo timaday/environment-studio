@@ -75,6 +75,17 @@ public class HostedSecurity {
                 .requestMatchers(HttpMethod.GET, "/api/v1/destinations", "/api/v1/plans/current", "/api/v1/plans/{planId}", "/api/v1/operations/{operationId}").authenticated()
                 .requestMatchers(HttpMethod.POST, "/api/v1/plans", "/api/v1/plans/{planId}/inspections", "/api/v1/plans/{planId}/commands",
                         "/api/v1/operations/{operationId}/credentials", "/api/v1/operations/{operationId}/cancel").authenticated()
+                .requestMatchers(HttpMethod.POST, "/api/v1/plans/{planId}/materializations",
+                        "/api/v1/plans/{planId}/views/documents",
+                        "/api/v1/plans/{planId}/views/entities",
+                        "/api/v1/plans/{planId}/views/relations",
+                        "/api/v1/plans/{planId}/views/draft",
+                        "/api/v1/plans/{planId}/views/containment",
+                        "/api/v1/plans/{planId}/views/placements",
+                        "/api/v1/plans/{planId}/views/document",
+                        "/api/v1/plans/{planId}/profile-captures",
+                        "/api/v1/plans/{planId}/profile-previews",
+                        "/api/v1/plans/{planId}/validations").authenticated()
                 .requestMatchers(HttpMethod.POST, "/api/v1/session/logout").authenticated()
                 .anyRequest().denyAll());
         http.requestCache(cache -> cache.disable());

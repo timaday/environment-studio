@@ -1,9 +1,10 @@
-# Hosted plan HTTP boundary — planned
+# Hosted plan HTTP boundary
 
 This is the wire boundary for [hosted plans](hosted-plans-v1.md), with a
 [closed initial OpenAPI contract](openapi-plans-v1.json) and
-[semantic command schema](../../schemas/plan-command-v1.schema.json). It is not an
-enabled API or a claim of database/export qualification. Existing native
+[semantic command schema](../../schemas/plan-command-v1.schema.json). The initial
+routes are implemented; [integration evidence](../evidence/d06b2-integration.md)
+does not establish browser, native-client or export qualification. Existing native
 workspace APIs remain the publication and immutable-profile persistence boundary.
 
 Every route requires the current hosted lease, approved Host, owner authorization

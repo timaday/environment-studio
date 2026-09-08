@@ -11,8 +11,8 @@ results; the table below reports capability, not test count.
 | D02 security/state | Hosted sessions, immutable workspace revisions and hosted plan/credential lifecycle reviewed | Browser integration; actual deployment durability/identity external |
 | D03 XML | Guarded spans, graph projection, corrected Fifth Edition parser and structural target assembly integrated | Hosted orchestration and guarded SQL/client qualification |
 | D04 database reads | Both engine adapters/hosted transport integrated; disposable matrices, shared permits and three JDBC TLS combinations passed | Browser inspection; external PKI/accounts/deployment qualification |
-| D05 profiles | Value-free capture, portable whole/partial composition and owned immutable persistence/publication integrated | Hosted capture/composition and browser workflow |
-| D06 planning | Hosted plans, revisions, HTTP lifecycle/commands and complete structural targets reviewed | Inspection/composition views, browser workflow and full hosted heap qualification |
+| D05 profiles | Value-free capture, portable whole/partial composition, immutable persistence/publication and hosted views integrated | Browser capture/reuse workflow |
+| D06 planning | Hosted plans, revisions, HTTP lifecycle/commands/views and complete structural targets reviewed | Browser workflow, remaining UX data and full hosted heap/transfer qualification |
 | D07 SQL | Package/transaction mechanisms and separate unqualified supervisor integrated/reviewed; disposable rollback/guard matrices passed | Native runtime/console/TLS/commit qualification and hosted export authority |
 | D08 UX | Synthetic comparison and definition inspector; component keyboard/axe checks pass | Backend integration, editing workflow and representative operator sessions |
 | D09 deployment/release | OCI pipeline/contract; actual HiveForge unverified | Exact platform deployment and qualification matrix |
@@ -28,8 +28,11 @@ the lead's integration harness received independent fixed-candidate review with
 no material findings. Integration and rework are recorded in D01a evidence;
 there is no serial comparison supporting a speed-up claim.
 
-Active work: integrating reviewed inspection/composition views, connecting the
-hosted browser workflow and qualifying the separate native runtime/console.
+Active work: connecting the hosted browser workflow, completing its remaining
+data contracts and qualifying the separate native runtime/console.
+Eleven inspection/composition view routes passed independent review, the combined
+450-test Java Docker build and protected smoke; see
+[view integration](../evidence/d06b3-integration.md).
 The supervisor candidate passed independent review, the combined 433-test Java
 Docker build, separate archive/launch checks and protected web smoke; see
 [supervisor integration](../evidence/d07c1-integration.md). Its registry is empty.

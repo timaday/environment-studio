@@ -1,9 +1,9 @@
-# Hosted plan inspection and composition views — planned D06b3
+# Hosted plan inspection and composition views — D06b3
 
 This extends [the initial plan HTTP contract](hosted-plan-http-v1.md) and
-[hosted plan authority](hosted-plans-v1.md). These routes are not yet implemented.
-Add their closed OpenAPI/schema definitions and meaningful boundary tests before
-implementation. They never accept source XML, a graph, validation PASS or an
+[hosted plan authority](hosted-plans-v1.md). These eleven routes are implemented;
+see [integration evidence](../evidence/d06b3-integration.md). Their closed schemas
+and boundary tests preceded implementation. They never accept source XML, a graph, validation PASS or an
 export capability from the browser. Export/review/readback remain a subsequent
 qualified route group.
 
