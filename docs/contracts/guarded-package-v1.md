@@ -174,7 +174,9 @@ The supervisor starts the sole transaction through its fixed bootstrap: PostgreS
 `BEGIN ISOLATION LEVEL READ COMMITTED READ WRITE`, or Oracle
 `SET TRANSACTION READ WRITE` as the first SQL statement after connection/bootstrap.
 The archive program contains no transaction-control statement. Its PostgreSQL
-form is one DO block; its Oracle form is one anonymous PL/SQL block. Procedural
+form is one DO block; its Oracle form is one anonymous PL/SQL block ending in
+`END;` and a final LF, without a slash line. The supervisor supplies its own fixed
+SQL*Plus slash terminator after the exactly verified program. Procedural
 BEGIN/END syntax does not begin or commit a separate transaction.
 The program acquires the conservative exclusive table lock
 over the complete read set, with bounded timeout. If several tables are supported
@@ -187,6 +189,22 @@ constraints/access methods or any unqualified route that could execute external
 effects or change unselected data. Read-adapter metadata checks alone do not
 establish write-effect safety. No DDL, custom routine, autonomous transaction or
 transaction boundary may appear in the guarded program.
+
+Initial write-effect eligibility is conservative and template-versioned. PostgreSQL
+requires an ordinary permanent local heap with no inheritance/partitioning, RLS,
+policies, triggers, DML rewrite rules or generated/identity columns. Qualify only
+immediate valid uniqueness and built-in plain btree indexes: no predicates,
+expressions, custom access methods/operator classes or unqualified collations.
+Oracle requires an ordinary permanent local heap: no IOT, partition/external/
+nested/temporary storage, triggers, VPD/redaction, virtual/identity columns,
+domain/function indexes or unqualified constraint expressions. Initial constraints
+are qualified NOT NULL and immediate plain key uniqueness; foreign keys and
+other check expressions refuse. Require AL32UTF8 and qualified binary key
+comparisons. Checks apply to the complete table, including unselected columns
+and index/constraint effects. These are candidate refusal rules; tests must
+establish the exact catalog predicates, supported builtin variants and runtime
+write effects before either template is advertised as qualified. Permission or
+metadata uncertainty cannot be converted to absence of an effect.
 
 Compare complete row membership and full original content for every document,
 including unchanged dependencies, before the first UPDATE. NULL, empty and

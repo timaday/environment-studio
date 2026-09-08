@@ -36,7 +36,13 @@ a separate 16 MiB per-plan/64 MiB global UTF-8 allowance. Reserve worst-case old
 new retained bytes and temporary work before allocation. Initially serialize
 materialization scratch globally; observation still observes its independent
 physical-operation budget. Retained-state accounting and scratch reservation are
-atomic and released in every success/refusal/cancel path. No partial observations,
+atomic and released in every success/refusal/cancel path. Retained byte caps apply
+after installation; temporary old/new overlap is charged to separately reserved
+scratch so a full plan can still be replaced. Reserve one full materialization
+scratch job globally and up to four 32 MiB observation/projection scratch jobs.
+Release the old retained allocation and install the replacement atomically; never
+charge the overlap twice against retained capacity or omit it from scratch.
+No partial observations,
 truncation or replacement of the old target on failure satisfies admission.
 These counters are not a claim of exact JVM heap use. Qualify maximum retained
 graphs, strings, response encoding and scratch against the advertised deployment
