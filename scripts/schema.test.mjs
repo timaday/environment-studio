@@ -221,3 +221,70 @@ test("planned plan reservation and credential shapes exclude authority and repla
   assert.equal(credential({ ...invented, password: "" }), false);
   assert.equal(credential({ ...invented, username: "bad\u0000name" }), false);
 });
+
+const planViewSchema = read("../schemas/plan-view-v1.schema.json");
+const planViewAjv = new Ajv2020({ allErrors: true, strict: true }).addSchema(read("../schemas/plan-command-v1.schema.json")).addSchema(planViewSchema);
+const planView = (name) => planViewAjv.compile({ $ref: `${planViewSchema.$id}#/$defs/${name}` });
+const viewShapes = read("../fixtures/plan-views-v1/shapes.json");
+test("planned view fixtures cover every closed request and response family without granting authority", () => {
+  for (const [name, shape] of Object.entries({ ...viewShapes.requests, ...viewShapes.responses })) {
+    const validate = planView(name);
+    assert.equal(validate(shape), true, `${name}: ${JSON.stringify(validate.errors)}`);
+    assert.equal(validate({ ...shape, callerApproved: true }), false, name);
+  }
+});
+test("view masking, consent, absent target and preview sections cannot claim unsafe shapes", () => {
+  for (const [name, mutate] of [
+    ["entitiesResponse", s => { s.items[0].fields[1].value = "independent-hidden-canary"; }],
+    ["entitiesResponse", s => { s.items[0].fields[0].present = false; }],
+    ["draftResponse", s => { s.items[0].fields[0].value = "independent-hidden-canary"; }],
+    ["draftResponse", s => { s.items[0].references[0].target = s.items[0].entity; }],
+    ["draftResponse", s => { s.items[0].disposition = "remove"; }],
+    ["documentsResponse", s => { s.documents[0].changed = false; }],
+    ["previewIncludedResponse", s => { s.section = "conflicts"; }],
+    ["validationResponse", s => { s.checks.pop(); }],
+    ["validationResponse", s => { s.checks.reverse(); }],
+    ["validationResponse", s => { s.exportAvailable = true; }],
+    ["documentRequest", s => { s.completeDocumentDisclosure = false; }],
+    ["captureRequest", s => { s.mappings[0].entity = { kind: "fresh", slotId: "new-tone", typeId: "tone" }; }],
+    ["previewRequest", s => { s.selection = { kind: "selected", roots: ["one", "one"] }; }],
+    ["entitiesRequest", s => { s.limit = 101; }],
+    ["entitiesRequest", s => { s.revision = "01"; }],
+  ]) {
+    const shape = structuredClone(viewShapes.responses[name] ?? viewShapes.requests[name]);
+    mutate(shape); assert.equal(planView(name)(shape), false, name);
+  }
+});
+test("eleven planned view routes share closed schemas, authentication and no-store responses", () => {
+  const api = read("../docs/contracts/openapi-plans-v1.json");
+  const suffixes = ["materializations", "views/documents", "views/entities", "views/relations", "views/draft", "views/containment", "views/placements", "views/document", "profile-captures", "profile-previews", "validations"];
+  const aggregate = readFileSync(new URL("../docs/contracts/openapi.yaml", import.meta.url), "utf8");
+  for (const suffix of suffixes) {
+    const path = `/api/v1/plans/{planId}/${suffix}`;
+    const operation = api.paths[path];
+    assert.deepEqual(Object.keys(operation), ["post"]);
+    assert.deepEqual(operation.post.security, [{ sessionCookie: [] }]);
+    assert.ok(operation.post.parameters.some(p => p.name === "X-CSRF-TOKEN" && p.required));
+    assert.equal(operation.post.responses["200"].headers["Cache-Control"].schema.const, "no-store");
+    for (const schema of [operation.post.requestBody.content["application/json"].schema, operation.post.responses["200"].content["application/json"].schema]) {
+      const name = schema.$ref.split("#/$defs/")[1];
+      assert.ok(planViewSchema.$defs[name], name);
+    }
+    assert.ok(aggregate.includes(`./openapi-plans-v1.json#/paths/${path.replaceAll("/", "~1")}`));
+  }
+});
+test("preview conflicts retain nullable coordinates and never disguise a rule as a relation", () => {
+  const validate = planView("previewConflictsResponse");
+  const page = structuredClone(viewShapes.responses.previewConflictsResponse);
+  for (const item of [
+    { code: "CONTAINMENT_CYCLE", slotId: null, relationId: null, ruleId: null },
+    { code: "ENTITY_COUNT", slotId: null, relationId: null, ruleId: "invented-rule" },
+    { code: "CONTAINMENT_PARENT_MISSING", slotId: null, relationId: "contains", ruleId: null },
+  ]) { page.items = [item]; assert.equal(validate(page), true, JSON.stringify(validate.errors)); }
+  for (const item of [
+    { code: "ENTITY_COUNT", slotId: null, relationId: "invented-rule", ruleId: null },
+    { code: "CONTAINMENT_CYCLE", slotId: "", relationId: "", ruleId: null },
+    { code: "FUTURE_UNKNOWN", slotId: null, relationId: null, ruleId: null },
+    { code: "RELATION_CARDINALITY", slotId: "shape-one", relationId: "uses" },
+  ]) { page.items = [item]; assert.equal(validate(page), false); }
+});

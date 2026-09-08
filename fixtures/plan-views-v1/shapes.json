@@ -1,0 +1,402 @@
+{
+  "requests": {
+    "revisionRequest": {
+      "revision": "9007199254740993"
+    },
+    "entitiesRequest": {
+      "revision": "9007199254740993",
+      "side": "current",
+      "offset": 0,
+      "limit": 100
+    },
+    "draftRequest": {
+      "revision": "9007199254740993",
+      "offset": 0,
+      "limit": 100
+    },
+    "placementsRequest": {
+      "revision": "9007199254740993",
+      "documentId": "tone-sheet",
+      "projectionId": "tones",
+      "offset": 0,
+      "limit": 100
+    },
+    "documentRequest": {
+      "revision": "9007199254740993",
+      "side": "current",
+      "documentId": "tone-sheet",
+      "mode": "raw",
+      "completeDocumentDisclosure": true
+    },
+    "captureRequest": {
+      "revision": "9007199254740993",
+      "profileId": "neutral",
+      "profileRevision": "1",
+      "mappings": [
+        {
+          "entity": {
+            "kind": "existing",
+            "handle": "00000000-0000-4000-8000-000000000091"
+          },
+          "slotId": "shape-one",
+          "label": "Neutral shape"
+        }
+      ]
+    },
+    "previewRequest": {
+      "revision": "9007199254740993",
+      "profile": {
+        "objectId": "00000000-0000-4000-8000-000000000092",
+        "workspaceRevision": "2"
+      },
+      "selection": {
+        "kind": "all"
+      },
+      "section": "included",
+      "offset": 0,
+      "limit": 100
+    }
+  },
+  "responses": {
+    "materializationResponse": {
+      "revision": "9007199254740993",
+      "complete": false,
+      "diagnostics": [
+        "UNRESOLVED_FIELD"
+      ]
+    },
+    "documentsResponse": {
+      "revision": "9007199254740993",
+      "documents": [
+        {
+          "documentId": "tone-sheet",
+          "currentDigest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "targetDigest": null,
+          "changed": null
+        }
+      ]
+    },
+    "entitiesResponse": {
+      "revision": "9007199254740993",
+      "total": 1,
+      "offset": 0,
+      "nextOffset": null,
+      "items": [
+        {
+          "entity": {
+            "kind": "existing",
+            "handle": "00000000-0000-4000-8000-000000000091"
+          },
+          "typeId": "tone",
+          "fields": [
+            {
+              "fieldId": "label",
+              "present": true,
+              "masked": false,
+              "value": "Invented Label"
+            },
+            {
+              "fieldId": "hidden",
+              "present": true,
+              "masked": true,
+              "value": null
+            }
+          ]
+        }
+      ]
+    },
+    "relationsResponse": {
+      "revision": "9007199254740993",
+      "total": 1,
+      "offset": 0,
+      "nextOffset": null,
+      "items": [
+        {
+          "relationId": "uses",
+          "from": {
+            "kind": "existing",
+            "handle": "00000000-0000-4000-8000-000000000091"
+          },
+          "to": {
+            "kind": "fresh",
+            "slotId": "new-tone",
+            "typeId": "tone"
+          }
+        }
+      ]
+    },
+    "draftResponse": {
+      "revision": "9007199254740993",
+      "total": 1,
+      "offset": 0,
+      "nextOffset": null,
+      "items": [
+        {
+          "entity": {
+            "kind": "fresh",
+            "slotId": "new-tone",
+            "typeId": "tone"
+          },
+          "disposition": "create",
+          "fields": [
+            {
+              "fieldId": "label",
+              "kind": "entered",
+              "masked": true,
+              "value": null
+            }
+          ],
+          "references": [
+            {
+              "referenceId": "uses",
+              "kind": "unresolved",
+              "target": null
+            }
+          ],
+          "placements": []
+        }
+      ]
+    },
+    "containmentResponse": {
+      "revision": "9007199254740993",
+      "total": 1,
+      "offset": 0,
+      "nextOffset": null,
+      "items": [
+        {
+          "relationId": "contains",
+          "parent": {
+            "kind": "existing",
+            "handle": "00000000-0000-4000-8000-000000000091"
+          },
+          "child": {
+            "kind": "fresh",
+            "slotId": "new-tone",
+            "typeId": "tone"
+          }
+        }
+      ]
+    },
+    "placementsResponse": {
+      "revision": "9007199254740993",
+      "total": 1,
+      "offset": 0,
+      "nextOffset": null,
+      "items": [
+        {
+          "documentId": "tone-sheet",
+          "sourceDigest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "elementIndex": "12"
+        }
+      ]
+    },
+    "documentResponse": {
+      "revision": "9007199254740993",
+      "documentId": "tone-sheet",
+      "side": "current",
+      "mode": "raw",
+      "text": "<invented/>",
+      "exact": true,
+      "redacted": false,
+      "unmappedConcreteMayRemain": true,
+      "omissions": []
+    },
+    "captureResponse": {
+      "revision": "9007199254740993",
+      "definition": {
+        "objectId": "00000000-0000-4000-8000-000000000092",
+        "workspaceRevision": "2"
+      },
+      "format": "json",
+      "source": "{\"independent\":\"shape-only-placeholder\"}"
+    },
+    "validationResponse": {
+      "revision": "9007199254740993",
+      "inputFingerprint": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+      "checks": [
+        {
+          "check": "SCOPE",
+          "outcome": "UNKNOWN",
+          "inputFingerprint": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+        },
+        {
+          "check": "DEFINITION",
+          "outcome": "UNKNOWN",
+          "inputFingerprint": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+        },
+        {
+          "check": "MAPPING",
+          "outcome": "UNKNOWN",
+          "inputFingerprint": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+        },
+        {
+          "check": "VALUES",
+          "outcome": "UNKNOWN",
+          "inputFingerprint": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+        },
+        {
+          "check": "SEMANTICS",
+          "outcome": "UNKNOWN",
+          "inputFingerprint": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+        },
+        {
+          "check": "XML_FIDELITY",
+          "outcome": "UNKNOWN",
+          "inputFingerprint": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+        },
+        {
+          "check": "DESTINATION",
+          "outcome": "UNKNOWN",
+          "inputFingerprint": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+        },
+        {
+          "check": "CLIENT_CAPABILITY",
+          "outcome": "UNKNOWN",
+          "inputFingerprint": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+        },
+        {
+          "check": "CONTENT_POLICY",
+          "outcome": "UNKNOWN",
+          "inputFingerprint": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+        },
+        {
+          "check": "REVIEW",
+          "outcome": "UNKNOWN",
+          "inputFingerprint": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+        }
+      ],
+      "applicationRules": [
+        {
+          "ruleId": "invented-rule",
+          "outcome": "UNKNOWN"
+        }
+      ],
+      "exportAvailable": false
+    },
+    "previewIncludedResponse": {
+      "revision": "9007199254740993",
+      "total": 1,
+      "offset": 0,
+      "nextOffset": null,
+      "items": [
+        {
+          "slotId": "shape-one",
+          "typeId": "tone",
+          "label": "Neutral shape",
+          "requiredInputs": [
+            "label"
+          ]
+        }
+      ],
+      "previewDigest": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "pins": {
+        "planId": "00000000-0000-4000-8000-000000000093",
+        "revision": "9007199254740993",
+        "observationFingerprint": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "profile": {
+          "objectId": "00000000-0000-4000-8000-000000000092",
+          "workspaceRevision": "2"
+        },
+        "publicationDigest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "selectedRoots": [
+          "shape-one"
+        ],
+        "rootsDigest": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+        "closureDigest": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+      },
+      "section": "included"
+    },
+    "previewDependenciesResponse": {
+      "revision": "9007199254740993",
+      "total": 1,
+      "offset": 0,
+      "nextOffset": null,
+      "items": [
+        {
+          "slotId": "shape-two",
+          "causedBy": "shape-one",
+          "relationId": "uses",
+          "reason": "required-reference"
+        }
+      ],
+      "previewDigest": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "pins": {
+        "planId": "00000000-0000-4000-8000-000000000093",
+        "revision": "9007199254740993",
+        "observationFingerprint": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "profile": {
+          "objectId": "00000000-0000-4000-8000-000000000092",
+          "workspaceRevision": "2"
+        },
+        "publicationDigest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "selectedRoots": [
+          "shape-one"
+        ],
+        "rootsDigest": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+        "closureDigest": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+      },
+      "section": "dependencies"
+    },
+    "previewRelationsResponse": {
+      "revision": "9007199254740993",
+      "total": 1,
+      "offset": 0,
+      "nextOffset": null,
+      "items": [
+        {
+          "relationId": "uses",
+          "fromSlot": "shape-one",
+          "toSlot": "shape-two"
+        }
+      ],
+      "previewDigest": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "pins": {
+        "planId": "00000000-0000-4000-8000-000000000093",
+        "revision": "9007199254740993",
+        "observationFingerprint": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "profile": {
+          "objectId": "00000000-0000-4000-8000-000000000092",
+          "workspaceRevision": "2"
+        },
+        "publicationDigest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "selectedRoots": [
+          "shape-one"
+        ],
+        "rootsDigest": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+        "closureDigest": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+      },
+      "section": "relations"
+    },
+    "previewConflictsResponse": {
+      "revision": "9007199254740993",
+      "total": 1,
+      "offset": 0,
+      "nextOffset": null,
+      "items": [
+        {
+          "code": "RELATION_CARDINALITY",
+          "slotId": "shape-one",
+          "relationId": "uses",
+          "ruleId": null
+        }
+      ],
+      "previewDigest": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "pins": {
+        "planId": "00000000-0000-4000-8000-000000000093",
+        "revision": "9007199254740993",
+        "observationFingerprint": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "profile": {
+          "objectId": "00000000-0000-4000-8000-000000000092",
+          "workspaceRevision": "2"
+        },
+        "publicationDigest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "selectedRoots": [
+          "shape-one"
+        ],
+        "rootsDigest": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+        "closureDigest": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+      },
+      "section": "conflicts"
+    }
+  }
+}

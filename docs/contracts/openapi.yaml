@@ -176,6 +176,39 @@ paths:
       responses:
         '200': {description: Process live}
         '503': {description: Process unhealthy}
+  /api/v1/plans/{planId}/materializations:
+    $ref: './openapi-plans-v1.json#/paths/~1api~1v1~1plans~1{planId}~1materializations'
+
+  /api/v1/plans/{planId}/views/documents:
+    $ref: './openapi-plans-v1.json#/paths/~1api~1v1~1plans~1{planId}~1views~1documents'
+
+  /api/v1/plans/{planId}/views/entities:
+    $ref: './openapi-plans-v1.json#/paths/~1api~1v1~1plans~1{planId}~1views~1entities'
+
+  /api/v1/plans/{planId}/views/relations:
+    $ref: './openapi-plans-v1.json#/paths/~1api~1v1~1plans~1{planId}~1views~1relations'
+
+  /api/v1/plans/{planId}/views/draft:
+    $ref: './openapi-plans-v1.json#/paths/~1api~1v1~1plans~1{planId}~1views~1draft'
+
+  /api/v1/plans/{planId}/views/containment:
+    $ref: './openapi-plans-v1.json#/paths/~1api~1v1~1plans~1{planId}~1views~1containment'
+
+  /api/v1/plans/{planId}/views/placements:
+    $ref: './openapi-plans-v1.json#/paths/~1api~1v1~1plans~1{planId}~1views~1placements'
+
+  /api/v1/plans/{planId}/views/document:
+    $ref: './openapi-plans-v1.json#/paths/~1api~1v1~1plans~1{planId}~1views~1document'
+
+  /api/v1/plans/{planId}/profile-captures:
+    $ref: './openapi-plans-v1.json#/paths/~1api~1v1~1plans~1{planId}~1profile-captures'
+
+  /api/v1/plans/{planId}/profile-previews:
+    $ref: './openapi-plans-v1.json#/paths/~1api~1v1~1plans~1{planId}~1profile-previews'
+
+  /api/v1/plans/{planId}/validations:
+    $ref: './openapi-plans-v1.json#/paths/~1api~1v1~1plans~1{planId}~1validations'
+
 components:
   parameters:
     ObjectId:

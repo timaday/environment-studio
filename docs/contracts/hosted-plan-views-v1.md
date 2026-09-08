@@ -129,7 +129,15 @@ Item shapes respectively are:
 - dependencies: `{slotId, causedBy, relationId, reason}`, with reason
   `required-reference`, `containment-parent` or `declared-reuse-target`;
 - relations: `{relationId, fromSlot, toSlot}`;
-- conflicts: `{code, slotId, relationId}`, using only tool-owned diagnostic codes.
+- conflicts: `{code, slotId, relationId, ruleId}`; all properties are required.
+  The closed codes are `RELATION_CARDINALITY`, `INVALID_TARGET_RELATION`,
+  `MULTIPLE_CONTAINMENT_PARENTS`, `CONTAINMENT_PARENT_MISSING`,
+  `CONTAINMENT_CYCLE` and `ENTITY_COUNT`. Unavailable coordinates are null,
+  never empty or invented identifiers. `ENTITY_COUNT` identifies its declared
+  count rule through `ruleId`, with null `slotId` and `relationId`; every other
+  code has null `ruleId`. Translate legacy internal diagnostic coordinates at
+  the adapter boundary; never expose a rule ID as a relation ID. Unknown codes
+  refuse until the contract is extended.
 
 Each page independently resolves the immutable profile and recomputes the same
 closure/digest against the live plan. Sort included by slot ID; other sections by
