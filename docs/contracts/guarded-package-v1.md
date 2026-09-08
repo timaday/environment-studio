@@ -13,8 +13,12 @@ regular files, with no directories, links, extra entries or duplicate names:
 `manifest.json`, `payload.json`, `transaction.sql` and `instructions.txt`.
 The archive is a deterministic uncompressed ZIP: fixed member order as listed,
 fixed DOS timestamp 1980-01-01 00:00:00, no extra fields or archive/member comments,
-fixed regular-file permissions and no data descriptors. CRC, sizes and local/
-central directory records must agree. ZIP64 is unnecessary under these bounds and
+fixed regular-file permissions and no data descriptors. Version-made-by is
+Unix/2.0 (`0x0314`), version-needed is 2.0 (`20`), flags are UTF-8 only (`0x0800`),
+compression is STORE (`0`), DOS time/date are `0`/`33`, internal attributes are
+zero and external attributes are `0100600 << 16`. Local headers/data and central
+records are contiguous in that member order; no padding or preamble is allowed.
+CRC, sizes and local/central directory records must agree. ZIP64 is unnecessary under these bounds and
 refuses. Both readers and writers enforce the complete archive/member limits;
 trailing bytes, hidden entries or a truncated central directory refuse.
 
@@ -33,6 +37,11 @@ integrity, not authenticity, destination permission or maintenance approval.
 The supervisor must itself be installed/verified from its trusted versioned
 distribution before it reads the package. It never executes a helper supplied
 by the archive. A downloaded artifact cannot be revoked by a later plan edit.
+
+The closed schemas are [manifest v1](../../schemas/guarded-manifest-v1.schema.json)
+and [payload v1](../../schemas/guarded-payload-v1.schema.json). Their example family
+is deliberately shape-only and is not an executable package. Semantic checks
+below remain mandatory after schema acceptance.
 
 The closed manifest pins format version, engine/storage, exact server and client
 versions, platform, supervisor/template/writer versions, immutable plan revision,
@@ -54,9 +63,20 @@ from unequal original and target bytes. Structural entity creation/removal remai
 inside XML and does not authorize row defaults, sequences or trigger effects.
 
 All JSON objects are closed, duplicate keys reject and large revisions/keys use
-canonical strings. Hex decodes strictly to exact valid UTF-8; keys and identifiers
+canonical strings. Count/byte/port tokens are canonical unsigned decimal integers,
+not floating/exponent tokens. Reject malformed Unicode scalars after JSON escape
+decoding. Bound payload JSON to depth 12 and 4096 nodes, manifest to depth 12 and
+8192 nodes, with string/collection bounds from the schemas. Hex has even length
+and decodes strictly to exact valid UTF-8; keys and identifiers
 meet the native binding rules. Independently validate source/target inventory and
-derived change set. Required document policy `deny` refuses export; each included
+derived change set. Records and policies are sorted by document ID, profile
+publication digests lexically, with no duplicate document IDs or typed keys;
+every record key type equals table.keyType and key/XML columns are distinct.
+Use strict signed-64-bit range checks, not numeric-schema shape alone. Counts
+and each member digest/length must equal independently recomputed values. Writers
+emit deterministic compact JSON with object keys sorted in unsigned UTF-8 order,
+exact UTF-8 non-ASCII characters and JSON escaping; input map iteration order
+never changes output. Required document policy `deny` refuses export; each included
 full original/target document requires published `protected-self-contained`
 permission, including unchanged/unmapped/secret content. Preview masks never
 alter artifact bytes.
@@ -80,8 +100,7 @@ dynamic substitutions are closed quoted identifiers, validated decimal values
 and ASCII hex chunks. No artifact may add COMMIT, EXIT, CONNECT, include, host,
 substitution, client metacommand or arbitrary expression. Instructions name the
 exact client and supervisor invocation and contain no command carrying a secret.
-Concrete closed schemas and deterministic archive metadata values must be frozen
-with examples before the first package is advertised or exported.
+Schema acceptance never replaces template, transaction or authority checks.
 
 ## Client admission and credential channel
 
@@ -89,6 +108,22 @@ First qualify Linux amd64, PostgreSQL 18.6/text with psql 18.6, and Oracle Free
 23.26.3.0.0/CLOB with SQL*Plus 23.26.3.0.0. Driver qualification alone does not
 qualify a CLI. Unknown client/version/platform/template combinations refuse;
 SQLcl is not implicitly equivalent to SQL*Plus. The supervisor launches an exact
+trusted executable only after matching destination, endpoint and transport identity
+against independently approved external supervisor configuration. Archive labels
+do not grant endpoint or transport approval. Ordinary supervisor execution and
+hosted export require verified TLS with the qualified client's full certificate
+chain and hostname verification; trust material comes from external configuration,
+never the package. Qualify that the native client verifies TLS before sending DB
+authentication over the network. A forced local password prompt may precede that
+handshake; its secret is sent only to the already admitted client's owned stdin.
+Unknown trust configuration, verification failure or a transport-policy mismatch
+refuses without fallback. Plaintext is available only through an explicit
+disposable-test composition using literal `127.0.0.1` or `localhost`, with resolved
+addresses checked as loopback. This mode is unavailable to ordinary supervisor
+invocation and hosted export. Schema validation of the loopback label/host does
+not substitute for that independent admission decision.
+
+The supervisor launches the admitted
 trusted executable with a clean allowlisted environment and a new process
 session, without a controlling terminal. Disable system/user startup scripts,
 history, reconnects, substitution and external includes. Verify effective client
@@ -99,6 +134,14 @@ merged at process spawn. Separate output streams plus a timed drain cannot prove
 that an earlier error was consumed before readiness. Bound bytes, frames and
 operation time; retain only transient captured output and emit safe tool-owned
 status externally. Never print SQL/client diagnostics that may contain values.
+Initial qualification limits are 10 seconds for each authentication/bootstrap frame,
+30 seconds for lock acquisition, 120 seconds for the guarded transaction and
+10 seconds for cleanup. Bound each output frame to 64 KiB and the complete
+transcript to 1 MiB. Password input is at most 1024 Unicode code points/4096 UTF-8
+bytes before its one newline terminator. Timeouts are monotonic deadlines, not
+idle timers reset by arbitrary output. Capacity tests must qualify these limits;
+timeout refuses and never weakens a guard. The exact supported supervisor runtime
+and native-client installation are part of the recorded qualification matrix.
 
 The operator enters execution credentials in ephemeral process memory. Secrets
 never enter argv, environment variables, files, URLs, history, logs or the
@@ -165,6 +208,13 @@ then sends its own fixed readiness query with a runtime nonce and independently
 selected archive digest, checking the program marker first. The query is the
 last precommit input: there is no queued SQL/client tail. Random runtime nonce
 does not affect deterministic package bytes.
+Use a fresh 128-bit nonce rendered as 32 lowercase hex characters. The qualified
+Oracle bootstrap owns a VARCHAR2 bind variable for the program marker; its
+anonymous guarded block clears it before work and assigns programDigest only at
+successful completion. PostgreSQL uses a transaction-local custom setting owned
+by the fixed program, cleared before work. Readiness queries check that exact
+marker and emit only the fixed protocol frame containing nonce and archive digest.
+No payload declaration can name these variables/settings or provide that frame.
 
 Only a complete, exact ordered transcript through that barrier permits the
 supervisor's separately compiled COMMIT and acknowledgement query, sent once.

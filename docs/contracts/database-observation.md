@@ -273,3 +273,13 @@ Primary references: [PostgreSQL isolation](https://www.postgresql.org/docs/18/tr
 [Oracle session mode](https://docs.oracle.com/en/database/oracle/oracle-database/26/refrn/READ_ONLY.html),
 [Oracle autonomous transactions](https://docs.oracle.com/en/database/oracle/oracle-database/26/lnpls/autonomous-transactions.html),
 [Oracle cancellation limits](https://docs.oracle.com/en/database/oracle/oracle-database/26/jjdbc/JDBC-troubleshooting.html).
+
+## Planned hosted admission extension
+
+[Hosted plans](hosted-plans-v1.md) require a credential-free reservation over the
+same four physical/quarantine slots. A reserved permit is single-use; an unused
+permit releases without a connection, while a started permit remains occupied
+until actual complete cleanup. Direct observation reserves internally and shares
+that budget. This extension is planned; the integrated D04 adapter currently
+acquires its slot inside observe. Hosted routes cannot accept credentials until
+the shared reservation boundary and lease/cancellation tests are implemented.

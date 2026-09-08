@@ -27,7 +27,9 @@ The projection has `kind` (`incomplete` or `ready-to-publish`), `model`,
 `logicalDigest`, `bindingDigests`, `mechanisms` and `diagnostics`. `model` follows
 native v2 property names and enum spelling, with all arbitrary-precision integers
 as canonical decimal strings. Binding digests are keyed by exact declared binding
-ID; mechanism names are the closed current registry and versions are strings.
+ID; mechanism names are the closed current registry and versions are canonical
+positive decimal strings of at most 1024 digits. The response schema represents
+readable historical versions; only the current supported version set may publish.
 Diagnostics retain the existing safe phase/code/pointer/message shape. Historical
 reads and exact retries decode the stored typed projection; they never recompile
 it under a later compiler or derive a new readiness outcome.

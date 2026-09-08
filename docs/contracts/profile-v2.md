@@ -22,6 +22,10 @@ Core validation establishes structural validity and the canonical content digest
 The server adapter owns external JSON encoding and portable byte/token/node
 checks. Capture, import and serialization must pass those checks before returning
 an accepted portable result; a core structurally-valid result alone is insufficient.
+Portable source/output byte overflow has the stable adapter diagnostic BYTE_LIMIT,
+mapped to HTTP 413 by the native workspace. Structural/node/numeric resource
+refusals remain RESOURCE_LIMIT compilation diagnostics (HTTP 422). This typed
+distinction never changes the enforced limits or permits partial acceptance.
 
 Each entity contains only `id`, `type`, `label` and `requiredInputs`. Its ID is a
 neutral logical slot using the existing ID syntax, distinct from observed entity

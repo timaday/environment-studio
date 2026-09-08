@@ -711,19 +711,23 @@
         "properties": {
           "native-compiler-v2": {
             "type": "string",
-            "const": "1"
+            "pattern": "^[1-9][0-9]*(?![\\s\\S])",
+            "maxLength": 1024
           },
           "xml-path-v1": {
             "type": "string",
-            "const": "1"
+            "pattern": "^[1-9][0-9]*(?![\\s\\S])",
+            "maxLength": 1024
           },
           "xml-span-v1": {
             "type": "string",
-            "const": "1"
+            "pattern": "^[1-9][0-9]*(?![\\s\\S])",
+            "maxLength": 1024
           },
           "generic-graph-v1": {
             "type": "string",
-            "const": "1"
+            "pattern": "^[1-9][0-9]*(?![\\s\\S])",
+            "maxLength": 1024
           }
         }
       },
