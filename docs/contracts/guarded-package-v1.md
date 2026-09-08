@@ -170,7 +170,13 @@ AUTOCOMMIT, EXITCOMMIT, DEFINE and all startup execution, and installs explicit
 SQL/OS-error rollback exits. Verify settings through expected bounded output.
 SQLERROR/exit status alone cannot catch Oracle client errors such as SP2.
 
-Begin one explicit transaction and acquire the conservative exclusive table lock
+The supervisor starts the sole transaction through its fixed bootstrap: PostgreSQL
+`BEGIN ISOLATION LEVEL READ COMMITTED READ WRITE`, or Oracle
+`SET TRANSACTION READ WRITE` as the first SQL statement after connection/bootstrap.
+The archive program contains no transaction-control statement. Its PostgreSQL
+form is one DO block; its Oracle form is one anonymous PL/SQL block. Procedural
+BEGIN/END syntax does not begin or commit a separate transaction.
+The program acquires the conservative exclusive table lock
 over the complete read set, with bounded timeout. If several tables are supported
 by a future binding, use stable order. Never fall back to weaker locks. After
 locking, independently check destination identity and full storage/visibility/
@@ -198,8 +204,11 @@ decode fragments independently without an explicit boundary proof. Check convers
 warnings, byte/character units, full round trip and complete comparisons. Free
 every temporary LOB on success and failure; cleanup failure prevents readiness.
 The exact chunk/conversion strategy needs actual full-size/multibyte evidence.
-All exception paths clear readiness, attempt bounded rollback/LOB cleanup and
-rethrow a safe failure; no exception is swallowed or converted to readiness.
+Program exception paths clear readiness, attempt bounded LOB cleanup and rethrow
+a safe failure; no exception is swallowed or converted to readiness. PostgreSQL
+errors leave the transaction aborted. The supervisor owns bounded rollback through
+its fixed error protocol (including Oracle SQLERROR rollback exits); the package
+never supplies ROLLBACK or another transaction boundary.
 
 The program contains no COMMIT. Only after every guard and cleanup succeeds does
 it set a session-local successful-program marker to programDigest. This
@@ -209,10 +218,12 @@ selected archive digest, checking the program marker first. The query is the
 last precommit input: there is no queued SQL/client tail. Random runtime nonce
 does not affect deterministic package bytes.
 Use a fresh 128-bit nonce rendered as 32 lowercase hex characters. The qualified
-Oracle bootstrap owns a VARCHAR2 bind variable for the program marker; its
+Oracle bootstrap owns `VARIABLE es_program_digest VARCHAR2(64)` for the program
+marker; the anonymous block uses `:es_program_digest`. Its
 anonymous guarded block clears it before work and assigns programDigest only at
-successful completion. PostgreSQL uses a transaction-local custom setting owned
-by the fixed program, cleared before work. Readiness queries check that exact
+successful completion. PostgreSQL uses the transaction-local custom setting
+`environment_studio.program_digest`, assigned with transaction-local set_config
+by the fixed program and cleared before work. Readiness queries check that exact
 marker and emit only the fixed protocol frame containing nonce and archive digest.
 No payload declaration can name these variables/settings or provide that frame.
 
@@ -222,6 +233,35 @@ Oracle requires qualified `COMMIT WRITE IMMEDIATE WAIT`; PostgreSQL requires
 qualified synchronous commit settings. A malicious package cannot provide its own
 readiness, commit or exit command. Any SP2/SQL error, unexpected output/prompt,
 overflow, timeout, EOF or truncated frame before commit permanently prevents it.
+
+## External supervisor command contract
+
+The planned separately installed command is `environment-studio-guarded apply`.
+It requires exactly `--package` (absolute local ZIP path), `--sha256` (independently
+selected lowercase archive digest), `--configuration` (absolute approved external
+client configuration path) and `--destination` (independently selected destination
+ID). Reject unknown/duplicate options or extra arguments. No username, password,
+connection string, SQL expression or test-mode option is accepted on this command
+line. External configuration names trusted client binaries, supported versions,
+transport/trust and approved destination identities, not DB credentials. Its
+closed schema and the separately installed runtime require qualification before
+implementation is advertised. Test-only plaintext composition is injected by the
+qualification harness, not an ordinary command-line bypass.
+
+`instructions.txt` is fixed UTF-8 with LF and a final LF, exactly:
+
+```text
+Environment Studio guarded package v1
+Use the separately installed, verified Environment Studio guarded supervisor.
+environment-studio-guarded apply --package /absolute/package.zip --sha256 REVIEWED_ARCHIVE_SHA256 --configuration /absolute/approved-client.json --destination APPROVED_DESTINATION_ID
+Replace placeholders from the reviewed export and independently approved client configuration.
+Provide credentials only when the supervisor requests them. Never add them to this command or the package.
+Do not execute transaction.sql directly. The supervisor owns transaction control and commit acknowledgement.
+```
+
+No package is qualified merely because a future supervisor accepts its shape.
+The exact installed supervisor/runtime, native clients, TLS and fault matrix
+remain required evidence for the advertised combination.
 
 ## Outcomes and investigation
 
@@ -252,3 +292,9 @@ References: [psql options and error behavior](https://www.postgresql.org/docs/18
 [SQL*Plus CONNECT](https://docs.oracle.com/en/database/oracle/oracle-database/26/sqpug/CONNECT.html),
 [SQL*Plus startup configuration](https://docs.oracle.com/en/database/oracle/oracle-database/26/sqpug/configuring-SQL-Plus.html)
 and the [actual SP2 investigation](../evidence/d07-client-investigation.md).
+
+Transaction-control references: [PostgreSQL DO](https://www.postgresql.org/docs/18/sql-do.html)
+for the prohibition on transaction control inside an enclosing transaction, and
+[Oracle SET TRANSACTION](https://docs.oracle.com/en/database/oracle/oracle-database/26/sqlrf/SET-TRANSACTION.html)
+for explicit transaction start and first-statement ordering. These rules inform
+the candidate protocol; actual exact-client qualification remains mandatory.

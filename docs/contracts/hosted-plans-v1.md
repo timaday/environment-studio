@@ -156,7 +156,7 @@ the prior draft Fresh slots. Reusing a previously created entity resolves throug
 that bijection to its original Fresh slot, never a fabricated observation ref.
 New slot IDs cannot collide with retained Fresh slots. Translate D05 proposals
 through this table before merging explicit decisions; no stable identity may be
-guessed from a mutable concrete identity string. Pin at most 128 distinct profile
+guessed from a mutable concrete identity string. Pin at most 100 distinct profile
 publications per plan, consistent with the guarded manifest limit.
 
 The editable draft holds complete selected entity decisions, reference decisions,
