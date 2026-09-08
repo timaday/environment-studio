@@ -34,3 +34,38 @@ are still needed for transaction rollback, process/pipe failures, startup-file
 suppression, truncation, lost commit acknowledgement and the full baseline,
 membership, destination, row-count and post-state guards. An after-exit grep is
 not sufficient evidence. The package design remains unimplemented/unqualified.
+
+## Actual prompt controls
+
+The lead additionally exercised the exact bundled clients with independently
+invented disposable credentials held only in the probe's memory and child stdin.
+PostgreSQL psql 18.6 with `-X -W -q -A -t`, explicit host/database/user and
+ON_ERROR_STOP enabled ran without a controlling terminal. Its password prompt
+arrived on stderr; after one password line, BEGIN READ ONLY, an independent
+SELECT marker and ROLLBACK completed with exit zero. The password canary was
+absent from the captured output. This was a prompt/read-only control, not DML
+or guarded package qualification.
+
+SQL*Plus required further investigation. A bare Easy Connect descriptor in the
+tested omitted-password CONNECT command produced SP2-0306 and exit zero without
+authentication. Quoting the entire user/descriptor in the tested form produced
+ORA-01017; no SQL was sent after that refusal. Quoting the connect identifier
+separately (`CONNECT <invented-user>@"//<loopback>:1521/FREEPDB1"`) with non-silent
+`sqlplus -L -R 3 /nolog` produced an observable password prompt, authenticated and
+completed the independent SELECT marker. The canary was absent from captured
+setup/client output. Silent mode did not provide the prompt required by this
+candidate protocol. Oracle's [CONNECT documentation](https://docs.oracle.com/en/database/oracle/oracle-database/26/sqpug/CONNECT.html)
+describes omitted-password prompting and CONNECT's implicit commit behavior.
+
+The independent Oracle prompt user had CREATE SESSION only and account-level
+READ ONLY. Its explicit SQL `ROLLBACK` returned ORA-28194 and the configured error
+exit returned one. This does not establish SQL*Plus rollback qualification or
+contradict the separately observed JDBC protocol cleanup; the interfaces differ.
+The future external execution account must be independently qualified with the
+required write authority and transaction controls. No account-mode change is
+part of an artifact, and the application continues to use its read-only account.
+
+The planned [package/supervisor contract](../contracts/guarded-package-v1.md)
+requires one merged output stream, fully validated prompts/settings and a sole
+commit withheld until an ordered readiness barrier. These exploratory controls
+did not implement that supervisor or run DML and cannot replace its fault matrix.

@@ -151,6 +151,9 @@ Apply the observation limits of 128 documents, 16 MiB aggregate strict UTF-8,
 20,000 entities and 50,000 edges, plus each XML document's existing limits, before
 unbounded copying or assembly. Bound intent collections by those corresponding
 graph limits, strings by the source/field budgets and placement depth by 128.
+An affected-reference report may contain the union of before/after identities:
+at most 40,000 entity references and 100,000 edge references. These report bounds
+do not expand either graph's limits or the 20,000-entity intent collection bound.
 Enforce limits while constructing fragments and final XML; do not build an
 unbounded string and only then reject it. Unknown slots, stale sources,
 unsupported changes, budget exhaustion, ambiguous placement or semantic mismatch
