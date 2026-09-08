@@ -46,6 +46,10 @@ retarget incoming references: renaming an existing target and assigning its old
 identity to a fresh slot cannot capture a retained reference. Every affected
 reference needs explicit rebinding or must still resolve to its original entity
 under complete target validation.
+A selected retained entity must decide every declared reference as well as every
+field. Fresh entities cannot choose KeepObserved. Creating a reference or
+containment edge requires move-relation in addition to create-entity for any new
+endpoint; new edges are actual relation changes, not implicit creation defaults.
 Absent-to-present or present-to-absent edits of existing mapped attributes remain
 unsupported under xml-span-v1; retaining optional absence is legal. Creation may
 supply fresh field and reference attributes directly.

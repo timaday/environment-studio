@@ -133,6 +133,9 @@
           },
           "503": {
             "$ref": "#/components/responses/WorkspaceError503"
+          },
+          "413": {
+            "$ref": "#/components/responses/WorkspaceError413"
           }
         },
         "description": "Requires current hosted session CSRF header, approved Host/Origin and bounded strict UTF-8 JSON decoding. Exact successful replay precedes current revision or compiler checks.",
@@ -257,6 +260,9 @@
           },
           "503": {
             "$ref": "#/components/responses/WorkspaceError503"
+          },
+          "413": {
+            "$ref": "#/components/responses/WorkspaceError413"
           }
         },
         "description": "Requires current hosted session CSRF header, approved Host/Origin and bounded strict UTF-8 JSON decoding. Exact successful replay precedes current revision or compiler checks. Requires current maintainer authorization before even successful replay; uploaded fields cannot grant that role.",
@@ -399,6 +405,9 @@
           },
           "503": {
             "$ref": "#/components/responses/WorkspaceError503"
+          },
+          "413": {
+            "$ref": "#/components/responses/WorkspaceError413"
           }
         },
         "description": "Requires current hosted session CSRF header, approved Host/Origin and bounded strict UTF-8 JSON decoding. Exact successful replay precedes current revision or compiler checks.",
@@ -523,6 +532,9 @@
           },
           "503": {
             "$ref": "#/components/responses/WorkspaceError503"
+          },
+          "413": {
+            "$ref": "#/components/responses/WorkspaceError413"
           }
         },
         "description": "Requires current hosted session CSRF header, approved Host/Origin and bounded strict UTF-8 JSON decoding. Exact successful replay precedes current revision or compiler checks.",
@@ -1340,7 +1352,7 @@
         }
       },
       "WorkspaceError503": {
-        "description": "Private workspace unavailable, unsupported or corrupt",
+        "description": "Private workspace unavailable, unsupported, corrupt or store quota exhausted",
         "content": {
           "application/json": {
             "schema": {
@@ -1377,7 +1389,17 @@
         }
       },
       "WorkspaceError429": {
-        "description": "Bounded workspace capacity exhausted",
+        "description": "Bounded owner, object, revision or replay capacity exhausted",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "WorkspaceError413": {
+        "description": "Wrapper, source, portable output or snapshot exceeds its byte limit; nothing is persisted",
         "content": {
           "application/json": {
             "schema": {

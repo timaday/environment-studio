@@ -130,8 +130,11 @@ All mutations require the current authenticated hosted session, approved
 Host/Origin and CSRF. Demo mode denies them; responses are no-store and safe to
 render under framework DEBUG without source or credential canaries. Unknown
 fields and malformed wrappers return 400, cross-owner/missing references share
-404, stale/reused command identity returns 409, semantic/publication refusal 422,
-bounded capacity 429 and unavailable storage 503. No delete route exists; immutable
+404, stale/reused command identity returns 409, wrapper/source/portable-output/
+snapshot byte-limit refusal 413, semantic/publication refusal 422, bounded
+owner/object/revision/replay capacity 429 and unavailable storage or store quota
+503. Parser structural/numeric refusal remains a compilation diagnostic; byte
+limits do not authorize accepting a truncated source or snapshot. No delete route exists; immutable
 references cannot dangle through deletion. Changing source native ID or artifact
 kind under an existing object ID conflicts. UUID object IDs share one catalog
 namespace and the 100-object owner quota across v1 definitions, v2 definitions
