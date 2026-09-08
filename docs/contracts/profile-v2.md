@@ -69,11 +69,16 @@ containment parent, plus targets declared `includeTargetOnReuse`. Expand until
 stable, preserving relation IDs and reasons. Return selected slots, added
 dependencies and the relevant edges in stable order. Unrelated siblings never
 enter closure merely because they share a parent or type.
+An explicit `includeTargetOnReuse` declaration applies to both reference and
+containment edges, including edges from a newly added dependency. Such targets
+are declared dependencies, each shown with that reason in the preview; the flag
+must not be silently ignored for containment. This still makes no create/merge
+decision. Every proposed dependency requires the operator's explicit mapping.
 Required outgoing containment still needs explicit satisfaction. If selecting a
 child adds a parent whose minimum child count is no longer met, return an
 unresolved cardinality conflict. The operator must select additional specific
-children or compatible existing target children. Never choose siblings
-automatically or present the closure alone as a sufficient target structure.
+children or compatible existing target children. Never choose arbitrary siblings
+to fill a minimum or present the closure alone as a sufficient target structure.
 
 Present the proposal before composing. Each selected/dependency slot needs an
 explicit decision: create a new target slot, use a specifically identified
@@ -91,6 +96,13 @@ fresh identity and environment values; existing slots initially have unresolved
 decisions until the operator explicitly chooses KeepObserved or enters a value.
 Relation moves/creation still pass the structural planner and writer capability
 checks. A closure preview is not authorization to apply a later edited proposal.
+This closure preview depends only on the pinned profile and definition. The
+stateless composition engine receives the current server-validated target graph;
+its result grants no mutation authority. The hosting planner must bind that
+result to the complete target observation fingerprint and plan revision before
+applying any command. A graph-only digest cannot replace complete XML/destination
+observation evidence. Recompute the profile closure to reject an edited or stale
+preview before composition.
 
 ## Revision and compatibility
 
