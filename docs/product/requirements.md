@@ -21,6 +21,8 @@ traceability anchors; they are not claims of implemented functionality.
 | ES-13 | Publish a Docker/OCI application image in GHCR from CI; deploy through HiveForge | Image digest, successful boot/probes, pull credentials and actual HiveForge deployment evidence |
 | ES-14 | Learnable Midnight enterprise UX, keyboard-equivalent editing | Representative operator completes reuse/map/values/review; understands destination and blockers without assistance |
 | ES-15 | Fresh readback can compare an exported target manifest | Matches / Differs / Unknown separate from operator-reported execution and application health |
+| ES-16 | Keep the real database/application configuration model outside this repo | No real or renamed/redacted XML, schema, mapping, topology or profile in code/docs/artifacts; independent mock provenance reviewed; separate configuration versioning out of scope |
+| ES-17 | Amazon Q private review produces useful generic GitHub issues for GPT/Codex | Tim reviews/authorizes publication and triages the issue; record identifies evidence basis, public behavior, independent mock case, bounded correction and acceptance checks; linked PR has actual results, no private model detail |
 
 ## Roles and boundaries
 

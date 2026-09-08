@@ -1,0 +1,59 @@
+name: Generic configuration-tool feedback
+description: Submit a reviewed Amazon Q finding, hypothesis or question using independent mock evidence.
+title: "[Feedback] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Prepare the draft privately and review it before entering anything here.
+        No real XML, database/application model, schemas, mappings, values, private links,
+        logs or attachments, including renamed or redacted versions.
+        Use the complete record in `.amazonq/rules/10-generic-feedback.md`.
+        Submission creates a triage item; it does not start Codex or verify a defect.
+  - type: checkboxes
+    id: publication-review
+    attributes:
+      label: Information boundary review
+      description: These declarations support human review; they cannot verify provenance automatically.
+      options:
+        - label: Tim reviewed and authorized this exact generic title and feedback for publication.
+          required: true
+        - label: All examples are independently invented mocks; no private model or evidence is included or attached.
+          required: true
+        - label: Test results are actual observations or explicitly NOT_RUN; hypotheses are identified.
+          required: true
+  - type: dropdown
+    id: disposition
+    attributes:
+      label: Report disposition
+      description: Match the disposition in the reviewed record; a hypothesis is not a confirmed defect.
+      options:
+        - FINDING
+        - HYPOTHESIS
+        - QUESTION
+    validations:
+      required: true
+  - type: textarea
+    id: feedback-record
+    attributes:
+      label: Reviewed generic feedback record
+      description: Include all rule-10 fields, independent mock steps/results, acceptance checks and uncertainties. No raw private output.
+      placeholder: |
+        Feedback ID:
+        Disposition:
+        Area:
+        Priority:
+        Public contract:
+        Evidence basis:
+        Generic observation:
+        Expected behavior:
+        Independent mock case:
+        Reproduction steps:
+        Observed mock result:
+        Suggested correction:
+        Acceptance checks:
+        Uncertainties:
+        Sharing state: GENERIC_REVIEWED_FOR_ISSUE
+        Queue state: NEEDS_TRIAGE
+    validations:
+      required: true

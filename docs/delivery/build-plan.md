@@ -13,7 +13,7 @@ but cannot supply missing application facts or replace database evidence.
 | ID | Slice / estimate | Depends on | Concrete done condition |
 | --- | --- | --- | --- |
 | D00 | Repo, contracts, demo, CI, GHCR / starter | — | Gates run, image boots, published digest recorded; product still explicitly incomplete |
-| D01 | Application intake + definition compiler / 6–10h | Owner input | Native upload compiles exact supported vocabulary; unknown semantics block; fixture family approved |
+| D01 | Generic definition compiler + mock contracts / 6–10h | Public behavior decisions; independent mock cases | Native upload compiles exact supported vocabulary; unknown semantics block; mock family reviewed; actual application qualification remains external |
 | D02 | Hosted identity/session/storage boundary / 5–8h | HiveForge/IdP facts | Auth, owner scoping, TLS/CSRF, expiry and leakage/isolation checks pass before real credentials |
 | D03 | Lossless XML projection and patches / 8–12h | D01 | No-op exact fidelity; intended scalar/structural edits preserve unrelated spans across fixtures |
 | D04 | Complete Oracle/Postgres observation / 6–10h | D01,D02 | Independent read-only/scope/identity/cleanup tests on each intended engine/storage/version |
@@ -26,23 +26,31 @@ but cannot supply missing application facts or replace database evidence.
 These ranges overlap with integration work; sum is roughly 55–90 hours, not a
 fixed-price commitment. D03/D04/D07 are the critical unknowns. A second engineer
 can take UX/deployment alongside the engine; do not split core semantics into
-competing implementations. Agent parallelism is optional and owner-controlled.
+competing implementations.
+The user has chosen [a bounded lead/two-writer/reviewer strategy](../agents/parallel-development.md).
+Apply it to independent ready slices, keep shared contracts with one owner, and
+measure integration/rework before revising these estimates. It does not remove
+the critical path or private application qualification.
 
 ## Daily checkpoints
 
-**Tuesday:** confirm D01 intake, agree one representative application family,
-stand up CI/demo image, fix native definition semantics and first adversarial
-fixtures. Start D02 and exact no-op XML proof. By end of day, record supported
-engines/clients and known identity evidence. Without these inputs, Friday's
-outcome is an honest interactive prototype, not a certified export tool.
+**Tuesday:** confirm D01's generic compiler contracts and an independent mock
+family, stand up CI/demo image, and create the first adversarial mock fixtures.
+Start D02 and exact no-op XML proof. In the separate private qualification
+workflow, the owner confirms actual application semantics and destination
+evidence. Record only generic capability outcomes here. Without the necessary
+evidence, Friday's outcome is an interactive prototype, not a certified export tool.
 
 **Wednesday:** complete supported XML read/write contracts and complete
-observations, then profile capture/reuse. Demonstrate real current data through
-the API only after auth/privacy gates. Use synthetic data until then. Make a
-single-field vertical slice pass, then extend to the required structural case.
+observations, then profile capture/reuse using mock databases. Real current data
+may be evaluated only in the separately authorized deployed/private environment
+after auth/privacy gates; never bring it into the checkout or CI. Make a single-field
+vertical slice pass, then extend to the required structural case. Q returns only
+generic findings and independent mock cases for fixes.
 
 **Thursday:** finish one-to-two mapping across documents, target values and
-review. Execute actual guarded packages in disposable databases, deliberately
+review. Execute actual guarded packages in disposable databases with invented
+mock schemas/data, deliberately
 fail final DML and change unchanged dependencies/row membership. Do not spend
 this day polishing a canvas while the transaction contract is unproven.
 
@@ -56,6 +64,10 @@ date. A single-engine or scalar-only candidate requires an explicit scope
 agreement; it does not silently satisfy the full original requirements.
 
 ## Safe scope controls
+
+Real configuration, schema bundles and value-free actual profiles stay external.
+Creating their separate versioning repositories or sync pipelines is out of scope.
+This does not remove runtime upload, save or immutable revision features.
 
 Defer freeform diagram editing, broad XSD import, arbitrary application schemas,
 advanced solver allocation, cross-DB atomic updates, multi-replica state,

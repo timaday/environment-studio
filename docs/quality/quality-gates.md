@@ -11,7 +11,7 @@ never fabricate the RED observation or downgrade a missing gate to PASS.
 
 | Gate | Trigger | Mechanism | Failure behavior |
 | --- | --- | --- | --- |
-| G00 repository contract | Every PR | Python structure/links/status checks + schema fixture tests | Fail on malformed contracts or false release readiness |
+| G00 repository contract | Before commit/upload and every PR | Staged-content guard, independent mock provenance review; Python structure/links/status checks + mock schema tests | Fail on known prohibited artifacts, unregistered mock data, malformed contracts or false release readiness |
 | G01 core architecture and units | Every PR | Maven/JUnit, ArchUnit; no tests is a build failure | Block merge/publication |
 | G02 frontend | Every PR | TypeScript, formatting, component behavior tests, production build | Block merge/publication |
 | G03 browser/accessibility | UI behavior slices and release | Playwright keyboard/task flows and axe/manual assessment | Block affected capability until implemented/tested |
@@ -29,14 +29,22 @@ Main images are explicitly development/demo images; only version tags require
 the complete release gate. There is no `continue-on-error`, zero-test success or
 `Export anyway` route. CI never connects to a real environment or receives its
 DB credentials. Disposable DB credentials may be generated per isolated CI run,
-are synthetic and cannot grant access to a user environment.
+are synthetic and cannot grant access to a user environment. These real database
+engines contain independently invented mock schemas and data only. Actual user
+configuration, including its model, is never fetched into CI or the checkout.
+
+Run the staged-content guard before GitHub upload; CI repeats it after checkout.
+It detects known artifact paths, native model shapes and mock registration errors,
+not arbitrary private meaning in prose/code/images. Passing it does not replace
+the whole-diff provenance review. Actual application qualification and Q review
+take place externally; only generic findings and mock evidence enter this repo.
 
 ## Test layers and oracles
 
 Core: declared graph/reference rules, closure, duplicate/ambiguous mapping,
 value-state distinctions, stale revision evidence and deterministic ordering.
 Adapters: contract fixtures for full fidelity, scoped selectors and safe refusal.
-DB: independent complete state comparisons and actual CLI execution, including
+DB: independent complete mock-state comparisons and actual CLI execution, including
 unchanged read dependencies and new/deleted rows. UI: user behavior through
 accessible names and navigation, not implementation snapshots. Release: RST
 notes and operator explanations in addition to automated assertions.

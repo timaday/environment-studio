@@ -17,16 +17,20 @@ The initial charters below are **not yet executed**.
 | RST-08 engines and encodings | Oracle NULL/empty LOB vs Postgres text; Unicode and chunk boundaries | Per-engine complete content + domain meaning; seek silent normalization |
 | RST-09 hostile definition | XXE, includes, aliases, deep graphs, executable tags, ambiguous selectors | Closed contracts/resource limits; seek execution, network access or partial acceptance |
 | RST-10 deployment | Private GHCR pull, wrong digest, TLS forwarding, restart, two principals, two replicas | Platform observation/ownership rules; seek leakage or false readiness |
+| RST-11 feedback boundary | Invented review canaries in quoted XML, renamed schema shape, private-style paths and combined findings | Content policy + independent mock provenance review; seek model disclosure or claims that Q reasoning is executed evidence |
 
 ## Session record
 
 - Session ID/date/tester, charter, build/tree/image digest and exact DB/client matrix.
-- Setup/data references and privacy classification; timebox (usually 30–60 min).
-- Checks performed, experiments and observations, including raw evidence location.
+- Independent mock setup/data references; timebox (usually 30–60 min).
+- Checks performed, experiments and observations, including mock-only evidence location.
 - Oracles used and how they could be wrong; significant coverage not attempted.
 - Bugs, blockers, surprises and new test ideas.
 - Debrief: what confidence changed, what remains unknown and next decision.
 
-Do not copy production data into public evidence. Use sanitized reproductions.
+Real application sessions and raw private evidence remain in the separate
+authorized workflow. Only generic findings and independently invented mock
+reproductions may be shared here; renamed or redacted real structures are forbidden.
+Clearly separate private observation, mock execution and reasoning-only hypotheses.
 A passed checklist does not mean every risk was explored. Stop optional testing
 when the concrete risk is sufficiently investigated; expand only for new evidence.

@@ -2,6 +2,12 @@
 
 ## Upload and publication
 
+This contract describes product runtime behavior. Actual application definitions,
+schemas and profiles are external inputs kept in a separately governed workspace,
+never in this code repository or image. Only independently invented mock bundles
+are committed here. Runtime publication means an immutable workspace revision;
+it does not create or manage a separate configuration versioning repository.
+
 Accept bounded UTF-8 JSON or YAML through a closed safe loader. Reject duplicate
 keys, unknown fields/enums, executable tags, cyclic/excessive aliases, remote
 references and oversized/deep data. Validate against the local pinned
@@ -35,9 +41,12 @@ qualified exact selectors, record scope, cardinalities and write capability.
 The draft meta-schema is deliberately smaller than a universal metamodel.
 Boolean presence in a draft example is an explicit decision; absence is an
 error or an unresolved draft decision, never an implicit optional/default rule.
-The sample application declares `node` and `workload`; these are not built-ins.
-A production definition's mapping and operation capabilities must come from
-reviewed application-specific adapters and fixtures.
+The mock application declares `node` and `workload`; these are not built-ins.
+Generic adapters implement qualified operations. Actual mappings, types and
+application rules come from external declarations; do not embed them in adapter
+code or committed fixtures. Qualify generic behavior using independently invented
+mock databases, with actual application correctness evaluated separately and
+reported through the generic feedback workflow.
 
 ## Value-free profiles and partial reuse
 

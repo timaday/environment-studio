@@ -20,6 +20,8 @@ Starter CI and GHCR publication have passed. [Verification evidence](docs/eviden
 | Need | Read |
 | --- | --- |
 | Give GPT/Codex the next task | [Agent kickoff](docs/agents/start-here.md), [AGENTS.md](AGENTS.md) |
+| Speed up independent development work | [Lead, two writers and reviewer](docs/agents/parallel-development.md) |
+| Keep the real model private; give Q feedback to GPT | [Repository boundary](docs/product/repository-content-policy.md), [Amazon Q rules and handoff](docs/agents/amazon-q-feedback.md) |
 | Build by Friday 11 September 2026 | [Sequenced build plan](docs/delivery/build-plan.md), [progress](docs/delivery/progress.md) |
 | Understand the agreed product | [Requirements](docs/product/requirements.md), [scope decisions](docs/product/decisions.md) |
 | Implement safely | [Hexagonal architecture](docs/architecture/architecture.md), [contracts](docs/contracts/README.md) |
@@ -73,8 +75,10 @@ to an existing environment is configured.
 ## Delivery constraint
 
 Friday is a **conditional pilot target**, not a production-readiness promise.
-The critical path requires representative sanitized XML, unique database row
-locators, application semantics, destination identity evidence and disposable
-Oracle/PostgreSQL access on Tuesday. Scalar-only replacement does not fulfill
-the requested topology-change workflow. Unsupported engine/storage/client
-combinations stay visibly unavailable.
+The critical path requires generic compiler contracts, independently invented
+mock fixtures and disposable Oracle/PostgreSQL test databases. Actual application
+semantics and destination identity must also be qualified in a separate authorized
+private workspace; real XML, schemas, mappings and even value-free real profiles
+never enter this repository. Share only generic feedback through the Q workflow.
+Scalar-only replacement does not fulfill the requested topology-change workflow.
+Unsupported engine/storage/client combinations stay visibly unavailable.

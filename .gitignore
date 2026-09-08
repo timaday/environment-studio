@@ -16,6 +16,7 @@ test-results/
 *.key
 workspace-data/
 private-fixtures/
+external-config/
 exports/
 __pycache__/
 .DS_Store

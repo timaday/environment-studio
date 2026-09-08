@@ -19,6 +19,12 @@ Arrows are compile-time dependencies; runtime adapters are injected by the
 server composition root. Domain/application code imports no Spring, JDBC,
 HTTP, parser, filesystem or UI classes. Core tests run without a server/DB.
 
+The source/image contains generic engine capabilities and independently invented
+mock fixtures only. Actual database locators, application definitions and models
+are external runtime declarations. Do not hard-code a real model into adapters,
+UI components or assets. Private workspace revision storage is a product feature;
+creating or managing a separate configuration versioning repo/sync is out of scope.
+
 | Boundary | Owns | Must not own |
 | --- | --- | --- |
 | domain | Logical identities, graph constraints, value states, revision binding, deterministic change semantics | JDBC row locators, XPath execution, DTO serialization |

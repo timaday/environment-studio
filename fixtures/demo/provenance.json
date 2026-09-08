@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "purpose": "MOCK_DATABASE_TESTING",
+  "origin": "INVENTED_FROM_SCRATCH",
+  "artifacts": [
+    "current/endpoints.xml",
+    "current/nodes.xml",
+    "current/workloads.xml",
+    "definition.json",
+    "profile.json",
+    "target/endpoints.xml",
+    "target/nodes.xml",
+    "target/workloads.xml"
+  ]
+}

@@ -1,7 +1,11 @@
-# Application and deployment intake
+# Private application and deployment qualification checklist
 
-Use sanitized samples; do not add real credentials/configuration to this public
-repo. An application owner/DBA must confirm the following before qualification.
+This is a generic checklist, not a place to record actual application facts.
+An application owner/DBA confirms them in a separately authorized private workspace,
+outside this repository's checkout and build context. Do not fill this file with
+real XML, schemas, locators, definitions, profiles, values or private evidence
+links, even after redaction. Share only the generic outcomes and independent mock
+cases described in [the Q handoff](../agents/amazon-q-feedback.md).
 
 | Fact | Required evidence | Current state |
 | --- | --- | --- |
@@ -20,6 +24,9 @@ repo. An application owner/DBA must confirm the following before qualification.
 | Operators | OIDC/provider or approved auth boundary; allowed users; shared vs per-user instance | Unknown |
 | Capacity | Complete record count/bytes/depth/concurrent plans and workstation/container resources | Unknown |
 
-The definition example is a design fixture, not permission to substitute invented
-SQL tables or server semantics for these facts. Record decisions with the owner,
-date, evidence reference and affected capability matrix entry.
+The repo definition example is an independently invented mock fixture. It cannot
+establish actual application correctness. Record private decisions and evidence
+in the authorized external workflow. This repo receives only generic capability
+outcomes, public contract questions and mock evidence, with report-local finding
+IDs where useful. Creating or managing external configuration versioning is out
+of scope; runtime upload and profile save/revision features remain in scope.

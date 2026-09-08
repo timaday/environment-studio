@@ -1,0 +1,9 @@
+# Development-agent defaults; no application/runtime AI dependency.
+# See docs/agents/parallel-development.md for scope, ownership and verification.
+model = "gpt-6-astra"
+
+[agents]
+enabled = true
+default_subagent_model = "gpt-6-astra"
+# Excludes the lead: room for two writers and one reviewer.
+max_concurrent_threads_per_session = 3

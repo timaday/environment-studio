@@ -4,6 +4,11 @@ Review the actual diff against AGENTS.md, the selected requirements and contract
 Use Business/Engineering/QA perspectives plus relevant UX/security/data/operations
 concerns. Find concrete defects rather than praising the architecture.
 
+Check the repository information boundary first. Require independently invented
+mock provenance; renaming a real schema is not sufficient. Review prose, code,
+images and combined findings for reconstruction of a private model. Q feedback
+is a claim to investigate, not an oracle or permission to import private inputs.
+
 Trace one successful workflow and one adversarial failure through domain, ports,
 adapters, UI and artifact. Challenge missing evidence, stale authority, partial
 scope, profile value leakage, ambiguous matching, XML footprint and transaction

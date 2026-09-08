@@ -12,6 +12,10 @@
 | Server IDs vary by environment | User | Value bindings, not portable identity |
 | Flyway DML does not touch managed config | User | No ownership clash; no need to rewrite existing migration practice |
 | CI publishes GHCR image; HiveForge deploys it | Latest user direction | Supersedes workstation-only packaging; hosted security is a prerequisite to real DB access |
+| No real database/application model in this code repo | Later user rule | Even redacted/value-free actual XML, schemas, mappings and profiles stay external; only independently invented mock fixtures are allowed |
+| Separate configuration versioning is outside scope | Later user rule | No configuration repo, submodule or sync pipeline; runtime definition/profile upload, save and immutable revisions remain in scope |
+| Amazon Q privately reviews XML/modelling and returns generic feedback | Later user direction | Structured draft through Tim; independent mock reproductions and truthful evidence; Q is advisory and never runtime authority |
+| Use GitHub issues for the Q-to-Codex handoff | Later user direction | Q prepares a generic issue; Tim reviews/authorizes publication and triages it; explicit Codex task produces a linked PR; labels alone do not launch agents |
 | Single container, one replica initially | Engineering proposal | One Java process serves React; session memory cannot be shared across replicas |
 | Runtime demo until DB/auth/writer qualification | Starter safety boundary | Image boot is useful, but does not enable unimplemented operations |
 
@@ -31,5 +35,8 @@ post-clone destination witness; triggers/sequences/reload effects; database and
 client versions; maximum dataset; whether A/B need coordinated execution; and
 the user's actual HiveForge import format, network and identity integration.
 
-Use `docs/delivery/intake.md` to collect these facts. Missing facts block the
-associated operation, not unrelated work on the scaffold or UI.
+Use `docs/delivery/intake.md` as a checklist in the separate authorized private
+qualification workflow. Never record actual model facts or private evidence in
+this repo. The Q handoff supplies generic behavior questions and independent mock
+cases. Missing private facts block actual application qualification, not unrelated
+work on the generic compiler, scaffold or UI.

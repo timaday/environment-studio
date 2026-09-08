@@ -1,8 +1,13 @@
-# Synthetic application fixture
+# Synthetic mock database fixture
 
-This invented XML family exists to illustrate many-document comparison and
+This XML family was invented from scratch to illustrate many-document comparison and
 independent before/after expectations. It is not the user's actual schema and
 must never be used to infer real application rules or database locators.
+Its intended purpose is mock database testing and a read-only preview; mock DB
+provisioning is not yet implemented. `provenance.json` lists eligible fixture
+artifacts. It is a reviewed origin declaration, not automated proof of provenance.
+The inline projections and bindings in `frontend/src/demo.ts` are invented for
+the same mock family. Never derive additions by renaming a real artifact.
 
 Three logical records: nodes, workloads and endpoints. One node initially owns
 two workloads; the proposed target explicitly creates two nodes and moves one

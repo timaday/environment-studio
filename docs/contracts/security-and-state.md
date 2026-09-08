@@ -1,5 +1,11 @@
 # Security, state and lifecycle
 
+The storage policies below apply to the deployed product's separately governed
+runtime workspace, not the source checkout, Git history or build context. Actual
+definitions, value-free profiles and audit metadata can still reveal the real
+model and never belong in this repository. Only independent mock artifacts and
+generic review findings may cross the repository boundary.
+
 | Data | Storage policy | Expiry / authority |
 | --- | --- | --- |
 | DB password/token | Operation-owned memory only; never environment variables, disk, logs or URL | Clear owned references and close physical connection on success/cancel/error/timeout; cleanup must be observed |

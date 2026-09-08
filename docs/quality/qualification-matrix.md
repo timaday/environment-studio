@@ -16,8 +16,11 @@ Record engine, server/client/JDBC/parser/writer/definition versions, encoding,
 identity strategy, row/byte/depth limits, operations, lock semantics, test data
 references, actual commands/results, image digest and source fingerprint.
 ``release-evidence.json`` requires all named capability gates; reference evidence
-JSON files under docs/evidence for the exact source fingerprint. Redacted public
-records may link to internal evidence locations but must not expose real data.
+JSON files under docs/evidence for the exact source fingerprint. Repository
+evidence uses independent mock databases and public code/artifact references only.
+Actual application evidence, private source hashes, model/definition versions,
+paths and links stay in the separate private qualification workflow. Generic
+private-review outcomes do not replace mock execution evidence or prove a fix.
 
 Automated bookkeeping can reject missing/stale evidence; it cannot verify that a
 human's observation is true. Review the evidence and oracles before a versioned
