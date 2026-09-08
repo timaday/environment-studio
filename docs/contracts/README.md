@@ -3,6 +3,7 @@
 | Contract | Source |
 | --- | --- |
 | Definitions and profiles | [definitions-and-profiles.md](definitions-and-profiles.md), ../../schemas |
+| Value-free v2 capture and composition | [profile-v2.md](profile-v2.md) |
 | First definition compiler boundary | [definition-compilation.md](definition-compilation.md) |
 | Complete native definition declarations | [native-definition-v2.md](native-definition-v2.md) |
 | Observation, operations and revision authority | [planning.md](planning.md) |
