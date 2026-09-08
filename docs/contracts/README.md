@@ -10,6 +10,7 @@
 | Complete database observation | [database-observation.md](database-observation.md) |
 | XML fidelity and guarded SQL | [xml-and-sql.md](xml-and-sql.md) |
 | First lossless XML mechanism | [lossless-xml.md](lossless-xml.md) |
+| Fifth Edition parser qualification | [xml-parser-qualification.md](xml-parser-qualification.md) |
 | Definition-driven graph projection | [graph-projection.md](graph-projection.md) |
 | Credentials, data lifetime and hosted access | [security-and-state.md](security-and-state.md) |
 | Hosted session implementation boundary | [hosted-session.md](hosted-session.md) |

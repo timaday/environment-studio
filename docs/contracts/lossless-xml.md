@@ -21,6 +21,10 @@ Initial per-document limits: 1,048,576 UTF-16 code units, 128 element depth,
 Enforce limits during scanning/parsing, before unbounded tree construction.
 The scope-level orchestrator will separately bound document count and total
 bytes/time. Limits refuse the document; no truncated source is returned as valid.
+The approved XML 1.0 name syntax is Fifth Edition. The
+[parser qualification correction](xml-parser-qualification.md) addresses the
+default JDK parser's older name tables; it changes validation machinery while
+retaining these source/operation contracts and limits.
 
 Return immutable source-bound element/attribute references with expanded names
 (namespace URI/local name), decoded values, ancestry and exact character spans.
