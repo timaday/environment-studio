@@ -15,15 +15,13 @@
   </dependencies>
   <build>
     <sourceDirectory>${project.build.directory}/generated-sources/woodstox</sourceDirectory>
-    <testSourceDirectory>${project.basedir}</testSourceDirectory>
     <resources>
       <resource><directory>${project.build.directory}/generated-sources/woodstox</directory><includes><include>META-INF/LICENSE</include></includes></resource>
       <resource><directory>licenses</directory><targetPath>META-INF</targetPath></resource>
     </resources>
     <plugins>
       <plugin><groupId>org.apache.maven.plugins</groupId><artifactId>maven-dependency-plugin</artifactId><version>3.6.1</version><executions><execution><id>pinned-upstream-source</id><phase>initialize</phase><goals><goal>copy</goal></goals><configuration><artifactItems><artifactItem><groupId>com.fasterxml.woodstox</groupId><artifactId>woodstox-core</artifactId><version>7.2.2</version><classifier>sources</classifier><type>jar</type><outputDirectory>${project.build.directory}/upstream</outputDirectory><destFileName>woodstox-7.2.2-sources.jar</destFileName></artifactItem></artifactItems></configuration></execution></executions></plugin>
-      <plugin><groupId>org.apache.maven.plugins</groupId><artifactId>maven-antrun-plugin</artifactId><version>3.1.0</version><executions><execution><id>verify-and-prepare-sources</id><phase>generate-sources</phase><goals><goal>run</goal></goals><configuration><target><java fork="true" failonerror="true" classname="${project.basedir}/build-tools/PrepareSources.java"><arg value="${project.build.directory}/upstream/woodstox-7.2.2-sources.jar"/><arg value="${project.build.directory}/generated-sources/woodstox"/></java></target></configuration></execution></executions></plugin>
-      <plugin><groupId>org.apache.maven.plugins</groupId><artifactId>maven-compiler-plugin</artifactId><version>3.14.1</version><configuration><testIncludes><testInclude>build-tools/**/*.java</testInclude><testInclude>src/test/java/**/*.java</testInclude></testIncludes></configuration></plugin>
+      <plugin><groupId>org.apache.maven.plugins</groupId><artifactId>maven-antrun-plugin</artifactId><version>3.1.0</version><executions><execution><id>verify-and-prepare-sources</id><phase>generate-sources</phase><goals><goal>run</goal></goals><configuration><target><java fork="true" failonerror="true" classname="${project.basedir}/src/test/java/studio/environment/buildxml/PrepareSources.java"><arg value="${project.build.directory}/upstream/woodstox-7.2.2-sources.jar"/><arg value="${project.build.directory}/generated-sources/woodstox"/></java></target></configuration></execution></executions></plugin>
       <plugin><groupId>org.apache.maven.plugins</groupId><artifactId>maven-jar-plugin</artifactId><version>3.4.2</version><configuration><archive><manifestEntries><Implementation-Title>Environment Studio qualified Woodstox</Implementation-Title><Implementation-Version>${qualified.parser.version}</Implementation-Version><Upstream-Source-SHA256>24669b0269917ca63270e81222c038b3ce737eba12bdb4a159e48e8b1d5a4822</Upstream-Source-SHA256></manifestEntries></archive></configuration></plugin>
       <plugin><groupId>org.apache.maven.plugins</groupId><artifactId>maven-surefire-plugin</artifactId><configuration><failIfNoTests>true</failIfNoTests></configuration></plugin>
     </plugins>

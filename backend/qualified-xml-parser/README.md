@@ -15,6 +15,14 @@ files, symbolic links, changed patch anchors and archive resource excess. Limits
 2 MiB archive bytes, 512 entries, 512 KiB per entry, 4 MiB total expansion.
 The pinned source has 226 entries, 178 Java files and 2,141,047 expanded bytes.
 
+The helper source lives under the standard test root at
+`src/test/java/studio/environment/buildxml/PrepareSources.java`. Generate-sources
+launches that exact Java source file directly; tests compile it with their normal
+package root. It remains build/test-only and is absent from the parser runtime
+JAR. Do not register the entire module as a test source root: package-aware IDEs
+would treat `src/test/java` as part of test package names and can emit failing
+duplicate classes into Maven's output directory.
+
 The helper verifies the exact original two-function block separately before
 replacement. All other upstream Java bytes and the original `META-INF/LICENSE`
 are preserved. Tests assert that boundary and compare classifier behavior against
