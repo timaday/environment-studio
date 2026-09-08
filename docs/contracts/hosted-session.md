@@ -35,6 +35,9 @@ Idle expiry is 30 minutes; absolute lifetime is eight hours. Logout and expiry
 invalidate the session and its active operations/observations/validation state.
 Restart discards all sessions and ephemeral authority. A fresh login can access
 owned persisted metadata, but requires fresh observation and validation.
+Initial application limits are 64 live sessions total and one live session per
+owner. A new login for an already active owner is refused rather than silently
+invalidating active work. Session capacity is checked atomically at authentication.
 
 Require CSRF protection on every unsafe request, including logout. Provide the
 authenticated session's CSRF token through a no-store same-origin API; it is not
@@ -63,6 +66,12 @@ operations remain excluded: submit once, poll by operation ID, and supply new
 authentication for a new inspection; never replay or durably queue credentials.
 Bound replay history, object counts, payload sizes and session operations. If
 capacity is exhausted, refuse explicitly rather than evicting active authority.
+Initial metadata limits are 100 objects per owner, 32 immutable revisions per
+object, 256 replay records per object, 2 MiB per stored record and 256 MiB per
+workspace. Active inspection/export work is limited to one operation per owner
+and eight globally. These are explicit conservative service budgets, not measured
+application capacity. Exhaustion is a visible typed refusal; limits do not
+justify partial inspection, deletion of retained revisions or silent truncation.
 Persist a metadata mutation and its bounded replay result as one atomic record.
 Restart must not silently re-execute an applied command whose reply was lost.
 An unavailable/expired replay record produces explicit conflict, never guessed
