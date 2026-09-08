@@ -66,6 +66,12 @@ reject duplicate fields, trailing roots and non-JSON whitespace. Their body-read
 deadline is 10 seconds from admitted read, independent of subsequent bounded
 database work; arbitrary incoming bytes do not renew it. Slow or disconnected
 authorized credential submissions consume the attempt and initiate cleanup.
+Create/reserve/cancel share four immediate metadata-body reader slots; exhaustion
+returns 429 before body or worker allocation. A slot remains owned until its
+reader actually returns/closes, including cancellation and disconnect cleanup.
+Credential submissions use their already claimed physical-operation capacity;
+semantic bodies use their separate full scratch admission. No request, reader or
+credential-bearing work enters an executor queue.
 Read/status polling captures the lease without touching its idle deadline; it
 must not renew the session indirectly through an earlier HTTP security filter.
 

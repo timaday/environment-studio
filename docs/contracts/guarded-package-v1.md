@@ -5,6 +5,8 @@ qualification is implied by this contract. The application generates a protected
 artifact and never connects with execution credentials or launches a client.
 Operations runs a separately installed, pinned supervisor through its existing
 change process. An exported package is data, not an uploaded executable extension.
+Its packaging and closed external configuration are defined in
+[supervisor runtime v1](guarded-supervisor-runtime-v1.md).
 
 ## Closed package and selection
 
