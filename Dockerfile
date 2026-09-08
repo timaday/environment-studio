@@ -1,9 +1,8 @@
-# syntax=docker/dockerfile:1
-# Version tags are the bootstrap baseline. Renovate proposes digest pinning;
-# production release qualification must retain the resolved base-image digests.
-ARG NODE_IMAGE=node:24-bookworm-slim
-ARG MAVEN_IMAGE=maven:3.9.16-eclipse-temurin-21
-ARG RUNTIME_IMAGE=eclipse-temurin:21-jre-jammy
+# syntax=docker/dockerfile:1@sha256:ecfaec9ed6d810b56388c508f4121597bfbba70d41a6dfeee4d8cad5f295fc32
+# Digests were observed in the first GitHub build; dependency PRs must requalify them.
+ARG NODE_IMAGE=node:24-bookworm-slim@sha256:ba849c60be29959425b8734d57b8b4b7d56f98edd9504c9af091d5281095a71e
+ARG MAVEN_IMAGE=maven:3.9.16-eclipse-temurin-21@sha256:8f6ac126f7810bb5549c4cd122d2bf0e9cda5bdeb0838aa928f09e779fd8bef8
+ARG RUNTIME_IMAGE=eclipse-temurin:21-jre-jammy@sha256:eebd356ad7358b7094758e5787a6726f332917cfd56feab6457c56dab895cdbf
 
 FROM ${NODE_IMAGE} AS ui
 WORKDIR /build/frontend

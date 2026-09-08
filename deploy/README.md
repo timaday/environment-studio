@@ -98,8 +98,8 @@ repository as a default workaround. If the image fails startup, inspect safe
 startup error codes/probes and confirm demo mode/resources. Never turn on body
 logging or heap dumps to debug actual credential-bearing requests.
 
-Action commit SHAs are pinned. Base-image tags are bootstrap inputs; qualify and
-pin their resolved digests before a production release (Renovate configuration
-is supplied for this). CI must test any dependency/base-image update. A clean
-build from the lockfile is reproducible at source dependency level; mutable
-builder/runtime tags are an explicit remaining supply-chain limitation.
+Action commit SHAs, Dockerfile frontend and builder/runtime image digests are
+pinned. The image digests were captured from the first actual GitHub build;
+Renovate can propose reviewed digest updates. CI must test every dependency/base
+change. The source/lockfile, resolved toolchain and emitted image digest belong
+in release evidence; pinning dependencies is not evidence of application safety.

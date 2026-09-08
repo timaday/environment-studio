@@ -24,3 +24,14 @@ results will be recorded after the initial repository publication.
 
 See CI for actual build evidence. Main image publication is a development
 artifact, not a production capability certificate.
+
+## First actual CI result
+
+[Run 34219658452](https://github.com/timaday/environment-studio/actions/runs/34219658452) compiled the core/server and passed 12 core checks. Server tests
+then failed with a JUnit ExtensionContext binary incompatibility caused by an
+explicit older JUnit BOM override. Removed that override so the pinned Spring
+Boot BOM manages compatible JUnit versions. No image was published by that run.
+
+The first CI log also supplied the exact Node/Maven/JRE/Dockerfile frontend
+digests; these are now pinned in Dockerfile. Demo security declares an empty
+user store so no unused bootstrap password is generated/logged.
