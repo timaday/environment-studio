@@ -12,7 +12,7 @@ COPY frontend/ ./
 COPY fixtures/ /build/fixtures/
 COPY schemas/ /build/schemas/
 COPY scripts/schema.test.mjs /build/scripts/schema.test.mjs
-COPY docs/contracts/openapi-workspace-v2.json docs/contracts/openapi-plans-v1.json /build/docs/contracts/
+COPY docs/contracts/openapi-workspace-v2.json docs/contracts/openapi-plans-v1.json docs/contracts/openapi.yaml /build/docs/contracts/
 RUN npm run check && npm test && npm run build
 
 FROM ui AS browser-check
@@ -21,6 +21,12 @@ RUN npm run test:e2e
 
 FROM ${MAVEN_IMAGE} AS java-build
 WORKDIR /build
+# These packages drive invented child-process tests only; none enter runtime.
+RUN apt-get update -qq && apt-get install -y --no-install-recommends \
+    python3-minimal=3.12.3-0ubuntu2.1 \
+    python3.12-minimal=3.12.3-1ubuntu0.16 \
+    libpython3.12-minimal=3.12.3-1ubuntu0.16 && \
+    test ! -e /usr/bin/java && ln -s /opt/java/openjdk/bin/java /usr/bin/java
 COPY backend/ ./backend/
 COPY schemas/ ./schemas/
 COPY fixtures/native-v2/ ./fixtures/native-v2/
@@ -30,15 +36,21 @@ COPY fixtures/structural-target/ ./fixtures/structural-target/
 COPY fixtures/guarded-package-v1/ ./fixtures/guarded-package-v1/
 COPY fixtures/guarded-writer-v1/ ./fixtures/guarded-writer-v1/
 COPY fixtures/guarded-transaction-v1/ ./fixtures/guarded-transaction-v1/
+COPY fixtures/guarded-supervisor-v1/ ./fixtures/guarded-supervisor-v1/
 COPY fixtures/plan-http-v1/ ./fixtures/plan-http-v1/
 COPY fixtures/plan-http-tls/ ./fixtures/plan-http-tls/
 COPY deploy/HealthProbe.java /build/deploy/HealthProbe.java
 COPY --from=ui /build/frontend/dist/ ./backend/server/src/main/resources/static/
 RUN mvn -B -ntp -f backend/pom.xml verify
+RUN cd backend/tools/guarded-supervisor/target/environment-studio-guarded-0.1.0-SNAPSHOT && sha256sum --check SHA256SUMS
 RUN javac -d /build/probe /build/deploy/HealthProbe.java
 RUN mkdir -p /build/sqlite-native && cd /build/sqlite-native && \
     jar --extract --file /root/.m2/repository/org/xerial/sqlite-jdbc/3.53.4.0/sqlite-jdbc-3.53.4.0.jar \
     org/sqlite/native/Linux/x86_64/libsqlitejdbc.so
+
+FROM scratch AS supervisor-artifacts
+COPY --from=java-build /build/backend/tools/guarded-supervisor/target/environment-studio-guarded-0.1.0-SNAPSHOT /environment-studio-guarded-0.1.0-SNAPSHOT/
+COPY --from=java-build /build/backend/tools/guarded-supervisor/target/environment-studio-guarded-0.1.0-SNAPSHOT.zip /
 
 FROM ${RUNTIME_IMAGE} AS runtime
 ARG SOURCE_REVISION=unknown

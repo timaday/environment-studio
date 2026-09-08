@@ -10,10 +10,10 @@ results; the table below reports capability, not test count.
 | D01 definitions | Native compilation, owned v2 upload/history and maintainer publication implemented and reviewed | Browser publication workflow and external application qualification |
 | D02 security/state | Hosted sessions, immutable workspace revisions and hosted plan/credential lifecycle reviewed | Browser integration; actual deployment durability/identity external |
 | D03 XML | Guarded spans, graph projection, corrected Fifth Edition parser and structural target assembly integrated | Hosted orchestration and guarded SQL/client qualification |
-| D04 database reads | Both engine adapters and hosted inspection transport integrated; disposable matrices and shared-permit checks passed | Configured TLS/account qualification and browser inspection |
+| D04 database reads | Both engine adapters/hosted transport integrated; disposable matrices, shared permits and three JDBC TLS combinations passed | Browser inspection; external PKI/accounts/deployment qualification |
 | D05 profiles | Value-free capture, portable whole/partial composition and owned immutable persistence/publication integrated | Hosted capture/composition and browser workflow |
 | D06 planning | Hosted plans, revisions, HTTP lifecycle/commands and complete structural targets reviewed | Inspection/composition views, browser workflow and full hosted heap qualification |
-| D07 SQL | Package mechanisms and both unqualified transaction templates integrated/reviewed; disposable rollback/guard matrices passed | External supervisor, TLS/transcript/commit acknowledgement and hosted export authority |
+| D07 SQL | Package/transaction mechanisms and separate unqualified supervisor integrated/reviewed; disposable rollback/guard matrices passed | Native runtime/console/TLS/commit qualification and hosted export authority |
 | D08 UX | Synthetic comparison and definition inspector; component keyboard/axe checks pass | Backend integration, editing workflow and representative operator sessions |
 | D09 deployment/release | OCI pipeline/contract; actual HiveForge unverified | Exact platform deployment and qualification matrix |
 
@@ -28,8 +28,17 @@ the lead's integration harness received independent fixed-candidate review with
 no material findings. Integration and rework are recorded in D01a evidence;
 there is no serial comparison supporting a speed-up claim.
 
-Active work: inspection/composition views, the separate external supervisor and
-actual TLS checks on isolated invented databases. The nine initial HTTP routes
+Active work: integrating reviewed inspection/composition views, connecting the
+hosted browser workflow and qualifying the separate native runtime/console.
+The supervisor candidate passed independent review, the combined 433-test Java
+Docker build, separate archive/launch checks and protected web smoke; see
+[supervisor integration](../evidence/d07c1-integration.md). Its registry is empty.
+Actual JDBC TLS checks passed 18 adverse cases, 42 successful controls and three
+default-trust controls across PostgreSQL PEM and Oracle JKS/passwordless PKCS12;
+see [TLS evidence](../evidence/d04-tls-qualification.md). Native-client execution
+is a separate qualification. Maximum heap, blocked-response transfer and explicit
+operational cleanup recovery remain local work, not external blockers.
+The nine initial HTTP routes
 passed independent review, the combined 395-test Java Docker build and protected
 smoke; see [HTTP integration](../evidence/d06b2-integration.md).
 Inspection/composition view contracts are defined before implementation.

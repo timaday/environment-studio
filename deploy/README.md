@@ -155,3 +155,28 @@ pinned. The image digests were captured from the first actual GitHub build;
 Renovate can propose reviewed digest updates. CI must test every dependency/base
 change. The source/lockfile, resolved toolchain and emitted image digest belong
 in release evidence; pinning dependencies is not evidence of application safety.
+
+## Separate supervisor candidate
+
+The external guarded supervisor is built and tested separately from web-image
+publication. It is not included in the application image and its qualification
+registry initially enables no execution combination. See the
+[runtime contract](../docs/contracts/guarded-supervisor-runtime-v1.md).
+
+`docker build --target supervisor-artifacts --output type=local,dest=/tmp/studio-supervisor .`
+exports its versioned directory and ZIP after the complete Java checks, fixed
+dependency inspection and hostile-environment launcher test. The directory's
+`SHA256SUMS` covers its launcher, JARs and retained license notices. CI checks those
+hashes and retains the separate candidate as an artifact; it does not publish or
+install native clients. The supervisor requires a separately qualified Java 21
+installation at `/usr/bin/java` and externally installed client runtimes.
+The Java-produced ZIP preserves file bytes but does not carry Unix executable
+permissions. After extracting it into a new operator-owned installation directory,
+run `sha256sum --check SHA256SUMS` there, then
+`chmod 0755 environment-studio-guarded` before invoking the launcher. The directory
+export already has that permission. Neither form enables an unqualified runtime.
+
+Only the Java build stage installs the exact Python minimal packages used by
+invented child-process tests and provides the launcher's fixed Java path. Python,
+the supervisor and native database clients are absent from the web runtime.
+This build prerequisite does not qualify an operator's terminal or client runtime.

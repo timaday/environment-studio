@@ -288,3 +288,12 @@ test("preview conflicts retain nullable coordinates and never disguise a rule as
     { code: "RELATION_CARDINALITY", slotId: "shape-one", relationId: "uses" },
   ]) { page.items = [item]; assert.equal(validate(page), false); }
 });
+
+const supervisorConfig = ajv.compile(read('../schemas/guarded-supervisor-config-v1.schema.json'));
+test('supervisor configuration is closed shape only, never runtime qualification', () => {
+  const fixture = read('../fixtures/guarded-supervisor-v1/configuration.json');
+  assert.equal(supervisorConfig(fixture), true);
+  for (const mutate of [x => x.password = 'invented', x => x.clients[0].arguments = [], x => x.clients[0].orapkiSha256 = 'a'.repeat(64), x => x.destinations[0].trustMaterial.key = 'invented', x => x.destinations[0].expectedPhysicalIdentity.dbid = '1', x => x.destinations[0].port = 1.5]) {
+    const value = structuredClone(fixture); mutate(value); assert.equal(supervisorConfig(value), false);
+  }
+});
