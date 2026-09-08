@@ -5,7 +5,7 @@ commands and results; the table below reports capability, not test count.
 
 | Slice | State | Next evidence |
 | --- | --- | --- |
-| D00 foundation | Starter authored; execution evidence recorded separately | First CI image and registry digest |
+| D00 foundation | COMPLETE for starter: CI/build/smoke/GHCR passed | See ../evidence/starter-verification.md and image-reference.json |
 | D01 definitions | Contract/schema examples only | Java compiler and real application intake |
 | D02 security/state | Demo rejects mutations; hosted auth not implemented | OIDC/ownership/CSRF/session tests |
 | D03 XML | Synthetic before/after fixtures only | Qualified parser/span writer and independent oracle |

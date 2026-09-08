@@ -13,6 +13,8 @@ test/CI foundations. Database inspection, definition compilation, profile
 persistence, lossless XML transformation and executable SQL export are **not
 implemented or qualified**. The starter deliberately cannot export SQL.
 
+Starter CI and GHCR publication have passed. [Verification evidence](docs/evidence/starter-verification.md) includes the tested source and image digest.
+
 ## Start here
 
 | Need | Read |
