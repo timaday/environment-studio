@@ -83,6 +83,23 @@ do not follow symlinks, use atomic writes, and refuse unsupported durability or
 invalid/corrupt records. No catch-and-continue data-loss recovery. One application
 replica owns the store; multi-replica access is outside the initial contract.
 
+## First HTTP boundary
+
+D02a implements authentication/session handling before any database input or
+workspace mutation API. Its authenticated `GET /api/v1/session` response is a
+no-store object containing `authenticated: true`, `csrfHeaderName`, `csrfToken`,
+`idleTimeoutSeconds: 1800` and `absoluteExpiresAt` (UTC RFC 3339). The CSRF token
+is intentionally available only to the authenticated same-origin UI; it is not
+a provider token. No email, display name or provider credential is returned.
+
+`POST /api/v1/session/logout` requires valid Origin and CSRF and returns 204
+after invalidation. Login uses `/oauth2/authorization/studio`, with the fixed
+public-origin callback `/login/oauth2/code/studio`. Callback state/nonce and token
+issuer/audience/signature must be verified, not replaced by request claims.
+Unknown API routes remain denied until implemented. D02a does not enable
+inspection/export or mark metadata persistence and application qualification
+complete. OpenAPI records these routes only when implemented with tests.
+
 ## Acceptance and qualification
 
 Use an independently invented mock issuer and principals for application tests.
