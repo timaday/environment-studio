@@ -6,6 +6,7 @@
 | First definition compiler boundary | [definition-compilation.md](definition-compilation.md) |
 | Observation, operations and revision authority | [planning.md](planning.md) |
 | XML fidelity and guarded SQL | [xml-and-sql.md](xml-and-sql.md) |
+| First lossless XML mechanism | [lossless-xml.md](lossless-xml.md) |
 | Credentials, data lifetime and hosted access | [security-and-state.md](security-and-state.md) |
 | Hosted session implementation boundary | [hosted-session.md](hosted-session.md) |
 | HTTP | [api.md](api.md), [openapi.yaml](openapi.yaml) |
