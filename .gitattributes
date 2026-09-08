@@ -2,3 +2,5 @@
 *.svg text
 *.png binary
 *.docx binary
+# Exact lexical XML fixtures exercise original line endings.
+fixtures/native-v2/xml/*.xml -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol

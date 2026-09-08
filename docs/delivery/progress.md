@@ -9,8 +9,8 @@ results; the table below reports capability, not test count.
 | D00 foundation | COMPLETE for starter: CI/build/smoke/GHCR passed | See ../evidence/starter-verification.md and image-reference.json |
 | D01 definitions | D01a draft and D01b native v2 compilers integrated; independent static-limit finding corrected | Workspace v2 upload/publication and immutable runtime revision APIs |
 | D02 security/state | D02a hosted sessions and D02b owned SQLite v1 draft revisions integrated and reviewed | V2 publication/profile persistence; actual deployment durability/identity external |
-| D03 XML | D03a guarded span adapter committed at 6850821; independent review and targeted mutation passed | Definition-driven projection/orchestration and complete application/DB writer qualification |
-| D04 database reads | Not implemented | Oracle/PostgreSQL disposable DB observations |
+| D03 XML | Guarded spans, definition-driven graph projection and corrected Fifth Edition parser integrated; independent review findings closed | Structural target orchestration and complete application/DB writer qualification |
+| D04 database reads | Both engine adapters and disposable qualification in progress; PG lifecycle checks passed | Complete baseline/adverse matrices and independent review |
 | D05 profiles | Closure algorithm starter; capture/persistence not implemented | Value-free import/export and composition behavior |
 | D06 planning | Evidence gate starter; full planner not implemented | Typed cross-document operations and binding validation |
 | D07 SQL | Not implemented; export unavailable | Exact-client adverse transaction evidence |
@@ -28,9 +28,9 @@ the lead's integration harness received independent fixed-candidate review with
 no material findings. Integration and rework are recorded in D01a evidence;
 there is no serial comparison supporting a speed-up claim.
 
-Active work: D03b definition-driven graph projection is frozen for independent
-review; D04 observation and D05 profiles have explicit contracts ready for their
-dependencies. D01b supplies
+Active work: D04 complete observation qualification and D05 value-free profiles.
+D03b/c is integrated with 211 passing Java tests and protected container checks;
+see [integration evidence](../evidence/d03bc-integration.md). D01b supplies
 declared identity, inventory, projection, rule and operation semantics before
 publication. Its integrated Maven suite passed 151 tests after the independent
 review correction. See [D01b integration](../evidence/d01b-integration.md).
@@ -38,8 +38,11 @@ See [D02a integration](../evidence/d02a-integration.md) for the 103-test combine
 result, actual container checks and closed review findings.
 See [D02b integration](../evidence/d02b-integration.md) for 178 integrated Java
 tests, closed storage findings and the protected OCI initializer checks.
-Disposable PostgreSQL 18.6 and Oracle Free 23.26.3 are running for planned
-qualification; this establishes availability only. An actual SQL*Plus client
+Disposable PostgreSQL 18.6 and Oracle Free 23.26.3 are running for qualification.
+Default vendor privileges require the explicit checks and trust assumptions in
+[the observation contract](../contracts/database-observation.md); blanket Oracle
+grant revocation broke the disposable instance and did not qualify an observation.
+A fresh pinned instance is used for the replacement policy. An actual SQL*Plus client
 error continued with exit zero; [the investigation](../evidence/d07-client-investigation.md)
 records why SQLERROR/exit status alone cannot qualify a guarded package.
 Private qualification and actual HiveForge/IdP configuration remain external.

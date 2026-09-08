@@ -1,0 +1,20 @@
+Environment Studio qualified XML parser
+Modified implementation: Woodstox 7.2.2, XML 1.0 Fifth Edition patch 1
+Implementation-Version: 7.2.2-es-xml10-fifth-1
+
+This is a modified source build, not the official unmodified Woodstox binary.
+Upstream: https://github.com/FasterXML/woodstox/tree/woodstox-core-7.2.2
+Source artifact: com.fasterxml.woodstox:woodstox-core:7.2.2:jar:sources
+Source SHA-256: 24669b0269917ca63270e81222c038b3ce737eba12bdb4a159e48e8b1d5a4822
+
+Woodstox is distributed under the Apache License, Version 2.0.
+The upstream source artifact's META-INF/LICENSE is preserved without changes.
+The complete Apache 2.0 license is included as LICENSE-APACHE-2.0.
+
+Environment Studio replaces only XmlChars.is10NameStartChar and is10NameChar
+with XML 1.0 Fifth Edition name ranges. Whole-source paired-surrogate preflight
+and the explicit hardened adapter remain required for qualification. No XML 1.1
+reinterpretation or text/attribute normalization change is made.
+
+Upstream Java sources are verified, generated and compiled during the build.
+No upstream service-provider discovery entries are installed by this module.

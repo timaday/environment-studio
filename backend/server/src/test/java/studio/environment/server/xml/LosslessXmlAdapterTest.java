@@ -176,4 +176,109 @@ class LosslessXmlAdapterTest {
         };
         rejected(adapter.apply(source, source.digest(), virtual), "RESOURCE_LIMIT");
     }
+    @Test void fifthEditionNamesWorkInElementsAttributesPrefixesAndPiAtBothPositions() {
+        int cases = 0;
+        for (int cp : new int[] {0xC0,0xD6,0xD8,0xF6,0xF8,0x2FF,0x370,0x37D,0x37F,0x1FFF,0x200C,0x200D,
+                0x2070,0x218F,0x2C00,0x2FEF,0x3001,0xD7FF,0xF900,0xFDCF,0xFDF0,0xFFFD,0x10000,0x1F600,0xEFFFF}) {
+            String name = new String(Character.toChars(cp));
+            for (String xml : namePlacements(name)) { assertEquals(xml, project(xml).source()); cases++; }
+        }
+        assertEquals(200, cases);
+        for (int cp : new int[] {0xD7,0xF7,0x37E,0x200B,0x200E,0x206F,0x2190,0x2BFF,0x2FF0,0x3000,0xF8FF,0xFDD0,0xFDEF,0xFFFE,0xFFFF,0xF0000,0x10FFFF}) {
+            String name = new String(Character.toChars(cp));
+            for (String xml : namePlacements(name)) rejected(adapter.project(xml), "INVALID_XML");
+        }
+        for (String name : List.of("\ud800", "\udc00", "\ud800a", "\udc00\ud800"))
+            for (String xml : namePlacements(name)) rejected(adapter.project(xml), "INVALID_XML");
+        for (int cp : new int[] {0xB7,0x300,0x36F,0x203F,0x2040}) {
+            String name = new String(Character.toChars(cp));
+            project("<a" + name + "/>"); rejected(adapter.project("<" + name + "/>"), "INVALID_XML");
+        }
+    }
+    private static List<String> namePlacements(String name) {
+        return List.of("<" + name + "/>", "<r " + name + "='v'/>", "<" + name + ":r xmlns:" + name + "='urn:mock'/>",
+                "<?" + name + " data?><r/>", "<r a" + name + "='v'/>", "<a" + name + "/>",
+                "<a" + name + ":r xmlns:a" + name + "='urn:mock'/>", "<?a" + name + " data?><r/>");
+    }
+    @Test void namespaceDeclarationsRetainEstablishedExpandedNamesValuesAndSpans() {
+        String xml = "<r xmlns='urn:mock:default' xmlns:p='urn:mock:prefix' xmlns:xml='http://www.w3.org/XML/1998/namespace' xml:space='preserve' p:tag='value'/>";
+        var root = project(xml).elements().getFirst();
+        assertEquals(5, root.attributes().size());
+        assertEquals(new XmlDocument.ExpandedName("http://www.w3.org/2000/xmlns/", "xmlns"), root.attributes().get(0).name());
+        assertEquals(new XmlDocument.ExpandedName("http://www.w3.org/2000/xmlns/", "p"), root.attributes().get(1).name());
+        assertEquals(new XmlDocument.ExpandedName("http://www.w3.org/2000/xmlns/", "xml"), root.attributes().get(2).name());
+        assertEquals(new XmlDocument.ExpandedName("http://www.w3.org/XML/1998/namespace", "space"), root.attributes().get(3).name());
+        assertEquals(new XmlDocument.ExpandedName("urn:mock:prefix", "tag"), root.attributes().get(4).name());
+        for (var attribute : root.attributes()) assertEquals(attribute.value(), xml.substring(attribute.valueSpan().start(), attribute.valueSpan().end()));
+        assertEquals(xml, apply(project(xml)).source());
+    }
+    @Test void xml10NormalizationAndFifthEditionWriterOutcomesRemainExact() {
+        String source = "<Ϳ 豈='x\r\ny\rz\tw&#13;&#10;&#9;\u0085\u2028'>A\r\nB\rC\u0085\u2028</Ϳ>";
+        var document = project(source); var attribute = document.elements().getFirst().attributes().getFirst();
+        assertEquals("x y z w\r\n\t\u0085\u2028", attribute.value());
+        var target = apply(document, new ReplaceAttribute(attribute, attribute.value(), "𐀀\r\n\t\u0085\u2028"));
+        assertEquals("<Ϳ 豈='𐀀&#13;&#10;&#9;\u0085\u2028'>A\r\nB\rC\u0085\u2028</Ϳ>", target.source());
+        for (String xml : List.of("<r>&#1;</r>", "<r a='&#1;'/>", "<r>&#xFFFE;</r>", "<r>&#xD800;</r>", "<r>&#x110000;</r>", "<r>&#0;</r>"))
+            rejected(adapter.project(xml), "INVALID_XML");
+        project("<r>" + new String(Character.toChars(0xF0000)) + "</r>");
+        // A valid supplementary name crossing the parser input-buffer boundary stays exact.
+        String longName = "a".repeat(3999) + "𐀀"; project("<" + longName + "/>");
+    }
+    @Test void requiredFactorySettingsAreVerifiedAndExternalResolutionNeverRuns() throws Exception {
+        var factory = HardenedXmlProjection.factory();
+        assertEquals(false, factory.getProperty(javax.xml.stream.XMLInputFactory.SUPPORT_DTD));
+        assertEquals(false, factory.getProperty(javax.xml.stream.XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES));
+        assertEquals("", factory.getProperty(javax.xml.XMLConstants.ACCESS_EXTERNAL_DTD));
+        assertThrows(javax.xml.stream.XMLStreamException.class, () -> factory.getXMLResolver().resolveEntity(null, "file:///mock-canary", null, null));
+        var ignoresSetting = new com.ctc.wstx.stax.WstxInputFactory() {
+            @Override public Object getProperty(String name) {
+                if (name.equals(javax.xml.stream.XMLInputFactory.SUPPORT_DTD)) return true;
+                return super.getProperty(name);
+            }
+        };
+        assertThrows(IllegalStateException.class, () -> HardenedXmlProjection.configure(ignoresSetting));
+        var unavailable = new com.ctc.wstx.stax.WstxInputFactory() {
+            @Override public void setProperty(String name, Object value) { throw new IllegalArgumentException("unavailable-canary"); }
+        };
+        assertFalse(assertThrows(IllegalStateException.class, () -> HardenedXmlProjection.configure(unavailable)).toString().contains("canary"));
+        var calls = new java.util.concurrent.atomic.AtomicInteger();
+        factory.setXMLResolver((a, b, c, d) -> { calls.incrementAndGet(); throw new javax.xml.stream.XMLStreamException("denied"); });
+        for (String xml : List.of("<!DOCTYPE r SYSTEM 'file:///mock-canary'><r/>",
+                "<!DOCTYPE r [<!ENTITY x SYSTEM 'http://invalid.invalid/mock'>]><r>&x;</r>")) {
+            var reader = factory.createXMLStreamReader(new java.io.StringReader(xml));
+            try { while (reader.hasNext()) { if (reader.next() == javax.xml.stream.XMLStreamConstants.DTD) break; } }
+            finally { reader.close(); }
+        }
+        assertEquals(0, calls.get());
+        project("<r xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' xsi:noNamespaceSchemaLocation='https://invalid.invalid/mock.xsd'/>");
+    }
+
+    @Test void qualifiedParserPreservesAllPerDocumentResourceBoundaries() {
+        String source = "<a>".repeat(128) + "</a>".repeat(128); project(source);
+        rejected(adapter.project("<a>" + source + "</a>"), "RESOURCE_LIMIT");
+        source = "<a>" + "x".repeat(1_048_576 - 7) + "</a>"; project(source);
+        rejected(adapter.project(source + " "), "RESOURCE_LIMIT");
+        var attributes = new StringBuilder("<a");
+        for (int i = 0; i < 256; i++) attributes.append(" a").append(i).append("=''");
+        project(attributes + "/>"); rejected(adapter.project(attributes + " extra=''/>") , "RESOURCE_LIMIT");
+        String elements = "<a>" + "<b/>".repeat(19_999) + "</a>"; project(elements);
+        rejected(adapter.project(elements.replace("</a>", "<b/></a>")), "RESOURCE_LIMIT");
+        // Opening + closing tags use two tokens; each comment adds one.
+        String tokens = "<a>" + "<!---->".repeat(99_998) + "</a>"; project(tokens);
+        rejected(adapter.project(tokens.replace("</a>", "<!----></a>")), "RESOURCE_LIMIT");
+        rejected(adapter.project("<a xmlns:xml='urn:wrong'/>"), "INVALID_XML");
+        rejected(adapter.project("<a xmlns:p='http://www.w3.org/XML/1998/namespace'/>"), "INVALID_XML");
+        rejected(adapter.project("<a xmlns:xml='http://www.w3.org/XML/1998/namespace' xmlns:xml='http://www.w3.org/XML/1998/namespace'/>"), "INVALID_XML");
+    }
+
+    @Test void longAttributesUseTheApprovedWholeSourceBoundWithoutHiddenParserLimit() {
+        for (int length : new int[] {524_288, 524_289, 1_048_576 - 9}) {
+            String value = "x".repeat(length); String xml = "<a x='" + value + "'/>";
+            var document = project(xml);
+            assertEquals(value, document.elements().getFirst().attributes().getFirst().value());
+            assertEquals(xml, apply(document).source());
+        }
+        rejected(adapter.project("<a x='" + "x".repeat(1_048_576 - 8) + "'/>"), "RESOURCE_LIMIT");
+    }
+
 }

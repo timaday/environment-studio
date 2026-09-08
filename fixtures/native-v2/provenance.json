@@ -7,6 +7,8 @@
     "expected-digests.json",
     "digest-oracle.py",
     "unicode-integer-definition.json",
-    "unicode-integer-expected-digests.json"
+    "unicode-integer-expected-digests.json",
+    "xml/glyphs.xml",
+    "xml/palettes.xml"
   ]
 }

@@ -5,7 +5,7 @@ import java.util.ArrayDeque;
 import java.util.List;
 import static studio.environment.server.xml.XmlDocument.Span;
 
-/** Bounded positions only. XML validity and decoded semantics are independently checked by SAX. */
+/** Bounded positions only. XML validity and decoded semantics are independently checked by the qualified StAX parser. */
 final class XmlLexicalScanner {
     static final int MAX_CHARS = 1_048_576;
     static final int MAX_TOKENS = 100_000;
