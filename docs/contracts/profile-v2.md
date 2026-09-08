@@ -14,6 +14,10 @@ digest, nonempty `entities` and `relations` (which may be an empty array).
 No arbitrary metadata or extensions
 are accepted. Parsing has the same strict UTF-8, duplicate-key, numeric, nesting
 and size limits as definitions; schema and semantic validation remain separate.
+The closed shape is `schemas/profile-v2.schema.json`. At most 20,000 slots and
+50,000 edges are eligible; the stricter 1 MiB source and 20,000-node parser budgets
+still apply. Capture must refuse an output that cannot pass the same import
+budgets, rather than creating a profile that cannot be read back.
 
 Each entity contains only `id`, `type`, `label` and `requiredInputs`. Its ID is a
 neutral logical slot using the existing ID syntax, distinct from observed entity
