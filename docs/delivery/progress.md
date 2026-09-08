@@ -7,8 +7,8 @@ results; the table below reports capability, not test count.
 | Slice | State | Next evidence |
 | --- | --- | --- |
 | D00 foundation | COMPLETE for starter: CI/build/smoke/GHCR passed | See ../evidence/starter-verification.md and image-reference.json |
-| D01 definitions | D01a bounded JSON/YAML draft compiler implemented; v2 logical/binding contract committed and compiler underway | Publication semantics and immutable runtime revision APIs |
-| D02 security/state | D02a hosted OIDC/session integrated; independent concurrency/privacy corrections verified | D02b private SQLite revisions next; actual deployment external |
+| D01 definitions | D01a draft and D01b native v2 compilers integrated; independent static-limit finding corrected | Workspace v2 upload/publication and immutable runtime revision APIs |
+| D02 security/state | D02a hosted OIDC/session integrated; D02b private SQLite revisions underway | Storage/adverse HTTP evidence; actual deployment external |
 | D03 XML | D03a guarded span adapter committed at 6850821; independent review and targeted mutation passed | Definition-driven projection/orchestration and complete application/DB writer qualification |
 | D04 database reads | Not implemented | Oracle/PostgreSQL disposable DB observations |
 | D05 profiles | Closure algorithm starter; capture/persistence not implemented | Value-free import/export and composition behavior |
@@ -28,12 +28,17 @@ the lead's integration harness received independent fixed-candidate review with
 no material findings. Integration and rework are recorded in D01a evidence;
 there is no serial comparison supporting a speed-up claim.
 
-Active work: D02b private draft revisions and D01b native version 2,
-using separate worktrees and frozen public contracts. D02b private draft revisions
-follows the session boundary. D01b supplies declared identity, inventory,
-projection, rule and operation semantics before publication.
+Active work: D02b private draft revisions and D03b definition-driven graph
+projection, using separate worktrees and frozen public contracts. D01b supplies
+declared identity, inventory, projection, rule and operation semantics before
+publication. Its integrated Maven suite passed 151 tests after the independent
+review correction. See [D01b integration](../evidence/d01b-integration.md).
 See [D02a integration](../evidence/d02a-integration.md) for the 103-test combined
 result, actual container checks and closed review findings.
+Disposable PostgreSQL 18.6 and Oracle Free 23.26.3 are running for planned
+qualification; this establishes availability only. An actual SQL*Plus client
+error continued with exit zero; [the investigation](../evidence/d07-client-investigation.md)
+records why SQLERROR/exit status alone cannot qualify a guarded package.
 Private qualification and actual HiveForge/IdP configuration remain external.
 Request only generic decisions through the Q handoff when needed. Do not mark
 `release-evidence.json` PASS by editing a

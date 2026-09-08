@@ -5,10 +5,11 @@ with exact versions and evidence; never fill the matrix from driver availability
 
 | Capability | Candidate | Scope | State |
 | --- | --- | --- | --- |
-| Oracle | Version unknown; CLOB; exact SQL*Plus/SQLcl unknown | Qualified application family + structural/scalar operations | NOT RUN |
-| PostgreSQL | Version unknown; text; exact psql unknown | Same logical family where capabilities overlap | NOT RUN |
+| Oracle | Disposable Free 23.26.3.0.0; CLOB; bundled SQL*Plus 23.26.3.0.0 | Client SP2 continuation observed; reads and guarded transaction package not implemented/qualified | INCOMPLETE |
+| PostgreSQL | Disposable 18.6; text; psql qualification pending | Same logical family where capabilities overlap | NOT RUN |
 | PostgreSQL xml/OID | Not selected | Separate storage contract required | UNSUPPORTED |
 | Native YAML/JSON definitions | Version 1 draft meta-schema; D01a Java compiler | Bounded parsing, shape/semantic checks and immutable incomplete result; publication/upload absent | INCOMPLETE |
+| Native version 2 compiler | D01b closed logical/binding semantics and versioned digests | Independent digest oracle and reviewed static mechanism limits; runtime publication/observation separate | COMPILER CHECKS PASS |
 | Definition inspector | Synthetic version 1 projection | Component behavior and desktop/390px keyboard/axe checks; no integrated editing or operator rehearsal | COMPONENT CHECKS PASS |
 | XML span mechanism | D03a, pinned JDK/container parser | Exact source, supported edits, adverse boundaries and five guard mutants; application mapping/client qualification separate | MECHANISM CHECKS PASS |
 | Hosted session | D02a, independently invented mock OIDC provider | Protocol, CSRF/cookies, expiry, cleanup failure/races and log canaries; actual IdP/TLS/proxy and DB cleanup separate | MOCK CHECKS PASS |

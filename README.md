@@ -8,12 +8,14 @@ map current configuration to a target, supply environment values and export
 guarded SQL for their existing database deployment process.
 
 **Status: implementation in progress.** Bounded JSON/YAML definition compilation
-now checks the version 1 draft contract in Java. The UI includes a synthetic
+now checks version 1 drafts and explicit version 2 logical/binding declarations
+in Java, with separate deterministic digests. The UI includes a synthetic
 definition inspector alongside the comparison preview. A guarded XML span adapter
 and hosted OIDC/session boundary are implemented and tested with independent
 mocks. Publication, workspace persistence, database inspection, integrated
 transformation and SQL export remain **unavailable**. Valid version 1 drafts are
 explicitly incomplete. See [D01a evidence](docs/evidence/d01a-integration.md),
+[native v2 evidence](docs/evidence/d01b-native.md),
 [XML evidence](docs/evidence/d03a-xml.md) and [session evidence](docs/evidence/d02a-session.md).
 
 Starter CI and GHCR publication have passed. [Verification evidence](docs/evidence/starter-verification.md) includes the tested source and image digest.

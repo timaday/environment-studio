@@ -22,6 +22,7 @@ FROM ${MAVEN_IMAGE} AS java-build
 WORKDIR /build
 COPY backend/ ./backend/
 COPY schemas/ ./schemas/
+COPY fixtures/native-v2/ ./fixtures/native-v2/
 COPY deploy/HealthProbe.java /build/deploy/HealthProbe.java
 COPY --from=ui /build/frontend/dist/ ./backend/server/src/main/resources/static/
 RUN mvn -B -ntp -f backend/pom.xml verify

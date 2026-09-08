@@ -34,3 +34,39 @@ test("unknown type semantics and missing requiredness cannot be silently accepte
   delete incomplete.entityTypes[0].fields[0].required;
   assert.equal(definition(incomplete), false);
 });
+
+const nativeV2 = ajv.compile(read("../schemas/definition-v2.schema.json"));
+test("invented native v2 bindings have a closed shape with distinct engine storage declarations", () => {
+  const candidate = read("../fixtures/native-v2/definition.json");
+  assert.equal(nativeV2(candidate), true, JSON.stringify(nativeV2.errors));
+  assert.deepEqual(candidate.bindings.map((binding) => binding.engine), ["postgresql", "oracle"]);
+});
+test("native v2 rejects unknown authority fields, unsupported vocabulary and omitted decisions", () => {
+  for (const mutate of [
+    (candidate) => { candidate.status = "published"; },
+    (candidate) => { candidate.mechanisms = { "xml-span-v1": 999 }; },
+    (candidate) => { delete candidate.logical.entityTypes[0].fields[0].editable; },
+    (candidate) => { candidate.logical.entityTypes[0].identity.normalization = "trim"; },
+    (candidate) => { candidate.logical.rules[0].kind = "uploaded-code"; },
+    (candidate) => { candidate.logical.operationCapabilities.push("execute-sql"); },
+    (candidate) => { candidate.bindings[0].table = "mock;expression"; },
+    (candidate) => { candidate.bindings[0].documents[0].entities[0].path[0].localName = "has:prefix"; },
+  ]) {
+    const candidate = read("../fixtures/native-v2/definition.json");
+    mutate(candidate);
+    assert.equal(nativeV2(candidate), false);
+  }
+});
+test("native v2 missing mapping mechanisms remain shape-valid for explicit incomplete diagnostics", () => {
+  const candidate = read("../fixtures/native-v2/definition.json");
+  candidate.bindings[0].documents[0].entities[0].fields = [];
+  candidate.bindings[0].documents[0].entities[0].references = [];
+  assert.equal(nativeV2(candidate), true, JSON.stringify(nativeV2.errors));
+});
+test("native v2 XML names count Unicode code points and reject trailing newline", () => {
+  const candidate = read("../fixtures/native-v2/definition.json");
+  candidate.bindings[0].documents[0].entities[0].path[0].localName = "𐀀glyph";
+  assert.equal(nativeV2(candidate), true, JSON.stringify(nativeV2.errors));
+  candidate.bindings[0].documents[0].entities[0].path[0].localName = "glyph\n";
+  assert.equal(nativeV2(candidate), false);
+});
