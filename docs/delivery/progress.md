@@ -8,11 +8,11 @@ results; the table below reports capability, not test count.
 | --- | --- | --- |
 | D00 foundation | COMPLETE for starter: CI/build/smoke/GHCR passed | See ../evidence/starter-verification.md and image-reference.json |
 | D01 definitions | Native compilation, owned v2 upload/history and maintainer publication implemented and reviewed | Browser publication workflow and external application qualification |
-| D02 security/state | Hosted sessions and immutable v1/v2/profile SQLite revisions; explicit schema upgrade implemented and reviewed | Plan lease/operation integration; actual deployment durability/identity external |
+| D02 security/state | Hosted sessions, immutable workspace revisions and internal plan lease/operation integration reviewed | HTTP credential lifecycle; actual deployment durability/identity external |
 | D03 XML | Guarded spans, graph projection, corrected Fifth Edition parser and structural target assembly integrated | Hosted orchestration and guarded SQL/client qualification |
-| D04 database reads | Both engine adapters integrated; complete disposable matrices and review corrections passed | Hosted plan/session wiring and external TLS/account qualification |
+| D04 database reads | Both engine adapters and internal plan reservations integrated; disposable matrices and shared-permit checks passed | HTTP credential transport and external TLS/account qualification |
 | D05 profiles | Value-free capture, portable whole/partial composition and owned immutable persistence/publication integrated | Hosted capture/composition and browser workflow |
-| D06 planning | Typed intents and complete cross-document structural targets implemented and reviewed; both-binding one-to-two fixture passes | Hosted plan revisions, operation lifecycle and private validation authority |
+| D06 planning | Internal hosted plans, revisions, operation cleanup, composition and complete structural targets reviewed | HTTP/backend-to-browser workflow and full hosted privacy/heap qualification |
 | D07 SQL | Bounded package admission, canonical digests and deterministic ZIP integrated and reviewed; export unavailable | Both transaction templates, external supervisor and exact-client adverse transaction matrices |
 | D08 UX | Synthetic comparison and definition inspector; component keyboard/axe checks pass | Backend integration, editing workflow and representative operator sessions |
 | D09 deployment/release | OCI pipeline/contract; actual HiveForge unverified | Exact platform deployment and qualification matrix |
@@ -28,8 +28,11 @@ the lead's integration harness received independent fixed-candidate review with
 no material findings. Integration and rework are recorded in D01a evidence;
 there is no serial comparison supporting a speed-up claim.
 
-Active work: hosted plan/session review and HTTP integration; both guarded
-transaction templates. The bounded package mechanism passed independent review
+Active work: hosted plan HTTP integration; both guarded transaction templates.
+The internal plan service passed independent review, the combined 357-test Java
+Docker build and protected smoke, plus 58 actual both-engine shared-permit checks;
+see [hosted plan integration](../evidence/d06b1-integration.md).
+The bounded package mechanism passed independent review
 and the combined 317-test Java Docker build, 7 UI/17 schema tests and protected
 smoke; see [package integration](../evidence/d07a-integration.md).
 Full 32 MiB Oracle binary loading passed in 9.903 seconds with base64 after hex

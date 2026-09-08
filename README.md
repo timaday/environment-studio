@@ -12,8 +12,10 @@ Java; hosted workspace APIs support immutable definition/profile drafts and
 publication, with explicit maintainer authority and private SQLite storage.
 Complete Oracle CLOB/PostgreSQL text observation, value-free profile composition
 and cross-document structural target materialization are implemented as reviewed
-internal mechanisms. The UI still presents synthetic previews. Hosted plan and
-database credential workflows, integrated transformation and guarded SQL export
+internal mechanisms. The hosted plan service joins these mechanisms with session
+leases and revision/cleanup enforcement; see [integration evidence](docs/evidence/d06b1-integration.md).
+The UI still presents synthetic previews. Hosted plan HTTP and
+database credential workflows, browser transformation and guarded SQL export
 remain **unavailable**. See [workspace and structural integration](docs/evidence/d01c-d06a-integration.md),
 [observation evidence](docs/evidence/d04a-integration.md) and
 [profile evidence](docs/evidence/d05a-integration.md).

@@ -167,4 +167,27 @@ class ObservationLifecycleTest {
             assertEquals(0,allocations.get()); assertTrue(credentials.closed());
         } finally {logger.setLevel(previous);}
     }
+    @Test void credentialFreeReservationsShareDirectCapacityAndAreOneShot() {
+        var calls = new AtomicInteger();
+        var adapter = new JdbcObservation(destination, c -> { calls.incrementAndGet(); return fake(() -> {}); }, () -> {}, TimeUnit.SECONDS.toNanos(5), TimeUnit.SECONDS.toNanos(1));
+        var permits = new ArrayList<ObservationPort.Permit>();
+        try {
+            for (int index = 0; index < 4; index++) permits.add(assertInstanceOf(ObservationPort.Reservation.Admitted.class, adapter.reserve(selection())).permit());
+            assertEquals(0, calls.get());
+            assertEquals(new ObservationPort.Reservation.Refused(Code.CAPACITY), adapter.reserve(selection()));
+            var refusedCredentials = credentials();
+            assertEquals(Code.CAPACITY, ((Refused)adapter.observe(selection(), refusedCredentials, new ObservationPort.Cancellation())).code());
+            assertTrue(refusedCredentials.closed());
+            assertEquals(Cleanup.COMPLETE, permits.getFirst().observe(credentials(), new ObservationPort.Cancellation()).cleanup());
+            assertEquals(1, calls.get());
+            var duplicate = credentials();
+            assertEquals(Code.INVALID_SELECTION, ((Refused)permits.getFirst().observe(duplicate, new ObservationPort.Cancellation())).code());
+            assertTrue(duplicate.closed());
+            try (var replacement = assertInstanceOf(ObservationPort.Reservation.Admitted.class, adapter.reserve(selection())).permit()) {
+                assertEquals(new ObservationPort.Reservation.Refused(Code.CAPACITY), adapter.reserve(selection()));
+            }
+        } finally { permits.forEach(ObservationPort.Permit::close); }
+        assertEquals(1, calls.get());
+    }
+
 }

@@ -35,8 +35,30 @@ public final class JdbcObservation implements ObservationPort {
         this.destination = Objects.requireNonNull(destination); this.connections = this::connect;
         this.beforeSources = Objects.requireNonNull(beforeSources); this.operationNanos = OPERATION_NANOS; this.cleanupNanos = CLEANUP_NANOS;
     }
+    @Override public Reservation reserve(Selection selection) {
+        if (!CAPACITY.tryAcquire()) return new Reservation.Refused(Code.CAPACITY);
+        return new Reservation.Admitted(new Permit() {
+            private final AtomicBoolean consumed = new AtomicBoolean();
+            @Override public ObservationResult observe(TransientCredentials credentials, Cancellation cancellation) {
+                Objects.requireNonNull(credentials);
+                if (!consumed.compareAndSet(false, true)) {
+                    credentials.close(); return new Refused(Code.INVALID_SELECTION, Cleanup.COMPLETE);
+                }
+                return observeReserved(selection, credentials, cancellation);
+            }
+            @Override public void close() { if (consumed.compareAndSet(false, true)) CAPACITY.release(); }
+        });
+    }
     @Override public ObservationResult observe(Selection selection, TransientCredentials credentials, Cancellation cancellation) {
         Objects.requireNonNull(credentials); Objects.requireNonNull(cancellation);
+        var reservation = reserve(selection);
+        if (reservation instanceof Reservation.Refused refused) {
+            credentials.close(); return new Refused(refused.code(), Cleanup.COMPLETE);
+        }
+        try (var permit = ((Reservation.Admitted)reservation).permit()) { return permit.observe(credentials, cancellation); }
+    }
+    private ObservationResult observeReserved(Selection selection, TransientCredentials credentials, Cancellation cancellation) {
+        if (cancellation == null) { credentials.close(); CAPACITY.release(); return new Refused(Code.INVALID_SELECTION, Cleanup.COMPLETE); }
         Binding binding;
         try {
             if (selection == null || selection.compiled() == null || selection.bindingId() == null) throw new ObservationFailure(Code.INVALID_SELECTION);
@@ -45,8 +67,7 @@ public final class JdbcObservation implements ObservationPort {
             SqlRead.quoted(binding.schema()); SqlRead.quoted(binding.table()); SqlRead.quoted(binding.keyColumn()); SqlRead.quoted(binding.xmlColumn());
             if (cancellation.cancelled()) throw new ObservationFailure(Code.CANCELLED);
             if (DriverLoggingPolicy.verboseDriverLogging()) throw new ObservationFailure(Code.DESTINATION_UNQUALIFIED);
-        } catch (ObservationFailure refused) { credentials.close(); return new Refused(refused.code(), Cleanup.COMPLETE); }
-        if (!CAPACITY.tryAcquire()) { credentials.close(); return new Refused(Code.CAPACITY, Cleanup.COMPLETE); }
+        } catch (ObservationFailure refused) { credentials.close(); CAPACITY.release(); return new Refused(refused.code(), Cleanup.COMPLETE); }
         var work = new Work(selection, binding, credentials, cancellation);
         work.thread = new Thread(work, "studio-read-operation");
         work.thread.setDaemon(true);

@@ -73,8 +73,11 @@ public final class HostedSessions {
         synchronized (slot) {
             if (slot.retired || slot.lease != null) return new SessionLedger.Denied(SessionLedger.Refusal.CAPACITY);
             var owner = new Owner(principal.getIssuer().toString(), principal.getSubject());
-            var admission = ledger.admit(binding.id, owner);
-            if (admission instanceof SessionLedger.Accepted accepted) slot.lease = accepted.lease();
+            var now = clock.instant();
+            if (!now.isBefore(slot.lastSeen.plus(SessionLedger.IDLE)) || !now.isBefore(slot.created.plus(SessionLedger.ABSOLUTE)))
+                return new SessionLedger.Denied(SessionLedger.Refusal.EXPIRED);
+            var admission = ledger.admit(binding.id, owner, slot.created.plus(SessionLedger.ABSOLUTE));
+            if (admission instanceof SessionLedger.Accepted accepted) { slot.lease = accepted.lease(); slot.lastSeen = clock.instant(); }
             return admission;
         }
     }
@@ -86,7 +89,10 @@ public final class HostedSessions {
         var slot = slots.get(binding.id);
         if (slot == null || slot.retired) return Optional.empty();
         slot.lastSeen = clock.instant();
-        return ledger.touch(binding.id).map(lease -> new SessionLedger.Lease(lease.id(), lease.owner(), slot.created.plus(SessionLedger.ABSOLUTE)));
+        return ledger.touch(binding.id);
+    }
+    public <T> Optional<T> guard(SessionLedger.Lease lease, java.util.function.Supplier<T> transition) {
+        return ledger.guard(lease, transition);
     }
     public Owner requireOwner(HttpServletRequest request) {
         return current(request).orElseThrow(() -> new IllegalStateException("SESSION_AUTHORITY_REQUIRED")).owner();

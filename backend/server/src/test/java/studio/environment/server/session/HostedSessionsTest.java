@@ -173,20 +173,37 @@ class HostedSessionsTest {
         admitting.start();
         try {
             assertTrue(insideAdmission.await(5, java.util.concurrent.TimeUnit.SECONDS));
-            clock.now = clock.now.plusSeconds(1800);
+            if (!destroy) clock.now = clock.now.plusSeconds(1800);
             retiring.start();
             long deadline = System.nanoTime() + java.util.concurrent.TimeUnit.SECONDS.toNanos(5);
             while (retiring.getState() != Thread.State.BLOCKED && System.nanoTime() < deadline) Thread.onSpinWait();
             assertEquals(Thread.State.BLOCKED, retiring.getState(), "Retirement must reach the admission-held slot monitor");
         } finally { releaseAdmission.countDown(); }
-        assertInstanceOf(SessionLedger.Accepted.class, admission.get(5, java.util.concurrent.TimeUnit.SECONDS));
+        var result = admission.get(5, java.util.concurrent.TimeUnit.SECONDS);
+        if (destroy) assertInstanceOf(SessionLedger.Accepted.class, result);
+        else assertEquals(new SessionLedger.Denied(SessionLedger.Refusal.EXPIRED), result);
         retirement.get(5, java.util.concurrent.TimeUnit.SECONDS);
         assertTrue(servlet.isInvalid());
-        assertEquals(1, hooks.get(), "Every admitted lease must be cleaned exactly once");
+        assertEquals(destroy ? 1 : 0, hooks.get(), "Only admitted leases require owner cleanup; expired pending admission is refused");
         assertTrue(sessions.cleanupReports().isEmpty());
         var fresh = new MockHttpServletRequest();
         assertTrue(sessions.reserveLogin(fresh));
         assertInstanceOf(SessionLedger.Accepted.class, sessions.authenticated(fresh.getSession(), user));
+    }
+
+    @Test void centralGuardUsesPendingLoginDeadlineWithoutRequestTouch() {
+        var request = new MockHttpServletRequest();
+        var start = clock.now;
+        assertTrue(sessions.reserveLogin(request));
+        clock.now = start.plusSeconds(1200);
+        var lease = ((SessionLedger.Accepted) sessions.authenticated(request.getSession(), user)).lease();
+        assertEquals(start.plus(SessionLedger.ABSOLUTE), lease.absoluteExpiresAt());
+        for (int minute = 40; minute < 480; minute += 20) {
+            clock.now = start.plusSeconds(minute * 60L);
+            assertEquals(lease, sessions.current(request).orElseThrow());
+        }
+        clock.now = start.plus(SessionLedger.ABSOLUTE);
+        assertTrue(sessions.guard(lease, () -> "late").isEmpty());
     }
 
 }

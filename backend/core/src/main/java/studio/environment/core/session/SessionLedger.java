@@ -16,7 +16,7 @@ public final class SessionLedger {
     public static final Duration ABSOLUTE = Duration.ofHours(8);
     public static final int MAX_CLEANUP_ATTEMPTS = 3;
     public record Lease(String id, Owner owner, Instant absoluteExpiresAt) { }
-    public enum Refusal { OWNER_ACTIVE, CAPACITY, CLEANUP_INCONCLUSIVE }
+    public enum Refusal { OWNER_ACTIVE, CAPACITY, CLEANUP_INCONCLUSIVE, EXPIRED }
     public enum CleanupState { IN_PROGRESS, INCONCLUSIVE, COMPLETE }
     public record CleanupReport(String sessionId, CleanupState state, int attempts) { }
     public sealed interface Admission permits Accepted, Denied { }
@@ -41,6 +41,10 @@ public final class SessionLedger {
         this.cleanup = Objects.requireNonNull(cleanup);
     }
     public Admission admit(String id, Owner owner) {
+        return admit(id, owner, clock.instant().plus(ABSOLUTE));
+    }
+    /** Authentication cannot restart the pending-login absolute lifetime. */
+    public Admission admit(String id, Owner owner, Instant absoluteDeadline) {
         if (id == null || id.isBlank()) throw new IllegalArgumentException("INVALID_SESSION_ID");
         Objects.requireNonNull(owner);
         expire();
@@ -50,17 +54,36 @@ public final class SessionLedger {
             if (sessions.values().stream().anyMatch(entry -> entry.lease.owner().equals(owner))) return new Denied(Refusal.OWNER_ACTIVE);
             if (sessions.size() + pending.size() >= 64) return new Denied(Refusal.CAPACITY);
             var now = clock.instant();
-            var lease = new Lease(id, owner, now.plus(ABSOLUTE));
+            Objects.requireNonNull(absoluteDeadline);
+            if (!now.isBefore(absoluteDeadline)) return new Denied(Refusal.EXPIRED);
+            var maximum = now.plus(ABSOLUTE);
+            var lease = new Lease(id, owner, absoluteDeadline.isBefore(maximum) ? absoluteDeadline : maximum);
             sessions.put(id, new Entry(lease, now));
             return new Accepted(lease);
         }
+    }
+    /** Short authority transitions only: no I/O or cleanup, and never renews idle lifetime.
+     * Revocation uses this same monitor. Expired entries remain denied until normal lifecycle cleanup.
+     */
+    public <T> Optional<T> guard(Lease lease, java.util.function.Supplier<T> transition) {
+        Objects.requireNonNull(lease); Objects.requireNonNull(transition);
+        synchronized (sessions) {
+            var entry = sessions.get(lease.id());
+            var now = clock.instant();
+            if (entry == null || !entry.lease.equals(lease) || !live(entry, now)) return Optional.empty();
+            return Optional.of(Objects.requireNonNull(transition.get()));
+        }
+    }
+    private static boolean live(Entry entry, Instant now) {
+        return now.isBefore(entry.lastSeen.plus(IDLE)) && now.isBefore(entry.lease.absoluteExpiresAt());
     }
     public Optional<Lease> touch(String id) {
         expire();
         synchronized (sessions) {
             var entry = sessions.get(id);
-            if (entry == null) return Optional.empty();
-            sessions.put(id, new Entry(entry.lease, clock.instant()));
+            var now = clock.instant();
+            if (entry == null || !live(entry, now)) return Optional.empty();
+            sessions.put(id, new Entry(entry.lease, now));
             return Optional.of(entry.lease);
         }
     }

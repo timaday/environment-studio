@@ -116,4 +116,54 @@ class SessionLedgerTest {
         assertInstanceOf(SessionLedger.Accepted.class, ledger.admit("new", owner));
     }
 
+    @Test void backgroundGuardNeverRenewsIdleAndRejectsExpiredLeaseBeforeTransition() {
+        var lease = ((SessionLedger.Accepted) ledger.admit("guard", owner)).lease();
+        clock.now = clock.now.plusSeconds(1799);
+        assertEquals(Optional.of("visible"), ledger.guard(lease, () -> "visible"));
+        clock.now = clock.now.plusSeconds(1);
+        var entered = new java.util.concurrent.atomic.AtomicBoolean();
+        assertTrue(ledger.guard(lease, () -> { entered.set(true); return "late"; }).isEmpty());
+        assertFalse(entered.get());
+        assertTrue(ledger.touch("guard").isEmpty());
+    }
+    @Test void backgroundGuardRejectsRetiredAndForgedLeaseWhileCleanupBlocked() throws Exception {
+        var started = new CountDownLatch(1); var release = new CountDownLatch(1);
+        var authority = new SessionLedger(clock, lease -> {
+            started.countDown();
+            try { if (!release.await(5, TimeUnit.SECONDS)) throw new IllegalStateException("TEST_TIMEOUT"); }
+            catch (InterruptedException failure) { Thread.currentThread().interrupt(); throw new IllegalStateException("TEST_INTERRUPTED"); }
+        });
+        var lease = ((SessionLedger.Accepted) authority.admit("guard", owner)).lease();
+        assertTrue(authority.guard(new SessionLedger.Lease(lease.id(), new Owner(owner.issuer(), "other"), lease.absoluteExpiresAt()), () -> true).isEmpty());
+        try (var executor = Executors.newSingleThreadExecutor()) {
+            var close = executor.submit(() -> authority.close(lease.id()));
+            try {
+                assertTrue(started.await(5, TimeUnit.SECONDS));
+                assertTrue(authority.guard(lease, () -> true).isEmpty());
+            } finally { release.countDown(); }
+            close.get(5, TimeUnit.SECONDS);
+        }
+    }
+
+    @Test void guardedTransitionAndRevocationShareOneLinearizationLock() throws Exception {
+        var lease=((SessionLedger.Accepted)ledger.admit("atomic",owner)).lease();
+        var inside=new CountDownLatch(1); var release=new CountDownLatch(1);
+        var transition=new FutureTask<>(()->ledger.guard(lease,()->{
+            inside.countDown();
+            try { if(!release.await(5,TimeUnit.SECONDS)) throw new AssertionError("TEST_TIMEOUT"); }
+            catch(InterruptedException interrupted) { Thread.currentThread().interrupt(); throw new AssertionError(interrupted); }
+            return "installed-before-revocation";
+        }));
+        var close=new FutureTask<>(()->ledger.close(lease.id()));
+        var actor=new Thread(transition,"mock-transition"); var revoker=new Thread(close,"mock-revoker"); actor.start();
+        try {
+            assertTrue(inside.await(5,TimeUnit.SECONDS)); revoker.start();
+            long deadline=System.nanoTime()+TimeUnit.SECONDS.toNanos(2);
+            while(revoker.getState()!=Thread.State.BLOCKED && revoker.isAlive() && System.nanoTime()<deadline) Thread.onSpinWait();
+            assertEquals(Thread.State.BLOCKED,revoker.getState());
+        } finally { release.countDown(); }
+        assertEquals(Optional.of("installed-before-revocation"),transition.get(5,TimeUnit.SECONDS));
+        close.get(5,TimeUnit.SECONDS); assertTrue(ledger.guard(lease,()->"late").isEmpty());
+    }
+
 }
