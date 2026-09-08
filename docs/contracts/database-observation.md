@@ -83,6 +83,15 @@ authority, reachable privileged roles and table/column write privileges, includi
 role and PUBLIC grants. `row_security=off` supplies an additional refusal if a
 policy would filter rows; it does not bypass the policy. Qualification challenges
 column grants and reachable roles, not only direct table grants.
+The pinned pristine PostgreSQL policy permits exactly the vendor `PUBLIC`
+`SELECT` and `UPDATE` grants on `pg_catalog.pg_settings`, with no grant option or
+additional table/column grants. Verify the built-in view's owner/provenance and
+closed ACL before excluding that one UPDATE from the global write scan; missing
+or changed evidence refuses. This view changes the current session's settings
+under PostgreSQL's parameter permissions, and is never an eligible observation
+binding. It does not permit writes to managed data. Reject all other effective
+write/admin paths, including explicit privileged parameter grants. Vendor object
+integrity remains part of the identified provisioning policy.
 
 Oracle rejects applicable enabled VPD, label-security/redaction or other
 unqualified policy mechanisms. Obtain the metadata needed to prove policy
@@ -93,16 +102,39 @@ column, schema or system write/admin privileges, including active roles/PUBLIC.
 also exclude unqualified write-capable routines; arbitrary account purity cannot
 be inferred from a few catalog rows. The disposable harness provisions and
 adversely tests the exact supported policy, with no production qualification claim.
-The initial Oracle policy rejects non-SYS EXECUTE grants, including PUBLIC and
-role grants. Trusted SYS PUBLIC built-ins require the pinned vendor version and
-an independently supplied approved grant-set digest; owner `SYS` alone does not
-approve a new grant. Compare the observed sorted routine-identity/type/privilege
-set to that expected digest and bind the policy content identity into the
-observation. Additional SYS grants and all write/admin privileges still require
-explicit evidence and otherwise refuse. Routine implementation purity remains
-an external provisioning responsibility. The dedicated disposable PDB may revoke
-unneeded non-SYS PUBLIC grants for this qualification policy; the application
-never performs such provisioning and no production recommendation is implied.
+The initial Oracle policy trusts only the complete independently captured pristine
+vendor PUBLIC EXECUTE baseline for the exact pinned image, server patch and
+installed components. Compare the complete grant set, including grant options,
+common/inherited status and object type; reject every difference. PUBLIC must be
+included explicitly, not inferred from `SESSION_ROLES`. Every routine must have
+vendor-maintained provenance (`ORACLE_MAINTAINED`) and external administrative
+assurance against replacement or customization. Owner `SYS` alone is insufficient.
+Beyond this baseline, permit only session creation and the necessary table and
+metadata reads; reject additional EXECUTE, ownership and all effective object,
+column, schema, system, role or PUBLIC write/admin paths. Routine implementation
+purity cannot be inferred from a grant digest or a read-only transaction;
+autonomous transactions are independent. Closed adapter SQL never invokes an
+uploaded expression, custom routine or arbitrary procedure.
+
+The Oracle baseline digest uses domain `ES-ORACLE-PUBLIC-EXECUTE-1`, a zero byte,
+then the native v2 framed array of closed objects `{owner, objectName, objectType,
+privilege, grantable, common, inherited, oracleMaintained}`. All fields are exact
+catalog strings. Deduplicate and sort by the listed tuple using unsigned UTF-8
+bytes. Exclude object bodies and subobjects when resolving the grant target;
+missing or ambiguous target metadata refuses. The independently provisioned
+expected digest is bound through
+`accountPolicyVersion = oracle-read-only-v1:<lowercase SHA-256>`. The reader never
+establishes its own expected baseline from its current privileges.
+
+`leastPrivilege=verified` means verified against this identified provisioning
+policy, including its explicit vendor-software trust assumption. It does not
+assert that the account can never cause any database write. Qualification must
+demonstrate managed-table INSERT/UPDATE/DELETE denial in an ordinary transaction
+as well as the adapter's read-only transaction, so transaction restrictions cannot
+mask excess grants. Retain grant-drift adversaries, visibility checks, unchanged
+canaries and observed cancellation/cleanup. Blanket vendor-grant revocation is
+not the policy: the disposable Oracle experiment broke recursive vendor DDL and
+did not qualify an observation. The application performs no provisioning.
 
 ## Bounds, cleanup and fingerprint
 
@@ -195,7 +227,12 @@ Record exact engines/drivers/clients, commands, outcomes and untested combinatio
 Primary references: [PostgreSQL isolation](https://www.postgresql.org/docs/18/transaction-iso.html),
 [RLS](https://www.postgresql.org/docs/18/ddl-rowsecurity.html),
 [privilege functions](https://www.postgresql.org/docs/18/functions-info.html),
+[session settings view](https://www.postgresql.org/docs/18/view-pg-settings.html),
 [pgJDBC settings](https://jdbc.postgresql.org/documentation/use/),
 [Oracle read transactions](https://docs.oracle.com/en/database/oracle/oracle-database/26/sqlrf/SET-TRANSACTION.html),
 [Oracle policy metadata](https://docs.oracle.com/en/database/oracle/oracle-database/26/refrn/ALL_POLICIES.html),
+[Oracle PUBLIC privileges](https://docs.oracle.com/en/database/oracle/oracle-database/26/dbseg/configuring-privilege-and-role-authorization.html),
+[Oracle grant metadata](https://docs.oracle.com/en/database/oracle/oracle-database/26/refrn/DBA_TAB_PRIVS.html),
+[Oracle object provenance](https://docs.oracle.com/en/database/oracle/oracle-database/26/refrn/ALL_OBJECTS.html),
+[Oracle autonomous transactions](https://docs.oracle.com/en/database/oracle/oracle-database/26/lnpls/autonomous-transactions.html),
 [Oracle cancellation limits](https://docs.oracle.com/en/database/oracle/oracle-database/26/jjdbc/JDBC-troubleshooting.html).
