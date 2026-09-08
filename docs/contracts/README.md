@@ -13,6 +13,7 @@
 | XML fidelity and guarded SQL | [xml-and-sql.md](xml-and-sql.md) |
 | Planned guarded package and external supervisor | [guarded-package-v1.md](guarded-package-v1.md) |
 | Planned standalone supervisor packaging/configuration | [guarded-supervisor-runtime-v1.md](guarded-supervisor-runtime-v1.md) |
+| Candidate ordered client protocol | [guarded-supervisor-protocol-v1.md](guarded-supervisor-protocol-v1.md) |
 | First lossless XML mechanism | [lossless-xml.md](lossless-xml.md) |
 | Fifth Edition parser qualification | [xml-parser-qualification.md](xml-parser-qualification.md) |
 | Definition-driven graph projection | [graph-projection.md](graph-projection.md) |
