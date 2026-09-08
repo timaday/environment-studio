@@ -4,6 +4,11 @@ Updated: 8 September 2026. See [starter evidence](../evidence/starter-verificati
 and [D01a integration](../evidence/d01a-integration.md) for actual commands and
 results; the table below reports capability, not test count.
 
+Paused at Tim's request on 8 September after the reviewed `6336d3d` checkpoint.
+The main integration tree is committed; separate browser/native-runtime WIP is
+preserved for tomorrow. Use [the next-session handoff](next-session.md), including
+the exact remaining failing tests and stopped test-harness state.
+
 | Slice | State | Next evidence |
 | --- | --- | --- |
 | D00 foundation | COMPLETE for starter: CI/build/smoke/GHCR passed | See ../evidence/starter-verification.md and image-reference.json |
