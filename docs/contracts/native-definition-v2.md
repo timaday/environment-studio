@@ -166,6 +166,11 @@ rejects; recognized declarations that exceed a mechanism's capabilities remain
 incomplete. Oracle/PostgreSQL binding syntax can be compiler-ready before a
 specific database/client is qualified; inspection/export still require that
 separate server-owned qualification evidence. XSD import remains unavailable.
+Static mechanism limits also constrain readiness: paths deeper than 128 elements
+or projections requiring more than 256 attributes (required fields plus required
+reference attributes) are incomplete under `xml-span-v1`. Optional observed
+attributes and namespace declarations still count toward the adapter's actual
+per-document limit. Runtime budget checks remain mandatory for each observation.
 
 Use separate versioned SHA-256 digests with unambiguous length framing and stable
 ordering. The logical digest covers types, field semantics, identity, relations,

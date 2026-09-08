@@ -44,9 +44,25 @@ compiler's immutable incomplete projection. A repeated request with identical
 body returns that same revision/result even after later edits. A reused request
 ID with different content, stale expected revision, or changed native `id`
 returns 409. Atomic replay semantics follow the hosted-session contract.
+Command identity frames decoded `expectedRevision`, `requestId`, `format` and
+`source` in that fixed order, each as decimal UTF-8 byte length, `:`, then exact
+bytes, and hashes the concatenation with SHA-256. Wrapper whitespace/property
+order does not matter; source whitespace and characters do. The request ID is
+scoped by owner and object, never shared across objects.
 Persist the original projection and diagnostics with compiler/schema versions,
 not only source. Historical GET/replay never recompiles using a later engine and
 silently changes the original result.
+
+The D02b response also includes `compilerVersion: "definition-compiler-d01a"`,
+`schemaVersion: "1"` and `projection: {kind: "incomplete", model, diagnostics}`.
+The model uses native v1 property names, lowercase enum values, and canonical
+decimal **strings** for every arbitrary-precision integer. Source retains its
+original numeric notation. Diagnostics use `phase`, `code`, `pointer`, `message`;
+saved projections contain publication diagnostics. A 422 response is
+`{kind: "rejected", diagnostics}` with lowercase parse/shape/semantic/publication
+phases. Other workspace errors use `{code, message}` with a stable `WORKSPACE_`
+code and constant safe corrective text. These DTOs must have safe log rendering;
+framework DEBUG logging must not expose source or secret-bearing fields.
 
 `GET /api/v1/definitions` returns owned objects in object-ID order with current
 workspace revision, native definition ID/revision and source digest. It omits
@@ -55,6 +71,8 @@ revision; `GET /api/v1/definitions/{objectId}/revisions/{revision}` returns the
 specified immutable revision. Cross-owner and missing objects return the same
 404. Revision syntax errors return a safe 400. No delete or publish route exists
 in this slice. Unknown API routes stay denied.
+The list envelope is `{definitions: [...]}`; each item contains only `objectId`,
+`workspaceRevision`, `nativeId`, `nativeRevision` and `sourceDigest`, all strings.
 
 ## Private SQLite metadata adapter
 

@@ -2,7 +2,7 @@ openapi: 3.1.0
 info:
   title: Environment Studio API
   version: 0.1.0
-  description: Demo capability surface and hosted session boundary. Database/export remain unavailable.
+  description: Demo capabilities, hosted sessions and private definition drafts. Database/export remain unavailable.
 paths:
   /api/v1/capabilities:
     get:
@@ -16,9 +16,10 @@ paths:
               schema:
                 type: object
                 additionalProperties: false
-                required: [mode, inspectionEnabled, exportEnabled, qualifiedDatabaseAdapters, blockers]
+                required: [mode, definitionWorkspaceEnabled, inspectionEnabled, exportEnabled, qualifiedDatabaseAdapters, blockers]
                 properties:
                   mode: {type: string, enum: [demo, hosted]}
+                  definitionWorkspaceEnabled: {type: boolean}
                   inspectionEnabled: {type: boolean, const: false}
                   exportEnabled: {type: boolean, const: false}
                   qualifiedDatabaseAdapters:
@@ -68,6 +69,106 @@ paths:
         '401': {description: No valid authenticated session}
         '403': {description: Origin/CSRF refused, or endpoint unavailable in demo mode}
         '503': {description: SESSION_CLEANUP_INCONCLUSIVE; session revoked and capacity quarantined}
+  /api/v1/definitions:
+    get:
+      operationId: listDefinitions
+      summary: List current owned draft metadata in object-ID order
+      security: [{sessionCookie: []}]
+      responses:
+        '200':
+          description: Owned metadata only; Cache-Control no-store
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required: [definitions]
+                properties:
+                  definitions:
+                    type: array
+                    maxItems: 100
+                    items:
+                      type: object
+                      additionalProperties: false
+                      required: [objectId, workspaceRevision, nativeId, nativeRevision, sourceDigest]
+                      properties:
+                        objectId: {type: string, format: uuid}
+                        workspaceRevision: {$ref: '#/components/schemas/PositiveRevision'}
+                        nativeId: {type: string}
+                        nativeRevision: {$ref: '#/components/schemas/PositiveRevision'}
+                        sourceDigest: {$ref: '#/components/schemas/SourceDigest'}
+        '401': {description: No valid hosted session}
+        '403': {description: Host/Origin refused or unavailable in demo mode}
+        '503': {$ref: '#/components/responses/WorkspaceUnavailable'}
+  /api/v1/definitions/{objectId}:
+    parameters:
+      - {$ref: '#/components/parameters/ObjectId'}
+    get:
+      operationId: getDefinition
+      summary: Read current owned immutable draft revision
+      security: [{sessionCookie: []}]
+      responses:
+        '200': {$ref: '#/components/responses/DefinitionRevision'}
+        '400': {$ref: '#/components/responses/WorkspaceInvalid'}
+        '401': {description: No valid hosted session}
+        '403': {description: Host/Origin refused or unavailable in demo mode}
+        '404': {$ref: '#/components/responses/DefinitionMissing'}
+        '503': {$ref: '#/components/responses/WorkspaceUnavailable'}
+    put:
+      operationId: saveDefinitionDraft
+      summary: Compile and atomically save an owned v1 draft revision
+      description: Requires current session CSRF header and approved Host/Origin. Exact replay returns the original result before revision checking or compilation. See definition-workspace.md for strict UTF-8 and size budgets.
+      security: [{sessionCookie: []}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [expectedRevision, requestId, format, source]
+              properties:
+                expectedRevision: {type: string, pattern: '^(0|[1-9][0-9]*)$', maxLength: 1024}
+                requestId: {type: string, format: uuid}
+                format: {type: string, enum: [JSON, YAML]}
+                source: {type: string, description: Exact native source; at most 1 MiB strict UTF-8}
+      responses:
+        '200': {$ref: '#/components/responses/DefinitionRevision'}
+        '400': {$ref: '#/components/responses/WorkspaceInvalid'}
+        '401': {description: No valid hosted session}
+        '403': {description: Host/Origin/CSRF refused or unavailable in demo mode}
+        '409': {description: Stale revision, changed native ID or conflicting request-ID reuse}
+        '413': {description: Wrapper/source/record capacity exceeded; nothing saved}
+        '422':
+          description: Compilation rejected; nothing saved
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required: [kind, diagnostics]
+                properties:
+                  kind: {type: string, const: rejected}
+                  diagnostics: {$ref: '#/components/schemas/Diagnostics'}
+        '503': {$ref: '#/components/responses/WorkspaceUnavailable'}
+  /api/v1/definitions/{objectId}/revisions/{revision}:
+    parameters:
+      - {$ref: '#/components/parameters/ObjectId'}
+      - name: revision
+        in: path
+        required: true
+        schema: {$ref: '#/components/schemas/PositiveRevision'}
+    get:
+      operationId: getDefinitionRevision
+      summary: Read the originally saved projection without recompilation
+      security: [{sessionCookie: []}]
+      responses:
+        '200': {$ref: '#/components/responses/DefinitionRevision'}
+        '400': {$ref: '#/components/responses/WorkspaceInvalid'}
+        '401': {description: No valid hosted session}
+        '403': {description: Host/Origin refused or unavailable in demo mode}
+        '404': {$ref: '#/components/responses/DefinitionMissing'}
+        '503': {$ref: '#/components/responses/WorkspaceUnavailable'}
   /actuator/health/liveness:
     get:
       operationId: getLiveness
@@ -76,6 +177,74 @@ paths:
         '200': {description: Process live}
         '503': {description: Process unhealthy}
 components:
+  parameters:
+    ObjectId:
+      name: objectId
+      in: path
+      required: true
+      schema: {type: string, format: uuid, pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'}
+  schemas:
+    PositiveRevision: {type: string, pattern: '^[1-9][0-9]*$', maxLength: 1024}
+    SourceDigest: {type: string, pattern: '^[0-9a-f]{64}$'}
+    Diagnostics:
+      type: array
+      items:
+        type: object
+        additionalProperties: false
+        required: [phase, code, pointer, message]
+        properties:
+          phase: {type: string, enum: [parse, shape, semantic, publication]}
+          code: {type: string}
+          pointer: {type: string}
+          message: {type: string}
+    WorkspaceError:
+      type: object
+      additionalProperties: false
+      required: [code, message]
+      properties:
+        code: {type: string, pattern: '^WORKSPACE_'}
+        message: {type: string}
+    DefinitionRevision:
+      type: object
+      additionalProperties: false
+      required: [objectId, workspaceRevision, sourceDigest, format, source, compilerVersion, schemaVersion, projection]
+      properties:
+        objectId: {type: string, format: uuid}
+        workspaceRevision: {$ref: '#/components/schemas/PositiveRevision'}
+        sourceDigest: {$ref: '#/components/schemas/SourceDigest'}
+        format: {type: string, enum: [JSON, YAML]}
+        source: {type: string}
+        compilerVersion: {type: string, const: definition-compiler-d01a}
+        schemaVersion: {type: string, const: '1'}
+        projection:
+          type: object
+          additionalProperties: false
+          required: [kind, model, diagnostics]
+          properties:
+            kind: {type: string, const: incomplete}
+            model: {$ref: '../../schemas/definition-inspection-v1.schema.json'}
+            diagnostics: {$ref: '#/components/schemas/Diagnostics'}
+  responses:
+    DefinitionRevision:
+      description: Original immutable revision and projection; Cache-Control no-store
+      content:
+        application/json:
+          schema: {$ref: '#/components/schemas/DefinitionRevision'}
+    WorkspaceInvalid:
+      description: Invalid bounded wrapper, identifier or revision; nothing saved
+      content:
+        application/json:
+          schema: {$ref: '#/components/schemas/WorkspaceError'}
+    DefinitionMissing:
+      description: Missing and cross-owner objects have the same response
+      content:
+        application/json:
+          schema: {$ref: '#/components/schemas/WorkspaceError'}
+    WorkspaceUnavailable:
+      description: Workspace absent, exhausted, damaged or unavailable; no success assumed
+      content:
+        application/json:
+          schema: {$ref: '#/components/schemas/WorkspaceError'}
   securitySchemes:
     sessionCookie:
       type: apiKey
