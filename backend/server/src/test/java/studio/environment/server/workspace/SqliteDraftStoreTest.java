@@ -28,6 +28,13 @@ class SqliteDraftStoreTest {
         return new DraftWorkspace(store, command -> new DefinitionBytesCompiler().compile(StrictUtf8.encode(command.source()), DefinitionBytesCompiler.Format.valueOf(command.format().name())));
     }
     SavedDraft put(DraftWorkspace workspace, DraftCommand command) { return ((DraftWorkspace.Saved) workspace.put(owner, command)).draft(); }
+    @Test void initializerCreatesExplicitSchemaTwo() throws Exception {
+        SqliteDraftStore.initialize(directory);
+        try (var connection = java.sql.DriverManager.getConnection("jdbc:sqlite:" + directory.resolve(PrivateWorkspacePath.DATABASE));
+                var statement = connection.createStatement(); var rows = statement.executeQuery("PRAGMA user_version")) {
+            assertTrue(rows.next()); assertEquals(2, rows.getInt(1));
+        }
+    }
     @Test void persistsCreateUpdateOriginalReplayAndOwnerIsolationAcrossRestart() {
         SqliteDraftStore.initialize(directory);
         var store = new SqliteDraftStore(directory);

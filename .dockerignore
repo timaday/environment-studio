@@ -16,4 +16,7 @@ private-fixtures
 external-config
 workspace-data
 exports
-docs
+docs/*
+!docs/contracts
+docs/contracts/*
+!docs/contracts/openapi-workspace-v2.json

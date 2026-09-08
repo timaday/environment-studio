@@ -62,7 +62,7 @@ class ProfileBytesAdapterTest {
         for (String invalid : List.of("{\"id\":\"one\",\"id\":\"two\"}", "{\"bad\":\"\\ud800\"}", "{\"n\":1e1000000000}", "{\"n\":" + "1".repeat(257) + "}", "{\"n\":" + "[".repeat(33) + "0" + "]".repeat(33) + "}", "{\"canary\":\"" + "x".repeat(16385) + "\"}", "{\"n\":[" + "0,".repeat(20000) + "0]}")) {
             assertInstanceOf(ProfileBytesAdapter.Result.Rejected.class, adapter.read(definition, invalid.getBytes(StandardCharsets.UTF_8), BoundedDocumentParser.Format.JSON));
         }
-        assertCode(adapter.read(definition, new byte[1_048_577], BoundedDocumentParser.Format.JSON), "RESOURCE_LIMIT");
+        assertCode(adapter.read(definition, new byte[1_048_577], BoundedDocumentParser.Format.JSON), "BYTE_LIMIT");
         assertCode(adapter.read(definition, new byte[]{(byte)0xc0,(byte)0xaf}, BoundedDocumentParser.Format.JSON), "INVALID_UTF8");
         for (String yaml : List.of("x: &a 1\ny: *a", "x: !!str value", "x: 1\nx: 2", "x: 1\n---\nx: 2", "<<: {x: 1}")) assertCode(adapter.read(definition, yaml.getBytes(StandardCharsets.UTF_8), BoundedDocumentParser.Format.YAML), "INVALID_SYNTAX");
         for (String number : List.of("1.0", "1e0", "1e1023")) {
@@ -132,8 +132,8 @@ class ProfileBytesAdapterTest {
                 new studio.environment.core.graph.GraphValidationResult.Accepted(observation.graph()), command));
             var portable = adapter.capture(definition, observation, command);
             if (count == 1818 || count == 1800) {
-                assertCode(portable, "RESOURCE_LIMIT");
-                assertEquals("RESOURCE_LIMIT", assertInstanceOf(ProfileBytesAdapter.ExportResult.Rejected.class, adapter.write(definition, structural.checked())).diagnostics().getFirst().code());
+                assertCode(portable, count == 1800 ? "BYTE_LIMIT" : "RESOURCE_LIMIT");
+                assertEquals(count == 1800 ? "BYTE_LIMIT" : "RESOURCE_LIMIT", assertInstanceOf(ProfileBytesAdapter.ExportResult.Rejected.class, adapter.write(definition, structural.checked())).diagnostics().getFirst().code());
             } else {
                 var checked = assertInstanceOf(ProfileBytesAdapter.Result.Accepted.class, portable).checked();
                 byte[] bytes = assertInstanceOf(ProfileBytesAdapter.ExportResult.Encoded.class, adapter.write(definition, checked)).bytes();

@@ -59,10 +59,11 @@ public final class WorkspaceController {
     @ExceptionHandler(WorkspaceRefusal.class)
     public ResponseEntity<?> refusal(WorkspaceRefusal refusal) {
         int status = switch (refusal.code()) {
-            case INVALID_REQUEST -> 400; case TOO_LARGE -> 413; case CONFLICT -> 409;
+            case FORBIDDEN -> 403; case INVALID_REQUEST -> 400; case TOO_LARGE -> 413; case CONFLICT -> 409;
             case NOT_FOUND -> 404; case CAPACITY, UNAVAILABLE -> 503;
         };
         return response(status, new ErrorView(refusal.getMessage(), switch (refusal.code()) {
+            case FORBIDDEN -> "Publication is not authorized.";
             case INVALID_REQUEST -> "Provide a valid bounded draft request.";
             case TOO_LARGE -> "Reduce the draft request size.";
             case CONFLICT -> "Read the current revision before retrying with a new request identifier.";

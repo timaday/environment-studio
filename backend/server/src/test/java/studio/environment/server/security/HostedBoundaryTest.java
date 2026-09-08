@@ -34,7 +34,7 @@ class HostedBoundaryTest {
         } catch (java.io.IOException failure) { throw new IllegalStateException("MOCK_WORKSPACE_UNAVAILABLE"); }
     }
 
-    @DynamicPropertySource static void properties(DynamicPropertyRegistry properties) { properties.add("studio.security.issuer", issuer::issuer); properties.add("studio.workspace.directory", () -> workspace.toString()); }
+    @DynamicPropertySource static void properties(DynamicPropertyRegistry properties) { properties.add("studio.security.issuer", issuer::issuer); properties.add("studio.workspace.directory", () -> workspace.toString()); properties.add("studio.workspace.definition-publishers[0].issuer", issuer::issuer); properties.add("studio.workspace.definition-publishers[0].subject", () -> "workspace-maintainer"); }
     @Autowired WebApplicationContext context;
     @Autowired CleanupProbe cleanupProbe;
     @org.springframework.boot.test.context.TestConfiguration
@@ -49,6 +49,12 @@ class HostedBoundaryTest {
     }
     @AfterEach void providerCredentialsNeverEnterCapturedLogs(org.springframework.boot.test.system.CapturedOutput output) {
         cleanupProbe.fail = false;
+        try {
+            String persisted=new String(java.nio.file.Files.readAllBytes(workspace.resolve("studio-workspace.db")),java.nio.charset.StandardCharsets.ISO_8859_1);
+            for(String canary:java.util.List.of("mock-platform-secret","mock-access-canary"))assertFalse(persisted.contains(canary),"Authentication canary entered workspace persistence");
+            for(String token:issuer.issuedTokens)assertFalse(persisted.contains(token),"ID token entered workspace persistence");
+        }catch(java.io.IOException failure){throw new AssertionError("Mock persistence canary scan unavailable");}
+
         assertFalse(output.getAll().contains("workspace-source-canary"), "Synthetic workspace source leaked to logs");
         for (String token : csrfCanaries) assertFalse(output.getAll().contains(token.substring(0, 12)), "Session CSRF token prefix leaked to logs");
         assertFalse(output.getAll().contains("mock-platform-secret"), "Synthetic client secret leaked to logs");
@@ -68,6 +74,37 @@ class HostedBoundaryTest {
         mvc = MockMvcBuilders.webAppContextSetup(context).apply(springSecurity()).build();
     }
     @AfterAll static void stopIssuer() { issuer.close(); }
+    @Test void nativeWorkspaceUsesRealOidcSessionCsrfOwnerAndMaintainerAuthority() throws Exception {
+        issuer.subject="workspace-maintainer";
+        var login=login(false);assertEquals(302,login.callback.getResponse().getStatus());assertTrue(issuer.verifiedPkce);
+        var session=mvc.perform(get("/api/v1/session").header("Host","localhost").session(login.session)).andExpect(status().isOk()).andReturn();
+        var csrf=(org.springframework.security.web.csrf.CsrfToken)session.getRequest().getAttribute(org.springframework.security.web.csrf.CsrfToken.class.getName());csrfCanaries.add(csrf.getToken());
+        String id=java.util.UUID.randomUUID().toString(),path="/api/v2/definitions/"+id;
+        var json=tools.jackson.databind.json.JsonMapper.builder().build();
+        String source=java.nio.file.Files.readString(java.nio.file.Path.of("../../fixtures/native-v2/definition.json")).replaceFirst("\"label\": \"[^\"]+\"","\"label\": \"workspace-source-canary\"");
+        String command=json.writeValueAsString(Map.of("expectedRevision","0","requestId",java.util.UUID.randomUUID().toString(),"format","JSON","source",source));
+        mvc.perform(put(path).header("Host","localhost").header("Origin","http://localhost").session(login.session).contentType("application/json").content(command)).andExpect(status().isForbidden());
+        mvc.perform(put(path).header("Host","localhost").header("Origin","https://wrong.invalid").header(csrf.getHeaderName(),csrf.getToken()).session(login.session).contentType("application/json").content(command)).andExpect(status().isForbidden());
+        var saved=mvc.perform(put(path).header("Host","localhost").header("Origin","http://localhost").header(csrf.getHeaderName(),csrf.getToken()).session(login.session).contentType("application/json").content(command))
+            .andExpect(status().isOk()).andExpect(header().string("Cache-Control","no-store")).andExpect(jsonPath("$.state").value("draft")).andExpect(jsonPath("$.workspaceRevision").value("1")).andReturn();
+        var body=json.readTree(saved.getResponse().getContentAsString());
+        var policies=new java.util.ArrayList<Map<String,String>>();for(var binding:body.get("projection").get("model").get("bindings"))for(var document:binding.get("documents"))policies.add(Map.of("bindingId",binding.get("id").asString(),"documentId",document.get("id").asString(),"content","deny"));
+        String publication=json.writeValueAsString(Map.of("expectedRevision","1","requestId",java.util.UUID.randomUUID().toString(),"exportPolicies",policies));
+        mvc.perform(post(path+"/publish").header("Host","localhost").header("Origin","http://localhost").header(csrf.getHeaderName(),csrf.getToken()).session(login.session).contentType("application/json").content(publication))
+            .andExpect(status().isOk()).andExpect(jsonPath("$.state").value("published")).andExpect(jsonPath("$.publication.sourceRevision").value("1"));
+        mvc.perform(get("/api/v2/definitions").header("Host","localhost").session(login.session)).andExpect(status().isOk()).andExpect(jsonPath("$.canPublish").value(true));
+        String profile=java.nio.file.Files.readString(java.nio.file.Path.of("../../fixtures/profile-v2/profile.json"));
+        var profileTree=(tools.jackson.databind.node.ObjectNode)json.readTree(profile);profileTree.put("logicalDefinitionDigest",body.get("projection").get("logicalDigest").asString());
+        String profileId=java.util.UUID.randomUUID().toString();String profilePath="/api/v2/profiles/"+profileId;
+        String profileCommand=json.writeValueAsString(Map.of("expectedRevision","0","requestId",java.util.UUID.randomUUID().toString(),"format","JSON","source",json.writeValueAsString(profileTree),"definition",Map.of("objectId",id,"workspaceRevision","2")));
+        mvc.perform(put(profilePath).header("Host","localhost").header("Origin","http://localhost").header(csrf.getHeaderName(),csrf.getToken()).session(login.session).contentType("application/json").content(profileCommand)).andExpect(status().isOk()).andExpect(jsonPath("$.projection.model.revision").value("1"));
+        mvc.perform(post(profilePath+"/publish").header("Host","localhost").header("Origin","http://localhost").header(csrf.getHeaderName(),csrf.getToken()).session(login.session).contentType("application/json").content(json.writeValueAsString(Map.of("expectedRevision","1","requestId",java.util.UUID.randomUUID().toString())))).andExpect(status().isOk()).andExpect(jsonPath("$.state").value("published"));
+        issuer.subject="workspace-nonmaintainer-"+java.util.UUID.randomUUID();var other=login(false);
+        var otherSession=mvc.perform(get("/api/v1/session").header("Host","localhost").session(other.session)).andReturn();var otherCsrf=(org.springframework.security.web.csrf.CsrfToken)otherSession.getRequest().getAttribute(org.springframework.security.web.csrf.CsrfToken.class.getName());csrfCanaries.add(otherCsrf.getToken());
+        mvc.perform(get(path).header("Host","localhost").session(other.session)).andExpect(status().isNotFound());
+        mvc.perform(post(path+"/publish").header("Host","localhost").header("Origin","http://localhost").header(otherCsrf.getHeaderName(),otherCsrf.getToken()).header("X-Role","maintainer").session(other.session).contentType("application/json").content(publication)).andExpect(status().isForbidden());
+        mvc.perform(get("/api/v2/definitions").header("Host","localhost").session(other.session)).andExpect(status().isOk()).andExpect(jsonPath("$.canPublish").value(false));
+    }
     @Test void anonymousSessionApiReturnsSafeJson401() throws Exception {
         mvc.perform(get("/api/v1/session").header("Host", "localhost"))
                 .andExpect(status().isUnauthorized())

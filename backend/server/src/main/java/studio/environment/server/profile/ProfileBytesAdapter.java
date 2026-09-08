@@ -28,6 +28,7 @@ public final class ProfileBytesAdapter {
         } catch (IOException exception) { throw new IllegalStateException("Packaged profile schema unreadable."); }
     }
     public Result read(ReadyToPublish definition, byte[] source, BoundedDocumentParser.Format format) {
+        if(source != null && source.length > 1_048_576)return rejected("BYTE_LIMIT");
         var parsed = parser.parse(source, format);
         if (parsed instanceof BoundedDocumentParser.Result.Rejected refusal) return rejected(refusal.code().name());
         return portable(definition, validateTree(definition, ((BoundedDocumentParser.Result.Parsed)parsed).tree()));
@@ -46,7 +47,7 @@ public final class ProfileBytesAdapter {
     public Result capture(ReadyToPublish definition, ProjectionResult.Accepted observation, ProfileCapture.Command command) {
         if (!definition.checked().logicalDigest().equals(observation.logicalDigest())) return rejected("INCOMPATIBLE_DEFINITION");
         try { ProfileWireEncoding.checkCaptureNodes(definition, observation.graph()); }
-        catch (ProfileWireEncoding.Limit refused) { return rejected("RESOURCE_LIMIT"); }
+        catch (ProfileWireEncoding.Limit refused) { return rejected(refused.code().name()); }
         return portable(definition, new ProfileCapture().capture(definition, new GraphValidationResult.Accepted(observation.graph()), command));
     }
     public ProfileComposer.CompositionResult compose(ReadyToPublish definition, Result.Accepted profile,
@@ -69,7 +70,7 @@ public final class ProfileBytesAdapter {
     /** Canonical UTF-8 JSON; also valid YAML 1.2. Caller supplies the compatible definition. */
     public ExportResult write(ReadyToPublish definition, ProfileResult.Checked profile) {
         try { ProfileWireEncoding.checkProfileNodes(profile.profile()); }
-        catch (ProfileWireEncoding.Limit refused) { return exportRejected("RESOURCE_LIMIT"); }
+        catch (ProfileWireEncoding.Limit refused) { return exportRejected(refused.code().name()); }
         var validated = validator.validate(definition, profile.profile());
         if (validated instanceof ProfileResult.Rejected refused) return new ExportResult.Rejected(refused.diagnostics());
         if (!((ProfileResult.StructurallyValid)validated).checked().equals(profile)) return new ExportResult.Rejected(java.util.List.of(new ProfileResult.Diagnostic("STALE_PROFILE", "")));
@@ -98,7 +99,7 @@ public final class ProfileBytesAdapter {
     private ExportResult encodePortable(ReadyToPublish definition, ProfileResult.Checked checked) {
         final byte[] bytes;
         try { bytes = ProfileWireEncoding.encode(checked.profile()); }
-        catch (ProfileWireEncoding.Limit refused) { return exportRejected("RESOURCE_LIMIT"); }
+        catch (ProfileWireEncoding.Limit refused) { return exportRejected(refused.code().name()); }
         var parsed = parser.parse(bytes, BoundedDocumentParser.Format.JSON);
         if (parsed instanceof BoundedDocumentParser.Result.Rejected refused) return exportRejected(refused.code().name());
         var roundTrip = validateTree(definition, ((BoundedDocumentParser.Result.Parsed)parsed).tree());

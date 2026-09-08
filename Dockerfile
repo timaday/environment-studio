@@ -12,6 +12,7 @@ COPY frontend/ ./
 COPY fixtures/ /build/fixtures/
 COPY schemas/ /build/schemas/
 COPY scripts/schema.test.mjs /build/scripts/schema.test.mjs
+COPY docs/contracts/openapi-workspace-v2.json /build/docs/contracts/openapi-workspace-v2.json
 RUN npm run check && npm test && npm run build
 
 FROM ui AS browser-check
@@ -25,6 +26,7 @@ COPY schemas/ ./schemas/
 COPY fixtures/native-v2/ ./fixtures/native-v2/
 COPY fixtures/profile-v2/ ./fixtures/profile-v2/
 COPY fixtures/db-observation/ ./fixtures/db-observation/
+COPY fixtures/structural-target/ ./fixtures/structural-target/
 COPY deploy/HealthProbe.java /build/deploy/HealthProbe.java
 COPY --from=ui /build/frontend/dist/ ./backend/server/src/main/resources/static/
 RUN mvn -B -ntp -f backend/pom.xml verify

@@ -19,7 +19,7 @@ final class ProfileWireEncoding {
         StringBuilder out = new StringBuilder();
         json(object(profile), out);
         byte[] bytes = out.toString().getBytes(StandardCharsets.UTF_8);
-        if (bytes.length > MAX_BYTES) throw new Limit();
+        if (bytes.length > MAX_BYTES) throw new Limit(Limit.Code.BYTE_LIMIT);
         return bytes;
     }
     static void checkCaptureNodes(studio.environment.core.definitionv2.NativeCompilationResult.ReadyToPublish definition,
@@ -66,7 +66,7 @@ final class ProfileWireEncoding {
             out.append('{'); boolean comma = false;
             for (var e : map.entrySet()) { if (comma) out.append(','); quote((String)e.getKey(), out); out.append(':'); json(e.getValue(), out); comma = true; } out.append('}');
         } else throw new IllegalArgumentException("Unsupported portable value.");
-        if (out.length() > MAX_BYTES) throw new Limit();
+        if (out.length() > MAX_BYTES) throw new Limit(Limit.Code.BYTE_LIMIT);
     }
     private static void quote(String s, StringBuilder out) {
         out.append('"');
@@ -81,5 +81,11 @@ final class ProfileWireEncoding {
         }
         out.append('"');
     }
-    static final class Limit extends RuntimeException { Limit() { super("Profile resource limit.", null, false, false); } }
+    static final class Limit extends RuntimeException {
+        enum Code { RESOURCE_LIMIT, BYTE_LIMIT }
+        private final Code code;
+        Limit() { this(Code.RESOURCE_LIMIT); }
+        Limit(Code code) { super("Profile resource limit.", null, false, false);this.code=code; }
+        Code code() {return code;}
+    }
 }

@@ -12,6 +12,12 @@ public class EnvironmentStudioApplication {
             catch (java.nio.file.InvalidPathException invalid) { throw new IllegalArgumentException("INVALID_INITIALIZER_ARGUMENTS"); }
             return;
         }
+        if(java.util.Arrays.stream(args).anyMatch(arg->arg.startsWith("--upgrade-workspace"))) {
+            if(args.length!=1||!args[0].startsWith("--upgrade-workspace=/"))throw new IllegalArgumentException("INVALID_UPGRADE_ARGUMENTS");
+            try {studio.environment.server.workspace.SqliteDraftStore.upgrade(java.nio.file.Path.of(args[0].substring("--upgrade-workspace=".length())));}
+            catch(java.nio.file.InvalidPathException invalid){throw new IllegalArgumentException("INVALID_UPGRADE_ARGUMENTS");}
+            return;
+        }
         SpringApplication.run(EnvironmentStudioApplication.class, args);
     }
 }

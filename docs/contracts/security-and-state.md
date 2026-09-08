@@ -41,5 +41,7 @@ cause network requests. Disable remote resolver access and debug payload logs.
 Demo mode denies mutations. D02a additionally implements explicitly configured
 `studio.mode=hosted` OIDC/session handling with mock protocol/lifecycle tests;
 its inspection/export remain disabled. D02b adds owned immutable v1 draft storage
-in an explicitly initialized private SQLite workspace. Database access remains
-D04 work. Unknown modes fail startup; a mode flag does not qualify deployment.
+in an explicitly initialized private SQLite workspace. D01c adds native v2
+definition/profile drafts and publication with an explicit offline schema upgrade.
+D04 internal observation is implemented; hosted plan/credential wiring remains
+planned. Unknown modes fail startup; a mode flag does not qualify deployment.

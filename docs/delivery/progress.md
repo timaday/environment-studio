@@ -7,13 +7,13 @@ results; the table below reports capability, not test count.
 | Slice | State | Next evidence |
 | --- | --- | --- |
 | D00 foundation | COMPLETE for starter: CI/build/smoke/GHCR passed | See ../evidence/starter-verification.md and image-reference.json |
-| D01 definitions | D01a draft and D01b native v2 compilers integrated; independent static-limit finding corrected | Workspace v2 upload/publication and immutable runtime revision APIs |
-| D02 security/state | D02a hosted sessions and D02b owned SQLite v1 draft revisions integrated and reviewed | V2 publication/profile persistence; actual deployment durability/identity external |
-| D03 XML | Guarded spans, definition-driven graph projection and corrected Fifth Edition parser integrated; independent review findings closed | Structural target orchestration and complete application/DB writer qualification |
+| D01 definitions | Native compilation, owned v2 upload/history and maintainer publication implemented and reviewed | Browser publication workflow and external application qualification |
+| D02 security/state | Hosted sessions and immutable v1/v2/profile SQLite revisions; explicit schema upgrade implemented and reviewed | Plan lease/operation integration; actual deployment durability/identity external |
+| D03 XML | Guarded spans, graph projection, corrected Fifth Edition parser and structural target assembly integrated | Hosted orchestration and guarded SQL/client qualification |
 | D04 database reads | Both engine adapters integrated; complete disposable matrices and review corrections passed | Hosted plan/session wiring and external TLS/account qualification |
-| D05 profiles | Value-free capture, bounded portable import/export and explicit whole/partial composition integrated and reviewed | Owned immutable persistence/publication and hosted plan binding |
-| D06 planning | Evidence gate starter; full planner not implemented | Typed cross-document operations and binding validation |
-| D07 SQL | Not implemented; export unavailable | Exact-client adverse transaction evidence |
+| D05 profiles | Value-free capture, portable whole/partial composition and owned immutable persistence/publication integrated | Hosted capture/composition and browser workflow |
+| D06 planning | Typed intents and complete cross-document structural targets implemented and reviewed; both-binding one-to-two fixture passes | Hosted plan revisions, operation lifecycle and private validation authority |
+| D07 SQL | Reviewed package/supervisor contract and closed schemas; implementation pending and export unavailable | Deterministic writer/supervisor plus both exact-client adverse transaction matrices |
 | D08 UX | Synthetic comparison and definition inspector; component keyboard/axe checks pass | Backend integration, editing workflow and representative operator sessions |
 | D09 deployment/release | OCI pipeline/contract; actual HiveForge unverified | Exact platform deployment and qualification matrix |
 
@@ -28,11 +28,14 @@ the lead's integration harness received independent fixed-candidate review with
 no material findings. Integration and rework are recorded in D01a evidence;
 there is no serial comparison supporting a speed-up claim.
 
-Active work: D06 structural targets and native
-workspace publication/profile persistence. D05a is integrated with 233 passing
-Java tests; see [profile integration](../evidence/d05a-integration.md).
-D04 adds reviewed observation with 250 integrated Java tests and the actual
-two-engine matrix; see [observation integration](../evidence/d04a-integration.md).
+Active work: hosted plan/session orchestration and guarded package implementation.
+Native workspace and structural target mechanisms have passed independent review
+and the combined 302-test Java reactor in the isolated Docker build; see
+[workspace/target integration](../evidence/d01c-d06a-integration.md).
+D05a's earlier 233-test integration is recorded in
+[profile integration](../evidence/d05a-integration.md).
+D04's 250-test integration and actual two-engine observation matrix are recorded
+in [observation integration](../evidence/d04a-integration.md).
 D03b/c is integrated with 211 passing Java tests and protected container checks;
 see [integration evidence](../evidence/d03bc-integration.md). D01b supplies
 declared identity, inventory, projection, rule and operation semantics before

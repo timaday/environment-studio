@@ -26,7 +26,7 @@
   </dependencies>
   <build><resources>
     <resource><directory>src/main/resources</directory></resource>
-    <resource><directory>../../schemas</directory><targetPath>schemas</targetPath><includes><include>definition.schema.json</include><include>definition-v2.schema.json</include><include>profile-v2.schema.json</include></includes></resource>
+    <resource><directory>../../schemas</directory><targetPath>schemas</targetPath><includes><include>definition.schema.json</include><include>definition-v2.schema.json</include><include>profile-v2.schema.json</include><include>definition-inspection-v2.schema.json</include><include>profile-inspection-v2.schema.json</include></includes></resource>
   </resources><finalName>environment-studio</finalName><plugins>
     <plugin><groupId>org.springframework.boot</groupId><artifactId>spring-boot-maven-plugin</artifactId><version>${spring-boot.version}</version><executions><execution><goals><goal>repackage</goal></goals></execution></executions></plugin>
   </plugins></build>

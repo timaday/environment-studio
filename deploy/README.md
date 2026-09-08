@@ -100,14 +100,26 @@ not become STUDIO_DB_PASSWORD or an orchestrator secret. An IdP client secret,
 if needed, is a separate platform credential supplied by the platform's secret
 mount/integration. No raw observations go to the persistent metadata volume.
 
-For D02b draft storage, provision a private volume directory owned by UID/GID
+For hosted definition/profile storage, provision a private volume directory owned by UID/GID
 10001 with mode 0700, then run the same image once with the argument
 `--initialize-workspace=/workspace` and that directory mounted at `/workspace`.
 This offline mode starts no HTTP or IdP client and refuses to overwrite any
 existing store. Initialization creates `studio-workspace.db` with mode 0600.
 Normal service startup never creates missing storage or migrates unknown schemas.
+New stores use metadata schema 2. To upgrade a valid schema-1 store, stop its
+service and invoke the same image with the sole argument
+`--upgrade-workspace=/workspace` against that private volume. This explicit offline
+upgrade preserves v1 history/replays and starts no web or IdP service. Already
+upgraded, corrupt and unknown stores refuse; there is no automatic migration.
+
 Configure `STUDIO_WORKSPACE_DIRECTORY=/workspace` in hosted mode to enable owned
-draft routes. Without it, authentication works but workspace routes are unavailable.
+v1 and native v2 definition/profile routes. Without it, authentication works but workspace routes are unavailable.
+Definition publication additionally requires the private
+`studio.workspace.definition-publishers` list of exact issuer/subject pairs.
+Absent or empty configuration authorizes no definition publisher; headers or
+source content cannot grant that role. Profile publication is an owner operation
+against an owned immutable published definition. See the [native workspace
+contract](../docs/contracts/native-workspace-v2.md) for the closed policies and APIs.
 Keep the directory outside the source checkout and build context. Single-replica
 ownership, volume durability and backup freshness require deployment evidence.
 
@@ -116,7 +128,9 @@ The linux/amd64 image embeds the pinned SQLite native library in
 service storage must work with the read-only root and noexec `/tmp`; no writable
 executable directory is required for native library extraction. The OCI workspace
 smoke initializes a fresh tool-owned volume, checks mode/ownership, and verifies
-that a refused second initialization preserves its exact database bytes.
+that a refused second initialization preserves its exact database bytes. It also
+checks the explicit schema-1 upgrade and unchanged bytes on repeated/invalid CLI
+invocation. These local mock checks do not qualify an actual platform volume.
 
 Restart expires raw
 observations and secrets and requires fresh inspection. Horizontal scaling,

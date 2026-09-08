@@ -11,18 +11,27 @@ import studio.environment.core.workspace.*;
 
 /** Single-replica private store. Every mutation owns an IMMEDIATE SQLite transaction. */
 public final class SqliteDraftStore implements DraftStore {
-    private static final int MAX_PAGES = 30_720; // 120 MiB leaves a full rollback journal plus framing below 256 MiB.
+    static final int MAX_PAGES = 30_720; // 120 MiB leaves a full rollback journal plus framing below 256 MiB.
     private static final int RECORD_LIMIT = 2 * 1024 * 1024;
-    private static final List<String> DDL = List.of(
+    static final List<String> DDL = List.of(
         "CREATE TABLE catalog(object_id TEXT PRIMARY KEY,issuer TEXT NOT NULL,subject TEXT NOT NULL,native_id TEXT NOT NULL,current_revision INTEGER NOT NULL CHECK(current_revision BETWEEN 1 AND 32))",
         "CREATE TABLE revisions(object_id TEXT NOT NULL,revision INTEGER NOT NULL,format TEXT NOT NULL,source BLOB NOT NULL,source_digest TEXT NOT NULL,projection BLOB NOT NULL,compiler_version TEXT NOT NULL,schema_version TEXT NOT NULL,snapshot_digest TEXT NOT NULL,PRIMARY KEY(object_id,revision),FOREIGN KEY(object_id) REFERENCES catalog(object_id))",
         "CREATE TABLE replays(object_id TEXT NOT NULL,request_id TEXT NOT NULL,request_digest TEXT NOT NULL,revision INTEGER NOT NULL,PRIMARY KEY(object_id,request_id),FOREIGN KEY(object_id,revision) REFERENCES revisions(object_id,revision))");
-    private final PrivateWorkspacePath paths;
+    final PrivateWorkspacePath paths;
+    private final int storageVersion;
     private final SnapshotCodec codec = new SnapshotCodec();
 
-    public SqliteDraftStore(Path directory) {
+    public SqliteDraftStore(Path directory) { this(directory,2); }
+    private SqliteDraftStore(Path directory,int storageVersion) {
+        this.storageVersion=storageVersion;
         paths = new PrivateWorkspacePath(directory);
         try (var connection = open()) {
+            validate(connection);
+        } catch (SQLException failure) { throw unavailable(); }
+    }
+
+    private String legacyFilter(String alias) { return storageVersion==1?"":" WHERE NOT EXISTS(SELECT 1 FROM artifact_types a WHERE a.object_id="+alias+".object_id)"; }
+    void validate(Connection connection) throws SQLException {
             verifySchema(connection);
             try (var statement = connection.createStatement(); var rows = statement.executeQuery("PRAGMA integrity_check")) {
                 if (!rows.next() || !"ok".equals(rows.getString(1)) || rows.next()) throw unavailable();
@@ -50,10 +59,10 @@ public final class SqliteDraftStore implements DraftStore {
             try (var statement = connection.createStatement(); var rows = statement.executeQuery("SELECT r.object_id,r.revision,COUNT(p.request_id) FROM revisions r LEFT JOIN replays p USING(object_id,revision) GROUP BY r.object_id,r.revision")) {
                 while (rows.next()) if (rows.getInt(3) != 1) throw unavailable();
             }
-            try (var statement = connection.createStatement(); var rows = statement.executeQuery("SELECT c.current_revision,COUNT(r.revision),MAX(r.revision),MIN(r.revision) FROM catalog c LEFT JOIN revisions r USING(object_id) GROUP BY c.object_id")) {
+            try (var statement = connection.createStatement(); var rows = statement.executeQuery("SELECT c.current_revision,COUNT(r.revision),MAX(r.revision),MIN(r.revision) FROM catalog c LEFT JOIN revisions r USING(object_id)" + legacyFilter("c") + " GROUP BY c.object_id")) {
                 while (rows.next()) if (rows.getInt(1) != rows.getInt(2) || rows.getInt(1) != rows.getInt(3) || rows.getInt(4) != 1) throw unavailable();
             }
-        } catch (SQLException failure) { throw unavailable(); }
+            if(storageVersion==2)NativeSqliteStore.validate(connection);
     }
 
     public static void initialize(Path directory) {
@@ -63,15 +72,31 @@ public final class SqliteDraftStore implements DraftStore {
             connection.setAutoCommit(false);
             try (var statement = connection.createStatement()) {
                 for (String sql : DDL) statement.execute(sql);
+                for(String sql:NativeSqliteStore.DDL)statement.execute(sql);
                 statement.execute("PRAGMA application_id=1163084875");
-                statement.execute("PRAGMA user_version=1");
+                statement.execute("PRAGMA user_version=2");
             }
             connection.commit();
         } catch (SQLException failure) { throw unavailable(); }
         new SqliteDraftStore(directory);
     }
 
-    private Connection open() throws SQLException {
+    public static void upgrade(Path directory) {
+        var legacy=new SqliteDraftStore(directory,1);
+        try(var connection=legacy.open()) {
+            connection.setAutoCommit(false);
+            legacy.validate(connection);
+            try(var statement=connection.createStatement()) {
+                for(String sql:NativeSqliteStore.DDL)statement.execute(sql);
+                statement.execute("PRAGMA user_version=2");
+            }
+            verifySchema(connection,2);NativeSqliteStore.validate(connection);legacy.paths.validateFiles(true);
+            connection.commit();legacy.paths.validateFiles(true);
+        } catch(SQLException failure) {throw unavailable();}
+        new SqliteDraftStore(directory);
+    }
+
+    Connection open() throws SQLException {
         paths.validateFiles(true);
         var connection = connect(paths);
         try { verifySchema(connection); return connection; }
@@ -102,9 +127,10 @@ public final class SqliteDraftStore implements DraftStore {
             return connection;
         } catch (RuntimeException | SQLException failure) { connection.close(); throw failure; }
     }
-    private static void verifySchema(Connection connection) throws SQLException {
+    private void verifySchema(Connection connection) throws SQLException {verifySchema(connection,storageVersion);}
+    private static void verifySchema(Connection connection,int storageVersion) throws SQLException {
         try (var statement = connection.createStatement()) {
-            for (var entry : Map.of("application_id", "1163084875", "user_version", "1").entrySet()) {
+            for (var entry : Map.of("application_id", "1163084875", "user_version", Integer.toString(storageVersion)).entrySet()) {
                 try (var rows = statement.executeQuery("PRAGMA " + entry.getKey())) {
                     if (!rows.next() || !entry.getValue().equals(rows.getString(1))) throw unavailable();
                 }
@@ -113,7 +139,8 @@ public final class SqliteDraftStore implements DraftStore {
             try (var rows = statement.executeQuery("SELECT sql FROM sqlite_schema WHERE sql IS NOT NULL")) {
                 while (rows.next()) actual.add(rows.getString(1));
             }
-            if (!actual.equals(new HashSet<>(DDL))) throw unavailable();
+            var expected=new HashSet<>(DDL);if(storageVersion==2)expected.addAll(NativeSqliteStore.DDL);
+            if (!actual.equals(expected)) throw unavailable();
         }
     }
     @Override public Optional<SavedDraft> replay(Owner owner, DraftCommand command) {
@@ -145,6 +172,9 @@ public final class SqliteDraftStore implements DraftStore {
             try (var rows = query.executeQuery()) {
                 if (!rows.next()) return Optional.empty();
                 if (!owner.issuer().equals(rows.getString(1)) || !owner.subject().equals(rows.getString(2))) throw refusal(WorkspaceRefusal.Code.NOT_FOUND);
+                if(storageVersion==2)try(var kind=connection.prepareStatement("SELECT kind FROM artifact_types WHERE object_id=?")) {
+                    kind.setString(1,id);try(var kinds=kind.executeQuery()) {if(kinds.next())throw refusal(WorkspaceRefusal.Code.CONFLICT);}
+                }
                 return Optional.of(new Catalog(rows.getString(3), rows.getInt(4)));
             }
         }
@@ -226,7 +256,7 @@ public final class SqliteDraftStore implements DraftStore {
         return WorkspaceDigests.fields(issuer, subject, id, Integer.toString(revision), format, WorkspaceDigests.sha256(source), WorkspaceDigests.sha256(projection), digest, compiler, schema);
     }
     @Override public List<Summary> list(Owner owner) {
-        try (var connection = open(); var query = connection.prepareStatement("SELECT object_id,current_revision FROM catalog WHERE issuer=? AND subject=? ORDER BY object_id")) {
+        try (var connection = open(); var query = connection.prepareStatement("SELECT object_id,current_revision FROM catalog WHERE issuer=? AND subject=? AND NOT EXISTS(SELECT 1 FROM artifact_types a WHERE a.object_id=catalog.object_id) ORDER BY object_id")) {
             query.setString(1, owner.issuer()); query.setString(2, owner.subject());
             var summaries = new ArrayList<Summary>();
             try (var rows = query.executeQuery()) {

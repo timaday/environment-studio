@@ -2,8 +2,8 @@
   "openapi": "3.1.0",
   "info": {
     "title": "Environment Studio native workspace extension",
-    "version": "0.2.0-planned",
-    "description": "Planned D01c/D05b contract. Not implemented or advertised as an available runtime API until its code and qualification land. Complements openapi.yaml; see native-workspace-v2.md for authority, numeric, source, digest, storage and replay rules."
+    "version": "0.2.0",
+    "description": "Implemented D01c/D05b workspace contract, requiring a configured private hosted workspace. Complements openapi.yaml; see native-workspace-v2.md for authority, numeric, source, digest, storage and replay rules. Actual identity-provider and deployment qualification remain separate."
   },
   "paths": {
     "/api/v2/definitions": {

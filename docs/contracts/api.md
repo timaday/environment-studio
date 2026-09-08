@@ -3,19 +3,19 @@
 `openapi.yaml` describes implemented capability, health, hosted-session and owned
 v1 definition draft routes. PUT `/api/v1/definitions/{objectId}` and the owned
 list/current/history GET routes follow [definition workspace](definition-workspace.md).
-They require a configured private hosted workspace; no publication is implemented.
+They require a configured private hosted workspace.
 Planned
 endpoints below are design contracts; they must be added with examples and
 backend tests as each slice is implemented. Never advertise a fictional API.
-The planned [native workspace extension](native-workspace-v2.md) has a separate
-[closed OpenAPI contract](openapi-workspace-v2.json); it does not yet represent
-enabled routes or replace v1 draft history.
+The implemented [native workspace extension](native-workspace-v2.md) has a separate
+[closed OpenAPI contract](openapi-workspace-v2.json) for v2 definition/profile
+publication and immutable history. It preserves v1 draft history. Hosted plans
+remain planned in [the application contract](hosted-plans-v1.md).
 
 | Planned operation | Contract |
 | --- | --- |
-| POST /api/v2/definitions/{objectId}/publish | Current maintainer authorization, expected revision, ready native result and explicit document policies; v1 remains draft-only |
 | POST /api/v1/plans | Definition revision, intended environment, destination reference, no credential |
-| POST /api/v1/plans/{id}/inspections | One credential-bearing bounded operation; no automatic submission retry |
+| POST /api/v1/plans/{id}/inspections | Credential-free reservation; separate one-shot credential submission and no automatic retry |
 | GET /api/v1/operations/{id} | Owner-authorized polling without resubmitting credentials |
 | POST /api/v1/plans/{id}/commands | Closed tagged command union, expectedRevision and requestId |
 | POST /api/v1/profiles | Allowlisted value-free capture; draft/ready distinct |

@@ -60,6 +60,10 @@ public class HostedSecurity {
                 .requestMatchers(HttpMethod.GET, "/", "/index.html", "/assets/**", "/brand/**", "/api/v1/capabilities",
                         "/actuator/health", "/actuator/health/**", "/oauth2/authorization/studio", "/login/oauth2/code/studio").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/v1/session", "/api/v1/definitions", "/api/v1/definitions/{objectId}", "/api/v1/definitions/{objectId}/revisions/{revision}").authenticated()
+                .requestMatchers(HttpMethod.GET, "/api/v2/definitions", "/api/v2/profiles", "/api/v2/definitions/{objectId}", "/api/v2/profiles/{objectId}",
+                    "/api/v2/definitions/{objectId}/revisions/{revision}", "/api/v2/profiles/{objectId}/revisions/{revision}").authenticated()
+                .requestMatchers(HttpMethod.PUT, "/api/v2/definitions/{objectId}", "/api/v2/profiles/{objectId}").authenticated()
+                .requestMatchers(HttpMethod.POST, "/api/v2/definitions/{objectId}/publish", "/api/v2/profiles/{objectId}/publish").authenticated()
                 .requestMatchers(HttpMethod.PUT, "/api/v1/definitions/{objectId}").authenticated()
                 .requestMatchers(HttpMethod.POST, "/api/v1/session/logout").authenticated()
                 .anyRequest().denyAll());

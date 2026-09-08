@@ -7,19 +7,16 @@ Oracle or PostgreSQL database is copied. Operators reuse value-free profiles,
 map current configuration to a target, supply environment values and export
 guarded SQL for their existing database deployment process.
 
-**Status: implementation in progress.** Bounded JSON/YAML definition compilation
-now checks version 1 drafts and explicit version 2 logical/binding declarations
-in Java, with separate deterministic digests. The UI includes a synthetic
-definition inspector alongside the comparison preview. A guarded XML span adapter
-and hosted OIDC/session boundary are implemented and tested with independent
-mocks. Hosted v1 draft upload and private immutable SQLite revisions are
-implemented with reviewed ownership, replay and crash checks. Publication,
-database inspection, integrated
-transformation and SQL export remain **unavailable**. Valid version 1 drafts are
-explicitly incomplete. See [D01a evidence](docs/evidence/d01a-integration.md),
-[native v2 evidence](docs/evidence/d01b-native.md),
-[XML evidence](docs/evidence/d03a-xml.md), [session evidence](docs/evidence/d02a-session.md)
-and [workspace evidence](docs/evidence/d02b-workspace.md).
+**Status: implementation in progress.** Native JSON/YAML definitions compile in
+Java; hosted workspace APIs support immutable definition/profile drafts and
+publication, with explicit maintainer authority and private SQLite storage.
+Complete Oracle CLOB/PostgreSQL text observation, value-free profile composition
+and cross-document structural target materialization are implemented as reviewed
+internal mechanisms. The UI still presents synthetic previews. Hosted plan and
+database credential workflows, integrated transformation and guarded SQL export
+remain **unavailable**. See [workspace and structural integration](docs/evidence/d01c-d06a-integration.md),
+[observation evidence](docs/evidence/d04a-integration.md) and
+[profile evidence](docs/evidence/d05a-integration.md).
 
 Starter CI and GHCR publication have passed. [Verification evidence](docs/evidence/starter-verification.md) includes the tested source and image digest.
 

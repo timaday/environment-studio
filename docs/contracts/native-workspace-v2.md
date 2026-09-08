@@ -1,14 +1,14 @@
 # Owned native publication and profiles — D01c/D05b
 
-This planned extension builds on [owned v1 drafts](definition-workspace.md),
+This extension builds on [owned v1 drafts](definition-workspace.md),
 [native v2 compilation](native-definition-v2.md) and [value-free profiles](profile-v2.md).
 The v1 routes and stored historical compiler results retain their existing
 meaning. Version 2 routes accept only their declared native artifact type; no
 generic payload store or automatic interpretation of v1 as v2 is introduced.
 The closed [OpenAPI extension](openapi-workspace-v2.json) and
 `schemas/definition-inspection-v2.schema.json` /
-`schemas/profile-inspection-v2.schema.json` specify the planned DTOs. They remain
-unavailable until the implementation and its qualifying tests land.
+`schemas/profile-inspection-v2.schema.json` specify the implemented DTOs. The routes require an initialized private hosted
+workspace; actual identity-provider and deployment qualification remain separate.
 
 ## Native definitions
 
