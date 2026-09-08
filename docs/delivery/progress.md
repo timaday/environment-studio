@@ -13,7 +13,7 @@ results; the table below reports capability, not test count.
 | D04 database reads | Both engine adapters integrated; complete disposable matrices and review corrections passed | Hosted plan/session wiring and external TLS/account qualification |
 | D05 profiles | Value-free capture, portable whole/partial composition and owned immutable persistence/publication integrated | Hosted capture/composition and browser workflow |
 | D06 planning | Typed intents and complete cross-document structural targets implemented and reviewed; both-binding one-to-two fixture passes | Hosted plan revisions, operation lifecycle and private validation authority |
-| D07 SQL | Reviewed package/supervisor contract and closed schemas; implementation pending and export unavailable | Deterministic writer/supervisor plus both exact-client adverse transaction matrices |
+| D07 SQL | Bounded package admission, canonical digests and deterministic ZIP integrated and reviewed; export unavailable | Both transaction templates, external supervisor and exact-client adverse transaction matrices |
 | D08 UX | Synthetic comparison and definition inspector; component keyboard/axe checks pass | Backend integration, editing workflow and representative operator sessions |
 | D09 deployment/release | OCI pipeline/contract; actual HiveForge unverified | Exact platform deployment and qualification matrix |
 
@@ -28,7 +28,13 @@ the lead's integration harness received independent fixed-candidate review with
 no material findings. Integration and rework are recorded in D01a evidence;
 there is no serial comparison supporting a speed-up claim.
 
-Active work: hosted plan/session orchestration and guarded package implementation.
+Active work: hosted plan/session review and HTTP integration; both guarded
+transaction templates. The bounded package mechanism passed independent review
+and the combined 317-test Java Docker build, 7 UI/17 schema tests and protected
+smoke; see [package integration](../evidence/d07a-integration.md).
+Full 32 MiB Oracle binary loading passed in 9.903 seconds with base64 after hex
+approaches exceeded the unchanged 120-second bound; this is transport feasibility,
+not writer/client qualification. See [the investigation](../evidence/d07-client-investigation.md).
 Native workspace and structural target mechanisms have passed independent review
 and the combined 302-test Java reactor in the isolated Docker build; see
 [workspace/target integration](../evidence/d01c-d06a-integration.md).

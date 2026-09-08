@@ -20,3 +20,4 @@ docs/*
 !docs/contracts
 docs/contracts/*
 !docs/contracts/openapi-workspace-v2.json
+!docs/contracts/openapi-plans-v1.json

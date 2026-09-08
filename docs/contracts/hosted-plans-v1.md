@@ -49,8 +49,11 @@ graphs, strings, response encoding and scratch against the advertised deployment
 memory; increase that deployment allocation if necessary, not the accepted scope.
 
 Credential-free mutations carry `expectedRevision` and UUID `requestId`. After
-live-lease/ownership checks, exact successful replay precedes stale-revision
-comparison. Keep at most 256 command identities and their original small safe
+live-lease/ownership checks, exact successful replay precedes retired-plan and
+stale-revision checks, including reservation, composition and discard commands.
+An existing request ID with different plan/body refuses as a collision before
+those checks. A new command cannot address a retired plan. Keep at most 256
+command identities and their original small safe
 acknowledgements per lease; exhaustion refuses, never evicts an ID into possible
 re-execution. Do not retain old request bodies, entered values, XML, graph results
 or old authority in replay records. Identify closed decoded commands using a
@@ -58,6 +61,9 @@ process-memory keyed HMAC-SHA256 over native framing with domain
 `ES-PLAN-COMMAND-1`, NUL, lease ID, plan ID and the complete command. Restart loses
 the key and all plans together. Exact replay returns the original acknowledgement
 even after later revisions, but cannot reinstall an old state or capability.
+Retained operation status and idempotent cancellation remain accessible after
+plan discard to the original live lease. They convey metadata only; a new login
+or revoked lease cannot recover them.
 
 ## Observation reservation and one-shot credentials
 
@@ -90,8 +96,10 @@ there is no credential queue, body digest, replay, automatic retry or reconnect.
 Repeated submission returns `CREDENTIALS_ALREADY_CONSUMED`, even if identical.
 The UI retains the reservation ID before soliciting credentials. A lost submission
 reply is resolved by polling that ID; it never resends the password. Validate
-strict UTF-8, no NUL, username at most 128 code points/512 bytes, password at most
-1024 code points/4096 bytes, and reject unsupported authentication explicitly.
+strict UTF-8, no NUL, username 1–128 code points/at most 512 bytes, password
+1–1024 code points/at most 4096 bytes, and reject unsupported authentication
+explicitly. This initial password-authentication contract requires both fields;
+an empty password is not an alternate authentication mechanism.
 Owned mutable credential arrays are cleared on every path, including rejection
 before JDBC. Existing JVM/driver-copy limitations still apply.
 

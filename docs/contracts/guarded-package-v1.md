@@ -97,7 +97,8 @@ template from this validated execution context and payload before starting a
 client. Comparing hashes
 of arbitrary SQL is insufficient. Trusted versioned templates have fixed syntax;
 dynamic substitutions are closed quoted identifiers, validated decimal values
-and ASCII hex chunks. No artifact may add COMMIT, EXIT, CONNECT, include, host,
+and ASCII hex chunks or the canonical Oracle base64 transport described below.
+No artifact may add COMMIT, EXIT, CONNECT, include, host,
 substitution, client metacommand or arbitrary expression. Instructions name the
 exact client and supervisor invocation and contain no command carrying a secret.
 Schema acceptance never replaces template, transaction or authority checks.
@@ -174,9 +175,13 @@ The supervisor starts the sole transaction through its fixed bootstrap: PostgreS
 `BEGIN ISOLATION LEVEL READ COMMITTED READ WRITE`, or Oracle
 `SET TRANSACTION READ WRITE` as the first SQL statement after connection/bootstrap.
 The archive program contains no transaction-control statement. Its PostgreSQL
-form is one DO block; its Oracle form is one anonymous PL/SQL block ending in
-`END;` and a final LF, without a slash line. The supervisor supplies its own fixed
-SQL*Plus slash terminator after the exactly verified program. Procedural
+form is one DO block; its Oracle form is the deterministic sequence of bounded
+anonymous PL/SQL blocks in [Oracle transport](oracle-transport-v1.md). Each block
+ends in `END;` and LF, with one further LF between blocks and no slash lines.
+The trusted generator returns both the exact concatenated artifact bytes and
+the known block boundaries; the supervisor never splits arbitrary SQL text.
+It supplies its own fixed SQL*Plus slash terminator after each verified block.
+Procedural
 BEGIN/END syntax does not begin or commit a separate transaction.
 The program acquires the conservative exclusive table lock
 over the complete read set, with bounded timeout. If several tables are supported
@@ -216,8 +221,13 @@ exactly one affected row. Re-read the complete expected target membership/conten
 after the last UPDATE and before commit. Wrong destination, schema drift,
 unexpected row counts or any final mismatch aborts.
 
-For Oracle, construct full original/target CLOBs through bounded ASCII hex
-chunks and qualified temporary LOB conversion. Never split a UTF-8 sequence and
+For Oracle, payload hex remains unchanged. Derive canonical base64 from its
+validated bytes and load two aggregate BLOBs through the bounded transport blocks,
+then construct whole document CLOBs using qualified temporary LOB conversion.
+No managed table read or write occurs in the loader; the final guard block acquires
+the table lock before all database baseline checks and DML. Loading, lock acquisition,
+all guards, DML and successful LOB cleanup share the 120-second transaction budget.
+Never split a UTF-8 sequence and
 decode fragments independently without an explicit boundary proof. Check conversion
 warnings, byte/character units, full round trip and complete comparisons. Free
 every temporary LOB on success and failure; cleanup failure prevents readiness.
@@ -237,8 +247,9 @@ last precommit input: there is no queued SQL/client tail. Random runtime nonce
 does not affect deterministic package bytes.
 Use a fresh 128-bit nonce rendered as 32 lowercase hex characters. The qualified
 Oracle bootstrap owns `VARIABLE es_program_digest VARCHAR2(64)` for the program
-marker; the anonymous block uses `:es_program_digest`. Its
-anonymous guarded block clears it before work and assigns programDigest only at
+marker; the anonymous blocks use `:es_program_digest`. The initialization and
+final guarded blocks clear it before work; only the final guarded block assigns
+programDigest at
 successful completion. PostgreSQL uses the transaction-local custom setting
 `environment_studio.program_digest`, assigned with transaction-local set_config
 by the fixed program and cleared before work. Readiness queries check that exact

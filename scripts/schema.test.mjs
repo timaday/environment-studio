@@ -164,3 +164,60 @@ test("guarded payload refuses SQL-shaped identifiers, unknown fields and malform
     assert.equal(packagePayload(candidate), false);
   }
 });
+
+const planCommands = new Ajv2020({ allErrors: true, strict: true }).compile(read("../schemas/plan-command-v1.schema.json"));
+test("bounded batch upserts carry explicit decisions and placements without implicit replacement", () => {
+  const single = read("../fixtures/plan-http-v1/command.json");
+  const batch = { kind: "batch-upsert", expectedRevision: single.expectedRevision, requestId: single.requestId,
+    changes: [{ decision: single.decision, placements: [] }], containment: [] };
+  assert.equal(planCommands(batch), true, JSON.stringify(planCommands.errors));
+  for (const mutate of [
+    (b) => { delete b.changes[0].placements; },
+    (b) => { b.changes[0].mergeMissingFields = true; },
+    (b) => { delete b.changes[0].decision.fields; },
+    (b) => { b.clearUnselected = true; },
+    (b) => { b.changes = []; },
+  ]) {
+    const bad = structuredClone(batch); mutate(bad); assert.equal(planCommands(bad), false);
+  }
+});
+test("plan commands preserve explicit unresolved values without accepting caller authority", () => {
+  const candidate = read("../fixtures/plan-http-v1/command.json");
+  assert.equal(planCommands(candidate), true, JSON.stringify(planCommands.errors));
+  for (const mutate of [
+    (c) => { c.owner = "invented-owner"; },
+    (c) => { c.validation = "PASS"; },
+    (c) => { c.expectedRevision = "02"; },
+    (c) => { c.requestId += "\n"; },
+    (c) => { c.decision.entity.identity = "invented-02"; },
+    (c) => { c.decision.fields.shade = { kind: "unresolved", text: "guessed" }; },
+    (c) => { c.decision.fields.tag.kind = "infer"; },
+    (c) => { c.decision.references.link = { kind: "to", target: { kind: "existing", key: "invented" } }; },
+    (c) => { delete c.decision.references; },
+  ]) {
+    const bad = structuredClone(candidate);
+    mutate(bad);
+    assert.equal(planCommands(bad), false);
+  }
+});
+
+test("planned plan reservation and credential shapes exclude authority and replay metadata", () => {
+  const components = read("../docs/contracts/openapi-plans-v1.json").components.schemas;
+  const defs = JSON.parse(JSON.stringify(components).replaceAll("#/components/schemas/", "#/$defs/").replaceAll("../../schemas/plan-command-v1.schema.json", "https://environment.studio/schemas/plan-command-v1"));
+  const validator = new Ajv2020({ allErrors: true, strict: true }).addSchema(read("../schemas/plan-command-v1.schema.json"));
+  const creation = validator.compile({ $defs: defs, $ref: "#/$defs/CreatePlan" });
+  const reserve = validator.compile({ $defs: defs, $ref: "#/$defs/ReserveInspection" });
+  const candidate = { expectedRevision: "0", requestId: "00000000-0000-4000-8000-000000000031", definition: { objectId: "00000000-0000-4000-8000-000000000032", workspaceRevision: "2" }, bindingId: "invented.pg", destinationId: "invented.destination" };
+  assert.equal(creation(candidate), true, JSON.stringify(creation.errors));
+  assert.equal(creation({ ...candidate, owner: "invented-owner" }), false);
+  assert.equal(creation({ ...candidate, observedXml: "invented-input" }), false);
+  assert.equal(reserve({ expectedRevision: "1", requestId: candidate.requestId, discardDraftOnSuccess: true }), true);
+  assert.equal(reserve({ expectedRevision: "1", requestId: candidate.requestId }), false);
+  const credential = validator.compile({ $defs: defs, $ref: "#/$defs/Credentials" });
+  const invented = { username: "independent-user", password: ["independent", "canary"].join("-") };
+  assert.equal(credential(invented), true);
+  assert.equal(credential({ ...invented, requestId: candidate.requestId }), false);
+  assert.equal(credential({ ...invented, owner: "invented-owner" }), false);
+  assert.equal(credential({ ...invented, password: "" }), false);
+  assert.equal(credential({ ...invented, username: "bad\u0000name" }), false);
+});

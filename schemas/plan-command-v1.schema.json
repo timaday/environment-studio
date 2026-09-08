@@ -1,0 +1,775 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://environment.studio/schemas/plan-command-v1",
+  "title": "Planned closed transient plan commands; shape does not grant authority",
+  "oneOf": [
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "expectedRevision",
+        "requestId",
+        "draft"
+      ],
+      "properties": {
+        "kind": {
+          "const": "replace-draft"
+        },
+        "expectedRevision": {
+          "$ref": "#/$defs/revision"
+        },
+        "requestId": {
+          "$ref": "#/$defs/uuid"
+        },
+        "draft": {
+          "$ref": "#/$defs/draft"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "expectedRevision",
+        "requestId",
+        "changes",
+        "containment"
+      ],
+      "properties": {
+        "kind": {
+          "const": "batch-upsert"
+        },
+        "expectedRevision": {
+          "$ref": "#/$defs/revision"
+        },
+        "requestId": {
+          "$ref": "#/$defs/uuid"
+        },
+        "changes": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 20000,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "decision",
+              "placements"
+            ],
+            "properties": {
+              "decision": {
+                "$ref": "#/$defs/entityDecision"
+              },
+              "placements": {
+                "type": "array",
+                "maxItems": 20000,
+                "items": {
+                  "$ref": "#/$defs/placement"
+                }
+              }
+            }
+          }
+        },
+        "containment": {
+          "type": "array",
+          "maxItems": 20000,
+          "items": {
+            "$ref": "#/$defs/containment"
+          }
+        }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "expectedRevision",
+        "requestId",
+        "decision",
+        "placements"
+      ],
+      "properties": {
+        "kind": {
+          "const": "upsert-entity"
+        },
+        "expectedRevision": {
+          "$ref": "#/$defs/revision"
+        },
+        "requestId": {
+          "$ref": "#/$defs/uuid"
+        },
+        "decision": {
+          "$ref": "#/$defs/entityDecision"
+        },
+        "placements": {
+          "type": "array",
+          "maxItems": 20000,
+          "items": {
+            "$ref": "#/$defs/placement"
+          }
+        }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "expectedRevision",
+        "requestId",
+        "entity"
+      ],
+      "properties": {
+        "kind": {
+          "const": "forget-entity-decision"
+        },
+        "expectedRevision": {
+          "$ref": "#/$defs/revision"
+        },
+        "requestId": {
+          "$ref": "#/$defs/uuid"
+        },
+        "entity": {
+          "$ref": "#/$defs/entityRef"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "expectedRevision",
+        "requestId",
+        "entity",
+        "fieldId",
+        "state"
+      ],
+      "properties": {
+        "kind": {
+          "const": "bind-field"
+        },
+        "expectedRevision": {
+          "$ref": "#/$defs/revision"
+        },
+        "requestId": {
+          "$ref": "#/$defs/uuid"
+        },
+        "entity": {
+          "$ref": "#/$defs/entityRef"
+        },
+        "fieldId": {
+          "$ref": "#/$defs/id"
+        },
+        "state": {
+          "$ref": "#/$defs/fieldState"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "expectedRevision",
+        "requestId",
+        "entity",
+        "relationId",
+        "state"
+      ],
+      "properties": {
+        "kind": {
+          "const": "bind-reference"
+        },
+        "expectedRevision": {
+          "$ref": "#/$defs/revision"
+        },
+        "requestId": {
+          "$ref": "#/$defs/uuid"
+        },
+        "entity": {
+          "$ref": "#/$defs/entityRef"
+        },
+        "relationId": {
+          "$ref": "#/$defs/id"
+        },
+        "state": {
+          "$ref": "#/$defs/referenceState"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "expectedRevision",
+        "requestId",
+        "decision",
+        "placements"
+      ],
+      "properties": {
+        "kind": {
+          "const": "move-containment"
+        },
+        "expectedRevision": {
+          "$ref": "#/$defs/revision"
+        },
+        "requestId": {
+          "$ref": "#/$defs/uuid"
+        },
+        "decision": {
+          "$ref": "#/$defs/containment"
+        },
+        "placements": {
+          "type": "array",
+          "maxItems": 20000,
+          "items": {
+            "$ref": "#/$defs/placement"
+          }
+        }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "expectedRevision",
+        "requestId",
+        "profile",
+        "previewDigest",
+        "selectedRoots",
+        "decisions"
+      ],
+      "properties": {
+        "kind": {
+          "const": "compose-profile"
+        },
+        "expectedRevision": {
+          "$ref": "#/$defs/revision"
+        },
+        "requestId": {
+          "$ref": "#/$defs/uuid"
+        },
+        "profile": {
+          "$ref": "#/$defs/publicationRef"
+        },
+        "previewDigest": {
+          "$ref": "#/$defs/sha256"
+        },
+        "selectedRoots": {
+          "type": "array",
+          "maxItems": 20000,
+          "items": {
+            "$ref": "#/$defs/id"
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "decisions": {
+          "type": "array",
+          "maxItems": 20000,
+          "items": {
+            "$ref": "#/$defs/compositionDecision"
+          }
+        }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "expectedRevision",
+        "requestId"
+      ],
+      "properties": {
+        "kind": {
+          "const": "discard"
+        },
+        "expectedRevision": {
+          "$ref": "#/$defs/revision"
+        },
+        "requestId": {
+          "$ref": "#/$defs/uuid"
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9.-]{0,63}(?![\\s\\S])",
+      "maxLength": 64
+    },
+    "uuid": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}(?![\\s\\S])"
+    },
+    "revision": {
+      "type": "string",
+      "pattern": "^[1-9][0-9]*(?![\\s\\S])",
+      "maxLength": 1024
+    },
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}(?![\\s\\S])"
+    },
+    "existing": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "handle"
+      ],
+      "properties": {
+        "kind": {
+          "const": "existing"
+        },
+        "handle": {
+          "$ref": "#/$defs/uuid"
+        }
+      }
+    },
+    "fresh": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "slotId",
+        "typeId"
+      ],
+      "properties": {
+        "kind": {
+          "const": "fresh"
+        },
+        "slotId": {
+          "$ref": "#/$defs/id"
+        },
+        "typeId": {
+          "$ref": "#/$defs/id"
+        }
+      }
+    },
+    "entityRef": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/existing"
+        },
+        {
+          "$ref": "#/$defs/fresh"
+        }
+      ]
+    },
+    "fieldState": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind"
+          ],
+          "properties": {
+            "kind": {
+              "const": "unresolved"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "text"
+          ],
+          "properties": {
+            "kind": {
+              "const": "entered"
+            },
+            "text": {
+              "type": "string",
+              "maxLength": 1048576
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind"
+          ],
+          "properties": {
+            "kind": {
+              "const": "keep-observed"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind"
+          ],
+          "properties": {
+            "kind": {
+              "const": "absent"
+            }
+          }
+        }
+      ]
+    },
+    "referenceState": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind"
+          ],
+          "properties": {
+            "kind": {
+              "const": "unresolved"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "target"
+          ],
+          "properties": {
+            "kind": {
+              "const": "to"
+            },
+            "target": {
+              "$ref": "#/$defs/entityRef"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind"
+          ],
+          "properties": {
+            "kind": {
+              "const": "keep-observed"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind"
+          ],
+          "properties": {
+            "kind": {
+              "const": "absent"
+            }
+          }
+        }
+      ]
+    },
+    "entityDecision": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "entity",
+            "fields",
+            "references"
+          ],
+          "properties": {
+            "kind": {
+              "const": "retain"
+            },
+            "entity": {
+              "$ref": "#/$defs/existing"
+            },
+            "fields": {
+              "type": "object",
+              "maxProperties": 256,
+              "patternProperties": {
+                "^[a-z][a-z0-9.-]{0,63}(?![\\s\\S])": {
+                  "$ref": "#/$defs/fieldState"
+                }
+              },
+              "additionalProperties": false
+            },
+            "references": {
+              "type": "object",
+              "maxProperties": 256,
+              "patternProperties": {
+                "^[a-z][a-z0-9.-]{0,63}(?![\\s\\S])": {
+                  "$ref": "#/$defs/referenceState"
+                }
+              },
+              "additionalProperties": false
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "entity",
+            "fields",
+            "references"
+          ],
+          "properties": {
+            "kind": {
+              "const": "create"
+            },
+            "entity": {
+              "$ref": "#/$defs/fresh"
+            },
+            "fields": {
+              "type": "object",
+              "maxProperties": 256,
+              "patternProperties": {
+                "^[a-z][a-z0-9.-]{0,63}(?![\\s\\S])": {
+                  "$ref": "#/$defs/fieldState"
+                }
+              },
+              "additionalProperties": false
+            },
+            "references": {
+              "type": "object",
+              "maxProperties": 256,
+              "patternProperties": {
+                "^[a-z][a-z0-9.-]{0,63}(?![\\s\\S])": {
+                  "$ref": "#/$defs/referenceState"
+                }
+              },
+              "additionalProperties": false
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "entity"
+          ],
+          "properties": {
+            "kind": {
+              "const": "remove"
+            },
+            "entity": {
+              "$ref": "#/$defs/existing"
+            }
+          }
+        }
+      ]
+    },
+    "containment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "relationId",
+        "parent",
+        "child"
+      ],
+      "properties": {
+        "relationId": {
+          "$ref": "#/$defs/id"
+        },
+        "parent": {
+          "$ref": "#/$defs/entityRef"
+        },
+        "child": {
+          "$ref": "#/$defs/entityRef"
+        }
+      }
+    },
+    "parent": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "documentId",
+            "sourceDigest",
+            "elementIndex"
+          ],
+          "properties": {
+            "kind": {
+              "const": "existing"
+            },
+            "documentId": {
+              "$ref": "#/$defs/id"
+            },
+            "sourceDigest": {
+              "$ref": "#/$defs/sha256"
+            },
+            "elementIndex": {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]{0,4})(?![\\s\\S])"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "entity"
+          ],
+          "properties": {
+            "kind": {
+              "const": "fresh"
+            },
+            "entity": {
+              "$ref": "#/$defs/fresh"
+            }
+          }
+        }
+      ]
+    },
+    "placement": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "entity",
+        "documentId",
+        "projectionId",
+        "parent"
+      ],
+      "properties": {
+        "entity": {
+          "$ref": "#/$defs/entityRef"
+        },
+        "documentId": {
+          "$ref": "#/$defs/id"
+        },
+        "projectionId": {
+          "$ref": "#/$defs/id"
+        },
+        "parent": {
+          "$ref": "#/$defs/parent"
+        }
+      }
+    },
+    "draft": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "entities",
+        "containment",
+        "placements"
+      ],
+      "properties": {
+        "entities": {
+          "type": "array",
+          "maxItems": 20000,
+          "items": {
+            "$ref": "#/$defs/entityDecision"
+          }
+        },
+        "containment": {
+          "type": "array",
+          "maxItems": 20000,
+          "items": {
+            "$ref": "#/$defs/containment"
+          }
+        },
+        "placements": {
+          "type": "array",
+          "maxItems": 20000,
+          "items": {
+            "$ref": "#/$defs/placement"
+          }
+        }
+      }
+    },
+    "publicationRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "objectId",
+        "workspaceRevision"
+      ],
+      "properties": {
+        "objectId": {
+          "$ref": "#/$defs/uuid"
+        },
+        "workspaceRevision": {
+          "$ref": "#/$defs/revision"
+        }
+      }
+    },
+    "compositionDecision": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "slotId",
+            "targetSlotId"
+          ],
+          "properties": {
+            "kind": {
+              "const": "create"
+            },
+            "slotId": {
+              "$ref": "#/$defs/id"
+            },
+            "targetSlotId": {
+              "$ref": "#/$defs/id"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "slotId",
+            "target"
+          ],
+          "properties": {
+            "kind": {
+              "const": "use-existing"
+            },
+            "slotId": {
+              "$ref": "#/$defs/id"
+            },
+            "target": {
+              "$ref": "#/$defs/entityRef"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "slotId"
+          ],
+          "properties": {
+            "kind": {
+              "const": "cancel"
+            },
+            "slotId": {
+              "$ref": "#/$defs/id"
+            }
+          }
+        }
+      ]
+    }
+  }
+}
