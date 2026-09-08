@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<nodes xmlns="urn:environment-studio:demo">
+  <!-- Synthetic fixture. Preserve this comment. -->
+  <node id="qa-01" role="interactive" />
+  <node id="qa-02" role="background" />
+</nodes>

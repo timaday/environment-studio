@@ -1,0 +1,110 @@
+name: CI and GHCR
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - name: Repository integrity and release-gate behavior
+        run: |
+          python3 scripts/check_repository.py
+          python3 -m unittest discover -s scripts -p 'test_*.py'
+      - name: Versioned releases require qualification evidence
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: python3 scripts/release_readiness.py
+      - uses: docker/setup-buildx-action@37fe631027851001ddb9b187196cc803df7f5f0e # v4
+      - name: Test Java and React, then build the application
+        uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7
+        with:
+          context: .
+          target: runtime
+          platforms: linux/amd64
+          load: true
+          tags: environment-studio:ci
+          build-args: SOURCE_REVISION=${{ github.sha }}
+          cache-from: type=gha,scope=studio
+          cache-to: type=gha,mode=max,scope=studio
+      - name: Container contract smoke test
+        run: bash scripts/container_smoke.sh environment-studio:ci
+
+  publish:
+    needs: quality
+    if: github.event_name != 'pull_request' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: docker/setup-buildx-action@37fe631027851001ddb9b187196cc803df7f5f0e # v4
+      - name: Authenticate to GHCR
+        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Compute immutable and channel tags
+        id: image
+        env:
+          REPOSITORY: ${{ github.repository }}
+          REVISION: ${{ github.sha }}
+          REF_NAME: ${{ github.ref_name }}
+        shell: bash
+        run: |
+          studio_name="ghcr.io/${REPOSITORY,,}"
+          echo "name=$studio_name" >> "$GITHUB_OUTPUT"
+          echo "tags=$studio_name:sha-$REVISION,$studio_name:$REF_NAME" >> "$GITHUB_OUTPUT"
+      - name: Publish image with SBOM and provenance
+        id: published
+        uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7
+        with:
+          context: .
+          target: runtime
+          platforms: linux/amd64
+          push: true
+          tags: ${{ steps.image.outputs.tags }}
+          build-args: SOURCE_REVISION=${{ github.sha }}
+          provenance: mode=max
+          sbom: true
+          cache-from: type=gha,scope=studio
+      - name: Write deployment reference
+        env:
+          IMAGE_NAME: ${{ steps.image.outputs.name }}
+          IMAGE_DIGEST: ${{ steps.published.outputs.digest }}
+          REVISION: ${{ github.sha }}
+        run: |
+          python3 - <<'PY'
+          import json, os
+          from pathlib import Path
+          data = {"image": os.environ['IMAGE_NAME']+'@'+os.environ['IMAGE_DIGEST'],
+                  "sourceRevision": os.environ['REVISION'], "platform": "linux/amd64",
+                  "deploymentContract": "deploy/README.md"}
+          Path('image-reference.json').write_text(json.dumps(data, indent=2)+'\n')
+          with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as summary:
+              summary.write('Deploy by digest: `'+data['image']+'`\n\nImage publication is not SQL qualification.\n')
+          PY
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: image-reference-${{ github.sha }}
+          path: image-reference.json
+          if-no-files-found: error

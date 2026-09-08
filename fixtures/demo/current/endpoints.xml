@@ -1,0 +1,3 @@
+<endpoints xmlns="urn:environment-studio:demo">
+  <endpoint key="public" url="https://old.example.invalid/api" />
+</endpoints>

@@ -1,0 +1,4 @@
+<workloads xmlns="urn:environment-studio:demo">
+  <workload key="interactive" node="old-01" application="OldPortal" />
+  <workload key="background" node="old-01" application="OldWorker" />
+</workloads>

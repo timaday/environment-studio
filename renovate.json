@@ -1,0 +1,5 @@
+{
+  "extends": ["config:recommended", "docker:pinDigests"],
+  "enabledManagers": ["dockerfile"],
+  "automerge": false
+}

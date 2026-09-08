@@ -1,0 +1,60 @@
+{
+  "sourceFingerprint": null,
+  "gates": [
+    {
+      "id": "definitions",
+      "status": "NOT_RUN",
+      "evidence": null
+    },
+    {
+      "id": "profile-reuse",
+      "status": "NOT_RUN",
+      "evidence": null
+    },
+    {
+      "id": "structural-plan",
+      "status": "NOT_RUN",
+      "evidence": null
+    },
+    {
+      "id": "xml-fidelity",
+      "status": "NOT_RUN",
+      "evidence": null
+    },
+    {
+      "id": "oracle-client",
+      "status": "NOT_RUN",
+      "evidence": null
+    },
+    {
+      "id": "postgres-client",
+      "status": "NOT_RUN",
+      "evidence": null
+    },
+    {
+      "id": "privacy-auth",
+      "status": "NOT_RUN",
+      "evidence": null
+    },
+    {
+      "id": "ux-rst",
+      "status": "NOT_RUN",
+      "evidence": null
+    },
+    {
+      "id": "mutation",
+      "status": "NOT_RUN",
+      "evidence": null
+    },
+    {
+      "id": "readback",
+      "status": "NOT_RUN",
+      "evidence": null
+    },
+    {
+      "id": "hiveforge",
+      "status": "NOT_RUN",
+      "evidence": null
+    }
+  ]
+}

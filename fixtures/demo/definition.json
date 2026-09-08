@@ -1,0 +1,123 @@
+{
+  "schemaVersion": "1",
+  "id": "demo.application",
+  "revision": 1,
+  "status": "draft",
+  "entityTypes": [
+    {
+      "id": "node",
+      "label": "Node",
+      "fields": [
+        {
+          "id": "server-id",
+          "valueType": "text",
+          "required": true,
+          "classification": "environment",
+          "sensitivity": "internal"
+        }
+      ]
+    },
+    {
+      "id": "workload",
+      "label": "Workload",
+      "fields": [
+        {
+          "id": "application-name",
+          "valueType": "text",
+          "required": true,
+          "classification": "environment",
+          "sensitivity": "internal"
+        }
+      ]
+    },
+    {
+      "id": "external-endpoint",
+      "label": "External endpoint",
+      "fields": [
+        {
+          "id": "address",
+          "valueType": "uri",
+          "required": true,
+          "classification": "environment",
+          "sensitivity": "internal"
+        }
+      ]
+    }
+  ],
+  "relations": [
+    {
+      "id": "placement",
+      "fromType": "workload",
+      "toType": "node",
+      "kind": "reference",
+      "minimum": 1,
+      "maximum": 1,
+      "includeTargetOnReuse": true
+    }
+  ],
+  "documents": [
+    {
+      "id": "nodes",
+      "logicalStore": "demo-config",
+      "recordKey": "nodes",
+      "namespaces": {
+        "d": "urn:environment-studio:demo"
+      },
+      "mappings": [
+        {
+          "entityType": "node",
+          "field": "server-id",
+          "contextXPath": "/d:nodes/d:node",
+          "valueXPath": "@id",
+          "expectedMatches": 1,
+          "writerCapability": "demo.attribute-v1"
+        }
+      ]
+    },
+    {
+      "id": "workloads",
+      "logicalStore": "demo-config",
+      "recordKey": "workloads",
+      "namespaces": {
+        "d": "urn:environment-studio:demo"
+      },
+      "mappings": [
+        {
+          "entityType": "workload",
+          "field": "application-name",
+          "contextXPath": "/d:workloads/d:workload",
+          "valueXPath": "@application",
+          "expectedMatches": 1,
+          "writerCapability": "demo.attribute-v1"
+        }
+      ]
+    },
+    {
+      "id": "endpoints",
+      "logicalStore": "demo-config",
+      "recordKey": "endpoints",
+      "namespaces": {
+        "d": "urn:environment-studio:demo"
+      },
+      "mappings": [
+        {
+          "entityType": "external-endpoint",
+          "field": "address",
+          "contextXPath": "/d:endpoints/d:endpoint",
+          "valueXPath": "@url",
+          "expectedMatches": 1,
+          "writerCapability": "demo.attribute-v1"
+        }
+      ]
+    }
+  ],
+  "requiredRules": [
+    "demo.placement-exists",
+    "demo.explicit-identity",
+    "demo.scope-complete"
+  ],
+  "operationCapabilities": [
+    "demo.set-field",
+    "demo.split-placement"
+  ]
+}

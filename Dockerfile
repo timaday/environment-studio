@@ -1,0 +1,41 @@
+# syntax=docker/dockerfile:1
+# Version tags are the bootstrap baseline. Renovate proposes digest pinning;
+# production release qualification must retain the resolved base-image digests.
+ARG NODE_IMAGE=node:24-bookworm-slim
+ARG MAVEN_IMAGE=maven:3.9.16-eclipse-temurin-21
+ARG RUNTIME_IMAGE=eclipse-temurin:21-jre-jammy
+
+FROM ${NODE_IMAGE} AS ui
+WORKDIR /build/frontend
+COPY frontend/package.json frontend/package-lock.json ./
+RUN npm ci
+COPY frontend/ ./
+COPY fixtures/ /build/fixtures/
+COPY schemas/ /build/schemas/
+COPY scripts/schema.test.mjs /build/scripts/schema.test.mjs
+RUN npm run check && npm test && npm run build
+
+FROM ${MAVEN_IMAGE} AS java-build
+WORKDIR /build
+COPY backend/ ./backend/
+COPY --from=ui /build/frontend/dist/ ./backend/server/src/main/resources/static/
+RUN mvn -B -ntp -f backend/pom.xml verify
+COPY deploy/HealthProbe.java /build/HealthProbe.java
+RUN javac -d /build/probe /build/HealthProbe.java
+
+FROM ${RUNTIME_IMAGE} AS runtime
+ARG SOURCE_REVISION=unknown
+ARG SOURCE_URL=https://github.com/timaday/environment-studio
+LABEL org.opencontainers.image.title="Environment Studio" \
+      org.opencontainers.image.description="Deterministic environment configuration workbench — development starter" \
+      org.opencontainers.image.source="${SOURCE_URL}" \
+      org.opencontainers.image.revision="${SOURCE_REVISION}"
+RUN groupadd --gid 10001 studio && useradd --uid 10001 --gid studio --no-create-home --shell /usr/sbin/nologin studio
+WORKDIR /opt/studio
+COPY --from=java-build --chown=10001:10001 /build/backend/server/target/environment-studio.jar /opt/studio/app.jar
+COPY --from=java-build --chown=10001:10001 /build/probe/ /opt/studio/probe/
+USER 10001:10001
+ENV STUDIO_MODE=demo
+EXPOSE 8080
+HEALTHCHECK --interval=30s --timeout=5s --start-period=40s --retries=3 CMD ["java", "-cp", "/opt/studio/probe", "HealthProbe"]
+ENTRYPOINT ["java", "-XX:MaxRAMPercentage=65", "-XX:+ExitOnOutOfMemoryError", "-Djava.io.tmpdir=/tmp", "-jar", "/opt/studio/app.jar"]

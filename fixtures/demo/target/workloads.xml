@@ -1,0 +1,4 @@
+<workloads xmlns="urn:environment-studio:demo">
+  <workload key="interactive" node="qa-01" application="QaPortal" />
+  <workload key="background" node="qa-02" application="QaWorker" />
+</workloads>

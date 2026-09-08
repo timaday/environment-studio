@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256" role="img" aria-labelledby="logo-title logo-description">
+  <title id="logo-title">Environment Studio</title>
+  <desc id="logo-description">Environment Studio icon: two offset, opposing open frames in periwinkle and teal.</desc>
+  <!-- Flat vector artwork. Transparent background. Lettering is outlined. -->
+  <g id="environment-mark" transform="translate(20 41)">
+    <path id="current-frame" fill="#8798FF" d="M18 0H158V28H28V98H133V127H18C8.06 127 0 118.94 0 109V18C0 8.06 8.06 0 18 0Z"/>
+    <path id="target-frame" fill="#43D6C5" d="M76 46H198C207.94 46 216 54.06 216 64V156C216 165.94 207.94 174 198 174H53V146H188V75H76Z"/>
+  </g>
+</svg>

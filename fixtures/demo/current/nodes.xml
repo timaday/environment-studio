@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<nodes xmlns="urn:environment-studio:demo">
+  <!-- Synthetic fixture. Preserve this comment. -->
+  <node id="old-01" role="combined" />
+</nodes>

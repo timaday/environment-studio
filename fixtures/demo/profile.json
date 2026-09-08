@@ -1,0 +1,52 @@
+{
+  "schemaVersion": "1",
+  "id": "split-workload",
+  "revision": 1,
+  "definitionDigest": "314bd42265cf28be82519ef8ac2a6e291e4f3c65bc8ea62ef85a05a5c955019b",
+  "entities": [
+    {
+      "id": "node-a",
+      "type": "node",
+      "label": "Interactive node",
+      "requiredInputs": [
+        "server-id"
+      ]
+    },
+    {
+      "id": "node-b",
+      "type": "node",
+      "label": "Background node",
+      "requiredInputs": [
+        "server-id"
+      ]
+    },
+    {
+      "id": "work-a",
+      "type": "workload",
+      "label": "Interactive workload",
+      "requiredInputs": [
+        "application-name"
+      ]
+    },
+    {
+      "id": "work-b",
+      "type": "workload",
+      "label": "Background workload",
+      "requiredInputs": [
+        "application-name"
+      ]
+    }
+  ],
+  "relations": [
+    {
+      "type": "placement",
+      "from": "work-a",
+      "to": "node-a"
+    },
+    {
+      "type": "placement",
+      "from": "work-b",
+      "to": "node-b"
+    }
+  ]
+}

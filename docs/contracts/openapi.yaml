@@ -1,0 +1,44 @@
+openapi: 3.1.0
+info:
+  title: Environment Studio starter API
+  version: 0.1.0
+  description: Implemented demo surface only. Planned endpoints are in api.md.
+paths:
+  /api/v1/capabilities:
+    get:
+      operationId: getCapabilities
+      summary: Read implemented runtime capability state
+      responses:
+        '200':
+          description: Demo mode accepts no credentials and cannot export
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required: [mode, inspectionEnabled, exportEnabled, qualifiedDatabaseAdapters, blockers]
+                properties:
+                  mode: {type: string, const: demo}
+                  inspectionEnabled: {type: boolean, const: false}
+                  exportEnabled: {type: boolean, const: false}
+                  qualifiedDatabaseAdapters:
+                    type: array
+                    maxItems: 0
+                    items: {type: string}
+                  blockers:
+                    type: array
+                    items: {type: string}
+  /actuator/health/readiness:
+    get:
+      operationId: getReadiness
+      summary: Process readiness, independent of any configuration plan
+      responses:
+        '200': {description: Process ready}
+        '503': {description: Process not ready}
+  /actuator/health/liveness:
+    get:
+      operationId: getLiveness
+      summary: Process liveness
+      responses:
+        '200': {description: Process live}
+        '503': {description: Process unhealthy}
