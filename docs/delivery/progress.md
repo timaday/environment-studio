@@ -11,7 +11,7 @@ results; the table below reports capability, not test count.
 | D02 security/state | D02a hosted sessions and D02b owned SQLite v1 draft revisions integrated and reviewed | V2 publication/profile persistence; actual deployment durability/identity external |
 | D03 XML | Guarded spans, definition-driven graph projection and corrected Fifth Edition parser integrated; independent review findings closed | Structural target orchestration and complete application/DB writer qualification |
 | D04 database reads | Both engine adapters and disposable qualification in progress; PG lifecycle checks passed | Complete baseline/adverse matrices and independent review |
-| D05 profiles | Closure algorithm starter; capture/persistence not implemented | Value-free import/export and composition behavior |
+| D05 profiles | Value-free capture, bounded portable import/export and explicit whole/partial composition integrated and reviewed | Owned immutable persistence/publication and hosted plan binding |
 | D06 planning | Evidence gate starter; full planner not implemented | Typed cross-document operations and binding validation |
 | D07 SQL | Not implemented; export unavailable | Exact-client adverse transaction evidence |
 | D08 UX | Synthetic comparison and definition inspector; component keyboard/axe checks pass | Backend integration, editing workflow and representative operator sessions |
@@ -28,7 +28,9 @@ the lead's integration harness received independent fixed-candidate review with
 no material findings. Integration and rework are recorded in D01a evidence;
 there is no serial comparison supporting a speed-up claim.
 
-Active work: D04 complete observation qualification and D05 value-free profiles.
+Active work: D04 observation review corrections, D06 structural targets and native
+workspace publication/profile persistence. D05a is integrated with 233 passing
+Java tests; see [profile integration](../evidence/d05a-integration.md).
 D03b/c is integrated with 211 passing Java tests and protected container checks;
 see [integration evidence](../evidence/d03bc-integration.md). D01b supplies
 declared identity, inventory, projection, rule and operation semantics before

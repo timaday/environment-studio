@@ -70,3 +70,24 @@ test("native v2 XML names count Unicode code points and reject trailing newline"
   candidate.bindings[0].documents[0].entities[0].path[0].localName = "glyph\n";
   assert.equal(nativeV2(candidate), false);
 });
+
+const profileV2 = ajv.compile(read("../schemas/profile-v2.schema.json"));
+test("native profile v2 admits only closed value-free structure", () => {
+  assert.equal(profileV2(read("../fixtures/profile-v2/profile.json")), true, JSON.stringify(profileV2.errors));
+  for (const location of ["root", "entity", "relation"]) for (const key of ["values", "identity", "rawXml", "locator", "metadata", "credential"]) {
+    const candidate = read("../fixtures/profile-v2/profile.json");
+    const target = location === "root" ? candidate : location === "entity" ? candidate.entities[0] : candidate.relations[0];
+    target[key] = { canary: "invented-donor" };
+    assert.equal(profileV2(candidate), false, `${location}.${key}`);
+  }
+});
+test("native profile v2 rejects duplicate required inputs, wrong versions and invalid neutral IDs", () => {
+  for (const mutate of [
+    (p) => { p.schemaVersion = "1"; },
+    (p) => { p.entities[0].requiredInputs.push("tag"); },
+    (p) => { p.entities[0].id = "first\n"; },
+    (p) => { p.entities[0].label = ""; },
+    (p) => { p.definitionDigest = p.logicalDefinitionDigest; },
+    (p) => { p.revision = 0; },
+  ]) { const candidate = read("../fixtures/profile-v2/profile.json"); mutate(candidate); assert.equal(profileV2(candidate), false); }
+});

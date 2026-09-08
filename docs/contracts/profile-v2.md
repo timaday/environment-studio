@@ -18,6 +18,10 @@ The closed shape is `schemas/profile-v2.schema.json`. At most 20,000 slots and
 50,000 edges are eligible; the stricter 1 MiB source and 20,000-node parser budgets
 still apply. Capture must refuse an output that cannot pass the same import
 budgets, rather than creating a profile that cannot be read back.
+Core validation establishes structural validity and the canonical content digest.
+The server adapter owns external JSON encoding and portable byte/token/node
+checks. Capture, import and serialization must pass those checks before returning
+an accepted portable result; a core structurally-valid result alone is insufficient.
 
 Each entity contains only `id`, `type`, `label` and `requiredInputs`. Its ID is a
 neutral logical slot using the existing ID syntax, distinct from observed entity

@@ -14,6 +14,7 @@ with exact versions and evidence; never fill the matrix from driver availability
 | XML spans and graph projection | D03b/c, qualified Woodstox 7.2.2-es-xml10-fifth-1 on Java 21 | Exact source and graph, Fifth Edition names/bounds, three graph and nine writer/parser guard mutants; [211-test integration and protected image](../evidence/d03bc-integration.md); structural planner/client qualification separate | MECHANISM CHECKS PASS |
 | Hosted session | D02a, independently invented mock OIDC provider | Protocol, CSRF/cookies, expiry, cleanup failure/races and log canaries; actual IdP/TLS/proxy and DB cleanup separate | MOCK CHECKS PASS |
 | Private draft workspace | SQLite JDBC 3.53.4.0, one replica | Owner isolation/integrity, immutable replay, quotas, process-crash journal recovery and protected-image initializer; deployment fsync/power loss/freshness separate | LOCAL CHECKS PASS |
+| Value-free v2 profiles | Capture/import/serialization and explicit whole/partial composition | [233-test integration](../evidence/d05a-integration.md), independent digest, portable bounds, canaries, eight guard mutants and closed architecture finding; publication/hosted plans separate | MECHANISM CHECKS PASS |
 | XSD import | Dialect/features not selected | Supported subset into draft, no semantic guessing | NOT IMPLEMENTED |
 | HiveForge | Platform/config unknown; OCI linux/amd64 candidate | Actual registry pull, TLS/identity/probes/restart | NOT RUN |
 
