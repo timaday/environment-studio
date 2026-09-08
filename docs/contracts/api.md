@@ -7,6 +7,9 @@ They require a configured private hosted workspace; no publication is implemente
 Planned
 endpoints below are design contracts; they must be added with examples and
 backend tests as each slice is implemented. Never advertise a fictional API.
+The planned [native workspace extension](native-workspace-v2.md) has a separate
+[closed OpenAPI contract](openapi-workspace-v2.json); it does not yet represent
+enabled routes or replace v1 draft history.
 
 | Planned operation | Contract |
 | --- | --- |
