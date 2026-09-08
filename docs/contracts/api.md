@@ -1,28 +1,33 @@
 # HTTP contract strategy
 
-`openapi.yaml` describes implemented capability, health, hosted-session and owned
-v1 definition draft routes. PUT `/api/v1/definitions/{objectId}` and the owned
-list/current/history GET routes follow [definition workspace](definition-workspace.md).
-They require a configured private hosted workspace.
-Planned
-endpoints below are design contracts; they must be added with examples and
-backend tests as each slice is implemented. Never advertise a fictional API.
+`openapi.yaml` indexes capability, health, hosted-session, workspace and plan
+contracts. Contract presence does not advertise deployment qualification.
+PUT `/api/v1/definitions/{objectId}` and the owned list/current/history GET routes
+follow [definition workspace](definition-workspace.md). They require a configured
+private hosted workspace.
 The implemented [native workspace extension](native-workspace-v2.md) has a separate
 [closed OpenAPI contract](openapi-workspace-v2.json) for v2 definition/profile
-publication and immutable history. It preserves v1 draft history. Hosted plans
-remain planned in [the application contract](hosted-plans-v1.md).
+publication and immutable history. It preserves v1 draft history.
+
+The nine initial [hosted plan HTTP routes](hosted-plan-http-v1.md) are implemented:
+destination listing, plan creation/current/status, inspection reservation,
+one-shot credential submission, operation polling/cancellation and typed commands.
+[Hosted plan views](hosted-plan-views-v1.md) specify the subsequent eleven
+revision-bound POST routes for materialization, inspection, profile capture/
+preview and validation; their implementation evidence is tracked separately in
+[delivery progress](../delivery/progress.md). Their exact request/response shapes
+are in [plan OpenAPI](openapi-plans-v1.json). They supersede older proposed GET
+comparison routes and asynchronous validation polling: validation returns its
+bounded result directly. Profile capture returns a value-free portable source;
+saving or publishing it is a separate explicit workspace action.
+
+The remaining operations below are planned. Add closed contracts, examples and
+backend tests before implementation. The capabilities response remains the source
+of advertised availability; installed routes alone do not enable inspection or
+export in the browser.
 
 | Planned operation | Contract |
 | --- | --- |
-| POST /api/v1/plans | Definition revision, intended environment, destination reference, no credential |
-| POST /api/v1/plans/{id}/inspections | Credential-free reservation; separate one-shot credential submission and no automatic retry |
-| GET /api/v1/operations/{id} | Owner-authorized polling without resubmitting credentials |
-| POST /api/v1/plans/{id}/commands | Closed tagged command union, expectedRevision and requestId |
-| POST /api/v1/profiles | Allowlisted value-free capture; draft/ready distinct |
-| POST /api/v1/plans/{id}/composition-preview | Selected profile IDs/roots, closure, conflicts and impact without mutations |
-| GET /api/v1/plans/{id}/documents | Paginated projection; complete scope/counts retained server-side |
-| GET /api/v1/plans/{id}/documents/{doc}/comparison | Explicit raw/placeholders/formatted view, mode/redaction/omission metadata |
-| POST /api/v1/plans/{id}/validations | Freeze inputs, evaluate all required rules; polling by operation ID |
 | POST /api/v1/plans/{id}/review | Bind acknowledgement to exact validated input/artifact intent |
 | POST /api/v1/plans/{id}/artifacts | Backend rechecks complete authority; returns immutable package or typed refusal |
 | POST /api/v1/plans/{id}/verifications | New credentials and complete read; compares exact target manifest |
