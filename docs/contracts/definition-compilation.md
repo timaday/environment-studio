@@ -12,6 +12,10 @@ UTF-8 strictly. Limit input to 1,048,576 bytes, nesting to 32 containers, scalar
 strings to 16,384 Unicode code points and the parsed tree to 20,000 nodes. Count
 object keys in the node budget. Refuse limits before constructing an unbounded
 object tree; parser resource hardening must be configured, not assumed.
+Numeric tokens are limited to 256 characters, absolute exponent to 1,024, and
+expanded decimal representation to 1,024 digits (including scale/leading zeroes).
+Check these budgets before arbitrary-precision conversion or exponent expansion;
+a short exponent token cannot authorize an unbounded allocation.
 
 Accept exactly one object/document. JSON rejects duplicate keys and trailing
 content. YAML uses JSON-compatible scalar semantics; reject explicit tags,
@@ -19,6 +23,9 @@ anchors/aliases, merge keys, non-string keys and additional documents. No custom
 constructors or implicit date/class conversion. Reject non-finite numbers. Schema
 integer semantics permit mathematically integral decimals such as `1.0`; preserve
 unbounded integer values without narrowing to Java int or long.
+Here unbounded means arbitrary precision within the preceding resource budgets.
+YAML `true`/`false` and `null` have their JSON meanings; `yes`, `2026-09-08` and
+`01` remain strings. Quoting a scalar always preserves its string type.
 
 Validate the parsed value against the packaged, pinned
 `schemas/definition.schema.json`. Remote schema resolution is unavailable; input
