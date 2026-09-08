@@ -13,6 +13,12 @@ these routes. Demo mode continues to deny mutations. The owner comes exclusively
 from the authenticated session's issuer and subject. Origin, CSRF, session expiry
 and server-side ownership checks apply to every route. Responses are no-store;
 errors contain stable codes and safe messages, never submitted source or paths.
+Configure the directory with `studio.workspace.directory`. With that setting
+absent, hosted authentication may run but workspace routes remain unavailable
+and capabilities report `definitionWorkspaceEnabled: false`. A configured but
+missing, invalid or incompatible store fails startup; never fall back to empty
+state. A valid configured store enables only these owned draft routes and reports
+`definitionWorkspaceEnabled: true`; inspection/export remain false.
 
 `PUT /api/v1/definitions/{objectId}` accepts a closed JSON object with
 `expectedRevision` (canonical nonnegative decimal string), `requestId` (UUID),
@@ -62,6 +68,11 @@ records, unsupported versions and ambiguous recovery state. Explicit offline
 initialization creates a new database and catalog; service startup requires the
 established database and never creates an absent one. Refuse unknown storage
 schemas rather than performing an implicit migration.
+The offline entry point is `java -jar app.jar --initialize-workspace=/absolute/directory`.
+It accepts exactly that argument, starts no web server or IdP client, requires an
+existing private owned directory and creates `studio-workspace.db` only when
+absent. Existing storage is never overwritten. Normal hosted startup opens that
+same file without a create option. Success/failure emits only a safe status code.
 
 Encode owner identity unambiguously and use bound SQL parameters. Neither owner
 claims nor object IDs influence file paths or SQL syntax.

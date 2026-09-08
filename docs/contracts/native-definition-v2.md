@@ -135,9 +135,11 @@ moves require an explicitly selected compatible parent and qualified remove plus
 insertion; source/target overlap or unresolved order refuses the plan.
 
 All object properties are required unless this document explicitly says optional;
-there are no defaults. IDs use the version 1 ID syntax. Entity types, fields,
-bindings, documents and entity projections are nonempty. Relations, rules,
-reference mappings and operation capabilities may be explicitly empty. IDs are
+there are no defaults. IDs use the version 1 ID syntax. Entity types, logical
+field declarations, bindings, documents and entity projections are nonempty.
+Relations, rules, projection field mappings, reference mappings and operation
+capabilities may be explicitly empty; missing required mappings are semantic
+incompleteness. IDs are
 unique within their collection; document and projection IDs are unique throughout
 one binding, fields within one type. Limits are inherited from the bounded native
 parser. Expanded names have required `namespaceUri` (empty or <=2048 code points)
@@ -155,8 +157,9 @@ mechanism versions; it does not mean a database/client or actual application has
 been qualified. Workspace publication is an explicit immutable revision action;
 plans cannot supply their own compiler or capability result.
 The initial trusted registry pins `native-compiler-v2=1`, `xml-path-v1=1`,
-`xml-span-v1=1` and `generic-graph-v1=1`. The first two define this format and its
-direct-child/attribute projections; xml-span-v1 is the qualified D03a mechanism;
+`xml-span-v1=1` and `generic-graph-v1=1`. Registry values are integers (`I1;` in
+digest framing), not strings. The first two define this format and its direct
+child/attribute projections; xml-span-v1 is the qualified D03a mechanism;
 generic-graph-v1 provides the declared graph/count checks. Uploaded content cannot
 replace registry versions or claim mechanism availability. Unknown vocabulary
 rejects; recognized declarations that exceed a mechanism's capabilities remain
