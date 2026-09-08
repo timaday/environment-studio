@@ -12,6 +12,7 @@ python3 - <<'PY'
 import json, os, time
 from urllib.request import Request, urlopen
 from urllib.error import URLError, HTTPError
+from http.client import RemoteDisconnected
 base=os.environ['STUDIO_SMOKE_URL']
 deadline=time.monotonic()+60
 while True:
@@ -19,7 +20,7 @@ while True:
         with urlopen(base+'/actuator/health/readiness',timeout=3) as response:
             assert response.status == 200
         break
-    except (URLError, TimeoutError):
+    except (URLError, TimeoutError, ConnectionResetError, RemoteDisconnected):
         if time.monotonic() >= deadline:
             raise SystemExit('Container readiness timed out')
         time.sleep(1)

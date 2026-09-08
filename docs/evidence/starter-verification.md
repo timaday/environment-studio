@@ -35,3 +35,13 @@ Boot BOM manages compatible JUnit versions. No image was published by that run.
 The first CI log also supplied the exact Node/Maven/JRE/Dockerfile frontend
 digests; these are now pinned in Dockerfile. Demo security declares an empty
 user store so no unused bootstrap password is generated/logged.
+
+## Second actual CI result
+
+[Run 34220005166](https://github.com/timaday/environment-studio/actions/runs/34220005166)
+passed 12 core checks, all three HTTP boundary tests, frontend/schema checks and
+built the combined image. The startup probe then encountered a TCP reset before
+Java had begun serving. Added that specific transient startup condition and
+remote disconnect to the existing bounded readiness retry; the deadline and
+required health/capability/security assertions are unchanged. Publication stayed
+blocked until the smoke test passed.
