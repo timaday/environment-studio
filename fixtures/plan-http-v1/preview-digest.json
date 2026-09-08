@@ -1,0 +1,31 @@
+{
+  "pins": {
+    "planId": "00000000-0000-4000-8000-000000000071",
+    "revision": "9007199254740993",
+    "observationFingerprint": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "profile": {
+      "objectId": "00000000-0000-4000-8000-000000000072",
+      "workspaceRevision": "2"
+    },
+    "publicationDigest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "selectedRoots": [
+      "first"
+    ],
+    "rootsDigest": "4b73926498651f785020ec65dbcf57c9ce7435b5df3c7e6816e4110ddb05eca8",
+    "closureDigest": "6a07ac37dbcc023f1183524bd5741139aa1fedce5304784dd353a0c20672a108"
+  },
+  "closure": {
+    "included": [
+      "dependency",
+      "first"
+    ],
+    "relations": [
+      {
+        "type": "palette-reference",
+        "from": "first",
+        "to": "dependency"
+      }
+    ]
+  },
+  "previewDigest": "f129f8c6514c6691d82843845409b14656d5b4005f3323f3a3e9fc65f8b30cd4"
+}

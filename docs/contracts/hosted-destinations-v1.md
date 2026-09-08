@@ -58,6 +58,8 @@ Hosted transport is fixed to VERIFIED_TLS: full certificate-chain and hostname
 validation, with no plaintext flag, arbitrary JDBC property bag, trust-all mode,
 wallet credential or URL. `trustMaterial` contains public trusted certificates
 only and is mounted read-only. Bound it to 1 MiB and require a nonempty trust set.
+The read-only mount is deployment/composition evidence; POSIX write bits alone
+cannot establish it, since a read-only bind mount may retain host mode 0644.
 PostgreSQL uses a PEM certificate bundle. Oracle uses a certificate-only JKS
 (`.jks`) or PKCS12 (`.p12`/`.pfx`) trust store readable without a supplied password
 by the pinned Java/driver runtime. Require the actual format to agree with this

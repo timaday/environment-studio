@@ -134,6 +134,30 @@ request below the wire ceiling necessarily fits retained semantic capacity.
 
 ## Subsequent route groups
 
+The `previewDigest` on compose-profile is SHA-256 over UTF-8 domain
+`ES-PLAN-COMPOSITION-PREVIEW-1`, one zero byte, then native framing of exactly:
+`{planId, revision, observationFingerprint, profile, publicationDigest,
+selectedRoots, rootsDigest, closureDigest}`. `profile` is exactly
+`{objectId, workspaceRevision}`; all scalar fields, including revisions, are
+strings. `selectedRoots` is the complete normalized, sorted nonempty root ID
+array returned by the server, including when the operator selected all roots.
+Object keys use unsigned UTF-8 byte ordering; arrays preserve the defined order.
+Framing is the native `S<byteLength>:<UTF8>`, `A<count>:...`, `O<count>:...`
+algorithm, not JSON serialization. No field is omitted or replaced by null.
+
+`rootsDigest` uses domain `ES-PLAN-ROOTS-1` and native framing of selectedRoots.
+`closureDigest` uses domain `ES-PLAN-CLOSURE-1` and exactly
+`{included: [slotId...], relations: [{type, from, to}...]}`: included IDs sorted,
+relations sorted by `(type, from, to)`, all ASCII tool IDs. Those digests and the
+profile publication pin determine the closed profile/closure; they are advisory
+comparison tokens, never bearer authority. Before composition the server
+recomputes all pins/closure and compares previewDigest against the current live
+plan and profile. Successful request replay is checked from the original closed
+wire command before resolving stale handles or recomputing a retired preview;
+it returns only the original Ack. Replay records never store the old preview,
+graph or values. An independent byte oracle is in
+`fixtures/plan-http-v1/preview-oracle.py`.
+
 Profile capture, closure preview, paged graph/document inspection, all comparison
 modes, validation, review, artifact download and fresh verification follow the
 same revision/lease rules. Their exact closed DTOs are added before those routes
