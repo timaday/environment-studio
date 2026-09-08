@@ -13,7 +13,7 @@ enabled routes or replace v1 draft history.
 
 | Planned operation | Contract |
 | --- | --- |
-| POST /api/v1/definitions/{id}/publish | Expected revision, complete semantic/mapping conformance evidence |
+| POST /api/v2/definitions/{objectId}/publish | Current maintainer authorization, expected revision, ready native result and explicit document policies; v1 remains draft-only |
 | POST /api/v1/plans | Definition revision, intended environment, destination reference, no credential |
 | POST /api/v1/plans/{id}/inspections | One credential-bearing bounded operation; no automatic submission retry |
 | GET /api/v1/operations/{id} | Owner-authorized polling without resubmitting credentials |

@@ -23,6 +23,12 @@ Each entity contains only `id`, `type`, `label` and `requiredInputs`. Its ID is 
 neutral logical slot using the existing ID syntax, distinct from observed entity
 identity, a source element index or database row key. A label is explicitly
 provided neutral operator text, never automatically copied from a field value.
+Distinct here means a separate declared identity domain and provenance, not an
+inferred prohibition on coincidentally equal text. Capture accepts only explicit
+operator slot/label declarations and never derives them from donor values. It
+does not classify arbitrary label or ID text by comparing it with observed
+values. The operator must use neutral declarations; canary evidence keeps those
+declarations independent of donor canaries so it actually tests data copying.
 Required input IDs are exactly the required fields declared by its entity type,
 sorted without duplicates. They declare the need for fresh values, not defaults.
 Optional fields also require an explicit value-state decision during planning.
