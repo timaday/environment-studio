@@ -28,8 +28,11 @@ the lead's integration harness received independent fixed-candidate review with
 no material findings. Integration and rework are recorded in D01a evidence;
 there is no serial comparison supporting a speed-up claim.
 
-Active work: hosted plan HTTP integration; Oracle FGA read-policy correction;
-external supervisor and subsequent inspection/composition view contracts.
+Active work: hosted plan HTTP integration and the separate external supervisor;
+subsequent inspection/composition view contracts are defined before implementation.
+The Oracle FGA read-policy correction passed independent review, actual handler/
+refusal controls and the combined 365-test Java build; see
+[FGA integration](../evidence/d04-fga-integration.md).
 The internal plan service passed independent review, the combined 357-test Java
 Docker build and protected smoke, plus 58 actual both-engine shared-permit checks;
 see [hosted plan integration](../evidence/d06b1-integration.md).

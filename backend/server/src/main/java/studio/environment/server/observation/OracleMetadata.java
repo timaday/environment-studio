@@ -11,6 +11,7 @@ final class OracleMetadata {
     static Verified verify(SqlRead sql, Binding binding, ObservationDestination destination) throws SQLException {
         if (!"23.26.3.0.0".equals(sql.scalar("SELECT version_full FROM sys.v_$instance"))) throw new ObservationFailure(Code.STORAGE_UNSUPPORTED);
         if (!"AL32UTF8".equals(sql.scalar("SELECT value FROM nls_database_parameters WHERE parameter='NLS_CHARACTERSET'"))) throw new ObservationFailure(Code.STORAGE_UNSUPPORTED);
+        sql.empty("SELECT 1 FROM sys.dba_audit_policies WHERE object_schema=? AND object_name=? AND enabled='YES'", Code.VISIBILITY_UNQUALIFIED, binding.schema(), binding.table());
         var features = sql.rows("SELECT parameter,value FROM sys.v_$option WHERE parameter IN ('Oracle Label Security','Oracle Database Vault')");
         if (features.size() != 2 || features.stream().anyMatch(row -> !"FALSE".equals(row.get(1)))) throw new ObservationFailure(Code.VISIBILITY_UNQUALIFIED);
         if (!"FALSE".equals(sql.scalar("SELECT SYS_CONTEXT('USERENV','ISDBA') FROM dual"))) throw new ObservationFailure(Code.ACCOUNT_NOT_READ_ONLY);
