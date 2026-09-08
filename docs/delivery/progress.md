@@ -13,7 +13,7 @@ results; the table below reports capability, not test count.
 | D04 database reads | Both engine adapters and internal plan reservations integrated; disposable matrices and shared-permit checks passed | HTTP credential transport and external TLS/account qualification |
 | D05 profiles | Value-free capture, portable whole/partial composition and owned immutable persistence/publication integrated | Hosted capture/composition and browser workflow |
 | D06 planning | Internal hosted plans, revisions, operation cleanup, composition and complete structural targets reviewed | HTTP/backend-to-browser workflow and full hosted privacy/heap qualification |
-| D07 SQL | Bounded package admission, canonical digests and deterministic ZIP integrated and reviewed; export unavailable | Both transaction templates, external supervisor and exact-client adverse transaction matrices |
+| D07 SQL | Package mechanisms and both unqualified transaction templates integrated/reviewed; disposable rollback/guard matrices passed | External supervisor, TLS/transcript/commit acknowledgement and hosted export authority |
 | D08 UX | Synthetic comparison and definition inspector; component keyboard/axe checks pass | Backend integration, editing workflow and representative operator sessions |
 | D09 deployment/release | OCI pipeline/contract; actual HiveForge unverified | Exact platform deployment and qualification matrix |
 
@@ -28,10 +28,16 @@ the lead's integration harness received independent fixed-candidate review with
 no material findings. Integration and rework are recorded in D01a evidence;
 there is no serial comparison supporting a speed-up claim.
 
-Active work: hosted plan HTTP integration; both guarded transaction templates.
+Active work: hosted plan HTTP integration; Oracle FGA read-policy correction;
+external supervisor and subsequent inspection/composition view contracts.
 The internal plan service passed independent review, the combined 357-test Java
 Docker build and protected smoke, plus 58 actual both-engine shared-permit checks;
 see [hosted plan integration](../evidence/d06b1-integration.md).
+Both guarded templates passed independent review after a signed-int64 correction,
+the combined 362-test Java Docker build and protected smoke; actual full-size
+multibyte transactions and rollback witnesses passed on both disposable engines.
+See [transaction integration](../evidence/d07b-integration.md). These internal
+candidates do not enable export or establish supervisor/commit/TLS qualification.
 The bounded package mechanism passed independent review
 and the combined 317-test Java Docker build, 7 UI/17 schema tests and protected
 smoke; see [package integration](../evidence/d07a-integration.md).
