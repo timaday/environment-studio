@@ -23,6 +23,11 @@ an explicit external origin for redirect construction, with forwarding processin
 disabled. The platform must restrict direct ingress to its trusted proxy and
 provide TLS; documenting this requirement is not proof that it is configured.
 Reject unexpected Host and unsafe-request Origin values. No permissive CORS.
+The packaged process probe connects only to loopback at `SERVER_PORT` (8080 by
+default) and sends the approved public-origin Host in hosted mode. Supply
+`STUDIO_SECURITY_PUBLIC_ORIGIN` consistently to both service and probe; a missing
+or malformed origin fails the probe. This does not exempt health URLs from Host
+validation or route probe traffic through public DNS/TLS.
 
 ## Session and request authority
 
@@ -35,9 +40,19 @@ Idle expiry is 30 minutes; absolute lifetime is eight hours. Logout and expiry
 invalidate the session and its active operations/observations/validation state.
 Restart discards all sessions and ephemeral authority. A fresh login can access
 owned persisted metadata, but requires fresh observation and validation.
+Revoke session authority before cleanup and attempt every independent session
+and cleanup hook even if another fails. Hooks are idempotent. Failed obligations
+remain typed INCONCLUSIVE without raw exception details; quarantine their owner
+and global capacity until cleanup succeeds. Internal lifecycle retries attempt
+only unfinished obligations, at most three total attempts per lease. They never
+restore authentication. Exhausted obligations remain inconclusive until process
+restart, and new owner login is refused with CLEANUP_INCONCLUSIVE. Quarantined
+records count toward the same 64-session budget. Actual database operation and
+restart cleanup still require separate G07 observations.
 Initial application limits are 64 live sessions total and one live session per
 owner. A new login for an already active owner is refused rather than silently
-invalidating active work. Session capacity is checked atomically at authentication.
+invalidating active work. Capacity is checked atomically before pending login
+allocation and at authentication; pending logins count toward the global limit.
 
 Require CSRF protection on every unsafe request, including logout. Provide the
 authenticated session's CSRF token through a no-store same-origin API; it is not
@@ -72,7 +87,8 @@ workspace. Active inspection/export work is limited to one operation per owner
 and eight globally. These are explicit conservative service budgets, not measured
 application capacity. Exhaustion is a visible typed refusal; limits do not
 justify partial inspection, deletion of retained revisions or silent truncation.
-Persist a metadata mutation and its bounded replay result as one atomic record.
+Persist the object catalog, metadata mutation and bounded replay result as one
+atomic transaction.
 Restart must not silently re-execute an applied command whose reply was lost.
 An unavailable/expired replay record produces explicit conflict, never guessed
 success or an automatic new mutation.
@@ -93,7 +109,9 @@ is intentionally available only to the authenticated same-origin UI; it is not
 a provider token. No email, display name or provider credential is returned.
 
 `POST /api/v1/session/logout` requires valid Origin and CSRF and returns 204
-after invalidation. Login uses `/oauth2/authorization/studio`, with the fixed
+after complete cleanup. If cleanup remains inconclusive it returns safe 503
+`SESSION_CLEANUP_INCONCLUSIVE`; authority remains revoked and capacity quarantined.
+Login uses `/oauth2/authorization/studio`, with the fixed
 public-origin callback `/login/oauth2/code/studio`. Callback state/nonce and token
 issuer/audience/signature must be verified, not replaced by request claims.
 Unknown API routes remain denied until implemented. D02a does not enable
