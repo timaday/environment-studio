@@ -7,14 +7,10 @@ import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 
 @Configuration
+@org.springframework.boot.autoconfigure.condition.ConditionalOnProperty(name = "studio.mode", havingValue = "demo")
 class DemoSecurity {
-    // Demo has no accounts; prevent auto-configuration from generating/logging a password.
-    @Bean UserDetailsService demoUsers() { return new InMemoryUserDetailsManager(); }
-
     @Bean SecurityFilterChain security(HttpSecurity http, @Value("${studio.mode}") String mode) throws Exception {
         if (!"demo".equals(mode)) throw new IllegalStateException("UNIMPLEMENTED_RUNTIME_MODE");
         http.authorizeHttpRequests(auth -> auth

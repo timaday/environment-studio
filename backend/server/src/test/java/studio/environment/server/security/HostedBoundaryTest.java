@@ -1,0 +1,190 @@
+package studio.environment.server.security;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
+
+import java.net.URI;
+import java.net.http.*;
+import java.util.Map;
+import org.junit.jupiter.api.*;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.mock.web.MockHttpSession;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
+import org.springframework.test.web.servlet.*;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.context.WebApplicationContext;
+
+@SpringBootTest(properties = {"studio.mode=hosted", "studio.security.public-origin=http://localhost",
+        "studio.security.client-id=mock-client", "studio.security.client-secret=mock-platform-secret", "studio.security.allow-test-http=true"})
+@org.junit.jupiter.api.extension.ExtendWith(org.springframework.boot.test.system.OutputCaptureExtension.class)
+@ActiveProfiles("oidc-test")
+class HostedBoundaryTest {
+    static final MockIssuer issuer = new MockIssuer();
+    @DynamicPropertySource static void properties(DynamicPropertyRegistry properties) { properties.add("studio.security.issuer", issuer::issuer); }
+    @Autowired WebApplicationContext context;
+    @Autowired CleanupProbe cleanupProbe;
+    @org.springframework.boot.test.context.TestConfiguration
+    static class CleanupTestConfiguration {
+        @org.springframework.context.annotation.Bean CleanupProbe cleanupProbe() { return new CleanupProbe(); }
+    }
+    static final class CleanupProbe implements studio.environment.server.session.SessionCleanup {
+        volatile boolean fail;
+        public void invalidate(studio.environment.core.session.SessionLedger.Lease lease) {
+            if (fail) throw new IllegalStateException("synthetic-cleanup-canary");
+        }
+    }
+    @AfterEach void providerCredentialsNeverEnterCapturedLogs(org.springframework.boot.test.system.CapturedOutput output) {
+        cleanupProbe.fail = false;
+        for (String token : csrfCanaries) assertFalse(output.getAll().contains(token.substring(0, 12)), "Session CSRF token prefix leaked to logs");
+        assertFalse(output.getAll().contains("mock-platform-secret"), "Synthetic client secret leaked to logs");
+        assertFalse(output.getAll().contains("mock-access-canary"), "Synthetic access token leaked to logs");
+        String basic = java.util.Base64.getEncoder().encodeToString("mock-client:mock-platform-secret".getBytes(java.nio.charset.StandardCharsets.UTF_8));
+        assertFalse(output.getAll().contains(basic), "Encoded synthetic client authentication leaked to logs");
+        for (String token : issuer.issuedTokens) {
+            assertFalse(output.getAll().contains(token), "Synthetic ID token leaked to logs");
+            assertFalse(output.getAll().contains(token.substring(0, 80)), "Truncated synthetic ID token leaked to logs");
+        }
+    }
+    MockMvc mvc;
+    final java.util.List<String> csrfCanaries = new java.util.ArrayList<>();
+    @BeforeEach void setup() {
+        issuer.mode = MockIssuer.TokenMode.VALID;
+        issuer.subject = "invented-" + java.util.UUID.randomUUID();
+        mvc = MockMvcBuilders.webAppContextSetup(context).apply(springSecurity()).build();
+    }
+    @AfterAll static void stopIssuer() { issuer.close(); }
+    @Test void anonymousSessionApiReturnsSafeJson401() throws Exception {
+        mvc.perform(get("/api/v1/session").header("Host", "localhost"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(content().json("{\"code\":\"AUTHENTICATION_REQUIRED\"}"))
+                .andExpect(header().string("Cache-Control", "no-store"));
+    }
+    record Login(MockHttpSession session, String oldId, MvcResult callback) { }
+    Login login(boolean corruptState) throws Exception {
+        var start = mvc.perform(get("/oauth2/authorization/studio").header("Host", "localhost")
+                .header("X-Forwarded-Host", "attacker.invalid").header("X-User", "forged"))
+                .andExpect(status().is3xxRedirection()).andReturn();
+        var session = (MockHttpSession) start.getRequest().getSession(false);
+        String oldId = session.getId();
+        var response = HttpClient.newHttpClient().send(HttpRequest.newBuilder(URI.create(start.getResponse().getRedirectedUrl())).build(), HttpResponse.BodyHandlers.discarding());
+        assertEquals(302, response.statusCode());
+        var callback = URI.create(response.headers().firstValue("Location").orElseThrow());
+        assertEquals("http://localhost/login/oauth2/code/studio", callback.getScheme() + "://" + callback.getAuthority() + callback.getPath());
+        Map<String, String> params = MockIssuer.parameters(callback.getRawQuery());
+        var completed = mvc.perform(get(callback.getPath()).header("Host", "localhost").session(session)
+                .param("code", params.get("code")).param("state", corruptState ? "wrong" : params.get("state"))).andReturn();
+        return new Login(session, oldId, completed);
+    }
+    @Test void realCodeExchangeVerifiesPkceRotatesSessionAndLogoutRequiresOriginAndCsrf() throws Exception {
+        var login = login(false);
+        assertEquals(302, login.callback.getResponse().getStatus());
+        assertNotEquals(login.oldId, login.session.getId());
+        assertTrue(issuer.verifiedPkce);
+        mvc.perform(post("/api/v1/session/logout").header("Host", "localhost").header("Origin", "http://localhost").session(login.session)).andExpect(status().isForbidden());
+        var result = mvc.perform(get("/api/v1/session").header("Host", "localhost").session(login.session))
+                .andExpect(status().isOk()).andExpect(header().string("Cache-Control", "no-store"))
+                .andExpect(jsonPath("$.authenticated").value(true)).andExpect(jsonPath("$.idleTimeoutSeconds").value(1800))
+                .andExpect(jsonPath("$.absoluteExpiresAt").exists()).andExpect(jsonPath("$.csrfToken").exists()).andReturn();
+        var csrf = (org.springframework.security.web.csrf.CsrfToken) result.getRequest().getAttribute(org.springframework.security.web.csrf.CsrfToken.class.getName());
+        csrfCanaries.add(csrf.getToken());
+        assertFalse(result.getResponse().getContentAsString().contains("mock-access-canary"));
+        assertFalse(result.getResponse().getContentAsString().contains("mock-platform-secret"));
+        mvc.perform(post("/api/v1/session/logout").header("Host", "localhost").header("Origin", "https://wrong.invalid")
+                .header(csrf.getHeaderName(), csrf.getToken()).session(login.session)).andExpect(status().isForbidden());
+        mvc.perform(post("/api/v1/session/logout").header("Host", "localhost").header(csrf.getHeaderName(), csrf.getToken()).session(login.session)).andExpect(status().isForbidden());
+        mvc.perform(post("/api/v1/session/logout").header("Host", "localhost").header("Origin", "http://localhost")
+                .header(csrf.getHeaderName(), "wrong").session(login.session)).andExpect(status().isForbidden());
+        mvc.perform(post("/api/v1/session/logout").header("Host", "localhost").header("Origin", "http://localhost")
+                .header(csrf.getHeaderName(), csrf.getToken()).session(login.session)).andExpect(status().isNoContent());
+        assertTrue(login.session.isInvalid());
+    }
+    @Test void invalidStateAndAllIdTokenAuthorityFailuresAreRefused() throws Exception {
+        assertEquals(401, login(true).callback.getResponse().getStatus());
+        for (var mode : MockIssuer.TokenMode.values()) {
+            if (mode == MockIssuer.TokenMode.VALID) continue;
+            issuer.mode = mode;
+            var rejected = login(false);
+            assertEquals(401, rejected.callback.getResponse().getStatus(), mode.name());
+            assertEquals("{\"code\":\"LOGIN_FAILED\"}", rejected.callback.getResponse().getContentAsString());
+            assertTrue(rejected.session.isInvalid());
+        }
+    }
+    @Test void hostAndForgedIdentityDoNotSupplyAuthorityAndUnknownApiIsDenied() throws Exception {
+        mvc.perform(get("/api/v1/session").header("Host", "attacker.invalid")).andExpect(status().isForbidden());
+        mvc.perform(get("/api/v1/session").header("Host", "localhost").header("X-User", "invented-owner")
+                .header("X-Forwarded-User", "invented-owner")).andExpect(status().isUnauthorized());
+        var login = login(false);
+        mvc.perform(get("/api/v1/unimplemented").header("Host", "localhost").session(login.session)).andExpect(status().isForbidden());
+        mvc.perform(get("/api/v1/capabilities").header("Host", "localhost"))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.mode").value("hosted"))
+                .andExpect(jsonPath("$.inspectionEnabled").value(false)).andExpect(jsonPath("$.exportEnabled").value(false));
+    }
+    @Test void unsolicitedCallbackAndReloginCannotInvalidateActiveWork() throws Exception {
+        var active = login(false);
+        mvc.perform(get("/oauth2/authorization/studio").header("Host", "localhost").session(active.session))
+                .andExpect(status().isForbidden());
+        mvc.perform(get("/login/oauth2/code/studio").header("Host", "localhost").session(active.session)
+                .param("code", "unsolicited").param("state", "unsolicited"))
+                .andExpect(status().isForbidden());
+        mvc.perform(get("/api/v1/session").header("Host", "localhost").session(active.session)).andExpect(status().isOk());
+    }
+    @Test void secondLiveSessionForSameOwnerIsRefusedWithoutClosingFirst() throws Exception {
+        var first = login(false);
+        var second = login(false);
+        assertEquals(403, second.callback.getResponse().getStatus());
+        assertTrue(second.session.isInvalid());
+        mvc.perform(get("/api/v1/session").header("Host", "localhost").session(first.session)).andExpect(status().isOk());
+    }
+    @Test void fullCapacityRefusesBeforeAllocationAndFailedCallbackReleasesReservation() throws Exception {
+        var pending = new java.util.ArrayList<MockHttpSession>();
+        try {
+            for (int i = 0; i < 64; i++) {
+                var started = mvc.perform(get("/oauth2/authorization/studio").header("Host", "localhost")).andReturn();
+                if (started.getResponse().getStatus() == 403) break;
+                assertEquals(302, started.getResponse().getStatus());
+                pending.add((MockHttpSession) started.getRequest().getSession(false));
+            }
+            var refused = mvc.perform(get("/oauth2/authorization/studio").header("Host", "localhost"))
+                    .andExpect(status().isForbidden()).andExpect(content().json("{\"code\":\"SESSION_CAPACITY\"}"))
+                    .andReturn();
+            assertNull(refused.getRequest().getSession(false));
+            assertNull(refused.getResponse().getHeader("Set-Cookie"));
+            var existing = pending.getFirst();
+            mvc.perform(get("/oauth2/authorization/studio").header("Host", "localhost").session(existing)).andExpect(status().is3xxRedirection());
+            mvc.perform(get("/login/oauth2/code/studio").header("Host", "localhost").session(existing)
+                    .param("code", "invalid").param("state", "invalid")).andExpect(status().isUnauthorized());
+            assertTrue(existing.isInvalid());
+            var replacement = mvc.perform(get("/oauth2/authorization/studio").header("Host", "localhost"))
+                    .andExpect(status().is3xxRedirection()).andReturn();
+            pending.add((MockHttpSession) replacement.getRequest().getSession(false));
+        } finally { pending.forEach(session -> { if (!session.isInvalid()) session.invalidate(); }); }
+    }
+    @Test void anonymousUnsafeAndDefaultLoginPageCannotCreateUnbudgetedSessions() throws Exception {
+        var post = mvc.perform(post("/unimplemented").header("Host", "localhost").header("Origin", "http://localhost"))
+                .andExpect(status().isUnauthorized()).andReturn();
+        assertNull(post.getRequest().getSession(false));
+        var page = mvc.perform(get("/login").header("Host", "localhost")).andExpect(status().isUnauthorized()).andReturn();
+        assertNull(page.getRequest().getSession(false));
+    }
+
+    @Test void logoutReportsInconclusiveCleanupWhileRevokingSessionAndQuarantiningOwner() throws Exception {
+        var login = login(false);
+        var info = mvc.perform(get("/api/v1/session").header("Host", "localhost").session(login.session))
+                .andExpect(status().isOk()).andReturn();
+        var csrf = (org.springframework.security.web.csrf.CsrfToken) info.getRequest().getAttribute(org.springframework.security.web.csrf.CsrfToken.class.getName());
+        csrfCanaries.add(csrf.getToken());
+        cleanupProbe.fail = true;
+        mvc.perform(post("/api/v1/session/logout").header("Host", "localhost").header("Origin", "http://localhost")
+                .header(csrf.getHeaderName(), csrf.getToken()).session(login.session))
+                .andExpect(status().isServiceUnavailable()).andExpect(header().string("Cache-Control", "no-store"))
+                .andExpect(content().json("{\"code\":\"SESSION_CLEANUP_INCONCLUSIVE\"}"));
+        assertTrue(login.session.isInvalid());
+        assertEquals(403, login(false).callback.getResponse().getStatus());
+    }
+
+}

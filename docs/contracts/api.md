@@ -1,12 +1,13 @@
 # HTTP contract strategy
 
-`openapi.yaml` describes **only the implemented starter surface**. Planned
+`openapi.yaml` describes implemented capability, health and hosted-session routes. Planned
 endpoints below are design contracts; they must be added with examples and
 backend tests as each slice is implemented. Never advertise a fictional API.
 
 | Planned operation | Contract |
 | --- | --- |
-| POST /api/v1/definitions/drafts | Bounded safe YAML/JSON upload, revisioned diagnostics; reject unsupported extensions |
+| PUT /api/v1/definitions/{objectId} | Bounded native source, expected workspace revision and request ID; see [definition workspace](definition-workspace.md) |
+| GET /api/v1/definitions and owned object/revision routes | Immutable source, original compiler projection and bounded metadata; see [definition workspace](definition-workspace.md) |
 | POST /api/v1/definitions/{id}/publish | Expected revision, complete semantic/mapping conformance evidence |
 | POST /api/v1/plans | Definition revision, intended environment, destination reference, no credential |
 | POST /api/v1/plans/{id}/inspections | One credential-bearing bounded operation; no automatic submission retry |

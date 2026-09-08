@@ -38,6 +38,7 @@ backups. Do not mount a host Docker socket or allow arbitrary runtime plugins.
 Use bounded DB destination allowlists and egress; uploaded XML/schema must not
 cause network requests. Disable remote resolver access and debug payload logs.
 
-The starter server only accepts `studio.mode=demo`; all mutation requests are
-denied. Real authentication, storage and data access are D02/D04 work. Do not
-change this boundary merely by adding `STUDIO_MODE=production` to deployment.
+Demo mode denies mutations. D02a additionally implements explicitly configured
+`studio.mode=hosted` OIDC/session handling with mock protocol/lifecycle tests;
+its inspection/export remain disabled. Workspace storage and data access remain
+D02b/D04 work. Unknown modes fail startup; a mode flag does not qualify deployment.

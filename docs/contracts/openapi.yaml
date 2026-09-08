@@ -1,8 +1,8 @@
 openapi: 3.1.0
 info:
-  title: Environment Studio starter API
+  title: Environment Studio API
   version: 0.1.0
-  description: Implemented demo surface only. Planned endpoints are in api.md.
+  description: Demo capability surface and hosted session boundary. Database/export remain unavailable.
 paths:
   /api/v1/capabilities:
     get:
@@ -10,7 +10,7 @@ paths:
       summary: Read implemented runtime capability state
       responses:
         '200':
-          description: Demo mode accepts no credentials and cannot export
+          description: Current runtime capabilities; inspection and export remain unavailable
           content:
             application/json:
               schema:
@@ -18,7 +18,7 @@ paths:
                 additionalProperties: false
                 required: [mode, inspectionEnabled, exportEnabled, qualifiedDatabaseAdapters, blockers]
                 properties:
-                  mode: {type: string, const: demo}
+                  mode: {type: string, enum: [demo, hosted]}
                   inspectionEnabled: {type: boolean, const: false}
                   exportEnabled: {type: boolean, const: false}
                   qualifiedDatabaseAdapters:
@@ -35,6 +35,39 @@ paths:
       responses:
         '200': {description: Process ready}
         '503': {description: Process not ready}
+  /api/v1/session:
+    get:
+      operationId: getSession
+      summary: Read authenticated hosted session and CSRF token without caching
+      security: [{sessionCookie: []}]
+      responses:
+        '200':
+          description: Owned session; Cache-Control no-store
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required: [authenticated, csrfHeaderName, csrfToken, idleTimeoutSeconds, absoluteExpiresAt]
+                properties:
+                  authenticated: {type: boolean, const: true}
+                  csrfHeaderName: {type: string}
+                  csrfToken: {type: string}
+                  idleTimeoutSeconds: {type: integer, const: 1800}
+                  absoluteExpiresAt: {type: string, format: date-time}
+        '401': {description: No valid authenticated hosted session}
+        '403': {description: Host or Origin refused, or endpoint unavailable in demo mode}
+  /api/v1/session/logout:
+    post:
+      operationId: logoutSession
+      summary: Revoke hosted session and clean up owned transient resources
+      description: Requires approved Host/Origin and the current session CSRF header/token.
+      security: [{sessionCookie: []}]
+      responses:
+        '204': {description: Session revoked and cleanup complete}
+        '401': {description: No valid authenticated session}
+        '403': {description: Origin/CSRF refused, or endpoint unavailable in demo mode}
+        '503': {description: SESSION_CLEANUP_INCONCLUSIVE; session revoked and capacity quarantined}
   /actuator/health/liveness:
     get:
       operationId: getLiveness
@@ -42,3 +75,9 @@ paths:
       responses:
         '200': {description: Process live}
         '503': {description: Process unhealthy}
+components:
+  securitySchemes:
+    sessionCookie:
+      type: apiKey
+      in: cookie
+      name: JSESSIONID

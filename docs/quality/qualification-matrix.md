@@ -10,6 +10,8 @@ with exact versions and evidence; never fill the matrix from driver availability
 | PostgreSQL xml/OID | Not selected | Separate storage contract required | UNSUPPORTED |
 | Native YAML/JSON definitions | Version 1 draft meta-schema; D01a Java compiler | Bounded parsing, shape/semantic checks and immutable incomplete result; publication/upload absent | INCOMPLETE |
 | Definition inspector | Synthetic version 1 projection | Component behavior and desktop/390px keyboard/axe checks; no integrated editing or operator rehearsal | COMPONENT CHECKS PASS |
+| XML span mechanism | D03a, pinned JDK/container parser | Exact source, supported edits, adverse boundaries and five guard mutants; application mapping/client qualification separate | MECHANISM CHECKS PASS |
+| Hosted session | D02a, independently invented mock OIDC provider | Protocol, CSRF/cookies, expiry, cleanup failure/races and log canaries; actual IdP/TLS/proxy and DB cleanup separate | MOCK CHECKS PASS |
 | XSD import | Dialect/features not selected | Supported subset into draft, no semantic guessing | NOT IMPLEMENTED |
 | HiveForge | Platform/config unknown; OCI linux/amd64 candidate | Actual registry pull, TLS/identity/probes/restart | NOT RUN |
 

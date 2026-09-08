@@ -16,8 +16,8 @@ release gate because the product/DB capabilities are not implemented.
 | User | UID/GID 10001; never root |
 | Liveness | GET /actuator/health/liveness |
 | Readiness | GET /actuator/health/readiness; process only, no plan validation |
-| Capability visibility | GET /api/v1/capabilities reports demo and disabled inspection/export |
-| Runtime mode | STUDIO_MODE=demo; any other mode refuses startup |
+| Capability visibility | GET /api/v1/capabilities reports mode and disabled inspection/export |
+| Runtime mode | STUDIO_MODE=demo by default; hosted requires the configuration below; unknown modes refuse startup |
 | Filesystem | Read-only root; bounded writable /tmp tmpfs; no persistent volume yet |
 | Stop | SIGTERM, graceful shutdown 20s; platform grace period at least 30s |
 | Resources | Starting budget 1 CPU / 1 GiB; not measured product capacity |
@@ -69,18 +69,40 @@ Replace the illustrative digest before running. The example binds only to
 loopback; for platform ingress, route directly to container port 8080 on its
 private service network. Do not expose an unauthenticated real-data service.
 
-## Real-data deployment gate (D02, not implemented)
+## Hosted authentication rehearsal and remaining data gate
 
-Before adding DB inspection, implement a qualified authenticated mode with
-TLS/Origin/CSRF, OIDC/session handling and authorization/ownership for every
-object and download. Confirm trusted proxy behavior and allowed DB destinations.
+D02a implements hosted OIDC, transient server sessions, strict Host/Origin/CSRF,
+cookie controls and cleanup hooks. It has independent mock protocol evidence;
+actual IdP/HiveForge qualification remains outstanding. The UI still shows
+synthetic previews and inspection/export remain disabled.
+
+Configure `STUDIO_MODE=hosted`, `STUDIO_SECURITY_PUBLIC_ORIGIN` (approved HTTPS
+origin), `STUDIO_SECURITY_ISSUER` (approved HTTPS issuer),
+`STUDIO_SECURITY_CLIENT_ID` and platform-managed client authentication through
+`studio.security.client-secret`. Do not enable the test-only HTTP issuer profile.
+Register the exact public-origin `/login/oauth2/code/studio` callback with the
+IdP. Start login at `/oauth2/authorization/studio`. Keep ingress restricted to the
+approved proxy, which supplies the original public Host; forwarding headers are
+not authority and are ignored.
+
+The packaged process probe connects to loopback at `SERVER_PORT` (default 8080)
+and sends the Host from `STUDIO_SECURITY_PUBLIC_ORIGIN`. Supply those same values
+to service and probe even if other settings use a mounted configuration source.
+No public DNS call or Host-policy exemption is used. Probe success proves process
+readiness only. Session cookies are Secure/HttpOnly/SameSite=Lax; authenticated
+session/logout responses are no-store. Logout cleanup failure revokes access and
+returns an explicit inconclusive result while capacity stays quarantined.
+
+Before adding DB inspection, qualify actual TLS/proxy/IdP behavior and extend
+authorization/ownership to every implemented object and download. Confirm allowed DB destinations.
 DB credentials remain operation inputs held only in session memory; they do
 not become STUDIO_DB_PASSWORD or an orchestrator secret. An IdP client secret,
 if needed, is a separate platform credential supplied by the platform's secret
 mount/integration. No raw observations go to the persistent metadata volume.
 
-Choose/qualify a versioned metadata store and mount contract during D02; do not
-create an unused volume now and imply persistence works. Restart expires raw
+The reviewed D02b contract selects private SQLite metadata storage, but its
+implementation is still pending; do not mount an unused volume and imply it
+works. Restart expires raw
 observations and secrets and requires fresh inspection. Horizontal scaling,
 shared sessions and tenancy remain outside the initial single-replica contract.
 

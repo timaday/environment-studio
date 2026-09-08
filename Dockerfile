@@ -22,10 +22,10 @@ FROM ${MAVEN_IMAGE} AS java-build
 WORKDIR /build
 COPY backend/ ./backend/
 COPY schemas/ ./schemas/
+COPY deploy/HealthProbe.java /build/deploy/HealthProbe.java
 COPY --from=ui /build/frontend/dist/ ./backend/server/src/main/resources/static/
 RUN mvn -B -ntp -f backend/pom.xml verify
-COPY deploy/HealthProbe.java /build/HealthProbe.java
-RUN javac -d /build/probe /build/HealthProbe.java
+RUN javac -d /build/probe /build/deploy/HealthProbe.java
 
 FROM ${RUNTIME_IMAGE} AS runtime
 ARG SOURCE_REVISION=unknown

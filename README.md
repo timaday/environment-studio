@@ -9,10 +9,12 @@ guarded SQL for their existing database deployment process.
 
 **Status: implementation in progress.** Bounded JSON/YAML definition compilation
 now checks the version 1 draft contract in Java. The UI includes a synthetic
-definition inspector alongside the comparison preview. Publication, hosted
-persistence, database inspection, lossless transformation and executable SQL
-export remain **unavailable**. Valid drafts are explicitly incomplete; the
-application cannot export SQL. See [D01a evidence](docs/evidence/d01a-integration.md).
+definition inspector alongside the comparison preview. A guarded XML span adapter
+and hosted OIDC/session boundary are implemented and tested with independent
+mocks. Publication, workspace persistence, database inspection, integrated
+transformation and SQL export remain **unavailable**. Valid version 1 drafts are
+explicitly incomplete. See [D01a evidence](docs/evidence/d01a-integration.md),
+[XML evidence](docs/evidence/d03a-xml.md) and [session evidence](docs/evidence/d02a-session.md).
 
 Starter CI and GHCR publication have passed. [Verification evidence](docs/evidence/starter-verification.md) includes the tested source and image digest.
 
@@ -59,6 +61,10 @@ docker run --rm --read-only --cap-drop ALL --security-opt no-new-privileges \
 
 Open `http://localhost:8080`. Default mode is `demo`; it accepts no credentials.
 Health probes report process health, **not configuration validity**.
+Hosted authentication requires explicit OIDC/public-origin configuration; see
+[the session contract](docs/contracts/hosted-session.md). Its current UI still
+shows synthetic previews. Real identity-provider/HiveForge qualification and
+database functionality remain separate work.
 
 ## CI and container publication
 
