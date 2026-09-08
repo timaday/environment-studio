@@ -102,39 +102,73 @@ column, schema or system write/admin privileges, including active roles/PUBLIC.
 also exclude unqualified write-capable routines; arbitrary account purity cannot
 be inferred from a few catalog rows. The disposable harness provisions and
 adversely tests the exact supported policy, with no production qualification claim.
-The initial Oracle policy trusts only the complete independently captured pristine
-vendor PUBLIC EXECUTE baseline for the exact pinned image, server patch and
-installed components. Compare the complete grant set, including grant options,
-common/inherited status and object type; reject every difference. PUBLIC must be
-included explicitly, not inferred from `SESSION_ROLES`. Every routine must have
-vendor-maintained provenance (`ORACLE_MAINTAINED`) and external administrative
-assurance against replacement or customization. Owner `SYS` alone is insufficient.
-Beyond this baseline, permit only session creation and the necessary table and
-metadata reads; reject additional EXECUTE, ownership and all effective object,
-column, schema, system, role or PUBLIC write/admin paths. Routine implementation
-purity cannot be inferred from a grant digest or a read-only transaction;
-autonomous transactions are independent. Closed adapter SQL never invokes an
-uploaded expression, custom routine or arbitrary procedure.
+The qualified Oracle policy requires an account-level **READ ONLY local PDB
+user**, verified through explicitly provisioned `DBA_USERS.READ_ONLY=YES` and
+`COMMON=NO` for the authenticated database user. The pinned 23.26.3 server lacks
+READ_ONLY in ALL_USERS; a restricted or unavailable metadata column must refuse,
+not trigger an alternate success path. Obtain a fresh physical connection after
+provisioning. A togglable session READ_ONLY parameter and a read-only transaction
+are not substitutes for the account restriction. Retain the read-only transaction
+and every visibility/completeness check in addition to the account requirement.
 
-The Oracle baseline digest uses domain `ES-ORACLE-PUBLIC-EXECUTE-1`, a zero byte,
-then the native v2 framed array of closed objects `{owner, objectName, objectType,
-privilege, grantable, common, inherited, oracleMaintained}`. All fields are exact
-catalog strings. Deduplicate and sort by the listed tuple using unsigned UTF-8
-bytes. Exclude object bodies and subobjects when resolving the grant target;
-missing or ambiguous target metadata refuses. The independently provisioned
-expected digest is bound through
-`accountPolicyVersion = oracle-read-only-v1:<lowercase SHA-256>`. The reader never
-establishes its own expected baseline from its current privileges.
+Compare the complete independently captured pristine vendor PUBLIC object-grant
+baseline for the exact image, server patch and installed components. This includes
+EXECUTE, read and inherited write grants with grant options and common/inherited
+status; reject every difference. PUBLIC must be included explicitly, not inferred
+from SESSION_ROLES. Every baseline target requires vendor-maintained provenance
+and external assurance against replacement/customization. Owner SYS alone is
+insufficient. Resolve exact object identity/type through complete DBA_OBJECTS;
+TYPE=UNKNOWN requires exactly one valid target, never a guessed or skipped entry.
+For a USER target use complete DBA_USERS identity/provenance instead. Missing or
+ambiguous target metadata refuses, except the single pinned vendor grant on
+`SYS.PUBLIC` with type `USER` and privilege `INHERIT PRIVILEGES`. Oracle documents
+PUBLIC as a special intrinsic role absent from DBA_ROLES, and prohibits ordinary
+grants on user PUBLIC. This exact baseline entry uses provenance marker
+`PUBLIC_SPECIAL_ROLE`, not a fabricated ORACLE_MAINTAINED value. Require its exact
+grant metadata in the independently approved baseline; no other missing user or
+object receives this treatment. Do not grant the reader access to SYS.USER$ or
+interpret undocumented internal flags. Newly provisioned non-vendor users must not
+leave additional PUBLIC INHERIT PRIVILEGES grants outside the approved baseline.
+The disposable harness revokes that automatic grant only for its own mock users.
+
+Outside that exact baseline, permit only session creation and required table and
+metadata reads without delegation. Reject ownership, additional EXECUTE, role or
+system administration, account-management privileges, and effective object,
+column, schema or PUBLIC write/admin paths even when account READ ONLY would
+block their use. Inherited vendor persistent-write grants are admitted only with
+the qualified account-mode enforcement, never through a blanket SYS/XDB exemption.
+The grant digest identifies permissions, not routine implementations. The adapter
+executes only closed qualified reads and invokes no uploaded expression, custom
+routine or arbitrary procedure. Account mode is not claimed to constrain arbitrary
+external network/file effects; those routines are not an application capability.
+
+The baseline digest uses domain `ES-ORACLE-PUBLIC-GRANTS-2`, a zero byte, then the
+native v2 framed array of closed objects `{owner, objectName, objectType, privilege,
+grantable, common, inherited, oracleMaintained}`. Fields are exact catalog strings
+except the explicitly identified PUBLIC_SPECIAL_ROLE provenance marker above.
+Deduplicate and sort by that tuple using unsigned UTF-8 bytes. Exclude
+object bodies and subobjects when resolving the grant target. The independently
+provisioned expected digest is bound through
+`accountPolicyVersion = oracle-account-read-only-v2:<lowercase SHA-256>`.
+The reader never establishes its own expected baseline from current privileges.
 
 `leastPrivilege=verified` means verified against this identified provisioning
-policy, including its explicit vendor-software trust assumption. It does not
-assert that the account can never cause any database write. Qualification must
-demonstrate managed-table INSERT/UPDATE/DELETE denial in an ordinary transaction
-as well as the adapter's read-only transaction, so transaction restrictions cannot
-mask excess grants. Retain grant-drift adversaries, visibility checks, unchanged
-canaries and observed cancellation/cleanup. Blanket vendor-grant revocation is
-not the policy: the disposable Oracle experiment broke recursive vendor DDL and
-did not qualify an observation. The application performs no provisioning.
+policy, including its vendor-software trust assumption and enforced account mode.
+Qualification must demonstrate managed-table DML denial in an ordinary transaction,
+plus denial of otherwise permitted vendor persistent writes, normal definer-rights
+writes and autonomous definer-rights writes. Each case needs a known-working
+READ WRITE control and independent unchanged-state readback for READ ONLY.
+Attempt self ALTER USER READ WRITE and disable the session READ_ONLY parameter,
+then repeat write attempts; neither may defeat account restrictions. These are
+qualification harness actions, never runtime adapter SQL. Retain grant-drift,
+visibility, canary and observed cancellation/cleanup adversaries.
+
+The actual pinned disposable server passed these account-control cases before
+this policy was selected. Vendor controls use zero-row DML to check statement
+authorization and enforcement; no actual vendor-row mutation is claimed.
+Blanket vendor-grant revocation is not the policy:
+the earlier experiment broke recursive vendor DDL and did not qualify an
+observation. Application connections perform no provisioning or mode changes.
 
 ## Bounds, cleanup and fingerprint
 
@@ -232,7 +266,10 @@ Primary references: [PostgreSQL isolation](https://www.postgresql.org/docs/18/tr
 [Oracle read transactions](https://docs.oracle.com/en/database/oracle/oracle-database/26/sqlrf/SET-TRANSACTION.html),
 [Oracle policy metadata](https://docs.oracle.com/en/database/oracle/oracle-database/26/refrn/ALL_POLICIES.html),
 [Oracle PUBLIC privileges](https://docs.oracle.com/en/database/oracle/oracle-database/26/dbseg/configuring-privilege-and-role-authorization.html),
+[Oracle PUBLIC grant restriction](https://docs.oracle.com/en/database/oracle/oracle-database/26/sqlrf/GRANT.html),
 [Oracle grant metadata](https://docs.oracle.com/en/database/oracle/oracle-database/26/refrn/DBA_TAB_PRIVS.html),
 [Oracle object provenance](https://docs.oracle.com/en/database/oracle/oracle-database/26/refrn/ALL_OBJECTS.html),
+[Oracle account read-only mode](https://docs.oracle.com/en/database/oracle/oracle-database/26/sqlrf/ALTER-USER.html),
+[Oracle session mode](https://docs.oracle.com/en/database/oracle/oracle-database/26/refrn/READ_ONLY.html),
 [Oracle autonomous transactions](https://docs.oracle.com/en/database/oracle/oracle-database/26/lnpls/autonomous-transactions.html),
 [Oracle cancellation limits](https://docs.oracle.com/en/database/oracle/oracle-database/26/jjdbc/JDBC-troubleshooting.html).
