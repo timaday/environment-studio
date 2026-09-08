@@ -93,6 +93,16 @@ column, schema or system write/admin privileges, including active roles/PUBLIC.
 also exclude unqualified write-capable routines; arbitrary account purity cannot
 be inferred from a few catalog rows. The disposable harness provisions and
 adversely tests the exact supported policy, with no production qualification claim.
+The initial Oracle policy rejects non-SYS EXECUTE grants, including PUBLIC and
+role grants. Trusted SYS PUBLIC built-ins require the pinned vendor version and
+an independently supplied approved grant-set digest; owner `SYS` alone does not
+approve a new grant. Compare the observed sorted routine-identity/type/privilege
+set to that expected digest and bind the policy content identity into the
+observation. Additional SYS grants and all write/admin privileges still require
+explicit evidence and otherwise refuse. Routine implementation purity remains
+an external provisioning responsibility. The dedicated disposable PDB may revoke
+unneeded non-SYS PUBLIC grants for this qualification policy; the application
+never performs such provisioning and no production recommendation is implied.
 
 ## Bounds, cleanup and fingerprint
 
@@ -116,6 +126,13 @@ reservation/quarantine; no observation or later export authority survives it.
 Successful driver close/rollback behavior must be checked against actual backend
 session disappearance in disposable tests. Do not claim guaranteed remote cleanup
 during network partitions. No background task may continue with unowned secrets.
+An INCONCLUSIVE refusal may carry an internal operation-owned cleanup handle with
+status/cancel/retry methods. It retains the original task/resources and accepts no
+new authentication. It is never serialized into HTTP, fingerprints or persistent
+state. Future session integration retains the quarantine until cleanup completes.
+Bound the adapter to four concurrent physical operations or quarantines; refuse
+capacity before allocating another worker/connection. Inconclusive work retains
+its permit. Cancelling a Future is not evidence that driver or remote work ended.
 
 The observation fingerprint uses the native v2 framing algorithm with domain
 `ES-OBSERVATION-1`, a zero byte, then a closed object containing logical digest,
@@ -125,6 +142,43 @@ source digests in stable document-ID order. Exclude credentials and timestamps.
 Successful cleanup and verified metadata are explicit evidence bound to that
 fingerprint. Target planning must additionally project and validate the graph;
 a database read cannot substitute for those checks.
+
+The closed fingerprint object has exactly `logicalDigest`, `bindingDigest`,
+`engine`, `engineVersion`, `driverVersion`, `storage`, `storageVersion`, `encoding`,
+`destination`, `metadata`, `cleanup` and `documents`. All are strings except the
+three nested structures and document array. `storageVersion` is the mechanism
+name `postgresql-text-v1` or `oracle-clob-v1`; cleanup is `complete` only after
+the stated completion checks. Hashing a literal does not perform that check.
+
+`destination` contains `id`, `host`, integer `port`, `database`,
+`transportIdentity`, `expectedPhysicalIdentity`, `observedPhysicalIdentity` and
+`provisioningPolicyVersion`. The physical identities are closed engine-specific
+objects: PostgreSQL uses `systemIdentifier`, `databaseOid`, `databaseName`;
+Oracle uses `dbid`, `dbUniqueName`, `conId`, `conUid`, `conName`, `pdbGuid`.
+All physical identity fields are strings; numeric identities use canonical
+decimal strings and the PDB GUID uses 32 lowercase hexadecimal digits.
+`transportIdentity` names the approved hostname/trust-material policy, not an
+invented observed peer certificate. Actual driver TLS/host verification is still
+required outside the explicit disposable loopback-test composition.
+
+`metadata` contains `adapterVersion`, `accountPolicyVersion`, `visibility`
+(`complete`), `leastPrivilege` (`verified`) and `snapshot`
+(`repeatable-read-read-only` for PostgreSQL or `read-only` for Oracle).
+Only the adapter may assemble these successful facts after executing the checks.
+Each document contains `documentId`, `key: {type, value}`, exact `xml`, integer
+`utf8Bytes`, integer `characters` (UTF-16 code units), and `sourceDigest`.
+Key type is `text` or `int64`; value is always an exact string. Source digests
+are SHA-256 of strict UTF-8 XML. Native framing orders object keys by unsigned
+UTF-8 bytes; sort document arrays by declared document ID.
+
+The narrow core port accepts a server-compiled ready-to-publish result, explicit
+binding ID and transient credentials/cancellation. Destination configuration is
+adapter-owned. Return a complete observation only with cleanup COMPLETE;
+otherwise return a typed refusal with cleanup COMPLETE or INCONCLUSIVE. No
+public caller can provide a compiler result, metadata PASS or destination witness.
+Read-only provisioning may grant the necessary identity/metadata reads explicitly,
+including PostgreSQL `pg_control_system` and Oracle `SYS.V_$DATABASE` /
+`SYS.V_$CONTAINERS`. The application never creates those grants itself.
 
 ## Acceptance and investigation
 
