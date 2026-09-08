@@ -64,4 +64,5 @@ credentials and secret values remain bounded session memory. Restart requires
 fresh observation and re-entry. A shared hosted service must prove ownership,
 expiry, OIDC/session/CSRF controls and per-user isolation before accepting a DB
 credential. The image defaults to demo and supports explicitly configured hosted
-authentication. Database inspection/export remain disabled; see deploy/README.md.
+authentication and explicitly initialized private SQLite draft revisions.
+Database inspection/export remain disabled; see deploy/README.md.

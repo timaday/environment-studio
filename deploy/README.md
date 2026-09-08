@@ -18,7 +18,7 @@ release gate because the product/DB capabilities are not implemented.
 | Readiness | GET /actuator/health/readiness; process only, no plan validation |
 | Capability visibility | GET /api/v1/capabilities reports mode and disabled inspection/export |
 | Runtime mode | STUDIO_MODE=demo by default; hosted requires the configuration below; unknown modes refuse startup |
-| Filesystem | Read-only root; bounded writable /tmp tmpfs; no persistent volume yet |
+| Filesystem | Read-only root; bounded noexec /tmp tmpfs; optional separately initialized private workspace volume |
 | Stop | SIGTERM, graceful shutdown 20s; platform grace period at least 30s |
 | Resources | Starting budget 1 CPU / 1 GiB; not measured product capacity |
 | Replicas | One; no shared session/raw observation support |
@@ -100,9 +100,25 @@ not become STUDIO_DB_PASSWORD or an orchestrator secret. An IdP client secret,
 if needed, is a separate platform credential supplied by the platform's secret
 mount/integration. No raw observations go to the persistent metadata volume.
 
-The reviewed D02b contract selects private SQLite metadata storage, but its
-implementation is still pending; do not mount an unused volume and imply it
-works. Restart expires raw
+For D02b draft storage, provision a private volume directory owned by UID/GID
+10001 with mode 0700, then run the same image once with the argument
+`--initialize-workspace=/workspace` and that directory mounted at `/workspace`.
+This offline mode starts no HTTP or IdP client and refuses to overwrite any
+existing store. Initialization creates `studio-workspace.db` with mode 0600.
+Normal service startup never creates missing storage or migrates unknown schemas.
+Configure `STUDIO_WORKSPACE_DIRECTORY=/workspace` in hosted mode to enable owned
+draft routes. Without it, authentication works but workspace routes are unavailable.
+Keep the directory outside the source checkout and build context. Single-replica
+ownership, volume durability and backup freshness require deployment evidence.
+
+The linux/amd64 image embeds the pinned SQLite native library in
+`/opt/studio/native` and selects it with `org.sqlite.lib.path`. Initialization and
+service storage must work with the read-only root and noexec `/tmp`; no writable
+executable directory is required for native library extraction. The OCI workspace
+smoke initializes a fresh tool-owned volume, checks mode/ownership, and verifies
+that a refused second initialization preserves its exact database bytes.
+
+Restart expires raw
 observations and secrets and requires fresh inspection. Horizontal scaling,
 shared sessions and tenancy remain outside the initial single-replica contract.
 

@@ -37,3 +37,4 @@ except HTTPError as error:
 print('Container startup, static UI, health, demo capability and denial checks passed')
 PY
 test "$(docker inspect --format '{{.Config.User}}' "$studio_container")" = "10001:10001"
+python3 scripts/workspace_smoke.py "$studio_image"

@@ -27,6 +27,9 @@ COPY deploy/HealthProbe.java /build/deploy/HealthProbe.java
 COPY --from=ui /build/frontend/dist/ ./backend/server/src/main/resources/static/
 RUN mvn -B -ntp -f backend/pom.xml verify
 RUN javac -d /build/probe /build/deploy/HealthProbe.java
+RUN mkdir -p /build/sqlite-native && cd /build/sqlite-native && \
+    jar --extract --file /root/.m2/repository/org/xerial/sqlite-jdbc/3.53.4.0/sqlite-jdbc-3.53.4.0.jar \
+    org/sqlite/native/Linux/x86_64/libsqlitejdbc.so
 
 FROM ${RUNTIME_IMAGE} AS runtime
 ARG SOURCE_REVISION=unknown
@@ -39,8 +42,9 @@ RUN groupadd --gid 10001 studio && useradd --uid 10001 --gid studio --no-create-
 WORKDIR /opt/studio
 COPY --from=java-build --chown=10001:10001 /build/backend/server/target/environment-studio.jar /opt/studio/app.jar
 COPY --from=java-build --chown=10001:10001 /build/probe/ /opt/studio/probe/
+COPY --from=java-build /build/sqlite-native/org/sqlite/native/Linux/x86_64/libsqlitejdbc.so /opt/studio/native/libsqlitejdbc.so
 USER 10001:10001
 ENV STUDIO_MODE=demo
 EXPOSE 8080
 HEALTHCHECK --interval=30s --timeout=5s --start-period=40s --retries=3 CMD ["java", "-cp", "/opt/studio/probe", "HealthProbe"]
-ENTRYPOINT ["java", "-XX:MaxRAMPercentage=65", "-XX:+ExitOnOutOfMemoryError", "-Djava.io.tmpdir=/tmp", "-jar", "/opt/studio/app.jar"]
+ENTRYPOINT ["java", "-XX:MaxRAMPercentage=65", "-XX:+ExitOnOutOfMemoryError", "-Djava.io.tmpdir=/tmp", "-Dorg.sqlite.lib.path=/opt/studio/native", "-jar", "/opt/studio/app.jar"]

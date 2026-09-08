@@ -59,7 +59,8 @@ public class HostedSecurity {
         http.authorizeHttpRequests(auth -> auth
                 .requestMatchers(HttpMethod.GET, "/", "/index.html", "/assets/**", "/brand/**", "/api/v1/capabilities",
                         "/actuator/health", "/actuator/health/**", "/oauth2/authorization/studio", "/login/oauth2/code/studio").permitAll()
-                .requestMatchers(HttpMethod.GET, "/api/v1/session").authenticated()
+                .requestMatchers(HttpMethod.GET, "/api/v1/session", "/api/v1/definitions", "/api/v1/definitions/{objectId}", "/api/v1/definitions/{objectId}/revisions/{revision}").authenticated()
+                .requestMatchers(HttpMethod.PUT, "/api/v1/definitions/{objectId}").authenticated()
                 .requestMatchers(HttpMethod.POST, "/api/v1/session/logout").authenticated()
                 .anyRequest().denyAll());
         http.requestCache(cache -> cache.disable());

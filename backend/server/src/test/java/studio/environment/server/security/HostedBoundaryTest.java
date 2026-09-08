@@ -25,7 +25,16 @@ import org.springframework.web.context.WebApplicationContext;
 @ActiveProfiles("oidc-test")
 class HostedBoundaryTest {
     static final MockIssuer issuer = new MockIssuer();
-    @DynamicPropertySource static void properties(DynamicPropertyRegistry properties) { properties.add("studio.security.issuer", issuer::issuer); }
+    static final java.nio.file.Path workspace = initializeMockWorkspace();
+    static java.nio.file.Path initializeMockWorkspace() {
+        try {
+            var directory = java.nio.file.Files.createTempDirectory("es-protocol-workspace-mock-", java.nio.file.attribute.PosixFilePermissions.asFileAttribute(java.nio.file.attribute.PosixFilePermissions.fromString("rwx------")));
+            studio.environment.server.workspace.SqliteDraftStore.initialize(directory);
+            return directory;
+        } catch (java.io.IOException failure) { throw new IllegalStateException("MOCK_WORKSPACE_UNAVAILABLE"); }
+    }
+
+    @DynamicPropertySource static void properties(DynamicPropertyRegistry properties) { properties.add("studio.security.issuer", issuer::issuer); properties.add("studio.workspace.directory", () -> workspace.toString()); }
     @Autowired WebApplicationContext context;
     @Autowired CleanupProbe cleanupProbe;
     @org.springframework.boot.test.context.TestConfiguration
@@ -40,6 +49,7 @@ class HostedBoundaryTest {
     }
     @AfterEach void providerCredentialsNeverEnterCapturedLogs(org.springframework.boot.test.system.CapturedOutput output) {
         cleanupProbe.fail = false;
+        assertFalse(output.getAll().contains("workspace-source-canary"), "Synthetic workspace source leaked to logs");
         for (String token : csrfCanaries) assertFalse(output.getAll().contains(token.substring(0, 12)), "Session CSRF token prefix leaked to logs");
         assertFalse(output.getAll().contains("mock-platform-secret"), "Synthetic client secret leaked to logs");
         assertFalse(output.getAll().contains("mock-access-canary"), "Synthetic access token leaked to logs");
@@ -187,4 +197,22 @@ class HostedBoundaryTest {
         assertEquals(403, login(false).callback.getResponse().getStatus());
     }
 
+
+    @Test void workspaceUsesRealSessionCsrfOriginAndSafeBodyLogging() throws Exception {
+        String path = "/api/v1/definitions/" + java.util.UUID.randomUUID();
+        mvc.perform(get(path).header("Host", "localhost")).andExpect(status().isUnauthorized());
+        var login = login(false);
+        var info = mvc.perform(get("/api/v1/session").header("Host", "localhost").session(login.session)).andReturn();
+        var csrf = (org.springframework.security.web.csrf.CsrfToken) info.getRequest().getAttribute(org.springframework.security.web.csrf.CsrfToken.class.getName());
+        csrfCanaries.add(csrf.getToken());
+        // Independently invented declarations; no application/private model provenance.
+        String source = "{\"schemaVersion\":\"1\",\"id\":\"workspace-source-canary\",\"revision\":1,\"status\":\"draft\",\"entityTypes\":[{\"id\":\"mote\",\"label\":\"Invented\",\"fields\":[]}],\"relations\":[],\"documents\":[{\"id\":\"sample\",\"logicalStore\":\"invented-store\",\"recordKey\":\"invented-key\",\"namespaces\":{},\"mappings\":[]}],\"requiredRules\":[\"mock-rule\"],\"operationCapabilities\":[]}";
+        String body = tools.jackson.databind.json.JsonMapper.builder().build().writeValueAsString(Map.of("expectedRevision", "0", "requestId", java.util.UUID.randomUUID().toString(), "format", "JSON", "source", source));
+        mvc.perform(put(path).header("Host", "localhost").header("Origin", "http://localhost").session(login.session).contentType("application/json").content(body)).andExpect(status().isForbidden());
+        mvc.perform(put(path).header("Host", "localhost").header("Origin", "https://wrong.invalid").header(csrf.getHeaderName(), csrf.getToken()).session(login.session).contentType("application/json").content(body)).andExpect(status().isForbidden());
+        mvc.perform(put(path).header("Host", "localhost").header("Origin", "http://localhost").header(csrf.getHeaderName(), csrf.getToken()).session(login.session).contentType("application/json").content(body))
+                .andExpect(status().isOk()).andExpect(header().string("Cache-Control", "no-store")).andExpect(jsonPath("$.projection.kind").value("incomplete")).andExpect(jsonPath("$.workspaceRevision").value("1"));
+        mvc.perform(get(path).header("Host", "localhost").session(login.session)).andExpect(status().isOk()).andExpect(jsonPath("$.source").value(source));
+        mvc.perform(get("/api/v1/capabilities").header("Host", "localhost")).andExpect(jsonPath("$.definitionWorkspaceEnabled").value(true)).andExpect(jsonPath("$.exportEnabled").value(false));
+    }
 }
