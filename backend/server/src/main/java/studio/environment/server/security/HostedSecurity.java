@@ -26,7 +26,14 @@ import studio.environment.server.session.*;
 @EnableScheduling
 @ConditionalOnProperty(name = "studio.mode", havingValue = "hosted")
 public class HostedSecurity {
-    @Bean HostedSettings hostedSettings(Environment environment) { return new HostedSettings(environment); }
+    @Bean HostedSettings hostedSettings(Environment environment) {
+        // Pinned RestClient logs authorization-code/PKCE request forms at DEBUG, independently of request-detail flags.
+        String tokenClientLogger="org.springframework.web.client.DefaultRestClient";
+        org.springframework.boot.logging.LoggingSystem.get(HostedSecurity.class.getClassLoader())
+                .setLogLevel(tokenClientLogger,org.springframework.boot.logging.LogLevel.INFO);
+        if(org.apache.commons.logging.LogFactory.getLog(tokenClientLogger).isDebugEnabled()) throw new IllegalStateException("UNSUPPORTED_CREDENTIAL_LOGGING");
+        return new HostedSettings(environment);
+    }
     @Bean Clock sessionClock() { return Clock.systemUTC(); }
     @Bean HostedSessions hostedSessions(Clock clock, List<SessionCleanup> cleanup) { return new HostedSessions(clock, cleanup); }
     @Bean SessionExpiry sessionExpiry(HostedSessions sessions) { return new SessionExpiry(sessions); }
@@ -65,6 +72,9 @@ public class HostedSecurity {
                 .requestMatchers(HttpMethod.PUT, "/api/v2/definitions/{objectId}", "/api/v2/profiles/{objectId}").authenticated()
                 .requestMatchers(HttpMethod.POST, "/api/v2/definitions/{objectId}/publish", "/api/v2/profiles/{objectId}/publish").authenticated()
                 .requestMatchers(HttpMethod.PUT, "/api/v1/definitions/{objectId}").authenticated()
+                .requestMatchers(HttpMethod.GET, "/api/v1/destinations", "/api/v1/plans/current", "/api/v1/plans/{planId}", "/api/v1/operations/{operationId}").authenticated()
+                .requestMatchers(HttpMethod.POST, "/api/v1/plans", "/api/v1/plans/{planId}/inspections", "/api/v1/plans/{planId}/commands",
+                        "/api/v1/operations/{operationId}/credentials", "/api/v1/operations/{operationId}/cancel").authenticated()
                 .requestMatchers(HttpMethod.POST, "/api/v1/session/logout").authenticated()
                 .anyRequest().denyAll());
         http.requestCache(cache -> cache.disable());

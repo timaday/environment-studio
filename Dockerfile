@@ -30,6 +30,8 @@ COPY fixtures/structural-target/ ./fixtures/structural-target/
 COPY fixtures/guarded-package-v1/ ./fixtures/guarded-package-v1/
 COPY fixtures/guarded-writer-v1/ ./fixtures/guarded-writer-v1/
 COPY fixtures/guarded-transaction-v1/ ./fixtures/guarded-transaction-v1/
+COPY fixtures/plan-http-v1/ ./fixtures/plan-http-v1/
+COPY fixtures/plan-http-tls/ ./fixtures/plan-http-tls/
 COPY deploy/HealthProbe.java /build/deploy/HealthProbe.java
 COPY --from=ui /build/frontend/dist/ ./backend/server/src/main/resources/static/
 RUN mvn -B -ntp -f backend/pom.xml verify

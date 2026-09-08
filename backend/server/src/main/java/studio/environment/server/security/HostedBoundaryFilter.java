@@ -28,7 +28,9 @@ final class HostedBoundaryFilter extends OncePerRequestFilter {
         boolean protectedApi = request.getRequestURI().startsWith("/api/")
                 && !request.getRequestURI().equals("/api/v1/capabilities");
         var authentication = SecurityContextHolder.getContext().getAuthentication();
-        var lease = sessions.current(request);
+        String path=request.getRequestURI();
+        boolean planPolling=request.getMethod().equals("GET") && (path.equals("/api/v1/destinations") || path.startsWith("/api/v1/plans/") || path.startsWith("/api/v1/operations/"));
+        var lease = planPolling?sessions.capture(request):sessions.current(request);
         if (lease.isPresent() && (request.getRequestURI().equals("/oauth2/authorization/studio")
                 || request.getRequestURI().equals("/login/oauth2/code/studio"))) {
             SafeResponses.refuse(response, 403, "SESSION_OWNER_ACTIVE"); return;

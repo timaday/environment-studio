@@ -8,11 +8,11 @@ results; the table below reports capability, not test count.
 | --- | --- | --- |
 | D00 foundation | COMPLETE for starter: CI/build/smoke/GHCR passed | See ../evidence/starter-verification.md and image-reference.json |
 | D01 definitions | Native compilation, owned v2 upload/history and maintainer publication implemented and reviewed | Browser publication workflow and external application qualification |
-| D02 security/state | Hosted sessions, immutable workspace revisions and internal plan lease/operation integration reviewed | HTTP credential lifecycle; actual deployment durability/identity external |
+| D02 security/state | Hosted sessions, immutable workspace revisions and hosted plan/credential lifecycle reviewed | Browser integration; actual deployment durability/identity external |
 | D03 XML | Guarded spans, graph projection, corrected Fifth Edition parser and structural target assembly integrated | Hosted orchestration and guarded SQL/client qualification |
-| D04 database reads | Both engine adapters and internal plan reservations integrated; disposable matrices and shared-permit checks passed | HTTP credential transport and external TLS/account qualification |
+| D04 database reads | Both engine adapters and hosted inspection transport integrated; disposable matrices and shared-permit checks passed | Configured TLS/account qualification and browser inspection |
 | D05 profiles | Value-free capture, portable whole/partial composition and owned immutable persistence/publication integrated | Hosted capture/composition and browser workflow |
-| D06 planning | Internal hosted plans, revisions, operation cleanup, composition and complete structural targets reviewed | HTTP/backend-to-browser workflow and full hosted privacy/heap qualification |
+| D06 planning | Hosted plans, revisions, HTTP lifecycle/commands and complete structural targets reviewed | Inspection/composition views, browser workflow and full hosted heap qualification |
 | D07 SQL | Package mechanisms and both unqualified transaction templates integrated/reviewed; disposable rollback/guard matrices passed | External supervisor, TLS/transcript/commit acknowledgement and hosted export authority |
 | D08 UX | Synthetic comparison and definition inspector; component keyboard/axe checks pass | Backend integration, editing workflow and representative operator sessions |
 | D09 deployment/release | OCI pipeline/contract; actual HiveForge unverified | Exact platform deployment and qualification matrix |
@@ -28,8 +28,11 @@ the lead's integration harness received independent fixed-candidate review with
 no material findings. Integration and rework are recorded in D01a evidence;
 there is no serial comparison supporting a speed-up claim.
 
-Active work: hosted plan HTTP integration and the separate external supervisor;
-subsequent inspection/composition view contracts are defined before implementation.
+Active work: inspection/composition views, the separate external supervisor and
+actual TLS checks on isolated invented databases. The nine initial HTTP routes
+passed independent review, the combined 395-test Java Docker build and protected
+smoke; see [HTTP integration](../evidence/d06b2-integration.md).
+Inspection/composition view contracts are defined before implementation.
 The Oracle FGA read-policy correction passed independent review, actual handler/
 refusal controls and the combined 365-test Java build; see
 [FGA integration](../evidence/d04-fga-integration.md).

@@ -67,6 +67,24 @@ class PlanLifecycleTest {
         h.reject.set(false); h.inspect(); assertTrue(h.service.summary(h.base.lease,h.created.planId()).inspectionValid());
         assertEquals("3",h.service.summary(h.base.lease,h.created.planId()).revision());
     }
+    @Test void oneShotClaimPrecedesWorkerAllocationAndClosePreventsAnyLaterRead() {
+        var h=new Harness(); var id=h.reserve();
+        var claim=h.service.claimCredentials(h.base.lease,id);
+        assertEquals(PlanRefusal.Code.CREDENTIALS_ALREADY_CONSUMED,assertThrows(PlanRefusal.class,()->h.service.claimCredentials(h.base.lease,id)).code());
+        claim.close(); claim.close();
+        assertEquals(1,h.closes.get());
+        assertThrows(PlanRefusal.class,()->claim.process((u,p)->{throw new AssertionError("CLOSED_CLAIM_READ");}));
+        assertEquals(HostedPlanService.Phase.REFUSED,h.service.status(h.base.lease,id).phase());
+        assertEquals(0,h.opens.get());
+    }
+    @Test void cancellationBeforeClaimedWorkerStartsNeverReadsCredentials() {
+        var h=new Harness(); var id=h.reserve();
+        try(var claim=h.service.claimCredentials(h.base.lease,id)) {
+            h.service.cancel(h.base.lease,id);
+            assertEquals(HostedPlanService.Phase.CANCELLED,claim.process((u,p)->{throw new AssertionError("CANCELLED_CLAIM_READ");}).phase());
+        }
+        assertEquals(1,h.closes.get()); assertEquals(0,h.opens.get());
+    }
     @Test void expiryDuringCredentialReadCannotStartDatabaseAuthentication() {
         var h=new Harness(); var id=h.reserve();
         assertThrows(PlanRefusal.class,()->h.service.submit(h.base.lease,id,(user,password)->{

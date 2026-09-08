@@ -19,10 +19,12 @@ import org.springframework.test.web.servlet.*;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
-@SpringBootTest(properties = {"studio.mode=hosted", "studio.security.public-origin=http://localhost",
+@SpringBootTest(webEnvironment=SpringBootTest.WebEnvironment.RANDOM_PORT, properties = {"studio.mode=hosted", "studio.security.public-origin=http://localhost",
+        "logging.level.org.springframework.web=DEBUG", "logging.level.org.springframework.web.client.DefaultRestClient=TRACE",
         "studio.security.client-id=mock-client", "studio.security.client-secret=mock-platform-secret", "studio.security.allow-test-http=true"})
 @org.junit.jupiter.api.extension.ExtendWith(org.springframework.boot.test.system.OutputCaptureExtension.class)
 @ActiveProfiles("oidc-test")
+@org.springframework.context.annotation.Import(studio.environment.server.plan.PlanHttpTestConfiguration.class)
 class HostedBoundaryTest {
     static final MockIssuer issuer = new MockIssuer();
     static final java.nio.file.Path workspace = initializeMockWorkspace();
@@ -34,7 +36,10 @@ class HostedBoundaryTest {
         } catch (java.io.IOException failure) { throw new IllegalStateException("MOCK_WORKSPACE_UNAVAILABLE"); }
     }
 
-    @DynamicPropertySource static void properties(DynamicPropertyRegistry properties) { properties.add("studio.security.issuer", issuer::issuer); properties.add("studio.workspace.directory", () -> workspace.toString()); properties.add("studio.workspace.definition-publishers[0].issuer", issuer::issuer); properties.add("studio.workspace.definition-publishers[0].subject", () -> "workspace-maintainer"); }
+    @DynamicPropertySource static void properties(DynamicPropertyRegistry properties) { properties.add("studio.security.issuer", issuer::issuer); properties.add("studio.workspace.directory", () -> workspace.toString()); properties.add("studio.workspace.definition-publishers[0].issuer", issuer::issuer); properties.add("studio.workspace.definition-publishers[0].subject", () -> "workspace-maintainer");
+        properties.add("studio.workspace.definition-publishers[1].issuer", issuer::issuer);properties.add("studio.workspace.definition-publishers[1].subject",()->"plan-maintainer");
+        properties.add("studio.workspace.definition-publishers[2].issuer", issuer::issuer);properties.add("studio.workspace.definition-publishers[2].subject",()->"transport-maintainer"); }
+    @org.springframework.boot.test.web.server.LocalServerPort int port;
     @Autowired WebApplicationContext context;
     @Autowired CleanupProbe cleanupProbe;
     @org.springframework.boot.test.context.TestConfiguration
@@ -49,12 +54,18 @@ class HostedBoundaryTest {
     }
     @AfterEach void providerCredentialsNeverEnterCapturedLogs(org.springframework.boot.test.system.CapturedOutput output) {
         cleanupProbe.fail = false;
+        studio.environment.server.plan.PlanHttpTestConfiguration.clock.reset();
         try {
             String persisted=new String(java.nio.file.Files.readAllBytes(workspace.resolve("studio-workspace.db")),java.nio.charset.StandardCharsets.ISO_8859_1);
-            for(String canary:java.util.List.of("mock-platform-secret","mock-access-canary"))assertFalse(persisted.contains(canary),"Authentication canary entered workspace persistence");
+            for(String canary:java.util.List.of("mock-platform-secret","mock-access-canary","Db-Password-Canary"))assertFalse(persisted.contains(canary),"Authentication canary entered workspace persistence");
             for(String token:issuer.issuedTokens)assertFalse(persisted.contains(token),"ID token entered workspace persistence");
         }catch(java.io.IOException failure){throw new AssertionError("Mock persistence canary scan unavailable");}
 
+        for(String verifier:issuer.receivedVerifiers)assertFalse(output.getAll().contains(verifier),"PKCE verifier leaked to logs");
+        for(String code:authorizationCodeCanaries)assertFalse(output.getAll().contains(code),"Authorization code leaked to logs");
+        assertFalse(output.getAll().contains("code_verifier=["),"PKCE verifier form field leaked to logs");
+        assertFalse(output.getAll().contains("Db-Password-Canary"),"Database credential canary leaked to logs");
+        assertFalse(output.getAll().contains("second-palette"),"Entered plan value leaked to logs");
         assertFalse(output.getAll().contains("workspace-source-canary"), "Synthetic workspace source leaked to logs");
         for (String token : csrfCanaries) assertFalse(output.getAll().contains(token.substring(0, 12)), "Session CSRF token prefix leaked to logs");
         assertFalse(output.getAll().contains("mock-platform-secret"), "Synthetic client secret leaked to logs");
@@ -67,13 +78,191 @@ class HostedBoundaryTest {
         }
     }
     MockMvc mvc;
+    final java.util.List<String> authorizationCodeCanaries=new java.util.ArrayList<>();
     final java.util.List<String> csrfCanaries = new java.util.ArrayList<>();
     @BeforeEach void setup() {
+        assertFalse(org.apache.commons.logging.LogFactory.getLog("org.springframework.web.client.DefaultRestClient").isDebugEnabled(),"Sensitive child logger remains verbose");
+        assertTrue(org.apache.commons.logging.LogFactory.getLog("org.springframework.web.servlet.DispatcherServlet").isDebugEnabled(),"Other request DEBUG coverage must remain active");
         issuer.mode = MockIssuer.TokenMode.VALID;
         issuer.subject = "invented-" + java.util.UUID.randomUUID();
         mvc = MockMvcBuilders.webAppContextSetup(context).apply(springSecurity()).build();
     }
     @AfterAll static void stopIssuer() { issuer.close(); }
+    studio.environment.server.plan.PlanHttpSocketClient socketLogin(String subject) throws Exception {
+        issuer.subject=subject;
+        var client=new studio.environment.server.plan.PlanHttpSocketClient(port);
+        var start=client.get("/oauth2/authorization/studio");assertEquals(302,start.status());
+        var provider=HttpClient.newHttpClient().send(HttpRequest.newBuilder(URI.create(start.headers().get("location"))).build(),HttpResponse.BodyHandlers.discarding());
+        assertEquals(302,provider.statusCode());
+        var callback=URI.create(provider.headers().firstValue("Location").orElseThrow());
+        authorizationCodeCanaries.add(MockIssuer.parameters(callback.getRawQuery()).get("code"));
+        assertEquals(302,client.get(callback.getRawPath()+"?"+callback.getRawQuery()).status());
+        var session=client.get("/api/v1/session");assertEquals(200,session.status());
+        var tree=tools.jackson.databind.json.JsonMapper.builder().build().readTree(session.body());
+        String token=tree.get("csrfToken").asString();csrfCanaries.add(token);client.csrf(tree.get("csrfHeaderName").asString(),token);
+        return client;
+    }
+    record SocketPlan(studio.environment.server.plan.PlanHttpSocketClient client,String planId) { }
+    SocketPlan socketPlan(String owner) throws Exception {
+        var client=socketLogin(owner);var json=tools.jackson.databind.json.JsonMapper.builder().build();
+        String objectId=java.util.UUID.randomUUID().toString(),path="/api/v2/definitions/"+objectId;
+        String source=java.nio.file.Files.readString(java.nio.file.Path.of("../../fixtures/native-v2/definition.json"));
+        var saved=client.request("PUT",path,json.writeValueAsString(Map.of("expectedRevision","0","requestId",java.util.UUID.randomUUID().toString(),"format","JSON","source",source)),true);
+        assertEquals(200,saved.status());
+        var definition=json.readTree(saved.body());var policies=new java.util.ArrayList<Map<String,String>>();
+        for(var binding:definition.get("projection").get("model").get("bindings"))for(var document:binding.get("documents"))policies.add(Map.of("bindingId",binding.get("id").asString(),"documentId",document.get("id").asString(),"content","deny"));
+        assertEquals(200,client.request("POST",path+"/publish",json.writeValueAsString(Map.of("expectedRevision","1","requestId",java.util.UUID.randomUUID().toString(),"exportPolicies",policies)),true).status());
+        var created=client.request("POST","/api/v1/plans",json.writeValueAsString(Map.of("expectedRevision","0","requestId",java.util.UUID.randomUUID().toString(),"definition",Map.of("objectId",objectId,"workspaceRevision","2"),"bindingId","mock-pg","destinationId","mock-destination")),true);
+        assertEquals(201,created.status());return new SocketPlan(client,json.readTree(created.body()).get("planId").asString());
+    }
+    String reserve(SocketPlan plan,String revision) throws Exception {
+        var json=tools.jackson.databind.json.JsonMapper.builder().build();
+        var response=plan.client.request("POST","/api/v1/plans/"+plan.planId+"/inspections",json.writeValueAsString(Map.of("expectedRevision",revision,"requestId",java.util.UUID.randomUUID().toString(),"discardDraftOnSuccess",true)),true);
+        assertEquals(202,response.status());return json.readTree(response.body()).get("operationId").asString();
+    }
+    static String mockCredentials() {return "{\"username\":\"MockReader\",\"password\":\"Db-Password-Canary-𐀀\"}";}
+    @Test void actualHttpOneToTwoCrossDocumentTargetReplayForeignBodyAndFailedInspection() throws Exception {
+        var plan=socketPlan("plan-maintainer");var client=plan.client;var json=tools.jackson.databind.json.JsonMapper.builder().build();
+        String operation=reserve(plan,"1");
+        assertEquals(403,client.request("POST","/api/v1/operations/"+operation+"/credentials",mockCredentials(),false).status());
+        var inspected=client.request("POST","/api/v1/operations/"+operation+"/credentials",mockCredentials(),true);assertEquals(200,inspected.status());
+        assertEquals("succeeded",json.readTree(inspected.body()).get("phase").asString());
+        assertTrue(studio.environment.server.plan.PlanHttpTestConfiguration.exactCredentials.get(),"Credential values changed across HTTP boundary");
+        var service=studio.environment.server.plan.PlanHttpTestConfiguration.installed;
+        var lease=studio.environment.server.plan.PlanHttpTestConfiguration.leases.get("plan-maintainer");
+        String alpha=service.entities(lease,plan.planId,"2",false,0,100).entities().stream().filter(e->e.type().equals("glyph") && e.fields().stream().anyMatch(f->f.field().equals("tag") && f.value().orElse("").equals("alpha"))).findFirst().orElseThrow().handle();
+        String paletteSource=java.nio.file.Files.readString(java.nio.file.Path.of("../../fixtures/structural-target/palettes.xml"));
+        String parentDigest=((studio.environment.server.xml.XmlResult.Accepted)new studio.environment.server.xml.LosslessXmlAdapter().project(paletteSource)).document().digest();
+        var original=Map.of("kind","existing","handle",alpha);var fresh=Map.of("kind","fresh","slotId","new-palette","typeId","palette");
+        var keep=Map.of("kind","keep-observed");
+        var changes=java.util.List.of(
+            Map.of("decision",Map.of("kind","retain","entity",original,"fields",Map.of("tag",keep,"tone",keep),"references",Map.of("uses",Map.of("kind","to","target",fresh))),"placements",java.util.List.of()),
+            Map.of("decision",Map.of("kind","create","entity",fresh,"fields",Map.of("tag",Map.of("kind","entered","text","second-palette"),"shade",Map.of("kind","entered","text","cool & \t𐀀")),"references",Map.of()),
+                "placements",java.util.List.of(Map.of("entity",fresh,"documentId","palette-sheet","projectionId","palettes","parent",Map.of("kind","existing","documentId","palette-sheet","sourceDigest",parentDigest,"elementIndex","0")))));
+        String requestId=java.util.UUID.randomUUID().toString();String body=json.writeValueAsString(Map.of("kind","batch-upsert","expectedRevision","2","requestId",requestId,"changes",changes,"containment",java.util.List.of()));
+        String commands="/api/v1/plans/"+plan.planId+"/commands";
+        var changed=client.request("POST",commands,body,true);assertEquals(200,changed.status());assertEquals("3",json.readTree(changed.body()).get("revision").asString());
+        var summary=json.readTree(client.get("/api/v1/plans/"+plan.planId).body());assertTrue(summary.get("targetComplete").asBoolean());assertEquals(4,summary.get("targetCounts").get("entities").asInt());
+        for(var pair:java.util.List.of(java.util.List.of("glyph-sheet","expected-glyphs.xml"),java.util.List.of("palette-sheet","expected-palettes.xml")))
+            assertEquals(java.nio.file.Files.readString(java.nio.file.Path.of("../../fixtures/structural-target",pair.get(1))),service.comparison(lease,plan.planId,"3",true,pair.getFirst(),studio.environment.core.plan.PlanPorts.ViewMode.RAW,true).text());
+        assertEquals(changed.body(),client.request("POST",commands,body,true).body());
+        assertEquals(409,client.request("POST",commands,json.writeValueAsString(Map.of("kind","discard","expectedRevision","2","requestId",requestId)),true).status());
+        var foreign=socketLogin("foreign-plan-"+java.util.UUID.randomUUID());
+        assertEquals(404,foreign.get("/api/v1/plans/"+plan.planId).status());
+        long before=System.nanoTime();try(var pending=foreign.begin("POST","/api/v1/operations/"+operation+"/credentials",16_384,true)){assertEquals(404,pending.response().status());}
+        assertTrue(System.nanoTime()-before<2_000_000_000L,"Foreign body was awaited");
+        int calls=studio.environment.server.plan.PlanHttpTestConfiguration.connections.get();
+        String malformed=reserve(plan,"3");
+        assertEquals(400,client.request("POST","/api/v1/operations/"+malformed+"/credentials","{",true).status());
+        assertEquals(409,client.request("POST","/api/v1/operations/"+malformed+"/credentials",mockCredentials(),true).status());
+        assertEquals(calls,studio.environment.server.plan.PlanHttpTestConfiguration.connections.get());
+        assertFalse(json.readTree(client.get("/api/v1/plans/"+plan.planId).body()).get("inspectionValid").asBoolean());
+        assertEquals(200,client.request("POST",commands,json.writeValueAsString(Map.of("kind","discard","expectedRevision","3","requestId",java.util.UUID.randomUUID().toString())),true).status());
+        assertEquals(404,client.get("/api/v1/plans/"+plan.planId).status());
+        assertEquals(changed.body(),client.request("POST",commands,body,true).body(),"Retired replay must not resolve stale handles");
+        assertEquals(200,client.get("/api/v1/operations/"+malformed).status());
+        assertEquals(200,client.request("POST","/api/v1/operations/"+malformed+"/cancel","{}",true).status());
+        assertEquals(204,client.request("POST","/api/v1/session/logout","{}",true).status());
+        assertEquals(204,foreign.request("POST","/api/v1/session/logout","{}",true).status());
+    }
+    @Test void actualQuietTrickleDisconnectCancelAndMetadataCapacityStayBounded() throws Exception {
+        var plan=socketPlan("transport-maintainer");var client=plan.client;var json=tools.jackson.databind.json.JsonMapper.builder().build();
+        int connections=studio.environment.server.plan.PlanHttpTestConfiguration.connections.get();
+        String quiet=reserve(plan,"1");long start=System.nanoTime();
+        try(var pending=client.begin("POST","/api/v1/operations/"+quiet+"/credentials",200,true)) {
+            awaitPhase(client,quiet,"running");
+            assertEquals(409,client.request("POST","/api/v1/operations/"+quiet+"/credentials",mockCredentials(),true).status());
+            assertEquals(400,pending.response().status());
+        }
+        long elapsed=System.nanoTime()-start;assertTrue(elapsed>=9_000_000_000L && elapsed<13_000_000_000L,"Quiet reader deadline was not enforced");
+        awaitPhase(client,quiet,"refused");
+        String trickle=reserve(plan,"1");start=System.nanoTime();
+        try(var pending=client.begin("POST","/api/v1/operations/"+trickle+"/credentials",200,true)) {
+            pending.write("{\"username\":\"u\",\"password\":\"".getBytes(java.nio.charset.StandardCharsets.UTF_8));
+            var stop=new java.util.concurrent.atomic.AtomicBoolean();
+            var writer=new Thread(()->{
+                try {while(!stop.get()){pending.write(new byte[]{'x'});Thread.sleep(200);}}
+                catch(java.io.IOException disconnected) {stop.set(true);}
+                catch(InterruptedException interrupted){Thread.currentThread().interrupt();}
+            },"mock-trickle-client");writer.start();
+            try {assertEquals(400,pending.response().status());}
+            finally {stop.set(true);writer.interrupt();writer.join(1000);assertFalse(writer.isAlive());}
+        }
+        elapsed=System.nanoTime()-start;assertTrue(elapsed>=9_000_000_000L && elapsed<13_000_000_000L,"Trickled bytes renewed the body deadline");
+        String disconnected=reserve(plan,"1");
+        try(var pending=client.begin("POST","/api/v1/operations/"+disconnected+"/credentials",200,true)) {pending.write("{\"username\":\"u\",\"password\":\"Aborted-Canary".getBytes(java.nio.charset.StandardCharsets.UTF_8));awaitPhase(client,disconnected,"running");}
+        awaitPhase(client,disconnected,"refused");
+        String cancelled=reserve(plan,"1");
+        try(var pending=client.begin("POST","/api/v1/operations/"+cancelled+"/credentials",200,true)) {
+            awaitPhase(client,cancelled,"running");
+            assertEquals(200,client.request("POST","/api/v1/operations/"+cancelled+"/cancel","{}",true).status());
+            assertEquals(409,pending.response().status());
+        }
+        awaitPhase(client,cancelled,"cancelled");assertEquals(connections,studio.environment.server.plan.PlanHttpTestConfiguration.connections.get());
+        var pendingMetadata=new java.util.ArrayList<studio.environment.server.plan.PlanHttpSocketClient.Pending>();
+        try {
+            for(int i=0;i<4;i++)pendingMetadata.add(client.begin("POST","/api/v1/plans",200,true));
+            // All four sockets are admitted independently; wait for their dedicated owned readers.
+            long deadline=System.nanoTime()+2_000_000_000L;
+            while(Thread.getAllStackTraces().keySet().stream().filter(thread->thread.getName().equals("hosted-plan-body")).count()<4 && System.nanoTime()<deadline)Thread.sleep(10);
+            assertEquals(429,client.request("POST","/api/v1/plans","{}",true).status());
+        } finally {for(var pending:pendingMetadata)pending.close();}
+        long deadline=System.nanoTime()+2_000_000_000L;
+        while(Thread.getAllStackTraces().keySet().stream().anyMatch(thread->thread.getName().equals("hosted-plan-body")) && System.nanoTime()<deadline)Thread.sleep(10);
+        assertEquals(400,client.request("POST","/api/v1/plans","{}",true).status());
+        String expired=reserve(plan,"1");
+        try(var pending=client.begin("POST","/api/v1/operations/"+expired+"/credentials",200,true)) {
+            awaitPhase(client,expired,"running");
+            studio.environment.server.plan.PlanHttpTestConfiguration.clock.advance(1800);
+            assertEquals(401,pending.response().status());
+            assertEquals(401,client.get("/api/v1/operations/"+expired).status());
+        } finally {studio.environment.server.plan.PlanHttpTestConfiguration.clock.reset();}
+        assertEquals(connections,studio.environment.server.plan.PlanHttpTestConfiguration.connections.get());
+        var renewed=socketLogin("transport-maintainer");assertEquals(404,renewed.get("/api/v1/operations/"+expired).status());
+        assertEquals(204,renewed.request("POST","/api/v1/session/logout","{}",true).status());
+    }
+    void awaitPhase(studio.environment.server.plan.PlanHttpSocketClient client,String operation,String phase) throws Exception {
+        long deadline=System.nanoTime()+3_000_000_000L;
+        while(System.nanoTime()<deadline) {
+            var response=client.get("/api/v1/operations/"+operation);assertEquals(200,response.status());
+            var tree=tools.jackson.databind.json.JsonMapper.builder().build().readTree(response.body());
+            if(tree.get("phase").asString().equals(phase) && (phase.equals("running") || tree.get("cleanup").asString().equals("complete")))return;
+            Thread.sleep(10);
+        }
+        fail("Owned operation did not reach expected bounded state");
+    }
+    @Test void planPollingFilterDoesNotRenewTheServletOrLedgerIdleDeadline() throws Exception {
+        var instant=new java.util.concurrent.atomic.AtomicReference<>(java.time.Instant.now());
+        var clock=new java.time.Clock(){public java.time.ZoneId getZone(){return java.time.ZoneOffset.UTC;}public java.time.Clock withZone(java.time.ZoneId ignored){return this;}public java.time.Instant instant(){return instant.get();}};
+        var sessions=new studio.environment.server.session.HostedSessions(clock,java.util.List.of());
+        var request=new org.springframework.mock.web.MockHttpServletRequest("GET","/api/v1/plans/current");request.addHeader("Host","localhost");
+        sessions.reserveLogin(request);
+        var principal=new org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser(java.util.List.of(),new org.springframework.security.oauth2.core.oidc.OidcIdToken("controlled-filter-principal",instant.get(),instant.get().plusSeconds(3600),Map.of("iss",issuer.issuer(),"sub","polling-owner")));
+        sessions.authenticated(request.getSession(),principal);
+        var previous=org.springframework.security.core.context.SecurityContextHolder.getContext();
+        var security=org.springframework.security.core.context.SecurityContextHolder.createEmptyContext();security.setAuthentication(new org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken(principal,java.util.List.of(),"studio"));
+        org.springframework.security.core.context.SecurityContextHolder.setContext(security);
+        try {
+            var filter=new HostedBoundaryFilter(context.getBean(HostedSettings.class),sessions);
+            instant.set(instant.get().plusSeconds(1799));var first=new org.springframework.mock.web.MockHttpServletResponse();filter.doFilter(request,first,new org.springframework.mock.web.MockFilterChain());assertEquals(200,first.getStatus());
+            instant.set(instant.get().plusSeconds(1));var expired=new org.springframework.mock.web.MockHttpServletResponse();filter.doFilter(request,expired,new org.springframework.mock.web.MockFilterChain());assertEquals(401,expired.getStatus());
+        } finally {org.springframework.security.core.context.SecurityContextHolder.setContext(previous);}
+    }
+    @Test void actualServletCanCompleteBoundedMetadataBodyAfterGenuineOidcLogin() throws Exception {
+        var client=socketLogin("socket-basic-"+java.util.UUID.randomUUID());
+        assertEquals(200,client.get("/api/v1/destinations").status());
+        assertEquals(400,client.request("POST","/api/v1/plans","{}",true).status());
+        assertEquals(403,client.request("POST","/api/v1/plans","{}",false).status());
+        assertEquals(204,client.request("POST","/api/v1/session/logout","{}",true).status());
+    }
+    @Test void realOidcSessionCanSeeOnlySafeInitialPlanRoutes() throws Exception {
+        var login=login(false);assertEquals(302,login.callback.getResponse().getStatus());
+        mvc.perform(get("/api/v1/destinations").header("Host","localhost").session(login.session))
+            .andExpect(status().isOk()).andExpect(header().string("Cache-Control","no-store"))
+            .andExpect(jsonPath("$.destinations[0].id").value("mock-destination"));
+        mvc.perform(get("/api/v1/plans/current").header("Host","localhost").session(login.session)).andExpect(status().isNotFound());
+        mvc.perform(get("/api/v1/plans/00000000-0000-4000-8000-000000000001/export").header("Host","localhost").session(login.session)).andExpect(status().isForbidden());
+    }
     @Test void nativeWorkspaceUsesRealOidcSessionCsrfOwnerAndMaintainerAuthority() throws Exception {
         issuer.subject="workspace-maintainer";
         var login=login(false);assertEquals(302,login.callback.getResponse().getStatus());assertTrue(issuer.verifiedPkce);
@@ -123,6 +312,7 @@ class HostedBoundaryTest {
         var callback = URI.create(response.headers().firstValue("Location").orElseThrow());
         assertEquals("http://localhost/login/oauth2/code/studio", callback.getScheme() + "://" + callback.getAuthority() + callback.getPath());
         Map<String, String> params = MockIssuer.parameters(callback.getRawQuery());
+        authorizationCodeCanaries.add(params.get("code"));
         var completed = mvc.perform(get(callback.getPath()).header("Host", "localhost").session(session)
                 .param("code", params.get("code")).param("state", corruptState ? "wrong" : params.get("state"))).andReturn();
         return new Login(session, oldId, completed);

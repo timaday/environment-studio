@@ -28,6 +28,15 @@ class HostedSessionsTest {
         assertInstanceOf(SessionLedger.Accepted.class, sessions.authenticated(request.getSession(), user));
         return request;
     }
+    @Test void nonTouchingCaptureCannotExtendIdleDeadline() {
+        var request=authenticated();
+        var initial=sessions.capture(request).orElseThrow();
+        clock.now=clock.now.plusSeconds(1799);
+        assertEquals(initial,sessions.capture(request).orElseThrow());
+        clock.now=clock.now.plusSeconds(1);
+        assertTrue(sessions.capture(request).isEmpty(),"Polling must not renew either servlet or ledger lease deadline");
+        assertEquals(1,cleanups.size());
+    }
     @Test void idleExpiryInvalidatesServletSessionAndInvokesCleanupExactlyOnce() {
         var request = authenticated();
         var session = (MockHttpSession) request.getSession(false);

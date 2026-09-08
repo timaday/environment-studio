@@ -21,3 +21,6 @@ docs/*
 docs/contracts/*
 !docs/contracts/openapi-workspace-v2.json
 !docs/contracts/openapi-plans-v1.json
+
+# Independently generated public certificate only; its private key was never saved.
+!fixtures/plan-http-tls/mock-ca.pem

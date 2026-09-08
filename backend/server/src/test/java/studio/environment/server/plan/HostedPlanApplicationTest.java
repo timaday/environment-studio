@@ -58,19 +58,28 @@ class HostedPlanApplicationTest {
         assertEquals("3",service.replaceDraft(lease,plan.planId(),new HostedPlanService.Mutation("2",UUID.randomUUID().toString()),draft).revision());
         var preview=service.previewProfile(lease,plan.planId(),"3",profileRef,List.of("first"));
         assertEquals(List.of("dependency","first"),preview.dependencies().included().stream().map(Profile.Entity::id).sorted().toList());
-        var decisions=List.<ProfileComposer.Decision>of(new ProfileComposer.Decision.UseExisting("first",new ObservedGraph.Key("glyph","alpha")),new ProfileComposer.Decision.UseExisting("dependency",new ObservedGraph.Key("palette","second-palette")));
-        var command=new HostedPlanService.Mutation("3",UUID.randomUUID().toString());
-        assertEquals("4",service.composeProfile(lease,plan.planId(),command,preview,decisions).revision());
+        String alphaHandle=service.entities(lease,plan.planId(),"3",false,0,100).entities().stream()
+            .filter(e->e.type().equals("glyph") && e.fields().stream().anyMatch(f->f.field().equals("tag") && f.value().orElse("").equals("alpha")))
+            .findFirst().orElseThrow().handle();
+        var mutation=new HostedPlanService.Mutation("3",UUID.randomUUID().toString());
+        var action=new PlanCommand.Action.Compose(profileRef,HostedPlanService.compositionPreviewDigest(preview),List.of("first"),List.of(
+            new PlanCommand.ProfileDecision.UseExisting("first",new PlanCommand.Ref.Existing(alphaHandle)),
+            new PlanCommand.ProfileDecision.UseExisting("dependency",new PlanCommand.Ref.Fresh("new-palette","palette"))));
+        var command=new PlanCommand(mutation,action);
+        var stale=new PlanCommand(new HostedPlanService.Mutation("3",UUID.randomUUID().toString()),new PlanCommand.Action.Compose(profileRef,"0".repeat(64),action.selectedRoots(),action.decisions()));
+        assertEquals(PlanRefusal.Code.STALE_PREVIEW,assertThrows(PlanRefusal.class,()->service.command(lease,plan.planId(),stale)).code());
+        assertEquals("3",service.summary(lease,plan.planId()).revision());
+        assertEquals("4",service.command(lease,plan.planId(),command).revision());
         assertTrue(service.summary(lease,plan.planId()).targetComplete());
         assertEquals(Files.readString(Path.of("../../fixtures/structural-target/expected-glyphs.xml")),service.comparison(lease,plan.planId(),"4",true,"glyph-sheet",ViewMode.RAW,true).text());
         assertEquals(Files.readString(Path.of("../../fixtures/structural-target/expected-palettes.xml")),service.comparison(lease,plan.planId(),"4",true,"palette-sheet",ViewMode.RAW,true).text());
-        assertEquals("4",service.composeProfile(lease,plan.planId(),command,preview,decisions).revision());
+        assertEquals("4",service.command(lease,plan.planId(),command).revision());
         assertFalse(service.validate(lease,plan.planId(),"4").exportAvailable());
         var whole=service.previewProfile(lease,plan.planId(),"4",profileRef,List.of());
         assertEquals(3,whole.dependencies().included().size());
         assertFalse(whole.toString().contains("second-palette"));
         service.discard(lease,plan.planId(),new HostedPlanService.Mutation("4",UUID.randomUUID().toString()));
-        assertEquals("4",service.composeProfile(lease,plan.planId(),command,preview,decisions).revision());
+        assertEquals("4",service.command(lease,plan.planId(),command).revision());
         assertThrows(PlanRefusal.class,()->service.summary(lease,plan.planId()));
     }
     @Test void profileReuseRequiresExplicitValuesBeforeExactNoopMaterialization() throws Exception {

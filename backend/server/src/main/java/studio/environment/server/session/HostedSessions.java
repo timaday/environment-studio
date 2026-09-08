@@ -91,6 +91,18 @@ public final class HostedSessions {
         slot.lastSeen = clock.instant();
         return ledger.touch(binding.id);
     }
+    /** Read/status polling checks authority without extending idle activity. */
+    public Optional<SessionLedger.Lease> capture(HttpServletRequest request) {
+        expire();
+        var session=request.getSession(false);
+        if(session==null || !(session.getAttribute(SLOT) instanceof Binding binding)) return Optional.empty();
+        var slot=slots.get(binding.id);
+        if(slot==null) return Optional.empty();
+        synchronized(slot) {
+            if(slot.retired || slot.lease==null) return Optional.empty();
+            return ledger.guard(slot.lease,()->slot.lease);
+        }
+    }
     public <T> Optional<T> guard(SessionLedger.Lease lease, java.util.function.Supplier<T> transition) {
         return ledger.guard(lease, transition);
     }
