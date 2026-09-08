@@ -1,12 +1,13 @@
 # Qualification matrix
 
-No database/client combination has yet been qualified. Replace these unknowns
-with exact versions and evidence; never fill the matrix from driver availability.
+Read-adapter qualification is separate from guarded execution-client qualification.
+No complete writer/client combination has yet passed. Record exact versions and
+evidence; never fill the matrix from driver availability.
 
 | Capability | Candidate | Scope | State |
 | --- | --- | --- | --- |
-| Oracle | Disposable Free 23.26.3.0.0; CLOB; bundled SQL*Plus 23.26.3.0.0 | Client SP2 continuation observed; reads and guarded transaction package not implemented/qualified | INCOMPLETE |
-| PostgreSQL | Disposable 18.6; text; psql qualification pending | Same logical family where capabilities overlap | NOT RUN |
+| Oracle | Disposable Free 23.26.3.0.0; CLOB; JDBC 23.26.3.0.0 | [Complete read matrix](../evidence/d04a-integration.md), account READ ONLY/vendor baseline, bounds and cleanup; SQL*Plus guarded execution unqualified | READ CHECKS PASS; WRITER INCOMPLETE |
+| PostgreSQL | Disposable 18.6; text; JDBC 42.7.13 | [Complete read matrix](../evidence/d04a-integration.md), effective privileges/visibility, bounds and cleanup; psql guarded execution unqualified | READ CHECKS PASS; WRITER INCOMPLETE |
 | PostgreSQL xml/OID | Not selected | Separate storage contract required | UNSUPPORTED |
 | Native YAML/JSON definitions | Version 1 draft meta-schema; D01a compiler and D02b owned upload | Bounded parsing, checks, immutable incomplete revisions; publication absent | INCOMPLETE |
 | Native version 2 compiler | D01b closed logical/binding semantics and versioned digests | Independent digest oracle and reviewed static mechanism limits; runtime publication/observation separate | COMPILER CHECKS PASS |
