@@ -18,7 +18,7 @@ The previous push-review blocker is historical: the remote now matches the check
 
 ## Current 9 September continuation
 
-Latest tested source: `1bda69993ff1257b063d08a357fd2b260d8be385`. The
+Latest exact-source OCI/browser artifact: `1bda69993ff1257b063d08a357fd2b260d8be385`. The
 [artifact refresh](../evidence/d06b4-artifacts.md) records Java623,
 frontend34/schema24, protected container/workspace smoke and four exact-source
 hosted browser cases. Observed destination and summary transfer authority are
@@ -321,3 +321,23 @@ mutants and four additional independent native controls. It captures a private
 kernel sender pin before exec; Java wrapper/root registration, listener/coordinator,
 image/ancestry/privacy admission and native-client qualification remain open.
 The runtime registry remains empty. Preserve its frozen author archive.
+
+
+### Continuing work: listener, labels and output recovery
+
+The independently reviewed listener primitive is integrated; see
+`docs/evidence/d07c3-privacy-listener.md` for fixed hashes and Java655 evidence.
+It is a private prerequisite only; native admission stays disabled.
+
+The label candidate is frozen and independently reviewed in
+`/home/tim/.tmp/es-plan-labels-20260909`, base3b2a87e. Its state and source/candidate
+manifests are in `/home/tim/.tmp/es-plan-labels-state-20260909.txt`. Do not integrate
+required-label creation without the coordinated approved form. The requested
+enterprise UX skill and the generated reference approval remain pending.
+
+The output recovery candidate is in `/home/tim/.tmp/es-plan-transfer-20260909`,
+base212fb2f. Actual authenticated sockets reproduced a blocked response holding
+shared view capacity after logout (one assertion RED); the first nonblocking
+output change passes that regression. It still needs adverse checks, independent
+review, full integration and transport/OCI qualification. Keep its working files
+separate from the frozen labels candidate and newer root native integration.

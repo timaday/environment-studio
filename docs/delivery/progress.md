@@ -4,7 +4,7 @@ Updated: 9 September 2026. See [starter evidence](../evidence/starter-verificati
 and [D01a integration](../evidence/d01a-integration.md) for actual commands and
 results; the table below reports capability, not test count.
 
-Latest verified source is `1bda69993ff1257b063d08a357fd2b260d8be385`.
+Latest exact-source OCI/browser artifact is `1bda69993ff1257b063d08a357fd2b260d8be385`.
 Reviewed observed identity and live summary publication are integrated; the
 [exact-source artifact refresh](../evidence/d06b4-artifacts.md) passed Java623,
 frontend34/schema24, four hosted browser cases and protected container/workspace
@@ -217,3 +217,14 @@ A 6 GiB candidate passes the measured four-plan, validation and capacity-recover
 workloads, with substantial one-CPU GC cost. This is partial local qualification;
 maximum source/value/response/scratch overlap and blocked HTTP transfer remain open.
 No allocation or scope limit changed.
+
+
+The private [native listener prerequisite](../evidence/d07c3-privacy-listener.md)
+has passed independent fixed-source review, three additional unwrapped controls
+and 655 integrated Java tests. It preserves native descriptor ownership and
+explicit cleanup outcomes; hostile same-UID namespace admission and the full
+coordinator/JNI/client workflow remain unqualified. The label backend candidate
+is independently reviewed and isolated pending its coordinated, approved UI.
+An actual socket investigation reproduced a shared-view capacity hold after
+logout; its nonblocking output fix is in an isolated RED/GREEN candidate, with
+adverse and full verification still pending.
