@@ -51,6 +51,8 @@ public final class DerivedInputValidator {
         Map<String, Relation> relations = new HashMap<>(); logical.relations().forEach(r -> relations.put(r.id(), r));
         Set<Ref> references = new HashSet<>(); Set<ObservedGraph.Key> keys = new HashSet<>();
         Set<PhysicalLocation> locations = new HashSet<>(); Set<String> slots = new HashSet<>();
+        Map<ObservedGraph.Key, ObservedGraph.Origin> keptOrigins = new HashMap<>();
+        Map<PhysicalLocation, ObservedGraph.Key> keptIdentities = new HashMap<>();
         Set<String> unresolved = new TreeSet<>();
         for (var entity : input.entities()) {
             var ref = entity.reference(); var type = types.get(ref.type());
@@ -82,7 +84,7 @@ public final class DerivedInputValidator {
                     if (field.required()) fail("REQUIRED_FIELD_MISSING");
                 } else if (state instanceof FieldState.Present present) {
                     if (!xmlText(present.text())) fail("INVALID_FIELD_STATE");
-                    proof(ref, field.id(), present, expected, documents);
+                    proof(ref, field.id(), present, expected, documents, keptOrigins, keptIdentities);
                 }
             }
         }
@@ -95,7 +97,8 @@ public final class DerivedInputValidator {
         }
         return unresolved.isEmpty() ? new Valid() : new Incomplete(List.copyOf(unresolved));
     }
-    private static void proof(Ref ref, String field, FieldState.Present present, Pin expected, Map<String, Document> documents) {
+    private static void proof(Ref ref, String field, FieldState.Present present, Pin expected, Map<String, Document> documents,
+            Map<ObservedGraph.Key, ObservedGraph.Origin> keptOrigins, Map<PhysicalLocation, ObservedGraph.Key> keptIdentities) {
         if (ref instanceof Ref.Observed observed) {
             if (!(present.proof() instanceof Proof.Observed)) fail("INVALID_PROVENANCE");
             location(observed, field, present.text(), ((Proof.Observed) present.proof()).location(), expected, documents);
@@ -112,6 +115,12 @@ public final class DerivedInputValidator {
             if (!((TargetIntent.Ref.Existing) target).key().equals(kept.source().key())) fail("INVALID_PROVENANCE");
             origin(kept.source(), expected, documents);
             location(kept.source(), field, present.text(), kept.location(), expected, documents);
+            var source = kept.source();
+            var previousOrigin = keptOrigins.putIfAbsent(source.key(), source.origin());
+            if (previousOrigin != null && !previousOrigin.equals(source.origin())) fail("INVALID_PROVENANCE");
+            var physical = new PhysicalLocation(source.origin().documentId(), source.origin().elementIndex());
+            var previousIdentity = keptIdentities.putIfAbsent(physical, source.key());
+            if (previousIdentity != null && !previousIdentity.equals(source.key())) fail("INVALID_PROVENANCE");
         } else fail("INVALID_PROVENANCE");
     }
     private static Projection origin(Ref.Observed ref, Pin expected, Map<String, Document> documents) {

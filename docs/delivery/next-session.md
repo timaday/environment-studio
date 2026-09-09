@@ -32,6 +32,17 @@ recomputation, physical-only profile/history and hosted qualification. The lates
 retained compiler OCI image predates the engine/XML changes; see progress.md.
 No Q feedback may be uploaded to GitHub without publication authorization.
 
+The latest independent review adds a confirmed retained-origin consistency defect
+and an inspection UI/API capability wording inconsistency. The
+[origin fix](../evidence/derived-retained-origin-fix.md) now has actual RED3/GREEN,
+independent review/guard mutations and full Java850 on 864156a plus the fixed pair.
+Preserve current XML/root work; do not reset to the reviewed 5fa6695 snapshot.
+Typed-target preparation is reviewed in isolated archives; physical assembly and
+complete final comparison are active WIP. Explicitly align inspection UI availability
+and configured API admission next, preserving current read-operation and owner gates.
+The review environment's supervisor failures remain separately scoped and unresolved
+individually; local Java21.0.12 socket/child-start controls and supervisor168 pass.
+
 The full source/dense/graph HTTP workloads and all three four-observation overlap
 workloads now have reviewed passing results in
 [d06b8](../evidence/d06b8-hosted-heap.md). Preserve both external heap labs and

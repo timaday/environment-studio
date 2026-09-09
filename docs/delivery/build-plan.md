@@ -48,6 +48,12 @@ The lead owns shared contracts and compatibility. Independent fixed-candidate
 review, actual RED/GREEN, targeted guard mutations and integrated verification
 remain required. Private models and original Q inputs stay outside the repository.
 
+The later 5fa6695 independent review's retained-origin defect is
+[corrected and reviewed](../evidence/derived-retained-origin-fix.md), with actual
+RED and full Java850. Preserve later XML/root changes. Finish final derived
+comparison/profile/hosted paths and clarify inspection UI versus configured API
+admission; a false UI flag must not be described as backend enforcement.
+
 ## Daily checkpoints
 
 **Tuesday:** confirm D01's generic compiler contracts and an independent mock

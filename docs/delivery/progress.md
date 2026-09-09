@@ -29,6 +29,18 @@ reprojection and profile/hosted integrations are next; v3 availability remains d
 No Q feedback GitHub publication is authorized. Existing MVP scope and completed
 work remain in place.
 
+The later independent review's confirmed
+[retained-origin consistency defect](../evidence/derived-retained-origin-fix.md)
+is reproduced, corrected and independently reviewed: one Existing reference cannot
+splice retained fields from different original entities, and distinct identities
+cannot claim one original occurrence. Full Java850 passes, including supervisor168
+on the recorded local platform. The incoming review's Java21.0.8 native failures
+remain separately recorded; individual unresolved failures are not dismissed.
+Typed-target preparation is reviewed but not yet integrated; final comparison,
+profiles and hosted work remain active. Inspection UI availability versus configured
+API admission needs explicit contract/naming alignment without disabling authorized
+read-only operations or enabling the unqualified UI.
+
 Current retained internal v3 compiler image:
 `sha256:2379b3001e2afe9592eeed4f7c15056309d7989732bcacc7da672714680218ca`.
 Its exact build passes Java781, frontend34/schema32 and protected container smoke;
