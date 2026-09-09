@@ -206,6 +206,46 @@ class HostedBoundaryTest {
         }
         assertTrue(revoked.get());
     }
+    @Test void blockedOutputAfterLogoutMustReleaseSharedViewCapacityWithoutClientDisconnect() throws Exception {
+        blockedOutputRecovery("logout");
+    }
+    @Test void blockedOutputDeadlineReleasesCapacityWithoutClientDisconnect()throws Exception {
+        blockedOutputRecovery("deadline");
+    }
+    @Test void disconnectedOutputReleasesCapacityForAnotherOperator()throws Exception {
+        blockedOutputRecovery("disconnect");
+    }
+    private void blockedOutputRecovery(String trigger)throws Exception {
+        var plan=socketPlan("view-maintainer");var observer=socketPlan("plan-maintainer");var json=tools.jackson.databind.json.JsonMapper.builder().build();
+        try {
+            for(var owned:java.util.List.of(plan,observer))assertEquals(200,owned.client().request("POST","/api/v1/operations/"+reserve(owned,"1")+"/credentials",mockCredentials(),true).status());
+            String path="/api/v1/plans/"+plan.planId();String observerPath="/api/v1/plans/"+observer.planId();
+            var entities=json.readTree(plan.client().request("POST",path+"/views/entities","{\"revision\":\"2\",\"side\":\"current\",\"offset\":0,\"limit\":100}",true).body());
+            var changes=new java.util.ArrayList<Map<String,Object>>();String entered="\"".repeat(1_048_576);
+            for(var entity:entities.get("items"))if(entity.get("typeId").asString().equals("glyph"))changes.add(Map.of("decision",Map.of("kind","retain","entity",Map.of("kind","existing","handle",entity.get("entity").get("handle").asString()),"fields",Map.of("tag",Map.of("kind","entered","text",entered),"tone",Map.of("kind","entered","text",entered)),"references",Map.of("uses",Map.of("kind","keep-observed"))),"placements",java.util.List.of()));
+            assertEquals(2,changes.size());
+            var changed=plan.client().request("POST",path+"/commands",json.writeValueAsString(Map.of("kind","batch-upsert","expectedRevision","2","requestId",java.util.UUID.randomUUID().toString(),"changes",changes,"containment",java.util.List.of())),true);
+            assertEquals(200,changed.status());assertEquals("3",json.readTree(changed.body()).get("revision").asString());
+            byte[] body="{\"revision\":\"3\",\"offset\":0,\"limit\":100}".getBytes(java.nio.charset.StandardCharsets.UTF_8);
+            try(var pending=plan.client().begin("POST",path+"/views/draft",body.length,true,1024)) {
+                pending.write(body);var headers=pending.headersOnly();assertEquals(200,headers.status());assertTrue(Integer.parseInt(headers.headers().get("content-length"))>8_388_608);
+                assertEquals(429,observer.client().request("POST",observerPath+"/views/documents","{\"revision\":\"2\"}",true).status(),"Real unread response must retain its owned view scratch");
+                if(trigger.equals("logout")){int logout=plan.client().request("POST","/api/v1/session/logout","{}",true).status();assertTrue(logout==204 || logout==503);assertEquals(401,plan.client().get(path).status());}
+                if(trigger.equals("disconnect"))pending.close();
+                int status=429;long deadline=System.nanoTime()+(trigger.equals("deadline")?35_000_000_000L:5_000_000_000L);
+                while(status==429 && System.nanoTime()<deadline){Thread.sleep(100);status=observer.client().request("POST",observerPath+"/views/documents","{\"revision\":\"2\"}",true).status();}
+                assertEquals(200,status,"Stopped response must release shared view capacity after "+trigger);
+                if(trigger.equals("logout")) {
+                    var recovered=socketLogin("view-maintainer");
+                    assertEquals(404,recovered.get(path).status(),"Fresh lease must not regain the retired plan");
+                    assertEquals(204,recovered.request("POST","/api/v1/session/logout","{}",true).status());
+                }
+            }
+        } finally {
+            plan.client().request("POST","/api/v1/session/logout","{}",true);
+            observer.client().request("POST","/api/v1/session/logout","{}",true);
+        }
+    }
     @Test void observedIdentitySummaryIsOwnedClosedAndRetainsStaleEvidenceAfterFailedReinspection() throws Exception {
         var plan=socketPlan("view-maintainer");var json=tools.jackson.databind.json.JsonMapper.builder().build();
         try {

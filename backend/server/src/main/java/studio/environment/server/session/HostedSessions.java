@@ -162,6 +162,12 @@ public final class HostedSessions {
         }
         return assigned == null ? Optional.of(retryPending(slot)) : ledger.retryCleanup(id);
     }
+    /** Plan worker completion can coincide with the original retirement hook; retain that notification. */
+    public Optional<CleanupReport> resumeCleanupAfterWork(String id) {
+        var slot=slots.get(id);if(slot==null)return Optional.empty();
+        synchronized(slot){if(!slot.retired || slot.lease==null)return Optional.empty();}
+        return ledger.resumeCleanup(id);
+    }
     private void invalidate(SessionLedger.Lease lease) {
         var slot = slots.get(lease.id());
         if (slot == null) throw new CleanupIncomplete();

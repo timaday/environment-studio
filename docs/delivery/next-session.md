@@ -335,12 +335,17 @@ manifests are in `/home/tim/.tmp/es-plan-labels-state-20260909.txt`. Do not inte
 required-label creation without the coordinated approved form. The requested
 enterprise UX skill and the generated reference approval remain pending.
 
-The output recovery candidate is in `/home/tim/.tmp/es-plan-transfer-20260909`,
-base212fb2f. Actual authenticated sockets reproduced a blocked response holding
-shared view capacity after logout (one assertion RED); the first nonblocking
-output change passes that regression. It still needs adverse checks, independent
-review, full integration and transport/OCI qualification. Keep its working files
-separate from the frozen labels candidate and newer root native integration.
+The [output recovery correction](../evidence/d06b7-response-recovery.md) is reviewed
+and integrated from `/home/tim/.tmp/es-plan-transfer-corrected-20260909`, base41a17cc.
+Its corrected15 source manifest is
+`/home/tim/.tmp/es-plan-transfer-corrected-source-20260909.sha256` (2d3d50f6…).
+Actual authenticated unread/logout, deadline and disconnect cases recover capacity
+and confirmed session cleanup. Corrected Java683 and independent25 pass; twelve
+distinct guard mutants are killed. The earlier14-file candidate in
+`/home/tim/.tmp/es-plan-transfer-20260909`, base212fb2f, is superseded: independent
+review reproduced a lost cleanup notification despite its full670 pass. Preserve
+both records and never restore its two-lock notification path. Exact-source
+OCI/browser refresh and whole-process capacity qualification follow.
 
 The full retained current/changed-target byte workload is independently reviewed
 in [heap evidence](../evidence/d06b5-heap-investigation.md). Its frozen external lab

@@ -34,7 +34,48 @@ share the existing single full scratch admission, with no executor queue or seco
 raw-body copy. A count within a semantic limit does not waive the wire limit.
 
 Read responses use an admitted, bounded encoder with a 128 MiB wire ceiling and
-the existing scratch budget; never retain many encoded pages in a session. Paging
+an absolute 30-second output deadline starting when encoded transfer begins.
+Incoming readiness notifications or successful chunks never renew that deadline.
+Use Servlet nonblocking output with one serialized writer, bounded chunks and
+no queued copies of the complete response. Container callbacks must not wait for
+the writer or a lock held across Servlet calls. Waiting for writable output must also
+observe live session/revision authority and cancellation, with checks at most
+100 milliseconds apart while the worker is scheduled. Session revocation must
+not leave the application writer blocked in a socket write. Scheduling pauses,
+including JVM GC, are not a promise of real-time cancellation.
+
+Retain the owned view admission until the writer stops, then wipe/release its
+encoded buffers and close its application admission exactly once. A committed
+partial response is aborted; never append a refusal JSON object to it. Bytes
+already handed to the servlet/container or peer cannot be recalled. Do not call
+a queued response client-received, or report physical delivery as complete.
+The server must not retain application-owned encoded pages merely because a peer
+stops reading. Qualify slow, unread, disconnected, expired and revoked transfers
+through actual sockets, including recovery by a separate live operator.
+
+Servlet async completion has one application owner per request cycle, registered
+before initial dispatch returns. Error/timeout callbacks coordinate completion
+inside their legal callback scope; a worker must not blindly call complete after
+the container's error callback returned. Container-completion races may refuse an
+attempt: keep an explicit inconclusive outcome, without retrying or treating a
+thrown exception as successful completion. A competing completion attempt returns
+an explicit in-progress result immediately; callbacks cannot wait while holding
+container locks needed by the original attempt. Callback completion never releases
+application buffers or view admission before the writer actually stops.
+Keep a bounded container timeout until that completion owner is registered;
+registration failure must release application admission and cannot leave an
+unbounded unowned async cycle.
+
+After a plan worker releases its application admission, a revoked lease can
+resume its original session-cleanup obligation. First attempt the plan's existing
+retirement cleanup; pending readers/rendering/physical cleanup remain inconclusive.
+Only confirmed plan cleanup permits a bounded retry of the original session
+obligation. This is an internal lifecycle notification, not a new operation or
+authentication retry. It must not consume all bounded session retry attempts as
+parallel readers stop, retry completed obligations, renew a lease or restore the
+retired plan. Same-owner fresh login remains denied until cleanup is conclusive.
+
+Responses retain the existing scratch budget; never retain many encoded pages in a session. Paging
 does not retain snapshots or grant authority: each page rechecks the same live
 revision. These eleven routes always provide `offset` and `limit` on page requests, canonical
 integer tokens with offset 0–50,000 and limit 1–100. The binding extension defines

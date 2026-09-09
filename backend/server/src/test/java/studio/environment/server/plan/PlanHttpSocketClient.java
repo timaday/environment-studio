@@ -21,7 +21,10 @@ public final class PlanHttpSocketClient {
         try(var pending=begin(method,path,bytes.length,csrf)) {pending.write(bytes);return pending.response();}
     }
     public Pending begin(String method,String path,int length,boolean csrf) throws IOException {
-        var socket=new Socket();socket.connect(new InetSocketAddress(InetAddress.getLoopbackAddress(),port),5000);socket.setSoTimeout(15_000);
+        return begin(method,path,length,csrf,0);
+    }
+    public Pending begin(String method,String path,int length,boolean csrf,int receiveBuffer) throws IOException {
+        var socket=new Socket();if(receiveBuffer>0)socket.setReceiveBufferSize(receiveBuffer);socket.connect(new InetSocketAddress(InetAddress.getLoopbackAddress(),port),5000);socket.setSoTimeout(15_000);
         var output=socket.getOutputStream();
         var headers=new StringBuilder(method+" "+path+" HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n");
         if(cookie!=null) headers.append("Cookie: ").append(cookie).append("\r\n");
@@ -37,6 +40,15 @@ public final class PlanHttpSocketClient {
         private Pending(Socket socket,String viewSchema){this.socket=socket;this.viewSchema=viewSchema;}
         public void timeout(int milliseconds)throws java.net.SocketException{socket.setSoTimeout(milliseconds);}
         public void write(byte[] bytes) throws IOException {socket.getOutputStream().write(bytes);socket.getOutputStream().flush();}
+        public Response headersOnly()throws IOException {
+            var input=socket.getInputStream();String[] first=line(input).split(" ",3);if(first.length<2)throw new IOException("MOCK_STATUS_MISSING");
+            var headers=new LinkedHashMap<String,String>();String header;
+            while(!(header=line(input)).isEmpty()) {
+                if(headers.size()>=100)throw new IOException("MOCK_HEADER_LIMIT");int colon=header.indexOf(':');if(colon<1)throw new IOException("MOCK_HEADER_INVALID");
+                headers.put(header.substring(0,colon).toLowerCase(Locale.ROOT),header.substring(colon+1).trim());
+            }
+            return new Response(Integer.parseInt(first[1]),Map.copyOf(headers),"");
+        }
         public Response response() throws IOException {
             var input=socket.getInputStream();String first=line(input);String[] status=first.split(" ",3);
             if(status.length<2) throw new IOException("MOCK_HTTP_STATUS_UNAVAILABLE");

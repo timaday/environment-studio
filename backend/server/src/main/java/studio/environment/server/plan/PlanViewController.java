@@ -66,8 +66,10 @@ public final class PlanViewController {
                     try(var encoded=new PlanViewEncoding(134_217_728)){
                         encoded.encode(result);admission.verify();
                         response.setStatus(status);response.setHeader("Cache-Control","no-store");response.setContentType("application/json");response.setContentLength(encoded.size());
-                        try {encoded.write(response.getOutputStream(),admission::verify);response.getOutputStream().flush();admission.verify();}
-                        catch(IOException disconnected){throw new UncheckedIOException(disconnected);}
+                        try(var output=new OwnedServletOutput(response.getOutputStream(),admission::verify,System.nanoTime()+30_000_000_000L,System::nanoTime)) {
+                            encoded.write(output,admission::verify);output.flush();admission.verify();
+                        }
+                        catch(IOException|RuntimeException refused){throw new UncheckedIOException(new IOException("PLAN_TRANSFER_REFUSED"));}
                     }
                     return true;
                 });

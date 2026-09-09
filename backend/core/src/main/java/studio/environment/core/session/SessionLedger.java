@@ -36,6 +36,7 @@ public final class SessionLedger {
         final Lease lease;
         final CommitState commit;
         int attempts;
+        boolean resumeRequested;
         CleanupState state = CleanupState.INCONCLUSIVE;
         CleanupWork(Entry entry) { this.lease = entry.lease; this.commit = entry.commit; }
         CleanupReport report() { return new CleanupReport(lease.id(), state, attempts); }
@@ -142,15 +143,27 @@ public final class SessionLedger {
     public List<CleanupReport> cleanupReports() {
         synchronized (sessions) { return pending.values().stream().map(CleanupWork::report).toList(); }
     }
+    /** Internal completion notification; coalesces only while an original cleanup attempt is running. */
+    public Optional<CleanupReport> resumeCleanup(String id) {
+        return retryCleanup(id,true);
+    }
     /** Internal lifecycle operation only. Never restores authentication or automatically loops retries. */
     public Optional<CleanupReport> retryCleanup(String id) {
+        return retryCleanup(id,false);
+    }
+    private Optional<CleanupReport> retryCleanup(String id,boolean completionNotification) {
         CleanupWork work;
         synchronized (sessions) {
             work = pending.get(id);
             if (work == null) return Optional.empty();
+            if (work.state == CleanupState.IN_PROGRESS) {
+                if(completionNotification)work.resumeRequested=true;
+                return Optional.of(work.report());
+            }
             if (work.commit.active != null && work.attempts > 0) return Optional.of(work.report());
-            if (work.state == CleanupState.IN_PROGRESS || work.attempts >= MAX_CLEANUP_ATTEMPTS) return Optional.of(work.report());
+            if (work.attempts >= MAX_CLEANUP_ATTEMPTS) return Optional.of(work.report());
             work.state = CleanupState.IN_PROGRESS;
+            work.resumeRequested = false;
             work.attempts++;
         }
         boolean complete;
@@ -161,11 +174,15 @@ public final class SessionLedger {
             // The typed report and quarantined capacity retain the failure; untrusted exception text does not.
             complete = false;
         }
+        boolean resume;
         synchronized (sessions) {
             complete = complete && work.commit.active == null;
             work.state = complete ? CleanupState.COMPLETE : CleanupState.INCONCLUSIVE;
             if (complete) pending.remove(id);
-            return Optional.of(work.report());
+            resume=!complete && work.resumeRequested && work.commit.active==null && work.attempts<MAX_CLEANUP_ATTEMPTS;
+            work.resumeRequested=false;
         }
+        if(resume){var retried=retryCleanup(id);if(retried.isPresent())return retried;}
+        synchronized(sessions){return Optional.of(work.report());}
     }
 }

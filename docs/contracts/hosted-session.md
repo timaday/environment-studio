@@ -49,6 +49,16 @@ restore authentication. Exhausted obligations remain inconclusive until process
 restart, and new owner login is refused with CLEANUP_INCONCLUSIVE. Quarantined
 records count toward the same 64-session budget. Actual database operation and
 restart cleanup still require separate G07 observations.
+
+An internal work-completion notification may request that original retirement
+cleanup resume. It never creates a new session or restores authority. If the
+original cleanup attempt is already running, coalesce such notifications into
+one pending retry after that attempt reports inconclusive. Consume the notification
+when an attempt starts; completed cleanup needs no retry. Preserve the existing
+three-attempt ceiling, commit-permit exclusion and explicit inconclusive state.
+Ordinary cleanup-status reads and retry calls do not create repeated notification
+loops. The plan adapter signals only after its original plan cleanup is confirmed,
+so intermediate reader completions cannot exhaust the session retry allowance.
 Initial application limits are 64 live sessions total and one live session per
 owner. A new login for an already active owner is refused rather than silently
 invalidating active work. Capacity is checked atomically before pending login

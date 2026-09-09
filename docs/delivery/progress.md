@@ -228,6 +228,10 @@ and 655 integrated Java tests. It preserves native descriptor ownership and
 explicit cleanup outcomes; hostile same-UID namespace admission and the full
 coordinator/JNI/client workflow remain unqualified. The label backend candidate
 is independently reviewed and isolated pending its coordinated, approved UI.
-An actual socket investigation reproduced a shared-view capacity hold after
-logout; its nonblocking output fix is in an isolated RED/GREEN candidate, with
-adverse and full verification still pending.
+The [response recovery correction](../evidence/d06b7-response-recovery.md) is now
+independently reviewed and integrated. Actual unread/logout, deadline and
+disconnect sockets recover shared capacity; confirmed cleanup permits fresh
+same-owner login without restoring the retired plan. Review reproduced and fixed
+a concurrent cleanup-notification gap. Corrected Java683, independent25 focused
+checks and twelve distinct killed guard mutants support this slice. Exact-source
+OCI/browser refresh and whole hosted-process capacity remain pending.

@@ -22,7 +22,8 @@ public final class PlanController {
     private static final JsonMapper JSON=JsonMapper.builder().build();
     private static final Semaphore METADATA_READERS=new Semaphore(4);
     private final PlanRuntime runtime;
-    public PlanController(PlanRuntime runtime) {this.runtime=runtime;}
+    private final HostedSessions sessions;
+    public PlanController(PlanRuntime runtime,HostedSessions sessions) {this.runtime=runtime;this.sessions=sessions;}
     @GetMapping("/api/v1/destinations")
     public void destinations(HttpServletRequest request,HttpServletResponse response) throws IOException {
         var lease=lease(request); write(response,200,Map.of("destinations",runtime.visible(lease.owner())));
@@ -103,13 +104,15 @@ public final class PlanController {
     }
     void start(SessionLedger.Lease lease,HttpServletRequest request,HttpServletResponse response,AutoCloseable admission,BooleanSupplier cancelled,
             int limit,int seconds,int success,BodyAction action) throws IOException {
-        AsyncContext context=null; OwnedServletBody body=null; boolean started=false;
+        AsyncContext context=null; OwnedAsyncCompletion completion=null; OwnedServletBody body=null; boolean started=false;
         try {
             String type=request.getContentType();
             if(Collections.list(request.getHeaders("Content-Type")).size()!=1 || type==null || !type.split(";",2)[0].trim().equalsIgnoreCase("application/json")) throw new PlanBodyFailure(PlanBodyFailure.Code.MALFORMED_BODY);
-            context=request.startAsync(); context.setTimeout(0);
+            context=request.startAsync(); context.setTimeout(30_000);
+            completion=new OwnedAsyncCompletion(context);
+            context.setTimeout(0);
             body=new OwnedServletBody(request.getInputStream(),limit,System.nanoTime()+seconds*1_000_000_000L,cancelled);
-            final AsyncContext ownedContext=context; final OwnedServletBody ownedBody=body;
+            final OwnedAsyncCompletion ownedCompletion=completion; final OwnedServletBody ownedBody=body;
             var worker=new Thread(null,()->{
                 try {
                     try {write(response,success,action.apply(ownedBody));}
@@ -117,13 +120,33 @@ public final class PlanController {
                 } catch(IOException disconnected) {
                     LOG.warn("PLAN_RESPONSE_DISCONNECTED"); // Existing operation status remains authoritative; no authentication retry.
                 } finally {
-                    ownedBody.close(); try {close(admission);} finally {ownedContext.complete();}
+                    ownedBody.close(); try {close(admission);resumeRetiredCleanup(lease);} finally {finish(ownedCompletion);}
                 }
             },"hosted-plan-body",0,false);
             worker.setDaemon(true); worker.start(); started=true;
         } finally {
-            if(!started) {if(body!=null)body.close();try {close(admission);} finally {if(context!=null)context.complete();}}
+            if(!started) {if(body!=null)body.close();try {close(admission);resumeRetiredCleanup(lease);} finally {if(completion!=null)finish(completion);else if(context!=null)LOG.warn("PLAN_ASYNC_COMPLETION_UNOWNED");}}
         }
+    }
+    private static void finish(OwnedAsyncCompletion completion) {
+        switch(completion.finish()) {
+            case COMPLETE -> { }
+            case IN_PROGRESS -> LOG.warn("PLAN_ASYNC_COMPLETION_IN_PROGRESS");
+            case INCONCLUSIVE -> LOG.warn("PLAN_ASYNC_COMPLETION_INCONCLUSIVE");
+        }
+    }
+    private void resumeRetiredCleanup(SessionLedger.Lease lease) {
+        var service=runtime.service();if(service.live(lease))return;
+        // Finish the original plan obligation before consuming a bounded session retry.
+        // Other readers or a physical operation may still own cleanup; they must retain quarantine.
+        try {service.invalidate(lease);}
+        catch(PlanRefusal pending) {
+            if(pending.code()!=PlanRefusal.Code.CLEANUP_INCONCLUSIVE)throw pending;
+            return;
+        }
+        sessions.resumeCleanupAfterWork(lease.id()).ifPresent(report->{
+            if(report.state()==SessionLedger.CleanupState.INCONCLUSIVE)LOG.warn("PLAN_SESSION_CLEANUP_INCONCLUSIVE");
+        });
     }
     private static void close(AutoCloseable resource) {
         try {resource.close();}
