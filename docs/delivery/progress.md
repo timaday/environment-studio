@@ -86,14 +86,14 @@ and independent API-to-UI mutation checks pass. The [exact artifact refresh](../
 passes revised-container smoke and four hosted/two demo browser cases. Versioned
 history and hosted work remain active; this image predates the profile changes.
 
-Current retained image, exact `f99aaad`:
-`sha256:446852f157ef64694a5e01d742fe0215dd27c9d3da67df37b98b4f57a4743ff4`.
-The [publication/native-association artifact](../evidence/publication-image-artifacts.md)
-passes Java1115 and protected startup/schema3 administration smoke, and records
-its separate supervisor ZIP. Unchanged frontend/schema checks and the pinned
-OpenSSL installation layer were cached; preceding fresh frontend40/schema40
-evidence retains its original scope. The later v3 observation candidate is outside
-this image.
+Current retained image, exact `76ab78b`:
+`sha256:90e771cd6afb0bdeb75b42d8552c546b56f4c0a273e0d4caea1e4c5a07ac9c61`.
+The [v3 content/native ELF artifact](../evidence/plan-content-artifacts.md)
+passes Java1187 and protected startup/schema3 administration smoke, and records
+its separate supervisor ZIP. Frontend checking,40 frontend tests,40 schema tests
+and production build run afresh and pass; dependency/build-package layers are
+cached. Shared v3 lifecycle and the native launch
+coordinator are outside this image.
 The four hosted HTTPS/OIDC and two demo browser cases remain scoped to7111230.
 This is local proof only; preceding image evidence remains historically scoped.
 
