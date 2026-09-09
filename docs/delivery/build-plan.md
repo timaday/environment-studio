@@ -85,6 +85,9 @@ now passes independent review, full Java1100 and thirteen guard mutants. Its
 retrospective RED ordering gap remains recorded. The
 [script/interpreter association prerequisite](../evidence/d07c3-privacy-script.md)
 now passes independent review, full Java1141 and thirteen guard mutations.
+The [structural ELF64 prerequisite](../evidence/d07c3-privacy-elf.md) now passes
+independent review, full Java1171 and fourteen compiled guard mutations;
+structural file metadata confers no mapped-object or runtime admission.
 Complete loader closure, consumed-script evidence and coordinator/JNI before
 client admission. The exact9454d9f [HTTP artifact](../evidence/workspace-http-v3-artifacts.md)
 passes Java1024, frontend40/schema36 and protected smoke; it predates hashing.

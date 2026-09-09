@@ -136,6 +136,10 @@ now passes independent review, full Java1141 and thirteen compiled guard
 mutations. Exact compiled path/shebang/argv and retained file/image identities
 share original limits and cleanup authority. Loader closure and actual consumed
 script evidence, coordinator/JNI and client qualification remain unfinished.
+The [structural ELF64 prerequisite](../evidence/d07c3-privacy-elf.md) now passes
+independent review, full Java1171 and fourteen compiled guard mutations. It
+checks bounded file metadata between two original-budget measurements. Mapped
+bytes, dynamic/loader closure and runtime admission remain separate requirements.
 
 Earlier exact-source OCI/browser artifact was `c4a324636d4aeaa20012349e68cce7eb2b025f8b`.
 Reviewed observed context and response/session recovery are integrated; the

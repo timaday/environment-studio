@@ -472,6 +472,218 @@ defines explicit digest selection/update/finalization. The
 [Linux userspace crypto documentation](https://docs.kernel.org/crypto/userspace-if.html)
 marks AF_ALG deprecated; this implementation does not use it.
 
+## Private structural ELF64 layout prerequisite
+
+`es_elf_check` is a bounded structural check of one already admitted retained
+file. OK means only the supported ELF header/program-header layout was read
+between two equal compiled-content measurements. It is never mapped-object,
+loader, relocation, constructor, process, closure or runtime admission. No
+peer/process/memory descriptor is accepted or opened. No dynamic tag, dependency
+name, interpreter string, note property, relocation or section table is parsed.
+In particular, this prerequisite does **not** reject or qualify text relocations,
+CET/ISA properties, lazy binding or later loading.
+
+The private C ABI is:
+
+```c
+typedef enum {
+    ES_ELF_OK=0, ES_ELF_INVALID=1, ES_ELF_PLATFORM=2,
+    ES_ELF_CANCELLED=3, ES_ELF_DEADLINE=4, ES_ELF_IDENTITY=5,
+    ES_ELF_RESOURCE=6, ES_ELF_IO=7, ES_ELF_CLEANUP=8,
+    ES_ELF_FORMAT=9
+} es_elf_result;
+typedef struct {
+    uint32_t type, flags;
+    uint64_t offset, vaddr, paddr, filesz, memsz, align;
+} es_elf_program;
+typedef struct {
+    es_hash_identity file;
+    unsigned char ident[16];
+    uint16_t type, machine;
+    uint32_t version, flags;
+    uint64_t entry, phoff, shoff;
+    uint16_t ehsize, phentsize, phnum, shentsize, shnum, shstrndx;
+    uint32_t load_count;
+    es_elf_program programs[128];
+} es_elf_layout;
+es_elf_result es_elf_check(const es_file *file, es_hash *hash,
+        const unsigned char expected_sha256[32], es_elf_layout *output);
+```
+
+Records retain all ELF-header fields and all eight fields of every program
+header in original table order. `programs[phnum..128)` and all struct padding
+are zero; no pointer, descriptor, process address acquisition or authority token
+is returned. `vaddr`, `paddr` and `entry` are declared integers from the file,
+not verified mapped addresses. `load_count` counts PT_LOAD entries, including
+zero-sized entries. No layout serialization/digest domain is introduced.
+
+### Borrowing, measurements and limits
+
+The caller serializes access and owns stable live `es_file`/`es_hash` objects
+admitted through their existing APIs. Both must have exactly equal original
+absolute startup deadline and borrowed cancellation descriptor, not a newly
+renewed clock. Hash state must be live without sticky failure/cleanup uncertainty;
+file state must be live without prior failure/uncertainty. The file descriptor
+must remain distinct from the borrowed cancellation descriptor, read-only,
+CLOEXEC, non-O_PATH and a regular file under the retained trusted-file policy.
+No object copying, reopening after failure, raw FD substitution or resetting
+shared counters is permitted.
+
+Require valid nonoverlapping spans for file owner, hash owner, expected digest
+and output; expected digest cannot reside inside either mutable owner. Invalid
+owner/input/output overlap refuses INVALID and preserves every overlapping
+owner/input byte. A distinct safe output is zeroed before any other refusal and
+again on any later failure. Null output refuses without dereferencing it.
+No attempted repair, owner close or crypto mutation occurs for preflight-invalid
+arguments. Address validity of non-null C pointers remains a caller precondition;
+integer span-overflow checks do not make arbitrary addresses safe.
+
+Use the existing shared `es_hash_file(hash,file->fd,...)` before bounded header
+reads and again after all structural validation. Each successful pass must equal
+the compiled expected SHA256. Both measurements must agree exactly on device,
+inode, size and SHA256. No digest-only identity comparison. Successful checks
+consume two object occurrences and twice the actual file size under the existing
+whole-launch512-occurrence/2GiB-hashed-byte/512MiB-file limits. Failure retains
+all charges already consumed; early failure need not start the second pass.
+No connection, repeated check or output layout resets those budgets.
+
+Header and table reads use `pread`, preserving the borrowed descriptor's offset.
+Read exactly64 header bytes and at most128*56=7168 program-table bytes, handling
+partial progress and EINTR within the original controls. Decode little endian
+explicitly rather than casting unaligned input to native ELF structs. Check
+bounds/overflow before each read or arithmetic-derived access. A short file or
+EOF within a required structural region is FORMAT; an actual read syscall error
+is IO unless a higher-priority original control/cleanup refusal applies. Parsing
+uses fixed storage; ELF parsing/layout scratch is at most16KiB. Retained layout
+scratch may coexist with the existing es_hash_file64KiB file buffer, so the sum
+of those buffers is at most80KiB, not16KiB. No allocation scales with declared
+section count, file size or virtual size. Measure the complete native stack,
+control-helper and crypto footprint separately; these buffer bounds are not the
+complete1MiB privacy qualification claim.
+
+Check original cancellation/deadline and retained descriptor metadata/control
+validity around bounded I/O and after the final second hash pass and its owned
+temporary cleanup. Cleanup uncertainty from either shared operation dominates
+ordinary identity/format/IO/cancellation/deadline refusal; never retry a close or
+infer it succeeded from another descriptor's state. Always attempt cleanup of
+any locally owned temporary resource despite cancellation. This checker normally
+owns no file descriptor; borrowed file/hash/cancellation owners remain caller
+owned on every return, including a hash owner made terminal by its own failure.
+Output success is copied only after final controls succeed; wipe local header,
+layout and measured-identity scratch on all exits.
+
+Two hashes sandwiching reads do not establish atomicity or ABA immunity. Stable
+trusted-file namespace/content assumptions remain those of the admitted owner.
+A later mapped-byte/coordinator stage must separately establish its actual
+process/loader/quiescence assumptions; this checker does not strengthen them.
+
+### Closed header support
+
+Accept exactly ELF magic, ELFCLASS64=2, ELFDATA2LSB=1, ident version1,
+OSABI SYSV=0 or GNU/Linux=3, ABI version0 and zero ident padding bytes9..15.
+Accept ET_EXEC=2 or ET_DYN=3, EM_X86_64=62, e_version1 and e_flags0. Require
+`e_ehsize=64`, `e_phentsize=56`, `e_phnum`1..128, `e_phoff>=64`, and a whole
+program-header table within the first measured file size. Extended program
+header numbering (PN_XNUM) is unsupported, not resolved through a section table.
+There is no ELF-header/program-table byte overlap. Ident/header format outside
+this closed support is FORMAT; an otherwise regular non-ELF input is also FORMAT,
+not expected-content IDENTITY, after its first compiled-hash check succeeds.
+
+Retain but do not interpret e_entry or section-table fields. Zero e_entry is
+permitted: shared objects need not define an entry point. No section-table
+extent, numbering or string-table authority is inferred from retained fields;
+a future section consumer must validate them separately. No canonical mapped
+virtual-address range or nonzero-address rule is imposed on ET_DYN-relative
+vaddrs or any declared address here. Integer overflow and layout consistency
+checks below still apply.
+
+Header types are closed:
+
+| Type | Numeric value | Multiplicity |
+| --- | --- | --- |
+| PT_NULL | 0 | zero or more within128 total |
+| PT_LOAD | 1 | 1..32 |
+| PT_DYNAMIC | 2 | 0..1 |
+| PT_INTERP | 3 | 0..1 |
+| PT_NOTE | 4 | zero or more within128 total |
+| PT_PHDR | 6 | 0..1 |
+| PT_TLS | 7 | 0..1 |
+| PT_GNU_EH_FRAME | 0x6474e550 | 0..1 |
+| PT_GNU_STACK | 0x6474e551 | 0..1 |
+| PT_GNU_RELRO | 0x6474e552 | 0..1 |
+| PT_GNU_PROPERTY | 0x6474e553 | 0..1 |
+
+PT_SHLIB, unknown OS/processor/vendor types and GNU extensions not listed above
+refuse FORMAT. Duplicate singleton headers refuse FORMAT. PT_NULL is retained
+verbatim and ignored semantically: unused type0 entries need not zero otherwise
+ignored fields, and no arithmetic or reads are derived from those fields.
+For every other type reject flag bits outside PF_R|PF_W|PF_X. A PT_LOAD combining
+PF_W and PF_X refuses FORMAT. A GNU_STACK with PF_X refuses FORMAT regardless of
+PF_W. Absent GNU_STACK is represented as absence, not proof of actual
+non-executable stack permissions; later admission must resolve that requirement.
+
+For each non-NULL header, require p_filesz<=p_memsz, p_offset<=file_size and
+p_filesz<=file_size-p_offset. Require checked unsigned addition for
+p_vaddr+p_memsz and p_paddr+p_memsz, even for non-load location metadata; paddr
+is retained only and never becomes a physical-memory access. p_align is0,1 or
+a power of two. For PT_LOAD and PT_TLS with p_align>1 require
+p_vaddr%p_align==p_offset%p_align. Every PT_LOAD additionally has equal low12
+bits in p_vaddr and p_offset (the initial x86-64/4096-byte load-page branch).
+This is a supported structural subset; ignored/non-load fields in other valid
+ELF producer conventions are not silently treated as supported.
+
+PT_LOAD headers appear in nondecreasing p_vaddr order. Nonempty half-open
+virtual-memory byte intervals of distinct loads must not overlap; adjacency
+and empty intervals are allowed. Page-rounded extents may overlap and are not
+rejected by this byte-interval rule. File-byte ranges of distinct loads may
+alias: this is retained explicitly and does not establish a unique future
+load bias. A mapped-object adapter must resolve/reject ambiguity independently.
+Non-load headers may overlap each other or loads (for example NOTE and
+GNU_PROPERTY); a blanket overlap prohibition would reject ordinary layouts.
+
+PT_INTERP and PT_PHDR, when present, precede the first PT_LOAD. PT_PHDR must
+describe the exact program-header table: p_offset==e_phoff,
+p_filesz==p_memsz==e_phnum*56. Its nonempty file/virtual extent must be covered
+by one PT_LOAD with the same file-to-virtual displacement, established without
+signed subtraction/overflow. For PT_DYNAMIC, PT_INTERP, PT_TLS,
+PT_GNU_EH_FRAME, PT_GNU_RELRO and PT_GNU_PROPERTY, each nonempty file extent and
+its virtual-memory extent must likewise fit one PT_LOAD with matching
+displacement; TLS zero-fill may extend beyond its file-backed bytes but must
+fit that load's memory extent. NOTE may be a nonloaded file note and therefore
+requires only the generic extent rules. GNU_STACK carries permission metadata,
+not an image location: require offset/vaddr/paddr/filesz/memsz all zero; its
+allowed alignment and flags remain retained. This structural containment does
+not interpret any associated payload.
+
+### Typed refusals and acceptance
+
+INVALID means violated argument/owner/scope/alias preconditions. FORMAT means
+unsupported/malformed header or layout as above. IDENTITY means a retained-file
+trust/descriptor identity change, first/second identity mismatch or mismatch to
+the compiled expected SHA. PLATFORM means unavailable underlying supported host
+or crypto prerequisite, not malformed file bytes. RESOURCE means an existing
+shared object/byte/file budget or fixed parser count bound is exceeded; use
+RESOURCE for phnum>128 or PT_LOAD>32 (PN_XNUM remains FORMAT as an unsupported
+encoding). Other header/layout failures use FORMAT. CANCELLED and DEADLINE
+retain their distinct original-control meanings. Map ES_HASH_FILE to IDENTITY,
+ES_HASH_CRYPTO/ES_HASH_IO to IO, and other hash enums to their same-named ELF
+meaning (CLEANUP always dominates). Unexpected enum values refuse PLATFORM.
+No failure can fall back to layout success, a v2 result or runtime admission.
+
+Acceptance uses invented byte-built ELF headers with independent expected
+layouts, plus actual owned compiled x86-64 ET_DYN/ET_EXEC files. Include complete
+record/order retention (DYNAMIC/INTERP/RELRO/TLS included), distinct identification
+and format cases, exact128/129 and32/33 count boundaries, unsigned wraparound,
+empty/adjacent/overlapping loads, allowed file alias and non-load overlap,
+PHDR containment/order, wrong alignment, W+X/stack-X, section fields retained
+without interpretation, high ET_DYN-relative addresses without overflow, two
+measured hashes/counts, expected digest/identity mismatch, partial/EINTR/error
+reads, original cancellation/deadline, borrowed offset/owner/alias preservation,
+final cleanup uncertainty and exact reused-FD close-once witnesses wherever
+existing hash helpers own a temporary descriptor. A source changing and then
+restoring between observations remains outside atomicity claims, even when an
+adverse control demonstrates an observable change is refused.
+
 ## Fixed wire encoding
 
 All integers are unsigned big-endian; no native struct layout, padding, strings,
