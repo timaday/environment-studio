@@ -1,8 +1,8 @@
 # Plan context and complete value mapping — D06b4
 
 This contract defines plan context and the binding rail in
-[the Midnight UX contract](../ux/design-system.md). Operator labels and observed
-identity below remain planned. The binding/location APIs and stable document
+[the Midnight UX contract](../ux/design-system.md). Operator labels below remain planned. Observed identity has a separate backend
+implementation candidate; the browser design remains pending. The binding/location APIs and stable document
 placeholders have a local implementation candidate; see
 [its evidence](../evidence/d06b4-bindings.md). Closed schemas accompany that code.
 Backend route availability does not approve or advertise a new browser design. Existing
@@ -44,6 +44,20 @@ confirmed cleanup then releases the retained content. The UI distinguishes confi
 intent and observed physical identity; a stale observation is never a live connection
 indicator. Expected/provisioning records, trust paths, owners and credentials remain
 server-side. Labels and observed identity have redacted toString/log behavior.
+
+The observed-identity backend slice adds only `observedDestination` to both summary
+routes; the existing create command remains unchanged until the label workflow is
+implemented. The application copies the closed physical identity from the registered
+adapter result after checking its engine/destination, canonical fingerprint,
+`jdbc-observation-v2`, exact engine read-operation policy, complete visibility,
+verified read-only operation, engine snapshot mode and complete cleanup. Identity
+must exactly equal the adapter's expected-identity comparison operand; neither that
+operand nor other evidence fields are returned. Missing, extra or malformed physical
+identity fields refuse the complete installation with `PROJECTION_REFUSED` before
+projection. No expected-identity fallback is allowed. The adapter remains responsible
+for executing and fingerprinting the observation checks; reading these fields is
+not independent database authentication or fresh readback.
+
 
 ## Stable placeholder tokens
 

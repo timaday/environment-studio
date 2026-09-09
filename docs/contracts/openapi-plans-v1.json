@@ -2017,7 +2017,8 @@
           "inspectionValid",
           "targetComplete",
           "exportAvailable",
-          "blockers"
+          "blockers",
+          "observedDestination"
         ],
         "properties": {
           "planId": {
@@ -2059,6 +2060,9 @@
           },
           "activeOperationId": {
             "$ref": "#/components/schemas/Uuid"
+          },
+          "observedDestination": {
+            "$ref": "#/components/schemas/ObservedDestination"
           }
         }
       },
@@ -2157,6 +2161,133 @@
       },
       "PlanCommand": {
         "$ref": "../../schemas/plan-command-v1.schema.json"
+      },
+      "ObservedDestination": {
+        "oneOf": [
+          {
+            "type": "null"
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "engine",
+              "identity",
+              "observationFingerprint",
+              "evidenceValid"
+            ],
+            "properties": {
+              "engine": {
+                "const": "postgresql"
+              },
+              "identity": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "systemIdentifier",
+                  "databaseOid",
+                  "databaseName"
+                ],
+                "properties": {
+                  "systemIdentifier": {
+                    "type": "string",
+                    "pattern": "^[1-9][0-9]{0,19}$"
+                  },
+                  "databaseOid": {
+                    "type": "string",
+                    "pattern": "^[1-9][0-9]{0,19}$"
+                  },
+                  "databaseName": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 128,
+                    "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f\\ud800-\\udfff]+$",
+                    "not": {
+                      "pattern": "^[\\u0020\\u1680\\u2000-\\u2006\\u2008-\\u200a\\u2028\\u2029\\u205f\\u3000]*$"
+                    }
+                  }
+                }
+              },
+              "observationFingerprint": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "evidenceValid": {
+                "type": "boolean"
+              }
+            }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "engine",
+              "identity",
+              "observationFingerprint",
+              "evidenceValid"
+            ],
+            "properties": {
+              "engine": {
+                "const": "oracle"
+              },
+              "identity": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "dbid",
+                  "dbUniqueName",
+                  "conId",
+                  "conUid",
+                  "conName",
+                  "pdbGuid"
+                ],
+                "properties": {
+                  "dbid": {
+                    "type": "string",
+                    "pattern": "^[1-9][0-9]{0,19}$"
+                  },
+                  "dbUniqueName": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 128,
+                    "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f\\ud800-\\udfff]+$",
+                    "not": {
+                      "pattern": "^[\\u0020\\u1680\\u2000-\\u2006\\u2008-\\u200a\\u2028\\u2029\\u205f\\u3000]*$"
+                    }
+                  },
+                  "conId": {
+                    "type": "string",
+                    "pattern": "^[1-9][0-9]{0,19}$"
+                  },
+                  "conUid": {
+                    "type": "string",
+                    "pattern": "^[1-9][0-9]{0,19}$"
+                  },
+                  "conName": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 128,
+                    "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f\\ud800-\\udfff]+$",
+                    "not": {
+                      "pattern": "^[\\u0020\\u1680\\u2000-\\u2006\\u2008-\\u200a\\u2028\\u2029\\u205f\\u3000]*$"
+                    }
+                  },
+                  "pdbGuid": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{32}$"
+                  }
+                }
+              },
+              "observationFingerprint": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "evidenceValid": {
+                "type": "boolean"
+              }
+            }
+          }
+        ]
       }
     },
     "responses": {

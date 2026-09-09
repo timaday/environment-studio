@@ -224,6 +224,25 @@ test("planned plan reservation and credential shapes exclude authority and repla
 });
 
 const planViewSchema = read("../schemas/plan-view-v1.schema.json");
+test("observed destination summary has closed engine identities and no configured evidence passthrough", () => {
+  const defs = JSON.parse(JSON.stringify(read("../docs/contracts/openapi-plans-v1.json").components.schemas).replaceAll("#/components/schemas/", "#/$defs/"));
+  const validate = new Ajv2020({ allErrors: true, strict: true }).compile({ $defs: defs, $ref: "#/$defs/ObservedDestination" });
+  assert.equal(validate(null), true);
+  const pg = { engine: "postgresql", identity: { systemIdentifier: "731", databaseOid: "19", databaseName: "invented_db" }, observationFingerprint: "b".repeat(64), evidenceValid: true };
+  const oracle = { engine: "oracle", identity: { dbid: "711", dbUniqueName: "invented_cdb", conId: "3", conUid: "812", conName: "invented_pdb", pdbGuid: "e".repeat(32) }, observationFingerprint: "f".repeat(64), evidenceValid: false };
+  for (const candidate of [pg, oracle]) {
+    assert.equal(validate(candidate), true, JSON.stringify(validate.errors));
+    for (const key of Object.keys(candidate)) { const missing = structuredClone(candidate); delete missing[key]; assert.equal(validate(missing), false); }
+    for (const key of Object.keys(candidate.identity)) { const missing = structuredClone(candidate); delete missing.identity[key]; assert.equal(validate(missing), false); }
+    assert.equal(validate({ ...candidate, expectedPhysicalIdentity: candidate.identity }), false);
+    assert.equal(validate({ ...candidate, observationFingerprint: "F".repeat(64) }), false);
+    assert.equal(validate({ ...candidate, evidenceValid: "true" }), false);
+    assert.equal(validate({ ...candidate, identity: { ...candidate.identity, transportIdentity: "c".repeat(64) } }), false);
+  }
+  assert.equal(validate({ ...pg, identity: oracle.identity }), false);
+  for (const databaseName of ["", " ", "\u2003", "bad\nname", "\ud800", "x".repeat(129)]) assert.equal(validate({ ...pg, identity: { ...pg.identity, databaseName } }), false);
+  for (const databaseName of ["𐀀".repeat(128), "\u00a0"]) assert.equal(validate({ ...pg, identity: { ...pg.identity, databaseName } }), true, JSON.stringify(validate.errors));
+});
 const planViewAjv = new Ajv2020({ allErrors: true, strict: true }).addSchema(read("../schemas/plan-command-v1.schema.json")).addSchema(planViewSchema);
 const planView = (name) => planViewAjv.compile({ $ref: `${planViewSchema.$id}#/$defs/${name}` });
 const viewShapes = read("../fixtures/plan-views-v1/shapes.json");

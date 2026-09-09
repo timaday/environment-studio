@@ -143,6 +143,86 @@ class HostedBoundaryTest {
         } finally {plan.client().request("POST","/api/v1/session/logout","{}",true);}
     }
     static String mockCredentials() {return "{\"username\":\"MockReader\",\"password\":\"Db-Password-Canary-𐀀\"}";}
+    @Test void independentSummaryRevocationBeforeSerializationMustNotEmitObservedIdentity() throws Exception {
+        var plan=socketPlan("view-maintainer");
+        assertEquals(200,plan.client().request("POST","/api/v1/operations/"+reserve(plan,"1")+"/credentials",mockCredentials(),true).status());
+        var lease=studio.environment.server.plan.PlanHttpTestConfiguration.leases.get("view-maintainer");assertNotNull(lease);
+        var request=new org.springframework.mock.web.MockHttpServletRequest();request.setAttribute(studio.environment.server.session.HostedSessions.REQUEST_LEASE,lease);
+        var revoked=new java.util.concurrent.atomic.AtomicBoolean();
+        var response=new org.springframework.mock.web.MockHttpServletResponse(){
+            @Override public jakarta.servlet.ServletOutputStream getOutputStream() {
+                if(revoked.compareAndSet(false,true)) {
+                    try {assertEquals(204,plan.client().request("POST","/api/v1/session/logout","{}",true).status());}
+                    catch(Exception failure){throw new AssertionError("OWNED_LOGOUT_FAILED");}
+                    assertEquals(studio.environment.core.plan.PlanRefusal.Code.SESSION_REQUIRED,assertThrows(studio.environment.core.plan.PlanRefusal.class,()->studio.environment.server.plan.PlanHttpTestConfiguration.installed.view(lease,java.util.Optional.of(plan.planId()))).code());
+                }
+                return super.getOutputStream();
+            }
+        };
+        assertEquals(studio.environment.core.plan.PlanRefusal.Code.SESSION_REQUIRED,assertThrows(studio.environment.core.plan.PlanRefusal.class,
+                ()->context.getBean(studio.environment.server.plan.PlanController.class).summary(plan.planId(),request,response)).code());
+        assertTrue(revoked.get());
+        assertEquals(0,response.getContentAsByteArray().length,"No summary bytes may be published after completed revocation");
+    }
+    @org.junit.jupiter.params.ParameterizedTest
+    @org.junit.jupiter.params.provider.ValueSource(booleans={false,true})
+    void independentRevocationDuringSummaryWriteClearsOrAborts(boolean committed) throws Exception {
+        var plan=socketPlan("view-maintainer");
+        assertEquals(200,plan.client().request("POST","/api/v1/operations/"+reserve(plan,"1")+"/credentials",mockCredentials(),true).status());
+        var lease=studio.environment.server.plan.PlanHttpTestConfiguration.leases.get("view-maintainer");
+        var request=new org.springframework.mock.web.MockHttpServletRequest();request.setAttribute(studio.environment.server.session.HostedSessions.REQUEST_LEASE,lease);
+        var revoked=new java.util.concurrent.atomic.AtomicBoolean();
+        var lengthCleared=new java.util.concurrent.atomic.AtomicBoolean();
+        var response=new org.springframework.mock.web.MockHttpServletResponse(){
+            @Override public void setHeader(String name,String value){if(name.equals("Content-Length") && value==null)lengthCleared.set(true);super.setHeader(name,value);}
+            @Override public jakarta.servlet.ServletOutputStream getOutputStream() {
+                var delegate=super.getOutputStream();
+                return new jakarta.servlet.ServletOutputStream(){
+                    public boolean isReady(){return true;}
+                    public void setWriteListener(jakarta.servlet.WriteListener listener){}
+                    public void write(int value) throws java.io.IOException {write(new byte[]{(byte)value},0,1);}
+                    public void write(byte[] bytes,int off,int len) throws java.io.IOException {
+                        delegate.write(bytes,off,len);
+                        if(revoked.compareAndSet(false,true)) {
+                            if(committed)setCommitted(true);
+                            try {assertEquals(204,plan.client().request("POST","/api/v1/session/logout","{}",true).status());}
+                            catch(Exception failure){throw new AssertionError("OWNED_LOGOUT_FAILED");}
+                        }
+                    }
+                };
+            }
+        };
+        var controller=context.getBean(studio.environment.server.plan.PlanController.class);
+        if(committed){
+            var failure=assertThrows(java.io.IOException.class,()->controller.summary(plan.planId(),request,response));
+            assertEquals("SUMMARY_TRANSFER_REFUSED",failure.getMessage());
+            var body=response.getContentAsString();
+            assertTrue(body.endsWith("}"));assertFalse(body.contains("SESSION_REQUIRED"));
+        } else {
+            assertEquals(studio.environment.core.plan.PlanRefusal.Code.SESSION_REQUIRED,assertThrows(studio.environment.core.plan.PlanRefusal.class,()->controller.summary(plan.planId(),request,response)).code());
+            assertEquals(0,response.getContentAsByteArray().length);
+            assertTrue(lengthCleared.get());
+            var actual=new org.apache.coyote.Response();actual.setContentLength(675);actual.setHeader("Content-Length",null);assertEquals(-1,actual.getContentLengthLong());
+        }
+        assertTrue(revoked.get());
+    }
+    @Test void observedIdentitySummaryIsOwnedClosedAndRetainsStaleEvidenceAfterFailedReinspection() throws Exception {
+        var plan=socketPlan("view-maintainer");var json=tools.jackson.databind.json.JsonMapper.builder().build();
+        try {
+            String path="/api/v1/plans/"+plan.planId();
+            var before=json.readTree(plan.client().get(path).body());assertTrue(before.has("observedDestination"));assertTrue(before.get("observedDestination").isNull());
+            var response=plan.client().request("POST","/api/v1/operations/"+reserve(plan,"1")+"/credentials",mockCredentials(),true);
+            assertEquals(200,response.status());assertEquals("succeeded",json.readTree(response.body()).get("phase").asString());
+            var expected=json.readTree("{\"engine\":\"postgresql\",\"identity\":{\"systemIdentifier\":\"731\",\"databaseOid\":\"19\",\"databaseName\":\"invented_db\"},\"observationFingerprint\":\""+"a".repeat(64)+"\",\"evidenceValid\":true}");
+            for(String endpoint:java.util.List.of(path,"/api/v1/plans/current")) {
+                var summary=plan.client().get(endpoint);assertEquals(200,summary.status());assertEquals("no-store",summary.headers().get("cache-control"));
+                assertEquals(expected,json.readTree(summary.body()).get("observedDestination"));
+            }
+            String operation=reserve(plan,"2");assertEquals(400,plan.client().request("POST","/api/v1/operations/"+operation+"/credentials","{}",true).status());
+            var stale=json.readTree(plan.client().get(path).body());assertFalse(stale.get("inspectionValid").asBoolean());
+            ((tools.jackson.databind.node.ObjectNode)expected).put("evidenceValid",false);assertEquals(expected,stale.get("observedDestination"));
+        } finally {plan.client().request("POST","/api/v1/session/logout","{}",true);}
+    }
     @Test void actualHttpOneToTwoCrossDocumentTargetReplayForeignBodyAndFailedInspection() throws Exception {
         var plan=socketPlan("plan-maintainer");var client=plan.client;var json=tools.jackson.databind.json.JsonMapper.builder().build();
         String views="/api/v1/plans/"+plan.planId+"/views/";

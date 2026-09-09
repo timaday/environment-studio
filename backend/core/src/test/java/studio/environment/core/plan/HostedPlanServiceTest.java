@@ -65,7 +65,7 @@ class HostedPlanServiceTest {
                 return new Reservation.Admitted(new Permit() {
                     public ObservationResult observe(TransientCredentials credentials,Cancellation cancel) {
                         calls.incrementAndGet(); credentials.close();
-                        return new ObservationResult.Complete(new ObservationResult.Observation("fingerprint","logical","binding-digest",List.of(),Map.of()));
+                        return new ObservationResult.Complete(new ObservationResult.Observation("a".repeat(64),"logical","binding-digest",List.of(),PlanObservedDestinationTest.evidence()));
                     }
                     public void close() { }
                 });

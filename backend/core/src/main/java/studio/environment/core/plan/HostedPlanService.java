@@ -20,7 +20,7 @@ public final class HostedPlanService {
             int documents, int entities, boolean exportAvailable) { }
     public record Counts(int documents,int entities,int relations) { }
     public record View(String planId,String revision,NativeCommand.Reference definition,String bindingId,String destinationId,
-            Counts currentCounts,Counts targetCounts,boolean inspectionValid,boolean targetComplete,boolean exportAvailable,List<String> blockers,Optional<String> activeOperationId) { }
+            Optional<PlanObservedDestination> observedDestination,Counts currentCounts,Counts targetCounts,boolean inspectionValid,boolean targetComplete,boolean exportAvailable,List<String> blockers,Optional<String> activeOperationId) { }
     public View view(SessionLedger.Lease lease,Optional<String> id) {
         return guarded(lease,()-> {
             var state=state(lease); if(state==null || state.plan==null) throw new PlanRefusal(NOT_FOUND);
@@ -29,11 +29,15 @@ public final class HostedPlanService {
             if(!plan.inspectionValid) blockers.add("INSPECTION_REQUIRED");
             if(plan.target==null) blockers.add("TARGET_INCOMPLETE");
             if(blockers.size()>256 || blockers.stream().anyMatch(code->!code.matches("[A-Z][A-Z0-9_]{0,95}"))) throw new PlanRefusal(PROJECTION_REFUSED);
-            return new View(plan.id,plan.revision.toString(),plan.definition.reference(),plan.binding,plan.destination.id(),counts(plan.current),counts(plan.target),
+            return new View(plan.id,plan.revision.toString(),plan.definition.reference(),plan.binding,plan.destination.id(),Optional.ofNullable(plan.observedDestination).map(observed->observed.validity(plan.inspectionValid)),counts(plan.current),counts(plan.target),
                     plan.inspectionValid,plan.target!=null,false,List.copyOf(blockers),Optional.ofNullable(plan.active).map(operation->operation.id));
         });
     }
     private static Counts counts(Content content) { return content==null?new Counts(0,0,0):new Counts(content.sources().size(),content.graph().entities().size(),content.graph().edges().size()); }
+    /** Verification never holds the session/state locks while the adapter publishes bytes. */
+    public void verifySummary(SessionLedger.Lease lease,View snapshot) {
+        if(!view(lease,Optional.of(snapshot.planId())).equals(snapshot))throw new PlanRefusal(CONFLICT);
+    }
     public enum Phase { RESERVED, RUNNING, SUCCEEDED, REFUSED, CANCELLED, EXPIRED }
     public enum Cleanup { COMPLETE, IN_PROGRESS, INCONCLUSIVE }
     public record Status(String operationId, String planId, Phase phase, String code, Cleanup cleanup, Optional<String> installedRevision) { }
@@ -63,6 +67,7 @@ public final class HostedPlanService {
         final Map<String,studio.environment.core.planning.TargetIntent.Ref.Existing> originals=new HashMap<>();
         boolean inspectionValid;
         String observationFingerprint;
+        PlanObservedDestination observedDestination;
         Content current;
         Content target;
         Draft draft = Draft.empty();
@@ -272,7 +277,7 @@ public final class HostedPlanService {
                 closed=true;
                 if(started) { operation.cancellation.cancel(); return; }
                 operation.permit.close();
-                finish(operation,new ObservationResult.Refused(ObservationResult.Code.INVALID_SOURCE,ObservationResult.Cleanup.COMPLETE),new ContentResult.Rejected(List.of("OBSERVATION_REFUSED")),Map.of());
+                finish(operation,new ObservationResult.Refused(ObservationResult.Code.INVALID_SOURCE,ObservationResult.Cleanup.COMPLETE),new ContentResult.Rejected(List.of("OBSERVATION_REFUSED")),Map.of(),Optional.empty());
             }
         }
         @Override public String toString() { return "CredentialSubmission[redacted]"; }
@@ -307,11 +312,15 @@ public final class HostedPlanService {
             observed=new ObservationResult.Refused(ObservationResult.Code.INVALID_SOURCE,ObservationResult.Cleanup.COMPLETE);
         } finally { Arrays.fill(user,'\0'); Arrays.fill(password,'\0'); }
         ContentResult projected=new ContentResult.Rejected(List.of("OBSERVATION_REFUSED"));
+        Optional<PlanObservedDestination> observedContext=Optional.empty();
         if(observed instanceof ObservationResult.Complete complete && !operation.cancellation.cancelled()) {
             var expected=operation.plan.definition.compiled().checked();
             if(expected.logicalDigest().equals(complete.observation().logicalDigest())
                     && expected.bindingDigests().get(operation.plan.binding).equals(complete.observation().bindingDigest())) {
-                try { projected=content.project(operation.plan.definition,operation.plan.binding,complete.observation()); }
+                try {
+                    observedContext=Optional.of(PlanObservedDestination.from(complete.observation(),operation.plan.destination));
+                    projected=content.project(operation.plan.definition,operation.plan.binding,complete.observation());
+                }
                 catch(RuntimeException refused) { projected=new ContentResult.Rejected(List.of("PROJECTION_REFUSED")); }
             }
         }
@@ -323,12 +332,12 @@ public final class HostedPlanService {
             }
             catch(RuntimeException limit) { projected=new ContentResult.Rejected(List.of("RESOURCE_LIMIT")); }
         }
-        final ObservationResult result=observed; final ContentResult projection=projected;final var preparedHandles=observedHandles;
-        var installed=authority.guard(lease,()-> { synchronized(lock) { return finish(operation,result,projection,preparedHandles); } });
+        final ObservationResult result=observed; final ContentResult projection=projected;final var preparedHandles=observedHandles;final var preparedContext=observedContext;
+        var installed=authority.guard(lease,()-> { synchronized(lock) { return finish(operation,result,projection,preparedHandles,preparedContext); } });
         if(installed.isPresent()) return installed.get();
         synchronized(lock) {
             operation.plan.retired=true; operation.cancellation.cancel();
-            finish(operation,result,new ContentResult.Rejected(List.of("SESSION_REQUIRED")),Map.of());
+            finish(operation,result,new ContentResult.Rejected(List.of("SESSION_REQUIRED")),Map.of(),Optional.empty());
         }
         throw new PlanRefusal(SESSION_REQUIRED);
     }
@@ -346,12 +355,12 @@ public final class HostedPlanService {
         }
         if(points>maxPoints || bytes>maxBytes) throw new PlanRefusal(INVALID_CREDENTIALS);
     }
-    private Status finish(Operation operation,ObservationResult result,ContentResult projected,Map<studio.environment.core.planning.TargetIntent.Ref,String> observedHandles) {
+    private Status finish(Operation operation,ObservationResult result,ContentResult projected,Map<studio.environment.core.planning.TargetIntent.Ref,String> observedHandles,Optional<PlanObservedDestination> observedContext) {
         var plan=operation.plan;
         operation.cleanup=result.cleanup()==ObservationResult.Cleanup.COMPLETE?Cleanup.COMPLETE:Cleanup.INCONCLUSIVE;
         if(result instanceof ObservationResult.Refused refusal) operation.cleanupHandle=refusal.cleanupHandle().orElse(null);
         boolean cancelled=plan.retired || operation.cancellation.cancelled() || plan.generation!=operation.generation || !plan.revision.toString().equals(operation.revision);
-        if(!cancelled && result instanceof ObservationResult.Complete complete && projected instanceof ContentResult.Complete accepted) {
+        if(!cancelled && result instanceof ObservationResult.Complete complete && projected instanceof ContentResult.Complete accepted && observedContext.isPresent()) {
             long size=sourceBytes(accepted.content());
             long replacement=2*size;
             if(retainedBytes-plan.retainedBytes+replacement<=128*MIB) {
@@ -360,7 +369,7 @@ public final class HostedPlanService {
                 plan.current=accepted.content(); plan.target=accepted.content(); plan.draft=Draft.empty(); plan.profiles.clear();
                 plan.handles.clear(); plan.handles.putAll(observedHandles); plan.originals.clear();
                 observedHandles.forEach((ref,handle)->plan.originals.put(handle,(studio.environment.core.planning.TargetIntent.Ref.Existing)ref));
-                plan.observationFingerprint=complete.observation().fingerprint(); plan.inspectionValid=true;
+                plan.observationFingerprint=complete.observation().fingerprint(); plan.observedDestination=observedContext.orElseThrow(); plan.inspectionValid=true;
                 plan.revision=plan.revision.add(BigInteger.ONE); operation.installed=Optional.of(plan.revision.toString());
                 operation.phase=Phase.SUCCEEDED; operation.code="SUCCEEDED";
             } else { operation.phase=Phase.REFUSED; operation.code="RESOURCE_LIMIT"; plan.inspectionValid=false; }
@@ -394,7 +403,7 @@ public final class HostedPlanService {
     private void clearRetired(Plan plan) {
         if(plan==null || !plan.retired || plan.active!=null || plan.rendering || plan.readers>0) return;
         retainedBytes-=plan.retainedBytes; enteredBytes-=plan.enteredBytes;
-        plan.retainedBytes=0; plan.enteredBytes=0; plan.current=null; plan.target=null; plan.draft=Draft.empty(); plan.profiles.clear(); plan.observationFingerprint=null;
+        plan.retainedBytes=0; plan.enteredBytes=0; plan.current=null; plan.target=null; plan.draft=Draft.empty(); plan.profiles.clear(); plan.observationFingerprint=null; plan.observedDestination=null;
         plan.handles.clear(); plan.originals.clear();
         leases.values().forEach(state->{ if(state.plan==plan) state.plan=null; });
     }

@@ -184,3 +184,23 @@ or consumed reservation 409, wire byte overflow 413, semantic refusal 422,
 bounded plan/operation/memory capacity 429 and unavailable trusted services 503.
 Use a closed `{code}` error with a stable tool-owned code. Diagnostic detail uses
 an explicit safe DTO, never raw input, JDBC text, SQL, exceptions or credentials.
+
+The two plan-summary reads include required `observedDestination`: null until a
+complete qualified inspection is installed, otherwise the closed observed engine,
+physical identity, fingerprint and current evidence-validity flag defined by
+[plan context](hosted-plan-context-v1.md). The summary never serializes the adapter
+evidence map, expected identity, provisioning or transport records. Failed
+reinspection retains the former observation as invalid display context. This field
+does not change creation or implement operator labels.
+
+Summary reads use one of the four small metadata slots and an independently bounded
+32 KiB complete UTF-8 encoding, released/wiped on every outcome. Recheck live owner,
+plan identity and equality of the captured summary after encoding, after obtaining
+the output stream, before each chunk and after transfer. A changed revision, active
+operation or observation-validity latch invalidates that response even if the plan
+revision number did not change (CONFLICT). Refuse before publishing bytes where possible;
+once committed, abort the incomplete transfer instead of appending another JSON
+result. Never hold session/domain locks while obtaining or writing servlet output.
+This small response uses no large view/materialization slot. Existing limits on
+summary fields fit this ceiling; the ceiling is not permission to truncate them.
+Blocking transport interruption/backpressure remains a separate qualification.

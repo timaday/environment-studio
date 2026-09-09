@@ -48,7 +48,7 @@ class PlanHandleIdentityTest {
                 public Reservation reserve(Selection selection){return new Reservation.Admitted(new Permit(){
                     final AtomicBoolean used=new AtomicBoolean();
                     public ObservationResult observe(TransientCredentials credentials,Cancellation cancel){
-                        assertTrue(used.compareAndSet(false,true));credentials.close();return new ObservationResult.Complete(new ObservationResult.Observation("mock-observation",ready.checked().logicalDigest(),ready.checked().bindingDigests().get(binding.id()),List.of(),Map.of()));
+                        assertTrue(used.compareAndSet(false,true));credentials.close();return new ObservationResult.Complete(new ObservationResult.Observation("a".repeat(64),ready.checked().logicalDigest(),ready.checked().bindingDigests().get(binding.id()),List.of(),PlanObservedDestinationTest.evidence()));
                     }
                     public void close(){used.set(true);}
                 });}

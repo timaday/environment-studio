@@ -35,6 +35,12 @@ public class PlanHttpTestConfiguration {
         while(System.nanoTime()<end){synchronized(lockField.get(installed)){Object admission=scratchField.get(installed);if(!reading && admission==null || reading && admission!=null && pinnedField.get(admission)==null && executingField.getBoolean(admission))return;}Thread.sleep(5);}
         throw new AssertionError("MOCK_VIEW_READER_STATE_TIMEOUT");
     }
+    public static Map<String,Object> mockObservationEvidence() {
+        var identity=Map.of("systemIdentifier","731","databaseOid","19","databaseName","invented_db");
+        return Map.of("engine","postgresql","cleanup","complete",
+                "destination",Map.of("id","mock-destination","host","invented.invalid","port",5432,"database","invented_db","transportIdentity","c".repeat(64),"provisioningPolicyVersion","mock-v1","observedPhysicalIdentity",identity,"expectedPhysicalIdentity",identity),
+                "metadata",Map.of("adapterVersion","jdbc-observation-v2","operationPolicyVersion","postgresql-read-operation-v1","visibility","complete","readOnlyOperation","verified","snapshot","repeatable-read-read-only"));
+    }
     @Bean @Primary PlanRuntime mockPlanRuntime(HostedSessions sessions,WorkspaceRuntime workspace) {
         ObservationPort port=new ObservationPort() {
             public ObservationResult observe(Selection selection,TransientCredentials credentials,Cancellation cancellation) {throw new AssertionError("RESERVATION_REQUIRED");}
@@ -48,7 +54,7 @@ public class PlanHttpTestConfiguration {
                         try {
                             var definition=new PlanPorts.PublishedDefinition(new studio.environment.core.workspace.NativeCommand.Reference("00000000-0000-4000-8000-000000000099","2"),"mock",selection.compiled(),List.of());
                             var observed=new PlanContentAdapterTest().observation(definition);
-                            return new ObservationResult.Complete(new ObservationResult.Observation("a".repeat(64),observed.logicalDigest(),observed.bindingDigest(),observed.documents(),observed.evidence()));
+                            return new ObservationResult.Complete(new ObservationResult.Observation("a".repeat(64),observed.logicalDigest(),observed.bindingDigest(),observed.documents(),mockObservationEvidence()));
                         } catch(Exception failure) {throw new AssertionError("MOCK_OBSERVATION_UNAVAILABLE");}
                     }
                     public void close() { }

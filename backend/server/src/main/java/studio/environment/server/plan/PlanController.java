@@ -29,11 +29,24 @@ public final class PlanController {
     }
     @GetMapping("/api/v1/plans/current")
     public void current(HttpServletRequest request,HttpServletResponse response) throws IOException {
-        write(response,200,view(runtime.service().view(lease(request),Optional.empty())));
+        summaryResponse(lease(request),Optional.empty(),response);
     }
     @GetMapping("/api/v1/plans/{planId}")
     public void summary(@PathVariable("planId") String planId,HttpServletRequest request,HttpServletResponse response) throws IOException {
-        write(response,200,view(runtime.service().view(lease(request),Optional.of(planId))));
+        summaryResponse(lease(request),Optional.of(planId),response);
+    }
+    private void summaryResponse(SessionLedger.Lease lease,Optional<String> planId,HttpServletResponse response) throws IOException {
+        var service=runtime.service();
+        try(var slot=metadata();var encoded=new PlanViewEncoding(32_768)) {
+            var snapshot=service.view(lease,planId);encoded.encode(view(snapshot));
+            Runnable verify=()->service.verifySummary(lease,snapshot);verify.run();
+            var output=response.getOutputStream();verify.run();
+            response.setStatus(200);response.setHeader("Cache-Control","no-store");response.setContentType("application/json");response.setContentLength(encoded.size());
+            encoded.write(output,verify);output.flush();verify.run();
+        } catch(RuntimeException failure) {
+            if(response.isCommitted())throw new IOException("SUMMARY_TRANSFER_REFUSED");
+            response.resetBuffer();response.setHeader("Content-Length",null);throw failure;
+        }
     }
     @PostMapping("/api/v1/plans")
     public void create(HttpServletRequest request,HttpServletResponse response) throws IOException {
@@ -152,6 +165,7 @@ public final class PlanController {
         var result=new LinkedHashMap<String,Object>();result.put("planId",view.planId());result.put("revision",view.revision());
         result.put("definition",Map.of("objectId",view.definition().objectId(),"workspaceRevision",view.definition().workspaceRevision()));
         result.put("bindingId",view.bindingId());result.put("destinationId",view.destinationId());result.put("currentCounts",view.currentCounts());result.put("targetCounts",view.targetCounts());
+        result.put("observedDestination",view.observedDestination().orElse(null));
         result.put("inspectionValid",view.inspectionValid());result.put("targetComplete",view.targetComplete());result.put("exportAvailable",false);result.put("blockers",view.blockers());
         view.activeOperationId().ifPresent(value->result.put("activeOperationId",value));return result;
     }

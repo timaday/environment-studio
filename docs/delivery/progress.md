@@ -186,3 +186,11 @@ uses private pre-exec kernel sender capture while retaining the fixed JDK FORK
 mechanism. External credential-free feasibility passed; production hook/descriptor
 lifetime, listener/coordinator/JNI and privacy qualification remain active work.
 Java timestamp/PID metadata and a pre-fork socket's creator pin cannot substitute.
+
+[Observed destination context](../evidence/d06b4-observed-destination.md) is now
+independently reviewed and locally integrated. Missing/stale policy or identity
+refuses installation. Review reproduced and corrected the inherited logout-before-
+summary-publication race. Corrected621 full Java and independent47 focused checks
+pass, with four killed admission/publication mutants. The additional committed/
+uncommitted transfer regressions are retained. New image/browser checks follow;
+labels, full operator workflow and heap/backpressure remain unfinished.

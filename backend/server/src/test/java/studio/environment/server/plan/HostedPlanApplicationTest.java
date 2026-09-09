@@ -17,8 +17,14 @@ import studio.environment.server.definition.BoundedDocumentParser;
 import studio.environment.server.profile.ProfileBytesAdapter;
 
 class HostedPlanApplicationTest {
+    private static ObservationResult.Observation qualifiedMock(ObservationResult.Observation source) {
+        var evidence=new HashMap<>(PlanHttpTestConfiguration.mockObservationEvidence());
+        var destination=new HashMap<String,Object>();((Map<?,?>)evidence.get("destination")).forEach((key,value)->destination.put((String)key,value));
+        destination.put("id","configured");evidence.put("destination",destination);
+        return new ObservationResult.Observation("a".repeat(64),source.logicalDigest(),source.bindingDigest(),source.documents(),evidence);
+    }
     @Test void completeObservationToTwoDocumentTargetThenPartialReusePreservesPriorFreshIdentityAndUnselectedSibling() throws Exception {
-        var fixtures=new PlanContentAdapterTest(); var definition=fixtures.definition(); var observed=fixtures.observation(definition);
+        var fixtures=new PlanContentAdapterTest(); var definition=fixtures.definition(); var observed=qualifiedMock(fixtures.observation(definition));
         var profileAdapter=new ProfileBytesAdapter();
         var profile=assertInstanceOf(ProfileBytesAdapter.Result.Accepted.class,profileAdapter.read(definition.compiled(),Files.readAllBytes(Path.of("../../fixtures/profile-v2/profile.json")),BoundedDocumentParser.Format.JSON));
         var profileRef=new NativeCommand.Reference("00000000-0000-4000-8000-000000000003","2");
@@ -83,7 +89,7 @@ class HostedPlanApplicationTest {
         assertThrows(PlanRefusal.class,()->service.summary(lease,plan.planId()));
     }
     @Test void profileReuseRequiresExplicitValuesBeforeExactNoopMaterialization() throws Exception {
-        var fixtures=new PlanContentAdapterTest(); var definition=fixtures.definition(); var observed=fixtures.observation(definition);
+        var fixtures=new PlanContentAdapterTest(); var definition=fixtures.definition(); var observed=qualifiedMock(fixtures.observation(definition));
         var portable=assertInstanceOf(ProfileBytesAdapter.Result.Accepted.class,new ProfileBytesAdapter().read(definition.compiled(),Files.readAllBytes(Path.of("../../fixtures/profile-v2/profile.json")),BoundedDocumentParser.Format.JSON));
         var reference=new NativeCommand.Reference("00000000-0000-4000-8000-000000000003","2");
         Workspace workspace=new Workspace() {

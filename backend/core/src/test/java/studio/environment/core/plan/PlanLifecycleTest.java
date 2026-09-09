@@ -31,7 +31,7 @@ class PlanLifecycleTest {
                         if(entered!=null) { entered.countDown(); await(release); }
                         if(handle!=null) return new ObservationResult.Refused(ObservationResult.Code.CLEANUP_INCONCLUSIVE,ObservationResult.Cleanup.INCONCLUSIVE,Optional.of(handle));
                         if(reject.get()) return new ObservationResult.Refused(ObservationResult.Code.DATABASE_FAILURE,ObservationResult.Cleanup.COMPLETE);
-                        return new ObservationResult.Complete(new ObservationResult.Observation("observed-fingerprint","logical","binding-digest",List.of(),Map.of()));
+                        return new ObservationResult.Complete(new ObservationResult.Observation("a".repeat(64),"logical","binding-digest",List.of(),PlanObservedDestinationTest.evidence()));
                     }
                     public synchronized void close() { if(!used) { used=true; closes.incrementAndGet(); } }
                 });
