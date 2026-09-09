@@ -208,6 +208,84 @@ remain separate prerequisites. This adapter establishes XML/source correspondenc
 not JDBC, typed target decisions, final materialization, hosted disclosure, profile,
 package or runtime publication authority.
 
+### Typed physical target and final proof adapters
+
+The internal v3 physical intent compiler recompiles exact checked v3 metadata
+and permits only the known mechanism-qualification incompleteness. It resolves
+the existing physical TargetIntent vocabulary and physical rules through a shared
+version-neutral mechanism. It never constructs a v2 readiness result. The v2
+facade retains its existing behavior, digest domain and reference ordering; v3
+uses the unsigned UTF-8 reference order above. An ExpectedTarget is a physical
+semantic expectation, with no computed commands, XML origin or runtime authority.
+Its set-valued removed/affected collections are compared as sets; v3 derived
+lists use the explicitly required v3 order.
+
+A typed derived adapter independently reprojects the complete immutable current
+snapshot before resolving target decisions. Its expected target pin and separately
+supplied target decision revision must agree. The target pin identifies that exact
+decision revision and the original current-source digest inventory. Definition,
+binding and original source digests must match current evidence; a different
+target revision does not change the original source proofs. Never copy an expected
+revision into supplied evidence or accept a caller-created Complete observation as
+proof of actual XML correspondence.
+
+Resolve every surviving physical entity and relation. Omitted existing decisions
+mean the existing explicit retain/keep semantics, with their original evidence.
+Present Entered fields retain the exact entered decision and no source pin.
+Present KeepObserved fields retain the original Existing reference and actual
+observed field proof, even when another field edits that entity's identity.
+Fresh fields cannot KeepObserved. Optional ExplicitlyAbsent or retained observed
+absence contributes nothing; Unresolved must return safe declaration references
+and no complete target graph. Invalid known decisions may refuse independently;
+unknowns must not be replaced by invented values or omitted to construct a smaller
+graph. The ordinary physical compiler may refuse unresolved physical decisions;
+that refusal must be surfaced as incomplete target evidence where appropriate.
+Shared physical/computed bounds and complete derived rule checks apply before
+writer success. A complete-but-failed current graph may be repaired by the target;
+a failed target rule prevents successful target validation.
+Complete typed preparation retains failed rule outcomes for inspection; preparation
+alone is not successful materialization or validation.
+
+Physical assembly must retain a bounded immutable mapping from each surviving
+Existing/Fresh reference to its verified final physical entity key and origin.
+This mapping comes from tracked assembly symbols checked against the complete
+final physical projection, never a lookup by edited identity alone. Independently
+reproject all final documents and recompute derived inputs/results. Final document
+digests replace source digests only in final output proof; retain original current
+pins, target decisions, preliminary proof and final proof as separate evidence.
+
+Compare complete exact computed keys, membership/co-occurrence keys and every
+contributor/ordered field role after applying the verified reference mapping.
+The preliminary kept source span need not equal a moved/escaped final span:
+the original proof must match current XML, the decision must resolve to the exact
+expected final value, and the declared locator must independently establish its
+actual final location. Entered decisions likewise require actual final locator
+evidence. Reject missing, extra, swapped or conflicting contributors even when
+counts and computed keys agree. Reorder only after this exact comparison.
+Cancellation after assembly or final recomputation discards the complete result.
+These adapters remain internal until profile/history/hosted and lifecycle gates
+qualify; no availability registry is changed by these prerequisites.
+
+The internal final-comparison port receives checked v3 metadata, independently
+expected target/final pins, both complete inputs and supplied engine outcomes,
+the assembly-verified physical reference mapping and cancellation. Target/final
+pins share the exact decision revision, logical/binding identity and document ID
+inventory; final digest values may differ. Validate both input kinds and pins,
+recompute canonical engine outcomes and require exact equality with the supplied
+complete outcomes before comparing mapped results. This detects forged or
+truncated computed evidence. Reject failed target/final rules at this
+materialization-facing comparison boundary; inspectable preparation remains separate.
+
+The mapping must be a complete type-preserving bijection over all physical target
+and final references, bounded by 20,000. Check explicit Present/Absent states and
+exact source-field values for every mapped entity. Normalize only contributor
+order after mapping, retaining each ordered field role; duplicates still refuse.
+Then compare complete computed node, membership, co-occurrence and rule outcomes.
+Return Matched or a safe-code refusal. Matched is consistency evidence only.
+Actual current/final XML locator ownership, complete non-derived physical fields,
+identity/edges and assembly symbol correspondence remain the adapters' separately
+checked prerequisites; the derived input deliberately contains only source fields.
+
 Exercise the decision record's invented tuples, plus directional/self edges,
 optional absence on each side, last-contributor deletion, whitespace and Unicode
 ordering/equality. Use independent expected node, edge and complete contributor

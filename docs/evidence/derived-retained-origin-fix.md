@@ -100,3 +100,26 @@ keeps original entity ownership separate from attribute and final target locatio
 QA/RST exercises contradictory positive-looking evidence, both identity/origin
 directions and legitimate mixed decisions. No mechanism version, digest domain,
 v2 behavior, database account policy or runtime availability changes here.
+
+## Exact correction container
+
+The clean Git archive of committed `71e30404b64ff26435e34f38e41e06cee730fb82`
+built successfully as `environment-studio:origin-71e30404b64f`. Local OCI index:
+`sha256:443244ff5607562059ee6e766ab7f2a1e7cb50a8352625b0e37a3b692188ac89`;
+Linux platform manifest:
+`sha256:5c8a3fd74a286af266afc2c76837efeab642b2df0248c573bb8c5a733ea47ab9`;
+configuration:
+`sha256:26ff15c3b27f9b3ddb9645058fdcfbf3e4200aee3f3d0cc152a158e51fdbefa6`.
+The revision label matches the commit and runtime user is `10001:10001`.
+
+`docker build --target runtime --build-arg SOURCE_REVISION=<commit>` and
+`bash scripts/container_smoke.sh environment-studio:origin-71e30404b64f` pass.
+The smoke uses a read-only filesystem, dropped capabilities, no-new-privileges
+and the committed demo denial checks; private workspace initialization, permission,
+overwrite and schema-upgrade/refusal checks also pass. Logs:
+`es-origin-oci-build-20260909.log`, `es-origin-oci-smoke-20260909.log`.
+The same archive's `supervisor-artifacts` export succeeds; distribution ZIP SHA-256
+is `87f9cdca3886523d4936e371095152f94e8240fb4528632f4f04d3db542e5b9f`.
+This local image excludes subsequent target and capability changes. Startup smoke
+at 1 GiB is not workload capacity qualification, native client qualification,
+remote CI, publication or HiveForge evidence.

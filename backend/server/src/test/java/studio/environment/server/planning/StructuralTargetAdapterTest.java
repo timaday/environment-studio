@@ -175,7 +175,7 @@ class StructuralTargetAdapterTest {
         assertEquals(List.of("RESOURCE_LIMIT"), assertInstanceOf(MaterializationResult.Rejected.class, adapter.materialize(definition(), "mock-pg", List.of(new TargetSource("glyph-sheet", "x".repeat(1_048_577), Optional.empty())), new TargetIntent(List.of(), List.of()), List.of())).codes());
     }
     @Test void workDoesNotRetainScopeWideParsedTreeOrFragmentCaches() {
-        var work = java.util.Arrays.stream(StructuralTargetAdapter.class.getDeclaredClasses()).filter(c -> c.getSimpleName().equals("Work")).findFirst().orElseThrow();
+        var work = java.util.Arrays.stream(PhysicalTargetMaterializer.class.getDeclaredClasses()).filter(c -> c.getSimpleName().equals("Work")).findFirst().orElseThrow();
         for (var field : work.getDeclaredFields()) {
             String type = field.getGenericType().getTypeName();
             assertFalse(type.contains("java.util.Map<java.lang.String, studio.environment.server.xml.XmlDocument>"), "scope-wide parsed source cache");
