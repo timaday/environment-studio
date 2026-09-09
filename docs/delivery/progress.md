@@ -174,3 +174,9 @@ and locally integrated after `19be08f`. Review corrected excessive deadlines and
 null-output lifetime cleanup. Final Java608/assembly/hostile-launch checks and
 four independent native controls pass. Kernel peer pinning is a prerequisite;
 Java root ownership, listener/JNI and crash qualification remain unfinished.
+
+The [19be08f artifact/browser refresh](../evidence/d06b4-artifacts.md) passed
+Java590/frontend34/schema23 in the pinned OCI build, protected/workspace smoke,
+separate supervisor export and four exact-source hosted HTTPS/OIDC mock browser
+cases with confirmed cleanup. Image and ZIP identities are recorded there. It
+excludes later native-peer/observed-context work and grants no release authority.
