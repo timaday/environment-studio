@@ -6,6 +6,11 @@ validation and revocation/reinspection workloads below. This is a candidate
 allocation, not completed maximum-scope or transfer qualification. No scope limit
 or release flag changed.
 
+The entered-value extension also passed with the same 6 GiB/one-CPU candidate:
+four full unresolved drafts plus 64 MiB entered values, bounded draft-page
+encoding, validation and recovery. It does not qualify actual HTTP backpressure;
+the separate socket investigation has reproduced an output recovery defect.
+
 ## Exact runtime and workload
 
 Production classes and libraries were extracted from the reviewed
@@ -90,9 +95,59 @@ uploadability evidence. Initial ambiguous Java imports and repeated projection
 IDs were also harness setup failures, not RED behavior tests.
 
 Still required: maximum retained current and independently changed target source
-bytes; 64 MiB of entered values and their encoded expansion; the largest admitted
-command/response shapes; simultaneous observation/projection scratch; old/new
+bytes; the largest admitted command/response shapes beyond the entered-value
+page extension below; simultaneous observation/projection scratch; old/new
 replacement overlap; actual slow/blocked HTTP output, revocation, cancellation,
 deadline and disconnect recovery; and whole hosted-process overhead. The 6 GiB
 candidate must not be advertised as qualified before those checks and independent
 review. Investigate the substantial one-CPU GC cost as part of responsiveness.
+
+## Entered values and response-page extension
+
+The same exact image was run with 6 GiB memory/swap and one CPU, network none,
+read-only root/mount, all capabilities dropped, no-new-privileges, 128 PID ceiling,
+and no container log driver. The original invocation and observed completion are
+retained in `entered-run-result.json` under the external heap lab. Exit 0 after
+**265.982 seconds**; the orchestration timeout was 600 seconds and did not fire.
+
+Each of four 20,000-entity drafts retained 256 field and 256 reference decisions per
+entity. One existing entity per plan received 16 distinct 1 MiB entered strings of
+XML-legal quote characters: **16 MiB per plan / 64 MiB global**. Each actual JSON
+command was **33,569,419 bytes** and was decoded inside `reserveCommand` before
+execution, qualifying that command scratch overlap. The earlier unresolved
+2,500-entity batches still decode before `service.command`; they do not qualify
+reserve-before-decode HTTP admission.
+
+For each plan the real draft-page projection and encoder produced and transferred
+**36,721,221 bytes** to a counting sink. These are the first 100-record pages,
+including the selected entity, not complete 20,000-record draft responses.
+The sink verifies emitted byte count; it does not prove socket behavior, semantic
+JSON round-trip, client receipt or HTTP deadlines. No transport claim is inferred
+from this measurement.
+
+All four validations remained UNKNOWN/export unavailable. After revocation,
+four fresh plans were created and reinspected, then revoked. The final
+requested-GC heap sample was 27,352,016 bytes; cumulative GC time 126,212 ms;
+cgroup peak 4,313,772,032 bytes, with no recorded OOM event. The large GC time
+remains a responsiveness concern. These are samples, not proof of erasure or
+return of committed memory to the OS.
+
+The independent reviewer checked the frozen 25 source/class hashes, actual
+compiler/projection/service/decoder paths, exact scope and result logs without
+repeating the costly workload. No invalid combined maximum was found within
+this workload. Empty mock publication policies, the completed mock observation
+port, absent complete target/full-source maxima and absent HTTP transport remain
+explicit limitations.
+
+External artifacts in `/home/tim/.tmp/es-heap-qualification-20260909`:
+
+- `HeapEnteredBoundary.java`, `EnteredValuesValidationProbe.java` and dependencies.
+- `entered-values-probe-manifest.sha256`, SHA-256
+  `d4a1c3537a761c274bb0e1d1aa95fb3ead209741ab9b86392d28e8136d338855`.
+- `entered-boundary-control.log` for standalone actual decoder admission.
+- `runtime-entered-values-6g.log` and `entered-run-result.json` for the exact runtime.
+
+The deployment example still uses 1 GiB. Increasing it remains required, but 6 GiB
+is not yet certified for the unfinished source/target, graph/scratch, hosted
+process, slow-output and cleanup matrix. Full retained source/target qualification
+is continuing in a separate owned lab.
