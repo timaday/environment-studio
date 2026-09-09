@@ -39,7 +39,8 @@ class HostedBoundaryTest {
     @DynamicPropertySource static void properties(DynamicPropertyRegistry properties) { properties.add("studio.security.issuer", issuer::issuer); properties.add("studio.workspace.directory", () -> workspace.toString()); properties.add("studio.workspace.definition-publishers[0].issuer", issuer::issuer); properties.add("studio.workspace.definition-publishers[0].subject", () -> "workspace-maintainer");
         properties.add("studio.workspace.definition-publishers[1].issuer", issuer::issuer);properties.add("studio.workspace.definition-publishers[1].subject",()->"plan-maintainer");
         properties.add("studio.workspace.definition-publishers[2].issuer", issuer::issuer);properties.add("studio.workspace.definition-publishers[2].subject",()->"transport-maintainer");
-        properties.add("studio.workspace.definition-publishers[3].issuer",issuer::issuer);properties.add("studio.workspace.definition-publishers[3].subject",()->"view-maintainer"); }
+        properties.add("studio.workspace.definition-publishers[3].issuer",issuer::issuer);properties.add("studio.workspace.definition-publishers[3].subject",()->"view-maintainer");
+        properties.add("studio.workspace.definition-publishers[4].issuer",issuer::issuer);properties.add("studio.workspace.definition-publishers[4].subject",()->"binding-maintainer"); }
     @org.springframework.boot.test.web.server.LocalServerPort int port;
     @Autowired WebApplicationContext context;
     @Autowired CleanupProbe cleanupProbe;
@@ -209,6 +210,45 @@ class HostedBoundaryTest {
         assertEquals(200,client.request("POST","/api/v1/operations/"+malformed+"/cancel","{}",true).status());
         assertEquals(204,client.request("POST","/api/v1/session/logout","{}",true).status());
         assertEquals(204,foreign.request("POST","/api/v1/session/logout","{}",true).status());
+    }
+    @Test void actualBindingPagesRequireLiveRevisionAndCompleteLocationEvidence() throws Exception {
+        var plan=socketPlan("binding-maintainer");var client=plan.client;var json=tools.jackson.databind.json.JsonMapper.builder().build();String views="/api/v1/plans/"+plan.planId+"/views/";
+        String operation=reserve(plan,"1");assertEquals(200,client.request("POST","/api/v1/operations/"+operation+"/credentials",mockCredentials(),true).status());
+        var entities=json.readTree(client.request("POST",views+"entities","{\"revision\":\"2\",\"side\":\"current\",\"offset\":0,\"limit\":100}",true).body());String palette=null;
+        for(var item:entities.get("items"))if(item.get("typeId").asString().equals("palette"))palette=item.get("entity").get("handle").asString();assertNotNull(palette);
+        var ref=Map.of("kind","existing","handle",palette);String bindings=json.writeValueAsString(Map.of("revision","2","entity",ref,"offset",0,"limit",100));
+        var response=client.request("POST",views+"bindings",bindings,true);assertEquals(200,response.status());assertEquals("no-store",response.headers().get("cache-control"));
+        var page=json.readTree(response.body());assertEquals(2,page.get("total").asInt());var tag=page.get("items").get(1);assertEquals("[[value:"+palette+":tag]]",tag.get("token").asString());assertEquals(3,tag.get("currentLocations").get("total").asInt());assertEquals("unchanged",tag.get("change").asString());
+        String locations=json.writeValueAsString(Map.of("revision","2","entity",ref,"fieldId","tag","side","current","offset",0,"limit",1,"completeDocumentDisclosure",true));
+        var withoutDisclosure=new java.util.HashMap<String,Object>(Map.of("revision","2","entity",ref,"fieldId","tag","side","current","offset",0,"limit",1));
+        assertEquals(400,client.request("POST",views+"binding-locations",json.writeValueAsString(withoutDisclosure),true).status());
+        withoutDisclosure.put("completeDocumentDisclosure",false);assertEquals(400,client.request("POST",views+"binding-locations",json.writeValueAsString(withoutDisclosure),true).status());
+        var location=client.request("POST",views+"binding-locations",locations,true);assertEquals(200,location.status());assertEquals(3,json.readTree(location.body()).get("total").asInt());assertEquals("reference",json.readTree(location.body()).get("items").get(0).get("role").asString());
+        assertEquals(403,client.request("POST",views+"bindings",bindings,false).status());
+        assertEquals(400,client.request("POST",views+"bindings",bindings.replace("\"offset\":0","\"offset\":257"),true).status());
+        var foreign=socketLogin("foreign-binding-"+java.util.UUID.randomUUID());
+        for(String suffix:java.util.List.of("bindings","binding-locations"))try(var pending=foreign.begin("POST",views+suffix,16_384,true)){long before=System.nanoTime();assertEquals(404,pending.response().status());assertTrue(System.nanoTime()-before<2_000_000_000L,"Foreign binding body was awaited");}
+        assertEquals(204,foreign.request("POST","/api/v1/session/logout","{}",true).status());
+        String fresh=reserve(plan,"2");var reinspected=client.request("POST","/api/v1/operations/"+fresh+"/credentials",mockCredentials(),true);
+        assertEquals(200,reinspected.status(),()->{
+            try {String code=json.readTree(reinspected.body()).path("code").asString();return java.util.Set.of("MALFORMED_BODY","BODY_TOO_LARGE","BODY_DEADLINE","CANCELLED").contains(code)?code:"UNRECOGNIZED_REFUSAL";}
+            catch(RuntimeException unavailable){return "UNRECOGNIZED_REFUSAL";}
+        });
+        assertEquals(409,client.request("POST",views+"bindings",bindings,true).status());assertEquals(409,client.request("POST",views+"binding-locations",locations,true).status());
+        assertEquals(404,client.request("POST",views+"bindings",bindings.replace("\"revision\":\"2\"","\"revision\":\"3\""),true).status());
+        try(var pending=client.begin("POST",views+"binding-locations",16_384,true)) {
+            pending.write("{".getBytes(java.nio.charset.StandardCharsets.UTF_8));long deadline=System.nanoTime()+2_000_000_000L;
+            while(Thread.getAllStackTraces().keySet().stream().noneMatch(t->t.getName().equals("hosted-plan-body")) && System.nanoTime()<deadline)Thread.sleep(5);
+            assertTrue(Thread.getAllStackTraces().keySet().stream().anyMatch(t->t.getName().equals("hosted-plan-body")),"Binding reader was not admitted");
+            int logout=client.request("POST","/api/v1/session/logout","{}",true).status();assertTrue(logout==204 || logout==503,"Logout must preserve cleanup outcome");assertEquals(401,pending.response().status());
+        }
+        assertEquals(401,client.request("POST",views+"bindings",bindings,true).status());
+        long deadline=System.nanoTime()+3_000_000_000L;
+        while(Thread.getAllStackTraces().keySet().stream().anyMatch(t->t.getName().equals("hosted-plan-body")) && System.nanoTime()<deadline)Thread.sleep(5);
+        assertFalse(Thread.getAllStackTraces().keySet().stream().anyMatch(t->t.getName().equals("hosted-plan-body")),"Revoked binding reader did not finish");
+        var lease=studio.environment.server.plan.PlanHttpTestConfiguration.leases.get("binding-maintainer");var sessions=context.getBean(studio.environment.server.session.HostedSessions.class);
+        var quarantine=sessions.cleanupReports().stream().filter(r->r.sessionId().equals(lease.id())).findFirst();
+        if(quarantine.isPresent())assertEquals(studio.environment.core.session.SessionLedger.CleanupState.COMPLETE,sessions.retryCleanup(lease.id()).orElseThrow().state());
     }
     @Test void maskedDraftChoicesSurviveEditsAndViewReadersRetainAdmissionUntilDeadlineOrLogout() throws Exception {
         var json=tools.jackson.databind.json.JsonMapper.builder().build();var definition=json.readTree(java.nio.file.Files.readAllBytes(java.nio.file.Path.of("../../fixtures/native-v2/definition.json")));

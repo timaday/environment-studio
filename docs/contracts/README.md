@@ -8,6 +8,7 @@
 | Complete native definition declarations | [native-definition-v2.md](native-definition-v2.md) |
 | Observation, operations and revision authority | [planning.md](planning.md) |
 | Planned hosted plan inspection/composition views | [hosted-plan-views-v1.md](hosted-plan-views-v1.md) |
+| Value mapping and planned plan context | [hosted-plan-context-v1.md](hosted-plan-context-v1.md) |
 | Structural target generation | [structural-target.md](structural-target.md) |
 | Complete database observation | [database-observation.md](database-observation.md) |
 | XML fidelity and guarded SQL | [xml-and-sql.md](xml-and-sql.md) |

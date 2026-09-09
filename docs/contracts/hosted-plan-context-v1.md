@@ -1,8 +1,11 @@
-# Plan context and complete value mapping — planned D06b4
+# Plan context and complete value mapping — D06b4
 
-This planned data extension completes the persistent context and binding rail in
-[the Midnight UX contract](../ux/design-system.md). Implementation and closed
-schemas must land together before these features are advertised. Existing
+This contract defines plan context and the binding rail in
+[the Midnight UX contract](../ux/design-system.md). Operator labels and observed
+identity below remain planned. The binding/location APIs and stable document
+placeholders have a local implementation candidate; see
+[its evidence](../evidence/d06b4-bindings.md). Closed schemas accompany that code.
+Backend route availability does not approve or advertise a new browser design. Existing
 [hosted authority](hosted-plans-v1.md) and [bounded view transport](hosted-plan-views-v1.md)
 remain mandatory. No new design is approved by this API contract.
 
@@ -98,7 +101,8 @@ targetLocations}`. A value is a closed tagged object:
 Do not use null, empty text or masking as an absence/unresolved surrogate. A present
 empty string remains value with empty text. Change is `unchanged`, `changed`, `added`,
 `removed` or `unresolved`, derived by Java from actual sides and typed decisions.
-Masked values never include raw text, lengths, hashes or a reveal action.
+Masked binding values never include raw text, lengths, hashes or a reveal action.
+The separate complete-document disclosure boundary below governs raw coordinates.
 
 Bindings require current observed content; otherwise refuse `INSPECTION_REQUIRED`.
 Resolve each side in this order:
@@ -140,7 +144,16 @@ location route deliberately extends the usual 50,000 offset ceiling so every
 occurrence within the accepted document/graph scope remains addressable.
 
 `/views/binding-locations` accepts exactly `{revision, entity, fieldId, side, offset,
-limit}`; side is current/target, offset 0–2,147,483,647 and limit 1–100. The same page
+limit, completeDocumentDisclosure: true}`; side is current/target, offset
+0–2,147,483,647 and limit 1–100. Every location request requires the same explicit
+complete-document disclosure acknowledgement as Raw/Formatted document views.
+Exact span endpoints reveal lexical lengths, and later public offsets can reveal
+earlier masked lengths; checking only the requested field is insufficient. This
+boundary applies to both sides, all classifications and empty/beyond-end pages.
+Missing, false or non-boolean acknowledgement is malformed at the HTTP boundary;
+a direct Java call without disclosure refuses `DISCLOSURE_REQUIRED` before scanning.
+The masked binding rail and its complete occurrence counts remain available
+without this acknowledgement. Disclosure does not reveal values in that rail. The same page
 envelope gives the complete location count. Unknown field/entity refuses; an
 existing field with no occurrences returns total=0. Missing target content is an
 `INCOMPLETE_TARGET` refusal, not an empty successful target page. The current

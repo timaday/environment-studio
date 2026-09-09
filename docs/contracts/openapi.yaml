@@ -209,6 +209,12 @@ paths:
   /api/v1/plans/{planId}/validations:
     $ref: './openapi-plans-v1.json#/paths/~1api~1v1~1plans~1{planId}~1validations'
 
+  /api/v1/plans/{planId}/views/bindings:
+    $ref: './openapi-plans-v1.json#/paths/~1api~1v1~1plans~1{planId}~1views~1bindings'
+
+  /api/v1/plans/{planId}/views/binding-locations:
+    $ref: './openapi-plans-v1.json#/paths/~1api~1v1~1plans~1{planId}~1views~1binding-locations'
+
 components:
   parameters:
     ObjectId:

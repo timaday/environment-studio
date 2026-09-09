@@ -7,6 +7,7 @@ import java.util.function.Supplier;
 import tools.jackson.core.*;
 import tools.jackson.core.json.JsonFactory;
 import studio.environment.core.workspace.NativeCommand;
+import studio.environment.core.plan.PlanCommand;
 import static studio.environment.server.plan.PlanViewRequest.*;
 
 /** Closed typed streaming requests; no body tree, implicit consent or numeric coercion. */
@@ -19,15 +20,17 @@ final class PlanViewReader {
         try(var reader=new InputStreamReader(new Limited(input,ceiling),StandardCharsets.UTF_8.newDecoder().onMalformedInput(CodingErrorAction.REPORT).onUnmappableCharacter(CodingErrorAction.REPORT));var parsed=factory.createParser(reader)) {
             parser=parsed;parser.nextToken();
             var data=object(name->switch(name){
-                case "revision","side","documentId","projectionId","mode","profileId","profileRevision","section" -> text();
+                case "revision","side","documentId","projectionId","mode","profileId","profileRevision","section","fieldId" -> text();
                 case "offset","limit" -> integer();
                 case "completeDocumentDisclosure" -> {if(parser.currentToken()!=JsonToken.VALUE_TRUE)throw invalid();yield Boolean.TRUE;}
-                case "profile" -> publication(); case "selection" -> selection(); case "mappings" -> array(this::mapping);
+                case "entity" -> entity(); case "profile" -> publication(); case "selection" -> selection(); case "mappings" -> array(this::mapping);
                 default -> throw invalid();
             });
             if(parser.nextToken()!=null)throw invalid();
             String revision=revision(string(data,"revision"));
             return switch(route){
+                case BINDINGS -> {keys(data,"revision","entity","offset","limit");yield new Bindings(revision,(PlanCommand.Ref)data.get("entity"),offset(data,256),limit(data));}
+                case BINDING_LOCATIONS -> {keys(data,"revision","entity","fieldId","side","offset","limit","completeDocumentDisclosure");yield new BindingLocations(revision,(PlanCommand.Ref)data.get("entity"),id(string(data,"fieldId")),side(string(data,"side")),offset(data,Integer.MAX_VALUE),limit(data),true);}
                 case MATERIALIZATION,DOCUMENTS,VALIDATION -> {keys(data,"revision");yield new Revision(revision);}
                 case ENTITIES,RELATIONS -> {keys(data,"revision","side","offset","limit");yield new GraphPage(revision,side(string(data,"side")),offset(data),limit(data));}
                 case DRAFT,CONTAINMENT -> {keys(data,"revision","offset","limit");yield new DraftPage(revision,offset(data),limit(data));}
@@ -52,6 +55,14 @@ final class PlanViewReader {
         String label=string(data,"label");if(label.isEmpty() || label.codePointCount(0,label.length())>128)throw invalid();
         return new Mapping((String)data.get("entity"),id(string(data,"slotId")),label);
     }
+    private PlanCommand.Ref entity(){
+        var data=object(name->{if(!Set.of("kind","handle","slotId","typeId").contains(name))throw invalid();return text();});
+        return switch(string(data,"kind")) {
+            case "existing" -> {keys(data,"kind","handle");yield new PlanCommand.Ref.Existing(uuid(string(data,"handle")));}
+            case "fresh" -> {keys(data,"kind","slotId","typeId");yield new PlanCommand.Ref.Fresh(id(string(data,"slotId")),id(string(data,"typeId")));}
+            default -> throw invalid();
+        };
+    }
     private String existing(){var data=object(name->{if(!Set.of("kind","handle").contains(name))throw invalid();return text();});keys(data,"kind","handle");if(!"existing".equals(string(data,"kind")))throw invalid();return uuid(string(data,"handle"));}
     private static List<Mapping> mappings(Map<String,Object> data){@SuppressWarnings("unchecked")var mappings=(List<Mapping>)data.get("mappings");if(mappings.isEmpty())throw invalid();return mappings;}
     private <T> List<T> array(Supplier<T> item){if(parser.currentToken()!=JsonToken.START_ARRAY)throw invalid();var values=new ArrayList<T>();while(parser.nextToken()!=JsonToken.END_ARRAY){if(values.size()>=20000)throw invalid();values.add(item.get());}return List.copyOf(values);}
@@ -60,8 +71,9 @@ final class PlanViewReader {
         while(parser.nextToken()!=JsonToken.END_OBJECT){if(parser.currentToken()!=JsonToken.PROPERTY_NAME || result.size()>=8)throw invalid();String key=parser.currentName();parser.nextToken();if(result.putIfAbsent(key,value.apply(key))!=null)throw invalid();}return result;
     }
     private String text(){if(parser.currentToken()!=JsonToken.VALUE_STRING)throw invalid();String value=parser.getString();for(int i=0;i<value.length();i++){char c=value.charAt(i);if(Character.isHighSurrogate(c)){if(++i>=value.length() || !Character.isLowSurrogate(value.charAt(i)))throw invalid();}else if(Character.isLowSurrogate(c))throw invalid();}return value;}
-    private int integer(){if(parser.currentToken()!=JsonToken.VALUE_NUMBER_INT)throw invalid();String token=parser.getString();if(!token.matches("0|[1-9][0-9]{0,4}"))throw invalid();return Integer.parseInt(token);}
-    private static int offset(Map<String,Object> data){int value=(Integer)data.get("offset");if(value>50000)throw invalid();return value;}
+    private int integer(){if(parser.currentToken()!=JsonToken.VALUE_NUMBER_INT)throw invalid();String token=parser.getString();if(!token.matches("0|[1-9][0-9]{0,9}"))throw invalid();return Integer.parseInt(token);}
+    private static int offset(Map<String,Object> data){return offset(data,50000);}
+    private static int offset(Map<String,Object> data,int maximum){int value=(Integer)data.get("offset");if(value>maximum)throw invalid();return value;}
     private static int limit(Map<String,Object> data){int value=(Integer)data.get("limit");if(value<1 || value>100)throw invalid();return value;}
     private static Mode mode(String value){return switch(value){case "raw"->Mode.RAW;case "placeholders"->Mode.PLACEHOLDERS;case "formatted"->Mode.FORMATTED;default->throw invalid();};}
     private static Section section(String value){return switch(value){case "included"->Section.INCLUDED;case "dependencies"->Section.DEPENDENCIES;case "relations"->Section.RELATIONS;case "conflicts"->Section.CONFLICTS;default->throw invalid();};}

@@ -29,6 +29,10 @@ public final class PlanViewController {
     public void placements(@PathVariable("planId") String planId,HttpServletRequest request,HttpServletResponse response)throws IOException{start(Route.PLACEMENTS,planId,request,response);}
     @PostMapping("/api/v1/plans/{planId}/views/document")
     public void document(@PathVariable("planId") String planId,HttpServletRequest request,HttpServletResponse response)throws IOException{start(Route.DOCUMENT,planId,request,response);}
+    @PostMapping("/api/v1/plans/{planId}/views/bindings")
+    public void bindings(@PathVariable("planId") String planId,HttpServletRequest request,HttpServletResponse response)throws IOException{start(Route.BINDINGS,planId,request,response);}
+    @PostMapping("/api/v1/plans/{planId}/views/binding-locations")
+    public void bindingLocations(@PathVariable("planId") String planId,HttpServletRequest request,HttpServletResponse response)throws IOException{start(Route.BINDING_LOCATIONS,planId,request,response);}
     @PostMapping("/api/v1/plans/{planId}/profile-captures")
     public void capture(@PathVariable("planId") String planId,HttpServletRequest request,HttpServletResponse response)throws IOException{start(Route.CAPTURE,planId,request,response);}
     @PostMapping("/api/v1/plans/{planId}/profile-previews")

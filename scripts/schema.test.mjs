@@ -256,9 +256,9 @@ test("view masking, consent, absent target and preview sections cannot claim uns
     mutate(shape); assert.equal(planView(name)(shape), false, name);
   }
 });
-test("eleven planned view routes share closed schemas, authentication and no-store responses", () => {
+test("thirteen contracted view routes share closed schemas, authentication and no-store responses", () => {
   const api = read("../docs/contracts/openapi-plans-v1.json");
-  const suffixes = ["materializations", "views/documents", "views/entities", "views/relations", "views/draft", "views/containment", "views/placements", "views/document", "profile-captures", "profile-previews", "validations"];
+  const suffixes = ["materializations", "views/documents", "views/entities", "views/relations", "views/draft", "views/containment", "views/placements", "views/document", "views/bindings", "views/binding-locations", "profile-captures", "profile-previews", "validations"];
   const aggregate = readFileSync(new URL("../docs/contracts/openapi.yaml", import.meta.url), "utf8");
   for (const suffix of suffixes) {
     const path = `/api/v1/plans/{planId}/${suffix}`;
@@ -296,5 +296,30 @@ test('supervisor configuration is closed shape only, never runtime qualification
   assert.equal(supervisorConfig(fixture), true);
   for (const mutate of [x => x.password = 'invented', x => x.clients[0].arguments = [], x => x.clients[0].orapkiSha256 = 'a'.repeat(64), x => x.destinations[0].trustMaterial.key = 'invented', x => x.destinations[0].expectedPhysicalIdentity.dbid = '1', x => x.destinations[0].port = 1.5]) {
     const value = structuredClone(fixture); mutate(value); assert.equal(supervisorConfig(value), false);
+  }
+});
+
+test("binding values and full location pages use closed distinct states and bounded coordinates", () => {
+  for (const [name, mutate] of [
+    ["bindingsRequest", s => { s.offset = 257; }],
+    ["bindingLocationsRequest", s => { s.offset = 2147483648; }],
+    ["bindingLocationsRequest", s => { delete s.completeDocumentDisclosure; }],
+    ["bindingLocationsRequest", s => { s.completeDocumentDisclosure = false; }],
+    ["bindingLocationsRequest", s => { s.completeDocumentDisclosure = "true"; }],
+    ["bindingsResponse", s => { s.items[0].current = {state: "masked", text: "invented-secret"}; }],
+    ["bindingsResponse", s => { s.items[0].target = {state: "unresolved", text: ""}; }],
+    ["bindingsResponse", s => { s.items[0].currentLocations = {state: "complete"}; }],
+    ["bindingsResponse", s => { s.items[0].targetLocations = {state: "unavailable", total: 0}; }],
+    ["bindingsResponse", s => { s.items[0].token += "\n"; }],
+    ["bindingLocationsResponse", s => { s.items[0].elementIndex = "01"; }],
+    ["bindingLocationsResponse", s => { s.items[0].span.start = -1; }],
+    ["bindingLocationsResponse", s => { s.items[0].role = "containment"; }],
+  ]) {
+    const instance = structuredClone(viewShapes.requests[name] ?? viewShapes.responses[name]);
+    mutate(instance); assert.equal(planView(name)(instance), false, name);
+  }
+  for (const state of ["masked", "absent", "unresolved", "unavailable"]) {
+    const instance = structuredClone(viewShapes.responses.bindingsResponse);
+    instance.items[0].current = {state}; assert.equal(planView("bindingsResponse")(instance), true);
   }
 });

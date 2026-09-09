@@ -53,8 +53,8 @@ public final class PlanContentAdapter implements ContentAdapter {
         if(!(encoded instanceof ProfileBytesAdapter.ExportResult.Encoded bytes)) throw new PlanRefusal(PlanRefusal.Code.PROFILE_REFUSED);
         return new Capture(new String(bytes.bytes(),StandardCharsets.UTF_8),accepted.checked());
     }
-    @Override public DocumentView compare(PublishedDefinition definition,String binding,Source source,ViewMode mode) {
-        return PlanDocumentViews.render(definition,binding,source,mode);
+    @Override public DocumentView compare(studio.environment.core.plan.HostedPlanService.ViewSnapshot snapshot,boolean target,String documentId,ViewMode mode) {
+        return PlanDocumentViews.render(snapshot,target,documentId,mode);
     }
     private static Content content(ProjectionResult.Accepted projection,Map<ObservedGraph.Key,TargetIntent.Ref> provenance) {
         return new Content(projection.projection().documents().stream().map(document->new Source(document.documentId(),document.source(),document.digest())).toList(),projection.graph(),provenance);

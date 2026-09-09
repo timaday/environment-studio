@@ -83,6 +83,8 @@ public class HostedSecurity {
                         "/api/v1/plans/{planId}/views/containment",
                         "/api/v1/plans/{planId}/views/placements",
                         "/api/v1/plans/{planId}/views/document",
+                        "/api/v1/plans/{planId}/views/bindings",
+                        "/api/v1/plans/{planId}/views/binding-locations",
                         "/api/v1/plans/{planId}/profile-captures",
                         "/api/v1/plans/{planId}/profile-previews",
                         "/api/v1/plans/{planId}/validations").authenticated()

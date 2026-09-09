@@ -13,6 +13,8 @@ import static studio.environment.server.plan.PlanViewRequest.*;
 final class PlanViewResults {
     static Object render(HostedPlanService.ViewAdmission admission,Route route,PlanViewRequest request){
         return switch(route){
+            case BINDINGS->{var page=(Bindings)request;yield PlanBindingViews.bindings(admission.snapshot(),page.entity(),page.offset(),page.limit());}
+            case BINDING_LOCATIONS->{var page=(BindingLocations)request;yield PlanBindingViews.locations(admission.snapshot(),page.entity(),page.fieldId(),page.side()==Side.TARGET,page.offset(),page.limit(),page.disclosed());}
             case MATERIALIZATION->{var result=admission.materialize();yield object("revision",request.revision(),"complete",result.complete(),"diagnostics",result.diagnostics());}
             case DOCUMENTS->PlanViewProjection.documents(admission.snapshot());
             case ENTITIES->{var page=(GraphPage)request;yield PlanViewProjection.entities(admission.snapshot(),page.side()==Side.TARGET,page.offset(),page.limit());}

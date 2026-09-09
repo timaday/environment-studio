@@ -14,7 +14,7 @@ final class PlanViewWireAssertions {
         Map.entry("/materializations","materializationResponse"),Map.entry("/views/documents","documentsResponse"),Map.entry("/views/entities","entitiesResponse"),
         Map.entry("/views/relations","relationsResponse"),Map.entry("/views/draft","draftResponse"),Map.entry("/views/containment","containmentResponse"),
         Map.entry("/views/placements","placementsResponse"),Map.entry("/views/document","documentResponse"),Map.entry("/profile-captures","captureResponse"),
-        Map.entry("/profile-previews","previewResponse"),Map.entry("/validations","validationResponse"));
+        Map.entry("/views/bindings","bindingsResponse"),Map.entry("/views/binding-locations","bindingLocationsResponse"),Map.entry("/profile-previews","previewResponse"),Map.entry("/validations","validationResponse"));
     private static final SchemaRegistry REGISTRY=SchemaRegistry.withDefaultDialect(SpecificationVersion.DRAFT_2020_12,builder->builder.schemas(Map.of(PREFIX+"plan-command-v1",resource("plan-command-v1"),PREFIX+"plan-view-v1",resource("plan-view-v1"))).schemaLoader(loader->loader.fetchRemoteResources(false)));
     static String schema(String path){if(!path.startsWith("/api/v1/plans/"))return null;return ROUTES.entrySet().stream().filter(e->path.endsWith(e.getKey())).map(Map.Entry::getValue).findFirst().orElse(null);}
     static void verify(String schema,int status,String body){

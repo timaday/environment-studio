@@ -495,9 +495,7 @@ public final class HostedPlanService {
         }
         public ViewSnapshot snapshot() {
             return guarded(lease,()->{
-                check();var refs=new HashMap<studio.environment.core.planning.TargetIntent.Ref,PlanCommand.Ref>();
-                pinned.originals.forEach((handle,ref)->refs.put(ref,new PlanCommand.Ref.Existing(handle)));
-                return new ViewSnapshot(revision,pinned.definition,pinned.binding,Optional.ofNullable(pinned.current),Optional.ofNullable(pinned.target),pinned.draft,refs,pinned.handles);
+                check();return HostedPlanService.snapshot(pinned);
             });
         }
         public studio.environment.core.graph.ObservedGraph.Key observed(String handle) {
@@ -507,8 +505,8 @@ public final class HostedPlanService {
         public Validation validation() {verify();var result=validate(lease,planId,revision);verify();return result;}
         public DocumentView document(boolean targetSide,String documentId,ViewMode mode,boolean disclosed) {
             if(!disclosed)throw new PlanRefusal(DISCLOSURE_REQUIRED);
-            var snap=snapshot();var source=snap.selected(targetSide).sources().stream().filter(s->s.documentId().equals(documentId)).findFirst().orElseThrow(()->new PlanRefusal(NOT_FOUND));
-            var result=content.compare(snap.definition(),snap.binding(),source,mode);verify();return result;
+            var snap=snapshot();
+            var result=content.compare(snap,targetSide,documentId,mode);verify();return result;
         }
         public CapturedProfile capture(studio.environment.core.profile.ProfileCapture.Command command) {
             var snap=snapshot();guarded(lease,()->{check();inspected(pinned);if(pinned.active!=null || pinned.rendering)throw new PlanRefusal(PLAN_BUSY);return true;});
@@ -914,18 +912,23 @@ public final class HostedPlanService {
         var provenance=content.provenance().get(key); if(provenance==null) throw new PlanRefusal(PROJECTION_REFUSED);
         var handle=plan.handles.get(provenance);if(handle==null)throw new PlanRefusal(PROJECTION_REFUSED);return handle;
     }
+    private static ViewSnapshot snapshot(Plan plan) {
+        var refs=new HashMap<studio.environment.core.planning.TargetIntent.Ref,PlanCommand.Ref>();
+        plan.originals.forEach((handle,ref)->refs.put(ref,new PlanCommand.Ref.Existing(handle)));
+        return new ViewSnapshot(plan.revision.toString(),plan.definition,plan.binding,Optional.ofNullable(plan.current),Optional.ofNullable(plan.target),plan.draft,refs,plan.handles);
+    }
     public DocumentView comparison(SessionLedger.Lease lease,String planId,String revision,boolean target,String documentId,ViewMode mode,boolean completeDocumentDisclosure) {
         if(!completeDocumentDisclosure) throw new PlanRefusal(DISCLOSURE_REQUIRED);
-        record ComparisonWork(Plan plan,Source source,long generation) { }
+        record ComparisonWork(Plan plan,ViewSnapshot snapshot,long generation) { }
         var work=guarded(lease,()-> {
             var plan=plan(lease,planId); if(!plan.revision.toString().equals(revision)) throw new PlanRefusal(CONFLICT);
             var selected=target?plan.target:plan.current; if(selected==null) throw new PlanRefusal(target?INCOMPLETE_TARGET:INSPECTION_REQUIRED);
             var source=selected.sources().stream().filter(item->item.documentId().equals(documentId)).findFirst().orElseThrow(()->new PlanRefusal(NOT_FOUND));
             if(materializationScratch) throw new PlanRefusal(CAPACITY);
-            materializationScratch=true; plan.readers++; return new ComparisonWork(plan,source,plan.generation);
+            materializationScratch=true; plan.readers++; return new ComparisonWork(plan,snapshot(plan),plan.generation);
         });
         try {
-            var display=content.compare(work.plan.definition,work.plan.binding,work.source,mode);
+            var display=content.compare(work.snapshot,target,documentId,mode);
             return guarded(lease,()-> {
                 if(work.plan.retired || !work.plan.revision.toString().equals(revision) || work.plan.generation!=work.generation) throw new PlanRefusal(CONFLICT);
                 return display;

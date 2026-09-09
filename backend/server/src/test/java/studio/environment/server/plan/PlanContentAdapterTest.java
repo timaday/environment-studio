@@ -56,13 +56,13 @@ class PlanContentAdapterTest {
     }
     @Test void rawPlaceholderAndFormattedViewsAreDistinctAndNeverReplaceUnmappedConcrete() throws Exception {
         var definition=definition(); var current=assertInstanceOf(ContentResult.Complete.class,adapter.project(definition,"mock-pg",observation(definition))).content();
-        var source=current.sources().getFirst();
-        var raw=adapter.compare(definition,"mock-pg",source,ViewMode.RAW);
+        var source=current.sources().getFirst();var snapshot=new PlanViewProjectionTest().snapshot();
+        var raw=adapter.compare(snapshot,false,source.documentId(),ViewMode.RAW);
         assertEquals(source.xml(),raw.text()); assertTrue(raw.exact());
-        var placeholders=adapter.compare(definition,"mock-pg",source,ViewMode.PLACEHOLDERS);
-        assertTrue(placeholders.text().contains("[[field-")); assertFalse(placeholders.text().contains("id='alpha'"));
+        var placeholders=adapter.compare(snapshot,false,source.documentId(),ViewMode.PLACEHOLDERS);
+        assertTrue(placeholders.text().contains("[[value:")); assertFalse(placeholders.text().contains("id='alpha'"));
         assertTrue(placeholders.unmappedConcreteMayRemain()); assertFalse(placeholders.exact());
-        var formatted=adapter.compare(definition,"mock-pg",source,ViewMode.FORMATTED);
+        var formatted=adapter.compare(snapshot,false,source.documentId(),ViewMode.FORMATTED);
         assertTrue(formatted.text().contains("alpha")); assertFalse(formatted.exact());
         assertFalse(raw.toString().contains("alpha"));
     }

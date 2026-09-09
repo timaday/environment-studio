@@ -18,27 +18,36 @@ The previous push-review blocker is historical: the remote now matches the check
 
 ## Current 9 September continuation
 
+[D06b4 bindings](../evidence/d06b4-bindings.md) are corrected, independently reviewed
+and locally integrated after `2035854`. The fixed33 manifest is
+`/home/tim/.tmp/es-bindings-corrected-candidate-20260909.sha256` (087dff1f…);
+never restore the original unacknowledged coordinate behavior. Focused Java26,
+schema23 and five actual guard mutants pass. Corrected full integration failed
+one older credential submission with MALFORMED_BODY; investigation is active in
+`/home/tim/.tmp/es-credential-read-investigation-20260909`, isolated at `4d767fb`.
+Its temporary diagnostic captures only fixed Java call sites and must not be
+merged as production behavior. Do not claim the corrected full reactor passed.
+The native peer primitive is assigned separately at base `2035854`; only its five
+explicit C/test/evidence files may be integrated after fixed-source review.
+
 The [D07c3 transport primitive](../evidence/d07c3-privacy-wire.md) is independently
 reviewed and locally integrated after `7c1cb4c`; exact source hashes are in its
 evidence. Combined Java578 and five additional native controls passed. No runtime
 admission follows. Next native work is trusted peer identity and launch coordination.
-Root is correcting the independently confirmed masked-length coordinate disclosure
-in `/home/tim/.tmp/es-binding-disclosure-20260909`; the original 32-file binding
-candidate remains frozen. Review and verify the correction before integration.
 
 [D06b4 stable handles](../evidence/d06b4-handles.md) are reviewed and integrated,
 including the independent dangling-intent correction and 483-test integration.
-Active root binding/value/location work is in `/home/tim/.tmp/es-plan-bindings-20260909`
-(base `78c4860` plus reviewed handle deltas). Its additional files are unreviewed WIP;
-never merge the whole overlay. Current source contracts describe labels/identity
-as planned; no frontend design or release capability follows from these handles.
+The original binding author overlay in `/home/tim/.tmp/es-plan-bindings-20260909`
+(base `78c4860` plus reviewed handles) is superseded by the corrected fixed33
+candidate above. Never merge its older whole overlay. Labels and observed identity
+remain planned; no new frontend design follows from backend route availability.
 
-The next native prerequisite is reviewed: [D07c3 privacy controls](../evidence/d07c3-privacy-controls.md).
+[D07c3 privacy controls](../evidence/d07c3-privacy-controls.md) are reviewed.
 Exact candidate on `744e981` passed independent full Java526/assembly/launch checks;
 its author-run terminal failure remains recorded. The primitive has no runtime
-wiring or admission authority. Agent work continues on fixed private socket frames
-and bounded connection handshakes under the reviewed ABI. Preserve its assigned
-external worktree; do not enable registry entries from a primitive test pass.
+wiring or admission authority. The frame primitive is now integrated; the separate
+peer-identity slice follows the reviewed ABI. Preserve assigned external worktrees;
+do not enable registry entries from primitive test passes.
 
 Reviewed authority/policy implementation is committed locally as
 `f4f2add0c6f3b46c00e03a8f0b11102e62163a50`. The two XML findings are committed as

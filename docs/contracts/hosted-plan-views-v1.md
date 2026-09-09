@@ -2,7 +2,9 @@
 
 This extends [the initial plan HTTP contract](hosted-plan-http-v1.md) and
 [hosted plan authority](hosted-plans-v1.md). These eleven routes are implemented;
-see [integration evidence](../evidence/d06b3-integration.md). Their closed schemas
+see [integration evidence](../evidence/d06b3-integration.md). The separate
+[complete value mapping contract](hosted-plan-context-v1.md) adds two binding/location
+routes and provenance-stable document tokens under the same admission rules. Their closed schemas
 and boundary tests preceded implementation. They never accept source XML, a graph, validation PASS or an
 export capability from the browser. Export/review/readback remain a subsequent
 qualified route group.
@@ -34,8 +36,9 @@ raw-body copy. A count within a semantic limit does not waive the wire limit.
 Read responses use an admitted, bounded encoder with a 128 MiB wire ceiling and
 the existing scratch budget; never retain many encoded pages in a session. Paging
 does not retain snapshots or grant authority: each page rechecks the same live
-revision. Page requests always provide `offset` and `limit`, canonical integer
-tokens with offset 0–50,000 and limit 1–100. Responses include `revision`, `total`,
+revision. These eleven routes always provide `offset` and `limit` on page requests, canonical
+integer tokens with offset 0–50,000 and limit 1–100. The binding extension defines
+its own field and complete-location offset bounds. Responses include `revision`, `total`,
 `offset`, `nextOffset` (integer or null) and `items`. Stable ordering and complete
 totals apply to the whole selected scope, not only rendered rows. Reject unknown
 enum values rather than returning an empty success.

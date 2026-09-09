@@ -55,7 +55,7 @@ public final class PlanPorts {
         ContentResult project(PublishedDefinition definition, String binding, ObservationResult.Observation observation);
         ContentResult materialize(PublishedDefinition definition, String binding, Content current, Draft draft);
         Capture capture(PublishedDefinition definition, String binding, Content current, ProfileCapture.Command command);
-        default DocumentView compare(PublishedDefinition definition,String binding,Source source,ViewMode mode) {
+        default DocumentView compare(HostedPlanService.ViewSnapshot snapshot,boolean target,String documentId,ViewMode mode) {
             throw new PlanRefusal(PlanRefusal.Code.DISCLOSURE_REQUIRED);
         }
     }

@@ -55,6 +55,27 @@
       "section": "included",
       "offset": 0,
       "limit": 100
+    },
+    "bindingsRequest": {
+      "revision": "9007199254740993",
+      "entity": {
+        "kind": "existing",
+        "handle": "00000000-0000-4000-8000-000000000091"
+      },
+      "offset": 0,
+      "limit": 100
+    },
+    "bindingLocationsRequest": {
+      "revision": "9007199254740993",
+      "entity": {
+        "kind": "existing",
+        "handle": "00000000-0000-4000-8000-000000000091"
+      },
+      "fieldId": "tone",
+      "side": "current",
+      "offset": 2147483647,
+      "limit": 100,
+      "completeDocumentDisclosure": true
     }
   },
   "responses": {
@@ -397,6 +418,58 @@
         "closureDigest": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
       },
       "section": "conflicts"
+    },
+    "bindingsResponse": {
+      "revision": "9007199254740993",
+      "total": 1,
+      "offset": 0,
+      "nextOffset": null,
+      "items": [
+        {
+          "fieldId": "tone",
+          "token": "[[value:00000000-0000-4000-8000-000000000091:tone]]",
+          "current": {
+            "state": "value",
+            "text": ""
+          },
+          "target": {
+            "state": "unresolved"
+          },
+          "change": "unresolved",
+          "currentLocations": {
+            "state": "complete",
+            "total": 1
+          },
+          "targetLocations": {
+            "state": "unavailable",
+            "code": "INCOMPLETE_TARGET"
+          }
+        }
+      ]
+    },
+    "bindingLocationsResponse": {
+      "revision": "9007199254740993",
+      "total": 1,
+      "offset": 0,
+      "nextOffset": null,
+      "items": [
+        {
+          "documentId": "tone-sheet",
+          "sourceDigest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "projectionId": "tones",
+          "elementIndex": "1",
+          "attribute": {
+            "namespaceUri": "",
+            "localName": "tone"
+          },
+          "span": {
+            "start": 12,
+            "end": 12
+          },
+          "role": "field",
+          "declarationId": "tone"
+        }
+      ]
     }
   }
 }

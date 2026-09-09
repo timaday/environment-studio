@@ -43,7 +43,7 @@ class PlanLifecycleTest {
                 renders.incrementAndGet(); if(renderEntered!=null) { renderEntered.countDown(); await(renderRelease); } return incompleteTarget.get()?new ContentResult.Rejected(List.of("UNRESOLVED_FIELDS")):new ContentResult.Complete(content);
             }
             public Capture capture(PublishedDefinition definition,String binding,Content current,ProfileCapture.Command command) { throw new AssertionError("SHOULD_REFUSE_BEFORE_CAPTURE"); }
-            public DocumentView compare(PublishedDefinition definition,String binding,Source source,ViewMode mode) { return new DocumentView(source.documentId(),mode,source.xml(),true,false,true,List.of()); }
+            public DocumentView compare(HostedPlanService.ViewSnapshot snapshot,boolean target,String documentId,ViewMode mode) { var source=snapshot.selected(target).sources().stream().filter(s->s.documentId().equals(documentId)).findFirst().orElseThrow();return new DocumentView(source.documentId(),mode,source.xml(),true,false,true,List.of()); }
         };
         final HostedPlanService service=new HostedPlanService(base.authority::guard,base.workspace,Map.of("destination",new Destination("destination",studio.environment.core.definitionv2.NativeDefinition.Engine.POSTGRESQL,port)),adapter,nanos::get);
         final HostedPlanService.Ack created=service.create(base.lease,UUID.randomUUID().toString(),base.ref,"invented-binding","destination");

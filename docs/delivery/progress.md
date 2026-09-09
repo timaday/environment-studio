@@ -151,3 +151,13 @@ and combined 578-test integration passed. Connection completion grants no proces
 admission. Trusted peer identity, listener/coordinator/JNI and crash qualification
 remain unfinished. Binding review independently found a masked-length disclosure
 through raw location offsets; its acknowledgement correction is in progress.
+
+[D06b4 bindings and exact placeholders](../evidence/d06b4-bindings.md) are now
+independently reviewed and locally integrated. The review found masked-length
+leakage through raw spans; the corrected route requires complete-document
+acknowledgement. Focused Java26/schema23 and five guard mutants pass. The corrected
+full reactor reproduced the older credential-body MALFORMED_BODY failure and is
+not green; root is isolating that transport defect before final combined acceptance.
+Labels/observed identity, operator navigation and heap/transfer proof remain open.
+The native peer pin contract now requires SO_PEERPIDFD; its bounded native primitive
+is the next independently assigned implementation slice after `2035854`.

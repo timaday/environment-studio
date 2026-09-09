@@ -69,6 +69,18 @@
     },
     {
       "$ref": "#/$defs/validationResponse"
+    },
+    {
+      "$ref": "#/$defs/bindingsRequest"
+    },
+    {
+      "$ref": "#/$defs/bindingLocationsRequest"
+    },
+    {
+      "$ref": "#/$defs/bindingsResponse"
+    },
+    {
+      "$ref": "#/$defs/bindingLocationsResponse"
     }
   ],
   "$defs": {
@@ -1826,6 +1838,389 @@
         },
         "exportAvailable": {
           "const": false
+        }
+      }
+    },
+    "bindingOffset": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 256
+    },
+    "locationOffset": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 2147483647
+    },
+    "valueToken": {
+      "type": "string",
+      "pattern": "^\\[\\[value:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}:[a-z][a-z0-9.-]{0,63}\\]\\](?![\\s\\S])"
+    },
+    "bindingValue": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "state",
+            "text"
+          ],
+          "properties": {
+            "state": {
+              "const": "value"
+            },
+            "text": {
+              "type": "string"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "state"
+          ],
+          "properties": {
+            "state": {
+              "const": "masked"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "state"
+          ],
+          "properties": {
+            "state": {
+              "const": "absent"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "state"
+          ],
+          "properties": {
+            "state": {
+              "const": "unresolved"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "state"
+          ],
+          "properties": {
+            "state": {
+              "const": "unavailable"
+            }
+          }
+        }
+      ]
+    },
+    "bindingLocationCount": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "state",
+            "total"
+          ],
+          "properties": {
+            "state": {
+              "const": "complete"
+            },
+            "total": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 2147483647
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "state",
+            "code"
+          ],
+          "properties": {
+            "state": {
+              "const": "unavailable"
+            },
+            "code": {
+              "enum": [
+                "CURRENT_ENTITY_ABSENT",
+                "INCOMPLETE_TARGET"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "bindingItem": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "fieldId",
+        "token",
+        "current",
+        "target",
+        "change",
+        "currentLocations",
+        "targetLocations"
+      ],
+      "properties": {
+        "fieldId": {
+          "$ref": "#/$defs/id"
+        },
+        "token": {
+          "$ref": "#/$defs/valueToken"
+        },
+        "current": {
+          "$ref": "#/$defs/bindingValue"
+        },
+        "target": {
+          "$ref": "#/$defs/bindingValue"
+        },
+        "change": {
+          "enum": [
+            "unchanged",
+            "changed",
+            "added",
+            "removed",
+            "unresolved"
+          ]
+        },
+        "currentLocations": {
+          "$ref": "#/$defs/bindingLocationCount"
+        },
+        "targetLocations": {
+          "$ref": "#/$defs/bindingLocationCount"
+        }
+      }
+    },
+    "bindingLocation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "documentId",
+        "sourceDigest",
+        "projectionId",
+        "elementIndex",
+        "attribute",
+        "span",
+        "role",
+        "declarationId"
+      ],
+      "properties": {
+        "documentId": {
+          "$ref": "#/$defs/id"
+        },
+        "sourceDigest": {
+          "$ref": "#/$defs/sha256"
+        },
+        "projectionId": {
+          "$ref": "#/$defs/id"
+        },
+        "elementIndex": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]*)(?![\\s\\S])",
+          "maxLength": 10
+        },
+        "attribute": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "namespaceUri",
+            "localName"
+          ],
+          "properties": {
+            "namespaceUri": {
+              "type": "string"
+            },
+            "localName": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "span": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "start",
+            "end"
+          ],
+          "properties": {
+            "start": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1048576
+            },
+            "end": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1048576
+            }
+          }
+        },
+        "role": {
+          "enum": [
+            "field",
+            "reference"
+          ]
+        },
+        "declarationId": {
+          "$ref": "#/$defs/id"
+        }
+      }
+    },
+    "bindingsRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "revision",
+        "entity",
+        "offset",
+        "limit"
+      ],
+      "properties": {
+        "revision": {
+          "$ref": "#/$defs/revision"
+        },
+        "entity": {
+          "$ref": "#/$defs/entityRef"
+        },
+        "offset": {
+          "$ref": "#/$defs/bindingOffset"
+        },
+        "limit": {
+          "$ref": "#/$defs/limit"
+        }
+      }
+    },
+    "bindingLocationsRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "revision",
+        "entity",
+        "fieldId",
+        "side",
+        "offset",
+        "limit",
+        "completeDocumentDisclosure"
+      ],
+      "properties": {
+        "revision": {
+          "$ref": "#/$defs/revision"
+        },
+        "entity": {
+          "$ref": "#/$defs/entityRef"
+        },
+        "fieldId": {
+          "$ref": "#/$defs/id"
+        },
+        "side": {
+          "$ref": "#/$defs/side"
+        },
+        "offset": {
+          "$ref": "#/$defs/locationOffset"
+        },
+        "limit": {
+          "$ref": "#/$defs/limit"
+        },
+        "completeDocumentDisclosure": {
+          "const": true
+        }
+      }
+    },
+    "bindingsResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "revision",
+        "total",
+        "offset",
+        "nextOffset",
+        "items"
+      ],
+      "properties": {
+        "revision": {
+          "$ref": "#/$defs/revision"
+        },
+        "total": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 256
+        },
+        "offset": {
+          "$ref": "#/$defs/bindingOffset"
+        },
+        "nextOffset": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/bindingOffset"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "items": {
+          "type": "array",
+          "maxItems": 100,
+          "items": {
+            "$ref": "#/$defs/bindingItem"
+          }
+        }
+      }
+    },
+    "bindingLocationsResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "revision",
+        "total",
+        "offset",
+        "nextOffset",
+        "items"
+      ],
+      "properties": {
+        "revision": {
+          "$ref": "#/$defs/revision"
+        },
+        "total": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2147483647
+        },
+        "offset": {
+          "$ref": "#/$defs/locationOffset"
+        },
+        "nextOffset": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/locationOffset"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "items": {
+          "type": "array",
+          "maxItems": 100,
+          "items": {
+            "$ref": "#/$defs/bindingLocation"
+          }
         }
       }
     }

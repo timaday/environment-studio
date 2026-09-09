@@ -20,6 +20,9 @@ are in [plan OpenAPI](openapi-plans-v1.json). They supersede older proposed GET
 comparison routes and asynchronous validation polling: validation returns its
 bounded result directly. Profile capture returns a value-free portable source;
 saving or publishing it is a separate explicit workspace action.
+The [value mapping extension](hosted-plan-context-v1.md) adds two closed binding/location
+POST routes and stable placeholder tokens. Labels and observed destination identity
+remain planned; [D06b4 evidence](../evidence/d06b4-bindings.md) distinguishes the scope.
 
 The remaining operations below are planned. Add closed contracts, examples and
 backend tests before implementation. The capabilities response remains the source
