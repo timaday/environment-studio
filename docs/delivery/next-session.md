@@ -31,7 +31,7 @@ full Java828 passes. The [typed/final-target integration](../evidence/qf34-deriv
 now passes combined Java894 with actual XML and complete contributor comparison.
 [Physical-only v3 profile ports](../evidence/qf34-profile-v3.md) are reviewed and
 pass full Java912 plus independent inventory/byte/cancellation controls. V3 remains
-unavailable pending versioned history and hosted qualification.
+unavailable pending versioned persistence and hosted qualification.
 The latest retained `aaddcfb` [profile image](../evidence/profile-v3-artifacts.md)
 passes Java914 and protected smoke. Four hosted/two demo browser cases remain
 scoped to the preceding7111230; see progress.md.
@@ -47,8 +47,10 @@ The [inspection clarification](../evidence/inspection-capability-clarification.m
 uses explicit UI/API configuration fields while preserving operation and owner
 gates. Frontend40/schema32 and full Java894 pass, plus the
 [exact artifact/browser refresh](../evidence/derived-target-artifacts.md).
-Versioned v3 history is the next active implementation slice; physical-only capture
-and whole/partial reuse are integrated internal ports, with no hosted enablement.
+[Separate v3 history](../evidence/qf34-history-v3.md) is now reviewed; its numeric
+checks preserve legal binding IDs and old snapshots. Combined Java943 passes.
+Explicit schema3 persistence is next; physical-only reuse/history remain internal
+ports, with no v3 hosted enablement.
 The review environment's supervisor failures remain separately scoped and unresolved
 individually; local Java21.0.12 socket/child-start controls and supervisor168 pass.
 

@@ -30,7 +30,9 @@ derived proofs through verified physical mappings. Combined Java894 passes.
 The [physical-only v3 profile ports](../evidence/qf34-profile-v3.md) are now
 reviewed: actual XML capture, bounded portable bytes and whole/partial composition
 through fresh final materialization pass full Java912 and independent controls.
-Versioned history and hosted integration remain next; v3 availability stays disabled.
+[Separate v3 history](../evidence/qf34-history-v3.md) is also reviewed after fixing
+a legal binding-ID collision in numeric checks; the combined Java943 build passes.
+Schema3 persistence and hosted integration remain next; v3 availability stays disabled.
 No Q feedback GitHub publication is authorized. Existing MVP scope and completed
 work remain in place.
 

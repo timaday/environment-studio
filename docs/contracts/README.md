@@ -24,7 +24,8 @@
 | Credentials, data lifetime and hosted access | [security-and-state.md](security-and-state.md) |
 | Hosted session implementation boundary | [hosted-session.md](hosted-session.md) |
 | Runtime definition drafts and revisions | [definition-workspace.md](definition-workspace.md) |
-| Planned native publication and owned profiles | [native-workspace-v2.md](native-workspace-v2.md) |
+| Native publication and owned profiles | [native-workspace-v2.md](native-workspace-v2.md) |
+| Separate v3 historical revisions; storage/HTTP pending | [native-workspace-v3.md](native-workspace-v3.md) |
 | HTTP | [api.md](api.md), [openapi.yaml](openapi.yaml) |
 | Deployment | [../../deploy/README.md](../../deploy/README.md) |
 
