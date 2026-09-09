@@ -7,7 +7,7 @@
 | First definition compiler boundary | [definition-compilation.md](definition-compilation.md) |
 | Complete native definition declarations | [native-definition-v2.md](native-definition-v2.md) |
 | Planned authoritative derived declarations and proof | [native-definition-v3.md](native-definition-v3.md), [derived-graph-v1.md](derived-graph-v1.md) |
-| Planned physical-only v3 profiles | [profile-v3.md](profile-v3.md) |
+| Physical-only v3 profile ports; hosted paths pending | [profile-v3.md](profile-v3.md) |
 | Observation, operations and revision authority | [planning.md](planning.md) |
 | Planned hosted plan inspection/composition views | [hosted-plan-views-v1.md](hosted-plan-views-v1.md) |
 | Value mapping and planned plan context | [hosted-plan-context-v1.md](hosted-plan-context-v1.md) |

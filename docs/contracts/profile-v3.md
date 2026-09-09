@@ -1,8 +1,9 @@
 # Profile v3 — physical structure with fresh derived results
 
-Status: planned portable contract for [native v3](native-definition-v3.md).
-Capture, import, persistence, publication and composition are unimplemented for
-this version. [Profile v2](profile-v2.md) and its historical bytes remain unchanged.
+Status: internal validation, capture, import and composition are implemented for
+[native v3](native-definition-v3.md); see [profile evidence](../evidence/qf34-profile-v3.md).
+Persistence, publication and hosted composition remain unimplemented for this
+version. [Profile v2](profile-v2.md) and its historical bytes remain unchanged.
 
 ## Closed portable shape and digest
 
@@ -80,3 +81,53 @@ target groups, empty physical input refusal for the nonempty portable shape,
 computed-slot/edge rejection, unchanged siblings, stale revision/proposal refusal,
 and old profile hash/history goldens. Internal graph tests do not qualify these
 capture, hosted UI, persistence or export paths.
+
+## Internal versioned ports
+
+The first implementation keeps v3 explicitly separate from publication authority.
+`V3ProfileValidator.validate(Checked, Profile)` verifies the exact recompiled v3
+definition and physical declarations, returning the existing structural result
+shape with the v3 digest domain. Only the expected `MECHANISM_UNQUALIFIED`
+publication diagnostic is permitted at this internal boundary; missing or
+unsupported declarations remain refused. It must never manufacture a v2 Ready
+result. The shared value-free `Profile` structure carries no wire version; versioned
+validators and byte adapters select the schema and digest domain explicitly.
+
+`V3ProfileCapture.capture(Checked, ObservedGraph, ProfileCapture.Command)` creates
+only the allowlisted physical structure. Its graph is a caller prerequisite, not
+an authority-bearing public observation submission. The server capture adapter
+must independently reproject a complete snapshot using a separately expected
+revision/source pin and recompute its derived evidence before invoking this port.
+It then enforces encoding and re-import limits. Neither core nor portable capture
+result retains the snapshot, graph, source values or computed contributors.
+
+`V3ProfileComposer.preview(Checked, ProfileResult.Checked, selectedSlots)` returns
+a versioned preview containing the existing physical closure plus a sorted unique
+list of affected derivation IDs. Derivations are affected when any included
+physical type is one of their declared source types; no values or donor groups
+participate. A v3 composition call receives that preview, the checked profile,
+current qualified physical graph and explicit existing/create/cancel decisions.
+It recomputes both preview components to reject stale or edited proposals, then
+returns the existing physical composition result shape. The hosting adapter owns
+the complete current pin and eventual plan revision admission.
+
+Shared physical helpers may serve v2 and v3 facades; v2 validation, hashes,
+historical behavior and public signatures remain unchanged. V3 existing-identity
+ordering uses strict Unicode scalar/unsigned UTF-8 order. Portable neutral slot,
+type, field and relation IDs keep their existing ASCII ordering. Every mapped
+field remains unresolved until an explicit target decision; all destination
+entities and edges remain present in the proposal unless a separate supported
+command removes them. These internal ports do not enable workspace persistence,
+publication, hosted composition, target validation or export.
+
+`V3ProfileBytesAdapter` owns v3 import/write and returns an adapter-created portable
+draft only after bounded schema/semantic validation, encoding and re-import agree.
+Its capture and composition entry points accept an independently expected current
+pin plus an actual source snapshot and cancellation signal. Each independently
+reprojects that snapshot before invoking core; a caller cannot submit a claimed
+Complete graph instead. Capture checks output-node budgets before allocating the
+profile. Composition returns only the physical proposal, never an installed target.
+Both discard results if cancellation is observed at their final boundary. Missing
+or changed source inventory/digests, stale revision and incomplete derived evidence
+refuse. Failed global rules may remain inspectable in a complete observation;
+they cannot authorize later target validation or export.

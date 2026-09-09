@@ -27,8 +27,10 @@ actual source/selector proofs and checks independent snapshot pins; full Java828
 passes, including v2 compatibility controls. The [reviewed target integration](../evidence/qf34-derived-target.md)
 now prepares typed decisions, materializes actual XML and compares complete final
 derived proofs through verified physical mappings. Combined Java894 passes.
-Physical-only profile/history and hosted integration remain next; v3 availability
-stays disabled.
+The [physical-only v3 profile ports](../evidence/qf34-profile-v3.md) are now
+reviewed: actual XML capture, bounded portable bytes and whole/partial composition
+through fresh final materialization pass full Java912 and independent controls.
+Versioned history and hosted integration remain next; v3 availability stays disabled.
 No Q feedback GitHub publication is authorized. Existing MVP scope and completed
 work remain in place.
 
@@ -43,8 +45,8 @@ The [inspection capability clarification](../evidence/inspection-capability-clar
 now distinguishes disabled browser controls from configured API composition;
 actual request admission remains independent. Focused Java20, frontend40/schema32
 and independent API-to-UI mutation checks pass. The [exact artifact refresh](../evidence/derived-target-artifacts.md)
-passes revised-container smoke and four hosted/two demo browser cases. Profiles
-and hosted work remain active.
+passes revised-container smoke and four hosted/two demo browser cases. Versioned
+history and hosted work remain active; this image predates the profile changes.
 
 Current retained image, exact `7111230`:
 `sha256:eabf02b76e4986fd84007253e4434a418f551260d8eecab49118306bee581125`.
@@ -73,7 +75,7 @@ witnesses. Combined Java844 and independent native controls pass. The root
 registers the Java-owned child and correlates its first connection; image/ancestry,
 production JNI/coordinator, privacy admission and client qualification remain open.
 
-Latest exact-source OCI/browser artifact is `c4a324636d4aeaa20012349e68cce7eb2b025f8b`.
+Earlier exact-source OCI/browser artifact was `c4a324636d4aeaa20012349e68cce7eb2b025f8b`.
 Reviewed observed context and response/session recovery are integrated; the
 [exact-source artifact refresh](../evidence/d06b4-artifacts.md) passed Java683,
 frontend34/schema24, four hosted browser cases and protected container/workspace

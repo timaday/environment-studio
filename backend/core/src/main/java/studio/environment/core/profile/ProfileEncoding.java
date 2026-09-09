@@ -13,14 +13,18 @@ import java.util.TreeMap;
 final class ProfileEncoding {
     private ProfileEncoding() { }
     static String digest(Profile profile) {
-        StringBuilder framed = new StringBuilder("ES-PROFILE-2\0");
-        frame(object(profile), framed);
+        return digest(profile, "2");
+    }
+    static String digestV3(Profile profile) { return digest(profile, "3"); }
+    private static String digest(Profile profile, String version) {
+        StringBuilder framed = new StringBuilder("ES-PROFILE-" + version + "\0");
+        frame(object(profile, version), framed);
         try { return HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(framed.toString().getBytes(StandardCharsets.UTF_8))); }
         catch (NoSuchAlgorithmException impossible) { throw new IllegalStateException("Required digest unavailable."); }
     }
-    private static Map<String, Object> object(Profile p) {
+    private static Map<String, Object> object(Profile p, String version) {
         Map<String, Object> result = new TreeMap<>();
-        result.put("schemaVersion", "2"); result.put("id", p.id()); result.put("logicalDefinitionDigest", p.logicalDefinitionDigest());
+        result.put("schemaVersion", version); result.put("id", p.id()); result.put("logicalDefinitionDigest", p.logicalDefinitionDigest());
         List<Object> entities = new ArrayList<>();
         for (var e : p.entities()) entities.add(new TreeMap<>(Map.of("id", e.id(), "type", e.type(), "label", e.label(), "requiredInputs", e.requiredInputs())));
         List<Object> relations = new ArrayList<>();

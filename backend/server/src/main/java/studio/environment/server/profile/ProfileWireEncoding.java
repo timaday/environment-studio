@@ -10,22 +10,30 @@ import studio.environment.core.profile.Profile;
 /** Package-private external JSON allowlist and portable output budget, owned by the adapter. */
 final class ProfileWireEncoding {
     private static final int MAX_BYTES = 1_048_576;
+    enum Version { V2("2"), V3("3"); final String wire; Version(String wire) { this.wire = wire; } }
     private ProfileWireEncoding() { }
     static byte[] encode(Profile profile) {
+        return encode(profile, Version.V2);
+    }
+    static byte[] encode(Profile profile, Version version) {
         long nodes = 13L + profile.relations().size() * 7L;
         for (var entity : profile.entities()) nodes += 9L + entity.requiredInputs().size();
         checkNodes(nodes);
         number(profile.revision());
         StringBuilder out = new StringBuilder();
-        json(object(profile), out);
+        json(object(profile, version), out);
         byte[] bytes = out.toString().getBytes(StandardCharsets.UTF_8);
         if (bytes.length > MAX_BYTES) throw new Limit(Limit.Code.BYTE_LIMIT);
         return bytes;
     }
     static void checkCaptureNodes(studio.environment.core.definitionv2.NativeCompilationResult.ReadyToPublish definition,
             studio.environment.core.graph.ObservedGraph graph) {
+        checkCaptureNodes(definition.checked().definition().logical().entityTypes(), graph);
+    }
+    static void checkCaptureNodes(List<studio.environment.core.definitionv2.NativeDefinition.EntityType> types,
+            studio.environment.core.graph.ObservedGraph graph) {
         Map<String, Long> required = new java.util.HashMap<>();
-        definition.checked().definition().logical().entityTypes().forEach(t -> required.put(t.id(), t.fields().stream().filter(f -> f.required()).count()));
+        types.forEach(t -> required.put(t.id(), t.fields().stream().filter(f -> f.required()).count()));
         long nodes = 13L + graph.edges().size() * 7L;
         for (var entity : graph.entities()) nodes += 9L + required.getOrDefault(entity.key().type(), 0L);
         checkNodes(nodes);
@@ -36,9 +44,9 @@ final class ProfileWireEncoding {
         checkNodes(nodes);
     }
     private static void checkNodes(long nodes) { if (nodes > 20_000) throw new Limit(); }
-    private static Map<String, Object> object(Profile p) {
+    private static Map<String, Object> object(Profile p, Version version) {
         Map<String, Object> result = new TreeMap<>();
-        result.put("schemaVersion", "2"); result.put("id", p.id()); result.put("logicalDefinitionDigest", p.logicalDefinitionDigest());
+        result.put("schemaVersion", version.wire); result.put("id", p.id()); result.put("logicalDefinitionDigest", p.logicalDefinitionDigest());
         result.put("revision", p.revision());
         List<Object> entities = new ArrayList<>();
         for (var e : p.entities()) entities.add(new TreeMap<>(Map.of("id", e.id(), "type", e.type(), "label", e.label(), "requiredInputs", e.requiredInputs())));

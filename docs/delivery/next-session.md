@@ -29,7 +29,9 @@ compiler, core derived computation and the
 [observed XML adapter](../evidence/qf34-derived-projection.md) are now reviewed;
 full Java828 passes. The [typed/final-target integration](../evidence/qf34-derived-target.md)
 now passes combined Java894 with actual XML and complete contributor comparison.
-V3 remains unavailable pending physical-only profile/history and hosted qualification.
+[Physical-only v3 profile ports](../evidence/qf34-profile-v3.md) are reviewed and
+pass full Java912 plus independent inventory/byte/cancellation controls. V3 remains
+unavailable pending versioned history and hosted qualification.
 The latest retained `7111230` OCI image includes target/capability changes and
 passes protected smoke and four hosted/two demo browser cases; see progress.md.
 No Q feedback may be uploaded to GitHub without publication authorization.
@@ -44,7 +46,8 @@ The [inspection clarification](../evidence/inspection-capability-clarification.m
 uses explicit UI/API configuration fields while preserving operation and owner
 gates. Frontend40/schema32 and full Java894 pass, plus the
 [exact artifact/browser refresh](../evidence/derived-target-artifacts.md).
-Physical-only v3 profiles are the next active implementation slice.
+Versioned v3 history is the next active implementation slice; physical-only capture
+and whole/partial reuse are integrated internal ports, with no hosted enablement.
 The review environment's supervisor failures remain separately scoped and unresolved
 individually; local Java21.0.12 socket/child-start controls and supervisor168 pass.
 
@@ -72,7 +75,7 @@ protected/workspace smoke, separate supervisor artifact and two demo browser cas
 See [artifact evidence](../evidence/d06b4-artifacts.md). Its feature-branch dispatch cannot publish
 GHCR. Older remote/checkpoint statements below retain their historical scope.
 
-Latest exact-source OCI/browser artifact: `c4a324636d4aeaa20012349e68cce7eb2b025f8b`. The
+Earlier exact-source OCI/browser artifact: `c4a324636d4aeaa20012349e68cce7eb2b025f8b`. The
 [artifact refresh](../evidence/d06b4-artifacts.md) records Java683,
 frontend34/schema24, protected container/workspace smoke and four exact-source
 hosted browser cases. Observed destination and summary transfer authority are
