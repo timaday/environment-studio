@@ -8,7 +8,8 @@ Latest exact-source OCI/browser artifact is `c4a324636d4aeaa20012349e68cce7eb2b0
 Reviewed observed context and response/session recovery are integrated; the
 [exact-source artifact refresh](../evidence/d06b4-artifacts.md) passed Java683,
 frontend34/schema24, four hosted browser cases and protected container/workspace
-smoke. Native fork/listener primitives remain private prerequisites; whole-process heap/transfer qualification,
+smoke. The reviewed native Java launch owner passes the later Java700 integration;
+its registry remains empty. Native primitives remain private prerequisites; whole-process heap/transfer qualification,
 remaining operator workflow and external publication/deployment remain unfinished.
 
 Work resumed from verified local and remote `8125e57127b1583664d368b97b82d08ec103fe5d`.
@@ -236,3 +237,12 @@ a concurrent cleanup-notification gap. Corrected Java683, independent25 focused
 checks and twelve distinct killed guard mutants support this slice. The exact
 c4a3246 OCI build, protected/workspace smoke and four HTTPS/OIDC browser cases
 also pass. Whole hosted-process capacity qualification remains active.
+
+The [Java launch ownership prerequisite](../evidence/d07c3-privacy-launch.md)
+is independently reviewed and integrated. Review reproduced a caller waiting past
+a shortened cleanup deadline; the corrected owner observes the shared budget.
+Java700, actual FORK capture/POSIX_SPAWN refusal and seven killed guard mutants
+support this slice. Production JNI/coordinator and native-client admission remain
+unfinished. The actual hosted HTTP heap harness now exercises the exact c4a3246
+application with mock observation and independent workspace publication; its
+capacity results and adverse transfer combinations remain under investigation.

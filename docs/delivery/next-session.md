@@ -33,6 +33,17 @@ The one-CPU run spent substantial time in GC. Whole-process maximum scope and
 blocked transfers remain unqualified; no deployment allocation has yet been
 accepted. This work remains active.
 
+The [native Java launch owner](../evidence/d07c3-privacy-launch.md) is independently
+reviewed; the corrected exact three files pass Java700 on `d7894a3`. A cleanup
+caller now observes later shortening of the shared deadline. Preserve the corrected
+archive and both evidence manifests in that record. Production JNI/coordinator,
+existing process-owner adoption and complete native admission remain next work.
+The exact c4a3246 hosted HTTP heap lab is external at
+`/home/tim/.tmp/es-hosted-heap-20260909`; do not confuse its mock observation with
+database qualification. Its independent reviewer identified a harness Docker-stop
+timeout that skips issuer cleanup; correct and recheck that failure path before
+accepting final harness evidence.
+
 The [buffered request correction](../evidence/buffered-request-completion.md) is
 independently accepted and integrated after `21649ba`. Full combined Java590,
 assembly/hostile-launch checks and the callback-latch mutant passed their expected
