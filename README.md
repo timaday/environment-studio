@@ -16,6 +16,9 @@ exact source in an explicitly initialized schema3 workspace.
 [Internal v3 publication commands](docs/evidence/qf34-publication-v3.md) now enforce
 fresh qualification; the current compiler still refuses publication. V3
 publication HTTP and plan integration remain unfinished.
+The [internal v3 observation path](docs/evidence/qf34-observation-v3.md) now retains
+separate fingerprints and passes actual mock database/TLS and derived-projection
+checks; hosted v3 availability remains disabled.
 Complete Oracle CLOB/PostgreSQL text observation, value-free profile composition
 and cross-document structural target materialization are implemented as reviewed
 internal mechanisms. The hosted plan service joins these mechanisms with session

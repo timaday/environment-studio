@@ -5,6 +5,7 @@ import java.sql.*;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.*;
+import java.util.function.Supplier;
 import studio.environment.core.definitionv2.NativeDefinition.Binding;
 import studio.environment.core.definitionv2.NativeDefinition.Engine;
 import studio.environment.core.definitionv2.NativeDefinition.KeyType;
@@ -36,6 +37,12 @@ public final class JdbcObservation implements ObservationPort {
         this.beforeSources = Objects.requireNonNull(beforeSources); this.operationNanos = OPERATION_NANOS; this.cleanupNanos = CLEANUP_NANOS;
     }
     @Override public Reservation reserve(Selection selection) {
+        return reserveRead(() -> select(selection));
+    }
+    @Override public Reservation reserveV3(V3Selection selection) {
+        return reserveRead(() -> selectV3(selection));
+    }
+    private Reservation reserveRead(Supplier<ReadSelection> selection) {
         if (!CAPACITY.tryAcquire()) return new Reservation.Refused(Code.CAPACITY);
         return new Reservation.Admitted(new Permit() {
             private final AtomicBoolean consumed = new AtomicBoolean();
@@ -57,12 +64,39 @@ public final class JdbcObservation implements ObservationPort {
         }
         try (var permit = ((Reservation.Admitted)reservation).permit()) { return permit.observe(credentials, cancellation); }
     }
-    private ObservationResult observeReserved(Selection selection, TransientCredentials credentials, Cancellation cancellation) {
+    @Override public ObservationResult observeV3(V3Selection selection, TransientCredentials credentials, Cancellation cancellation) {
+        Objects.requireNonNull(credentials);
+        var reservation = reserveV3(selection);
+        if (reservation instanceof Reservation.Refused refused) {
+            credentials.close(); return new Refused(refused.code(), Cleanup.COMPLETE);
+        }
+        try (var permit = ((Reservation.Admitted)reservation).permit()) { return permit.observe(credentials, cancellation); }
+    }
+    private record ReadSelection(Binding binding, String logicalDigest, String bindingDigest, String version) { }
+    private static ReadSelection select(Selection selection) {
+        if (selection == null || selection.compiled() == null || selection.bindingId() == null) throw new ObservationFailure(Code.INVALID_SELECTION);
+        var checked = selection.compiled().checked();
+        var binding = checked.definition().bindings().stream().filter(b -> b.id().equals(selection.bindingId())).findFirst().orElseThrow(() -> new ObservationFailure(Code.INVALID_SELECTION));
+        return new ReadSelection(binding, checked.logicalDigest(), checked.bindingDigests().get(binding.id()), "2");
+    }
+    private static ReadSelection selectV3(V3Selection selection) {
+        if (selection == null || selection.compiled() == null || selection.bindingId() == null) throw new ObservationFailure(Code.INVALID_SELECTION);
+        var checked = selection.compiled();
+        studio.environment.core.definitionv3.NativeCompilationResult result;
+        try { result = new studio.environment.core.definitionv3.NativeDefinitionCompiler().compile(checked.definition()); }
+        catch (RuntimeException invalid) { throw new ObservationFailure(Code.INVALID_SELECTION); }
+        if (!(result instanceof studio.environment.core.definitionv3.NativeCompilationResult.Incomplete incomplete)
+                || !incomplete.checked().equals(checked)
+                || incomplete.diagnostics().stream().anyMatch(d -> !d.code().equals("MECHANISM_UNQUALIFIED"))) throw new ObservationFailure(Code.INVALID_SELECTION);
+        var binding = checked.definition().bindings().stream().filter(b -> b.id().equals(selection.bindingId())).findFirst().orElseThrow(() -> new ObservationFailure(Code.INVALID_SELECTION));
+        return new ReadSelection(binding, checked.logicalDigest(), checked.bindingDigests().get(binding.id()), "3");
+    }
+    private ObservationResult observeReserved(Supplier<ReadSelection> selected, TransientCredentials credentials, Cancellation cancellation) {
         if (cancellation == null) { credentials.close(); CAPACITY.release(); return new Refused(Code.INVALID_SELECTION, Cleanup.COMPLETE); }
-        Binding binding;
+        long deadline = System.nanoTime() + operationNanos;
+        Binding binding; ReadSelection selection;
         try {
-            if (selection == null || selection.compiled() == null || selection.bindingId() == null) throw new ObservationFailure(Code.INVALID_SELECTION);
-            binding = selection.compiled().checked().definition().bindings().stream().filter(b -> b.id().equals(selection.bindingId())).findFirst().orElseThrow(() -> new ObservationFailure(Code.INVALID_SELECTION));
+            selection = selected.get(); binding = selection.binding();
             if (binding.engine() != destination.engine() || binding.documents().isEmpty() || binding.documents().size() > 128) throw new ObservationFailure(Code.INVALID_SELECTION);
             String expectedPolicy = binding.engine() == Engine.POSTGRESQL ? "postgresql-read-operation-v1" : "oracle-read-operation-v1";
             if (!expectedPolicy.equals(destination.operationPolicyVersion())) throw new ObservationFailure(Code.DESTINATION_UNQUALIFIED);
@@ -70,8 +104,9 @@ public final class JdbcObservation implements ObservationPort {
             SqlRead.quoted(binding.schema()); SqlRead.quoted(binding.table()); SqlRead.quoted(binding.keyColumn()); SqlRead.quoted(binding.xmlColumn());
             if (cancellation.cancelled()) throw new ObservationFailure(Code.CANCELLED);
             if (DriverLoggingPolicy.verboseDriverLogging()) throw new ObservationFailure(Code.DESTINATION_UNQUALIFIED);
+            if (System.nanoTime() >= deadline) throw new ObservationFailure(Code.DEADLINE_EXCEEDED);
         } catch (ObservationFailure refused) { credentials.close(); CAPACITY.release(); return new Refused(refused.code(), Cleanup.COMPLETE); }
-        var work = new Work(selection, binding, credentials, cancellation);
+        var work = new Work(selection, binding, credentials, cancellation, deadline);
         work.thread = new Thread(work, "studio-read-operation");
         work.thread.setDaemon(true);
         work.thread.start();
@@ -94,11 +129,11 @@ public final class JdbcObservation implements ObservationPort {
         }
     }
     private final class Work implements Runnable, CleanupHandle {
-        final Selection selection;
+        final ReadSelection selection;
         final Binding binding;
         final TransientCredentials credentials;
         final Cancellation cancellation;
-        final long deadline = System.nanoTime() + operationNanos;
+        final long deadline;
         final CountDownLatch done = new CountDownLatch(1);
         final AtomicBoolean cancelStarted = new AtomicBoolean();
         final AtomicBoolean released = new AtomicBoolean();
@@ -111,8 +146,9 @@ public final class JdbcObservation implements ObservationPort {
         volatile Connection connection;
         volatile Observation observation;
         volatile Code failure;
-        Work(Selection selection, Binding binding, TransientCredentials credentials, Cancellation cancellation) {
+        Work(ReadSelection selection, Binding binding, TransientCredentials credentials, Cancellation cancellation, long deadline) {
             this.selection = selection; this.binding = binding; this.credentials = credentials; this.cancellation = cancellation;
+            this.deadline = deadline;
         }
         @Override public void run() {
             boolean attempted = false;
@@ -281,16 +317,15 @@ public final class JdbcObservation implements ObservationPort {
         if (high != 0) throw new ObservationFailure(Code.INVALID_SOURCE);
         return text.toString();
     }
-    private Observation observation(Selection selection, Binding binding, List<Document> documents, Map<String,String> identity, String version, String driver, String encoding) {
-        var checked = selection.compiled().checked();
+    private Observation observation(ReadSelection selection, Binding binding, List<Document> documents, Map<String,String> identity, String version, String driver, String encoding) {
         Map<String,Object> endpoint = Map.of("id", destination.id(), "host", destination.host(), "port", destination.port(), "database", destination.database(), "transportIdentity", destination.transportIdentity(),
                 "expectedPhysicalIdentity", destination.expectedPhysicalIdentity(), "observedPhysicalIdentity", identity, "provisioningPolicyVersion", destination.provisioningPolicyVersion());
-        Map<String,Object> metadata = Map.of("adapterVersion", "jdbc-observation-v2", "operationPolicyVersion", destination.operationPolicyVersion(), "visibility", "complete", "readOnlyOperation", "verified", "snapshot", binding.engine() == Engine.POSTGRESQL ? "repeatable-read-read-only" : "read-only");
+        Map<String,Object> metadata = Map.of("adapterVersion", "jdbc-observation-v" + selection.version(), "operationPolicyVersion", destination.operationPolicyVersion(), "visibility", "complete", "readOnlyOperation", "verified", "snapshot", binding.engine() == Engine.POSTGRESQL ? "repeatable-read-read-only" : "read-only");
         var frame = new TreeMap<String,Object>();
-        frame.put("logicalDigest",checked.logicalDigest()); frame.put("bindingDigest",checked.bindingDigests().get(binding.id()));
+        frame.put("logicalDigest",selection.logicalDigest()); frame.put("bindingDigest",selection.bindingDigest());
         frame.put("engine",binding.engine().name().toLowerCase(Locale.ROOT)); frame.put("engineVersion",version); frame.put("driverVersion",driver); frame.put("storage",binding.storage().name().toLowerCase(Locale.ROOT));
         frame.put("storageVersion",binding.engine() == Engine.POSTGRESQL ? "postgresql-text-v1" : "oracle-clob-v1"); frame.put("encoding",encoding); frame.put("destination",endpoint); frame.put("metadata",metadata); frame.put("cleanup","complete");
         frame.put("documents",documents.stream().map(d -> Map.of("documentId",d.documentId(),"key",Map.of("type",d.key().type(),"value",d.key().value()),"xml",d.xml(),"utf8Bytes",d.utf8Bytes(),"characters",d.characters(),"sourceDigest",d.sourceDigest())).toList());
-        return new Observation(ObservationFingerprint.hash(frame), checked.logicalDigest(), checked.bindingDigests().get(binding.id()), documents, frame);
+        return new Observation(ObservationFingerprint.hash("ES-OBSERVATION-" + selection.version(), frame), selection.logicalDigest(), selection.bindingDigest(), documents, frame);
     }
 }

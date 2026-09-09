@@ -49,7 +49,9 @@ now reviewed and integrated: combined Java1072, frontend40/schema40 and independ
 reference, exact-revision and owner controls pass.
 [Internal publication commands](../evidence/qf34-publication-v3.md) now pass
 independent review and combined Java1115; the actual compiler still refuses
-publication. Publication HTTP, observation and plan integration remain the next
+publication. [Internal v3 observation](../evidence/qf34-observation-v3.md) now passes
+independent review, combined Java1126 and actual mock Oracle/PostgreSQL TLS and
+derived-projection controls. Publication HTTP and plan integration remain the next
 v3 boundaries before operational qualification.
 
 The lead owns shared contracts and compatibility. Independent fixed-candidate

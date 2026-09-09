@@ -25,6 +25,7 @@
 | Hosted session implementation boundary | [hosted-session.md](hosted-session.md) |
 | Runtime definition drafts and revisions | [definition-workspace.md](definition-workspace.md) |
 | Native publication and owned profiles | [native-workspace-v2.md](native-workspace-v2.md) |
+| Internal v3 database observation | [database-observation-v3.md](database-observation-v3.md) |
 | Separate v3 historical revisions | [native-workspace-v3.md](native-workspace-v3.md) |
 | Explicit schema3 storage and v3 definition drafts | [workspace-storage-v3.md](workspace-storage-v3.md) |
 | V3 definition draft and historical HTTP routes | [workspace-http-v3.md](workspace-http-v3.md), [openapi-workspace-v3.json](openapi-workspace-v3.json) |

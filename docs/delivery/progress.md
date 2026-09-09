@@ -48,8 +48,12 @@ pass independent reference/history/large-integer controls and combined Java1072,
 frontend40/schema40. They share the original four-operation transfer registry and
 authenticated commit. [Internal publication commands](../evidence/qf34-publication-v3.md)
 now pass independent review, ten compiled guard mutations and combined Java1115.
-The actual compiler continues to refuse publication. Publication HTTP, observation
-and plan integration remain next; v3 operational availability stays disabled.
+The actual compiler continues to refuse publication. The
+[internal v3 observation adapter](../evidence/qf34-observation-v3.md) now passes
+independent review, combined Java1126 and actual verified-TLS observation/derived
+projection on both owned mock database engines. Empty derived identities refuse;
+cleanup uncertainty remains explicit. Publication HTTP and plan integration remain
+next; v3 operational availability stays disabled.
 No Q feedback GitHub publication is authorized. Existing MVP scope and completed
 work remain in place.
 
