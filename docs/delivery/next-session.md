@@ -27,8 +27,11 @@ reviewed and integrated. Native fork capture was independently reviewed and inte
 frozen files. Memory investigation is external at
 `/home/tim/.tmp/es-heap-qualification-20260909`; use uploadable two-document
 unresolved fixtures and actual command-parser results, not the earlier typed-only
-eight-document probe as end-to-end scope evidence. No deployment allocation has
-yet been qualified. This work remains active.
+eight-document probe as end-to-end scope evidence. The [heap investigation](../evidence/d06b5-heap-investigation.md) demonstrates
+1 GiB OOM on a legal draft and specific 6 GiB four-plan/validation/recovery passes.
+The one-CPU run spent substantial time in GC. Whole-process maximum scope and
+blocked transfers remain unqualified; no deployment allocation has yet been
+accepted. This work remains active.
 
 The [buffered request correction](../evidence/buffered-request-completion.md) is
 independently accepted and integrated after `21649ba`. Full combined Java590,

@@ -210,3 +210,10 @@ mutants and four additional independent native controls. It captures a private
 kernel sender pin before exec; Java wrapper/root registration, listener/coordinator,
 image/ancestry/privacy admission and native-client qualification remain open.
 The runtime registry remains empty. Preserve its frozen author archive.
+
+The independently reviewed [heap investigation](../evidence/d06b5-heap-investigation.md)
+found that the current 1 GiB Compose allocation exhausts heap on one legal draft.
+A 6 GiB candidate passes the measured four-plan, validation and capacity-recovery
+workloads, with substantial one-CPU GC cost. This is partial local qualification;
+maximum source/value/response/scratch overlap and blocked HTTP transfer remain open.
+No allocation or scope limit changed.
