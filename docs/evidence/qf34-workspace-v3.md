@@ -99,7 +99,8 @@ The lead inspected the new reviewer test and evidence before integration.
 Final combined focused verification passed75 (10 core, 1 parser, 64 server),
 zero failures/errors/skips, including both independent test files. Repository
 integrity, whole-diff invented provenance review, Python11 and whitespace checks
-passed. Protected OCI administration remains pending at this checkpoint.
+passed. The subsequent [exact5925bc8 OCI artifact](workspace-v3-artifacts.md) passes
+Java973, protected startup and old/new explicit workspace administration.
 
 ## Scope and risk
 

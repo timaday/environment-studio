@@ -32,7 +32,7 @@ now passes combined Java894 with actual XML and complete contributor comparison.
 [Physical-only v3 profile ports](../evidence/qf34-profile-v3.md) are reviewed and
 pass full Java912 plus independent inventory/byte/cancellation controls. V3 remains
 unavailable pending versioned persistence and hosted qualification.
-The latest retained `aaddcfb` [profile image](../evidence/profile-v3-artifacts.md)
+The prior retained `aaddcfb` [profile image](../evidence/profile-v3-artifacts.md)
 passes Java914 and protected smoke. Four hosted/two demo browser cases remain
 scoped to the preceding7111230; see progress.md.
 No Q feedback may be uploaded to GitHub without publication authorization.
@@ -50,8 +50,8 @@ gates. Frontend40/schema32 and full Java894 pass, plus the
 [Separate v3 history](../evidence/qf34-history-v3.md) is now reviewed; its numeric
 checks preserve legal binding IDs and old snapshots. Combined Java943 passes.
 [Explicit schema3 persistence and definition drafts](../evidence/qf34-workspace-v3.md)
-are now reviewed. Combined Java970 and independent actual rollback/replay controls
-pass; three reviewer tests are subsequently integrated. Old initialization/upgrade
+are now reviewed. The exact5925bc8 [container artifact](../evidence/workspace-v3-artifacts.md) passes
+Java973 and protected schema3 administration, including the reviewer tests. Old initialization/upgrade
 commands keep their defaults; new v3 commands are explicit offline operations.
 V3 definition draft/history HTTP is next, followed by remaining profile mutation,
 publication and plan integration; there is no v3 runtime enablement.

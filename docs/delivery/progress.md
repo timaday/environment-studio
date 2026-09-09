@@ -34,7 +34,7 @@ through fresh final materialization pass full Java912 and independent controls.
 a legal binding-ID collision in numeric checks; the combined Java943 build passes.
 [Schema3 persistence and definition drafts](../evidence/qf34-workspace-v3.md) are
 also reviewed: exact history, shared quotas, owner/kind isolation and real failed
-upgrade rollback pass. Combined Java970 passes before three added reviewer tests.
+upgrade rollback pass. The exact candidate container passes Java973 with those reviewer tests.
 V3 profile mutation, publication and hosted integration remain next; v3
 availability stays disabled.
 No Q feedback GitHub publication is authorized. Existing MVP scope and completed
@@ -54,11 +54,12 @@ and independent API-to-UI mutation checks pass. The [exact artifact refresh](../
 passes revised-container smoke and four hosted/two demo browser cases. Versioned
 history and hosted work remain active; this image predates the profile changes.
 
-Current retained image, exact `aaddcfb`:
-`sha256:6f02aa37d7a125dbe1e8bc9d26090bab85a400cc0466f22304a2266da80545e4`.
-The [profile artifact](../evidence/profile-v3-artifacts.md) passes Java914 and
-protected startup/workspace smoke, and records its separate supervisor ZIP.
-It includes the reviewed profile ports; history/native WIP remain outside it.
+Current retained image, exact `5925bc8`:
+`sha256:4f9663a4ac349926166bc1f42247ba83aeaf4fd2177f45ea27fffb697ca148e1`.
+The [workspace artifact](../evidence/workspace-v3-artifacts.md) passes Java973 and
+protected startup/schema3 administration smoke, and records its separate supervisor
+ZIP. It includes reviewed profiles, separate history, schema3 drafts and the native
+direct-parent prerequisite. V3 HTTP and later native identity work remain outside it.
 The four hosted HTTPS/OIDC and two demo browser cases remain scoped to7111230.
 This is local proof only; preceding image evidence remains historically scoped.
 
