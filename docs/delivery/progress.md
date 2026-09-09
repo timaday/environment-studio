@@ -143,3 +143,11 @@ and retires only removed provenance. Independent review caught and corrected an
 unresolved-draft repair regression. The corrected seven-file candidate passed
 483 integrated core/parser/server tests; binding values, locations and stable
 placeholder rendering are the next active backend slice.
+
+The reviewed [D07c3 fixed-frame transport](../evidence/d07c3-privacy-wire.md) adds
+bounded native socket handshakes, correlation, cancellation and descriptor cleanup.
+Its 17 wire tests, eight killed guard mutants, five independent native controls
+and combined 578-test integration passed. Connection completion grants no process
+admission. Trusted peer identity, listener/coordinator/JNI and crash qualification
+remain unfinished. Binding review independently found a masked-length disclosure
+through raw location offsets; its acknowledgement correction is in progress.

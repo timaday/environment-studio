@@ -18,6 +18,14 @@ The previous push-review blocker is historical: the remote now matches the check
 
 ## Current 9 September continuation
 
+The [D07c3 transport primitive](../evidence/d07c3-privacy-wire.md) is independently
+reviewed and locally integrated after `7c1cb4c`; exact source hashes are in its
+evidence. Combined Java578 and five additional native controls passed. No runtime
+admission follows. Next native work is trusted peer identity and launch coordination.
+Root is correcting the independently confirmed masked-length coordinate disclosure
+in `/home/tim/.tmp/es-binding-disclosure-20260909`; the original 32-file binding
+candidate remains frozen. Review and verify the correction before integration.
+
 [D06b4 stable handles](../evidence/d06b4-handles.md) are reviewed and integrated,
 including the independent dangling-intent correction and 483-test integration.
 Active root binding/value/location work is in `/home/tim/.tmp/es-plan-bindings-20260909`
