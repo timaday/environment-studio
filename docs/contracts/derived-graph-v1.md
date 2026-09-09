@@ -177,6 +177,37 @@ outcomes; failed rules cannot authorize a target. No first internal implementati
 may advertise the still-unimplemented adapters, typed materialization comparison,
 hosted views, profile/history or export as qualified.
 
+### Observed XML input adapter
+
+An internal observed adapter accepts a checked v3 declaration, independently held
+expected pins, an immutable source snapshot and the owning operation's cancellation
+signal. The snapshot supplies its own revision token, logical digest, binding ID
+and binding digest plus the actual complete document sources. It must not copy
+an expected revision token into supplied evidence or derive source pins from an
+expected digest map. Compare snapshot metadata and the exact selected v3 checked
+metadata before parsing; check the full supplied/declared document inventory and
+existing per-document 1 MiB UTF-16 / per-observation 16 MiB strict UTF-8 bounds.
+
+Reuse the physical projection/locator mechanism without manufacturing a v2 ready
+result, changing a v2 digest domain or enabling v3 availability. Validate actual
+physical identities, fields and topology. Obtain each document digest and every
+attribute/selector pin from its parsed source, and require exact equality with
+the independently expected source digests. A bounded second parse of the same
+immutable source may construct field proofs; it must verify the same source pin.
+Only complete current input can reach derived computation. Missing/ambiguous
+selection, invalid physical graphs, stale pins or cancellation returns refusal,
+with no partial physical/computed result.
+
+The complete internal result retains exact transient sources, the complete physical
+graph, the observed computation input and the derived partition/rule outcomes.
+All value-bearing wrappers render redacted. Cancellation is checked during bounded
+inventory/projection/proof work and immediately before returning a complete result;
+one existing parser/validator operation is not made immediately interruptible by
+these checks. Caller-owned live revision/owner, deadlines and DB snapshot authority
+remain separate prerequisites. This adapter establishes XML/source correspondence,
+not JDBC, typed target decisions, final materialization, hosted disclosure, profile,
+package or runtime publication authority.
+
 Exercise the decision record's invented tuples, plus directional/self edges,
 optional absence on each side, last-contributor deletion, whitespace and Unicode
 ordering/equality. Use independent expected node, edge and complete contributor

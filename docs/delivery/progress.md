@@ -21,9 +21,11 @@ computed results, full provenance, shared bounds and physical-only profiles;
 invalid declarations and produces matching v3 digests; every valid result remains
 incomplete. The [reviewed internal derived engine](../evidence/qf34-derived-engine.md)
 now computes exact groups, memberships, co-occurrences and complete contributor
-proofs with shared limits and explicit UNKNOWN/refusal. Full Java813 passes.
-Actual XML-backed input, independent target materialization/reprojection and
-profile/hosted integrations are next; v3 availability remains disabled.
+proofs with shared limits and explicit UNKNOWN/refusal. The
+[reviewed observed XML adapter](../evidence/qf34-derived-projection.md) now builds
+actual source/selector proofs and checks independent snapshot pins; full Java828
+passes, including v2 compatibility controls. Independent target materialization/
+reprojection and profile/hosted integrations are next; v3 availability remains disabled.
 No Q feedback GitHub publication is authorized. Existing MVP scope and completed
 work remain in place.
 

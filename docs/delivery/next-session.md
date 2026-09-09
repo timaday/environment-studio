@@ -24,7 +24,12 @@ closed child mappings, source-bound shared locator, full creation/move integrati
 and per-binding mechanism dependencies must qualify together. Tim explicitly
 approved [the QF-0003/0004 direction](../product/derived-graph-decision.md):
 authoritative recomputation, physical-only v3 profiles, PUBLIC text and shared
-graph caps. No derived runtime exists; closed v3 contracts precede that work.
+graph caps. QF-0001/0002 is reviewed and integrated. V3 contracts, the internal
+compiler, core derived computation and the
+[observed XML adapter](../evidence/qf34-derived-projection.md) are now reviewed;
+full Java828 passes. V3 remains unavailable pending independent typed/final-target
+recomputation, physical-only profile/history and hosted qualification. The latest
+retained compiler OCI image predates the engine/XML changes; see progress.md.
 No Q feedback may be uploaded to GitHub without publication authorization.
 
 The full source/dense/graph HTTP workloads and all three four-observation overlap
