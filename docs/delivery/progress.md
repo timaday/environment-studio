@@ -65,13 +65,13 @@ and independent API-to-UI mutation checks pass. The [exact artifact refresh](../
 passes revised-container smoke and four hosted/two demo browser cases. Versioned
 history and hosted work remain active; this image predates the profile changes.
 
-Current retained image, exact `45d6bec`:
-`sha256:4bcacf5aea2d534e9ee804b965ebea3dffdc586faa7d923314e12f8c5e850c25`.
-The [hash prerequisite artifact](../evidence/native-hash-artifacts.md) passes
-Java1036 and protected startup/schema3 administration smoke, and records its
-separate supervisor ZIP. It verifies the pinned OpenSSL test-stage installation;
-profile drafts and later profile HTTP remain outside it. Frontend40/schema36
-remain scoped to the preceding9454d9f build; unchanged layers were cached.
+Current retained image, exact `b35d328`:
+`sha256:0bfa051aad2ab37bbef243b7d645725e21ff6ab204c38419eb79c051c338ece6`.
+The [profile HTTP/trusted-file artifact](../evidence/trusted-file-artifacts.md)
+passes Java1086, fresh frontend40/schema40 and protected startup/schema3
+administration smoke, and records its separate supervisor ZIP. The pinned OpenSSL
+installation layer was cached from the preceding hash image. Isolated later
+publication/executable-association changes remain outside this image.
 The four hosted HTTPS/OIDC and two demo browser cases remain scoped to7111230.
 This is local proof only; preceding image evidence remains historically scoped.
 
