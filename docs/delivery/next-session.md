@@ -270,3 +270,9 @@ HiveMind project `environment-studio` is registered. Keep unfinished session
 `sess-0f0200fc883f895866e6d470df5becb2` open for this work unit. HiveMap retains
 the historical full scans plus bounded committed-source refreshes; neither is
 release or governance authority.
+
+The [native peer pin](../evidence/d07c3-privacy-peer.md) is independently reviewed
+and locally integrated after `19be08f`. Review corrected excessive deadlines and
+null-output lifetime cleanup. Final Java608/assembly/hostile-launch checks and
+four independent native controls pass. Kernel peer pinning is a prerequisite;
+Java root ownership, listener/JNI and crash qualification remain unfinished.

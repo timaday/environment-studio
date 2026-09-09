@@ -168,3 +168,9 @@ MALFORMED_BODY refusals. It is independently reviewed; the full `21649ba`+fixed5
 reactor passes590 tests, assembly and hostile-launch checks. Independent23 focused
 checks include256 actual successful mock HTTP inspections; the old-latch mutant
 reproduces truncation. OCI/browser refresh and the wider MVP work remain active.
+
+The [native peer pin](../evidence/d07c3-privacy-peer.md) is independently reviewed
+and locally integrated after `19be08f`. Review corrected excessive deadlines and
+null-output lifetime cleanup. Final Java608/assembly/hostile-launch checks and
+four independent native controls pass. Kernel peer pinning is a prerequisite;
+Java root ownership, listener/JNI and crash qualification remain unfinished.
