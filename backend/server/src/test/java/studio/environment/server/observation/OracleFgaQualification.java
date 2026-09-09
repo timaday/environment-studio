@@ -32,6 +32,7 @@ public final class OracleFgaQualification {
     static void complete() throws Exception {var result=observe();check(result instanceof Complete,"CLEAN_EXPECTED_COMPLETE_"+result);check(sourceReads.get()==1,"SOURCE_BARRIER_NOT_REACHED");var docs=((Complete)result).observation().documents();check(docs.size()==2&&docs.stream().allMatch(d->d.xml().equals(source)),"EXACT_SOURCE_MISMATCH");}
     static void refuse(Code code) throws Exception {var result=observe();check(result instanceof Refused r&&r.code()==code,"EXPECTED_"+code+"_ACTUAL_"+result);check(sourceReads.get()==0,"SOURCE_READ_BEFORE_REFUSAL");}
     public static void main(String[] args) throws Exception {
+        retiredPolicy();
         try{run();}catch(SQLException e){throw new IllegalStateException("MOCK_JDBC_CODE_"+e.getErrorCode());}
     }
     static void run() throws Exception {
@@ -63,5 +64,8 @@ public final class OracleFgaQualification {
             ora("BEGIN SYS.DBMS_FGA.DISABLE_POLICY('"+owner+"','PACKETS','MOCK_POLICY'); END;\n/");complete();dropPolicy();complete();
             System.out.println("Disabled policy then clean exact Complete PASS; assertions="+passed);
         } finally {ora("ALTER USER "+user+" ACCOUNT LOCK;\nALTER USER "+owner+" ACCOUNT LOCK;");check(ora("SELECT COUNT(*) FROM v$session WHERE username IN ('"+owner+"','"+user+"');").equals("0"),"OWNED_SESSIONS_REMAIN");System.out.println("Own accounts locked; sessions absent");}
+    }
+    private static void retiredPolicy() {
+        throw new IllegalStateException("HISTORICAL_ACCOUNT_POLICY_QUALIFICATION_RETIRED");
     }
 }

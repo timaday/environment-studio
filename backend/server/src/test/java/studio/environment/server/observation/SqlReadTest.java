@@ -17,9 +17,9 @@ class SqlReadTest {
             if (method.getReturnType() == int.class) return 0;
             return null;
         });
-        var connection = (Connection) Proxy.newProxyInstance(getClass().getClassLoader(), new Class<?>[]{Connection.class}, (proxy, method, arguments) -> statement);
+        var connection = (Connection) Proxy.newProxyInstance(getClass().getClassLoader(), new Class<?>[]{Connection.class}, (proxy, method, arguments) -> { if(method.getName().equals("prepareStatement")) return statement; if(method.getReturnType()==boolean.class) return false; return null; });
         var read = new SqlRead(connection, new ObservationPort.Cancellation(), System.nanoTime() + 1_000_000_000L);
-        assertThrows(SQLException.class, () -> read.statement("SELECT 1"));
+        assertThrows(SQLException.class, () -> read.begin(new ObservationLifecycleTest().selection().compiled().checked().definition().bindings().getFirst()));
         assertEquals(1, closes.get(), "Failure before returning a statement still owns its cleanup");
         assertNull(read.active);
     }

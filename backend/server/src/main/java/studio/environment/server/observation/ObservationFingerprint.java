@@ -16,7 +16,7 @@ final class ObservationFingerprint {
     }
     static String source(String text) { return HexFormat.of().formatHex(digest().digest(utf8(text))); }
     static String hash(Map<String, Object> object) {
-        return hash("ES-OBSERVATION-1", object);
+        return hash("ES-OBSERVATION-2", object);
     }
     static String hash(String domain, Object object) {
         var digest = digest(); digest.update(utf8(domain)); digest.update((byte) 0); frame(digest, object);

@@ -22,7 +22,7 @@ final class PlanDestinations {
         @Override public String toString() { return "ConfiguredDestination[redacted]"; }
     }
     record Entry(String id,String engine,String host,Integer port,String database,String trustMaterial,String transportIdentity,
-            Map<String,String> expectedPhysicalIdentity,String provisioningPolicyVersion,String accountPolicyVersion,List<Identity> owners) {
+            Map<String,String> expectedPhysicalIdentity,String provisioningPolicyVersion,String operationPolicyVersion,List<Identity> owners) {
         @Override public String toString() { return "DestinationEntry[redacted]"; }
     }
     record Identity(String issuer,String subject) { @Override public String toString() { return "DestinationOwner[redacted]"; } }
@@ -37,8 +37,8 @@ final class PlanDestinations {
                 Engine engine=switch(entry.engine()) { case "postgresql" -> Engine.POSTGRESQL; case "oracle" -> Engine.ORACLE; default -> throw new IllegalArgumentException(); };
                 if(entry.transportIdentity()==null || !entry.transportIdentity().matches("[a-f0-9]{64}")
                         || entry.provisioningPolicyVersion()==null || !entry.provisioningPolicyVersion().matches("[A-Za-z0-9.\\-:_]{1,256}")) invalid();
-                String policy=entry.accountPolicyVersion();
-                if(policy==null || !(engine==Engine.POSTGRESQL?policy.equals("postgresql-read-only-v1"):policy.matches("oracle-account-read-only-v2:[a-f0-9]{64}"))) invalid();
+                String policy=entry.operationPolicyVersion();
+                if(policy==null || !(engine==Engine.POSTGRESQL?policy.equals("postgresql-read-operation-v1"):policy.equals("oracle-read-operation-v1"))) invalid();
                 physicalIdentity(engine,entry.expectedPhysicalIdentity());
                 trust(engine,entry.trustMaterial());
                 if(entry.owners()==null || entry.owners().isEmpty() || entry.owners().size()>64) invalid();

@@ -306,6 +306,19 @@ class HostedBoundaryTest {
             assertEquals(401,client.get("/api/v1/operations/"+expired).status());
         } finally {studio.environment.server.plan.PlanHttpTestConfiguration.clock.reset();}
         assertEquals(connections,studio.environment.server.plan.PlanHttpTestConfiguration.connections.get());
+        // Revocation may quarantine a reader that exits after its first cleanup attempt.
+        // Observe completion, then use the explicit lifecycle retry; login cannot bypass it.
+        deadline=System.nanoTime()+3_000_000_000L;
+        while(Thread.getAllStackTraces().keySet().stream().anyMatch(thread->thread.getName().equals("hosted-plan-body")) && System.nanoTime()<deadline)Thread.sleep(10);
+        assertFalse(Thread.getAllStackTraces().keySet().stream().anyMatch(thread->thread.getName().equals("hosted-plan-body")),"Expired owned reader did not finish");
+        var lease=studio.environment.server.plan.PlanHttpTestConfiguration.leases.get("transport-maintainer");
+        var hostedSessions=context.getBean(studio.environment.server.session.HostedSessions.class);
+        var quarantine=hostedSessions.cleanupReports().stream().filter(report->report.sessionId().equals(lease.id())).findFirst();
+        if(quarantine.isPresent()){
+            assertEquals(studio.environment.core.session.SessionLedger.CleanupState.INCONCLUSIVE,quarantine.get().state());assertEquals(1,quarantine.get().attempts());
+            socketLogin("transport-maintainer",403);
+            assertEquals(studio.environment.core.session.SessionLedger.CleanupState.COMPLETE,hostedSessions.retryCleanup(lease.id()).orElseThrow().state());
+        }
         var renewed=socketLogin("transport-maintainer");assertEquals(404,renewed.get("/api/v1/operations/"+expired).status());
         assertEquals(204,renewed.request("POST","/api/v1/session/logout","{}",true).status());
     }

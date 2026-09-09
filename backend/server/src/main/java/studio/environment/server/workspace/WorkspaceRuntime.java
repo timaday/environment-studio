@@ -26,6 +26,13 @@ public final class WorkspaceRuntime {
     boolean canPublish(studio.environment.core.session.Owner owner) {return publishers.test(owner);}
     NativeStore nativeStore() {return new NativeSqliteStore(store.orElseThrow(()->new WorkspaceRefusal(WorkspaceRefusal.Code.UNAVAILABLE)));}
     NativeWorkspace nativeService() {return new NativeWorkspace(nativeStore(),new NativeWorkspaceCompiler(),publishers);}
+    NativeWorkspace nativeService(WorkspaceCommit commit) {
+        return new NativeWorkspace(new NativeSqliteStore(store.orElseThrow(() -> new WorkspaceRefusal(WorkspaceRefusal.Code.UNAVAILABLE)).withCommit(commit)), new NativeWorkspaceCompiler(), publishers);
+    }
+    DraftWorkspace service(WorkspaceCommit commit) {
+        return new DraftWorkspace(store.orElseThrow(() -> new WorkspaceRefusal(WorkspaceRefusal.Code.UNAVAILABLE)).withCommit(commit),
+            command -> new DefinitionBytesCompiler().compile(StrictUtf8.encode(command.source()), DefinitionBytesCompiler.Format.valueOf(command.format().name())));
+    }
     DraftStore store() { return store.orElseThrow(() -> new WorkspaceRefusal(WorkspaceRefusal.Code.UNAVAILABLE)); }
     DraftWorkspace service() {
         return new DraftWorkspace(store(), command -> new DefinitionBytesCompiler().compile(StrictUtf8.encode(command.source()),

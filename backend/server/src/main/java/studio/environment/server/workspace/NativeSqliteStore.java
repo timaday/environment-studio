@@ -49,7 +49,7 @@ final class NativeSqliteStore implements NativeStore {
         if(StrictUtf8.encode(revision.source()).length>1_048_576)throw refuse(WorkspaceRefusal.Code.TOO_LARGE);
         try(var connection=shared.open()) {
             connection.setAutoCommit(false);shared.validate(connection);
-            var replay=replay(connection,owner,command);if(replay.isPresent()){connection.commit();return replay.orElseThrow();}
+            var replay=replay(connection,owner,command);if(replay.isPresent()){shared.commit(connection);return replay.orElseThrow();}
             var old=catalog(connection,owner,command.objectId(),command.profile(),true);int previous=old==null?0:old.revision();int next=previous+1;
             if(next>32)throw refuse(WorkspaceRefusal.Code.CAPACITY);
             if(!revision.objectId().equals(command.objectId())||revision.profile()!=command.profile()||!revision.workspaceRevision().equals(Integer.toString(next))
@@ -82,7 +82,7 @@ final class NativeSqliteStore implements NativeStore {
             try(var insert=connection.prepareStatement("INSERT INTO native_replays VALUES(?,?,?,?,?)")) {
                 insert.setString(1,command.objectId());insert.setString(2,command.requestId());insert.setString(3,kind(command));insert.setString(4,NativeWorkspaceDigests.commandDigest(command));insert.setInt(5,next);insert.executeUpdate();
             }
-            validate(connection);connection.commit();shared.paths.validateFiles(true);return revision;
+            validate(connection);shared.commit(connection);shared.paths.validateFiles(true);return revision;
         } catch(SQLException failure){throw unavailable();}
     }
     private static String kind(NativeCommand c){return NativeWorkspaceDigests.command(c).get("kind").toString();}

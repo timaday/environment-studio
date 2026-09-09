@@ -19,16 +19,26 @@ public final class SqliteDraftStore implements DraftStore {
         "CREATE TABLE replays(object_id TEXT NOT NULL,request_id TEXT NOT NULL,request_digest TEXT NOT NULL,revision INTEGER NOT NULL,PRIMARY KEY(object_id,request_id),FOREIGN KEY(object_id,revision) REFERENCES revisions(object_id,revision))");
     final PrivateWorkspacePath paths;
     private final int storageVersion;
+    private final WorkspaceCommit commit;
     private final SnapshotCodec codec = new SnapshotCodec();
 
     public SqliteDraftStore(Path directory) { this(directory,2); }
     private SqliteDraftStore(Path directory,int storageVersion) {
         this.storageVersion=storageVersion;
+        this.commit=Connection::commit;
         paths = new PrivateWorkspacePath(directory);
         try (var connection = open()) {
             validate(connection);
         } catch (SQLException failure) { throw unavailable(); }
     }
+
+    private SqliteDraftStore(SqliteDraftStore original, WorkspaceCommit commit) {
+        this.paths = original.paths;
+        this.storageVersion = original.storageVersion;
+        this.commit = Objects.requireNonNull(commit);
+    }
+    SqliteDraftStore withCommit(WorkspaceCommit commit) { return new SqliteDraftStore(this, commit); }
+    void commit(Connection connection) throws SQLException { commit.commit(connection); }
 
     private String legacyFilter(String alias) { return storageVersion==1?"":" WHERE NOT EXISTS(SELECT 1 FROM artifact_types a WHERE a.object_id="+alias+".object_id)"; }
     void validate(Connection connection) throws SQLException {
@@ -186,7 +196,7 @@ public final class SqliteDraftStore implements DraftStore {
         try (var connection = open()) {
             connection.setAutoCommit(false);
             var replay = replay(connection, owner, command);
-            if (replay.isPresent()) { connection.commit(); return replay.orElseThrow(); }
+            if (replay.isPresent()) { commit(connection); return replay.orElseThrow(); }
             var existing = catalog(connection, owner, command.objectId());
             int previous = existing.map(Catalog::revision).orElse(0);
             if (!Integer.toString(previous).equals(command.expectedRevision()) || existing.isPresent() && !existing.orElseThrow().nativeId().equals(projection.draft().id())) throw refusal(WorkspaceRefusal.Code.CONFLICT);
@@ -218,7 +228,7 @@ public final class SqliteDraftStore implements DraftStore {
             try (var insert = connection.prepareStatement("INSERT INTO replays VALUES(?,?,?,?)")) {
                 insert.setString(1, command.objectId()); insert.setString(2, command.requestId()); insert.setString(3, WorkspaceDigests.command(command)); insert.setInt(4, revision); insert.executeUpdate();
             }
-            connection.commit();
+            commit(connection);
             paths.validateFiles(true);
             return new SavedDraft(command.objectId(), Integer.toString(revision), sourceDigest, command.format(), command.source(), projection, SnapshotCodec.COMPILER, SnapshotCodec.SCHEMA);
         } catch (SQLException failure) { throw unavailable(); }

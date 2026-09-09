@@ -106,6 +106,15 @@ public final class HostedSessions {
     public <T> Optional<T> guard(SessionLedger.Lease lease, java.util.function.Supplier<T> transition) {
         return ledger.guard(lease, transition);
     }
+    public Optional<SessionLedger.CommitPermit> admitCommit(SessionLedger.Lease lease) {
+        return ledger.admitCommit(lease);
+    }
+    /** Inconclusive metadata connection cleanup permanently retires this lease. */
+    public void quarantine(SessionLedger.Lease lease) {
+        var slot = slots.get(lease.id());
+        if (slot != null) { synchronized (slot) { slot.retired = true; } }
+        ledger.close(lease.id());
+    }
     public Owner requireOwner(HttpServletRequest request) {
         return current(request).orElseThrow(() -> new IllegalStateException("SESSION_AUTHORITY_REQUIRED")).owner();
     }
@@ -192,7 +201,8 @@ public final class HostedSessions {
                         }
                     }
                 } else Arrays.fill(slot.hookComplete, true);
-                boolean complete = slot.servletComplete && hooksComplete;
+                boolean complete = slot.servletComplete && hooksComplete
+                    && (lease == null || !ledger.hasOutstandingCommit(lease));
                 if (complete) slots.remove(slot.id, slot);
                 return complete;
             } finally { slot.running = false; }

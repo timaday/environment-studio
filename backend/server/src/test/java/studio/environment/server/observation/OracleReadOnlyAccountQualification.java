@@ -24,6 +24,7 @@ public final class OracleReadOnlyAccountQualification {
         finally{connection.rollback();}
     }
     public static void main(String[] arguments) throws Exception {
+        retiredPolicy();
         try { qualify(); } catch(SQLException failure) { throw new IllegalStateException("DISPOSABLE_JDBC_CODE_"+failure.getErrorCode()); }
     }
     static void qualify() throws Exception {
@@ -64,5 +65,8 @@ public final class OracleReadOnlyAccountQualification {
         backendGone(studio.environment.core.definitionv2.NativeDefinition.Engine.ORACLE);
         process(List.of("docker","logs","--tail","10000",ORACLE),"");
         System.out.println("Account-level read-only investigation assertions: "+passed+" PASS");
+    }
+    private static void retiredPolicy() {
+        throw new IllegalStateException("HISTORICAL_ACCOUNT_POLICY_QUALIFICATION_RETIRED");
     }
 }

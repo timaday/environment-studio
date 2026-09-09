@@ -38,6 +38,7 @@ class OracleFgaGuardTest {
                 if(query.contains("NLS_CHARACTERSET"))return rows(List.of(List.of("AL32UTF8")));
                 if(query.contains("v_$option"))return rows(List.of(List.of("Oracle Label Security","FALSE"),List.of("Oracle Database Vault","FALSE")));
                 if(query.contains("'ISDBA'"))return rows(List.of(List.of("FALSE")));
+                if(query.equals("SELECT SYS_CONTEXT('USERENV','SESSION_USER') FROM SYS.DUAL"))return rows(List.of(List.of("mock_reader")));
                 assertFalse(query.contains("FROM \"MockOwner\".\"MockDocs\""),"No source SELECT before complete policy qualification");
                 return rows(List.of());
             }
@@ -48,7 +49,7 @@ class OracleFgaGuardTest {
         var binding=new Binding("mock",Engine.ORACLE,Storage.CLOB,"MockOwner","MockDocs","ID","XML_DATA",KeyType.TEXT,List.of(new NativeDefinition.Document("mock.doc","one",List.of())));
         var model=new NativeDefinition("mock",BigInteger.ONE,new Logical(List.of(),List.of(),List.of(),List.of()),List.of(binding));
         var selection=new ObservationPort.Selection(new NativeCompilationResult.ReadyToPublish(new NativeCompilationResult.Checked(model,"mock-logical",Map.of("mock","mock-binding"),Map.of())),"mock");
-        var destination=new ObservationDestination("mock",Engine.ORACLE,"127.0.0.1",1,"MOCKPDB",ObservationDestination.Transport.DISPOSABLE_LOOPBACK,"","mock-transport",Map.of("dbid","1","dbUniqueName","MOCK","conId","3","conUid","2","conName","MOCKPDB","pdbGuid","a".repeat(32)),"mock-policy","mock-reader-policy");
+        var destination=new ObservationDestination("mock",Engine.ORACLE,"127.0.0.1",1,"MOCKPDB",ObservationDestination.Transport.DISPOSABLE_LOOPBACK,"","mock-transport",Map.of("dbid","1","dbUniqueName","MOCK","conId","3","conUid","2","conName","MOCKPDB","pdbGuid","a".repeat(32)),"mock-policy","oracle-read-operation-v1");
         var credentials=new TransientCredentials("reader".toCharArray(),"independent-password-canary".toCharArray());
         var result=new JdbcObservation(destination,c->connection(),sourceBarrier::incrementAndGet,java.util.concurrent.TimeUnit.SECONDS.toNanos(5),java.util.concurrent.TimeUnit.SECONDS.toNanos(1)).observe(selection,credentials,new ObservationPort.Cancellation());
         assertTrue(credentials.closed());assertEquals(ObservationResult.Cleanup.COMPLETE,result.cleanup());assertEquals(0,sourceBarrier.get());assertFalse(result.toString().contains("canary"));return result;

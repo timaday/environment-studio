@@ -192,7 +192,7 @@ public final class DisposableObservationQualification {
         pg("ALTER TABLE mock_pg.mock_tiles ALTER COLUMN mock_xml DROP NOT NULL; UPDATE mock_pg.mock_tiles SET mock_xml=NULL WHERE mock_key=1;");
         refusal(destination,Code.NULL_SOURCE); restore(Engine.POSTGRESQL); pg("ALTER TABLE mock_pg.mock_tiles ALTER COLUMN mock_xml SET NOT NULL;");
         var wrong=new HashMap<>(destination.expectedPhysicalIdentity()); wrong.put("systemIdentifier","0");
-        refusal(new ObservationDestination(destination.id(),destination.engine(),destination.host(),destination.port(),destination.database(),destination.transport(),destination.trustMaterial(),destination.transportIdentity(),wrong,destination.provisioningPolicyVersion(),destination.accountPolicyVersion()),Code.DESTINATION_MISMATCH);
+        refusal(new ObservationDestination(destination.id(),destination.engine(),destination.host(),destination.port(),destination.database(),destination.transport(),destination.trustMaterial(),destination.transportIdentity(),wrong,destination.provisioningPolicyVersion(),destination.operationPolicyVersion()),Code.DESTINATION_MISMATCH);
         pg("UPDATE mock_pg.mock_tiles SET mock_xml='<x>'||repeat('a',1048570)||'</x>' WHERE mock_key=1;"); refusal(destination,Code.RESOURCE_LIMIT);
         pg("UPDATE mock_pg.mock_tiles SET mock_xml='<x>'||repeat('a',1048569)||'</x>' WHERE mock_key=1;");
         check(observe(destination) instanceof Complete,"EXACT_CHARACTER_BOUNDARY_REFUSED"); backendGone(Engine.POSTGRESQL); restore(Engine.POSTGRESQL);
@@ -345,7 +345,7 @@ public final class DisposableObservationQualification {
         oracleDdl("ALTER TABLE \"mock_oracle\".\"mock_tiles\" MODIFY \"mock_xml\" NOT NULL;");
         ora("UPDATE \"mock_oracle\".\"mock_tiles\" SET \"mock_xml\"='<unclosed>' WHERE \"mock_key\"=1;\nCOMMIT;"); refusal(destination,Code.INVALID_SOURCE); restore(Engine.ORACLE);
         var wrong=new HashMap<>(destination.expectedPhysicalIdentity()); wrong.put("pdbGuid","0".repeat(32));
-        refusal(new ObservationDestination(destination.id(),destination.engine(),destination.host(),destination.port(),destination.database(),destination.transport(),destination.trustMaterial(),destination.transportIdentity(),wrong,destination.provisioningPolicyVersion(),destination.accountPolicyVersion()),Code.DESTINATION_MISMATCH);
+        refusal(new ObservationDestination(destination.id(),destination.engine(),destination.host(),destination.port(),destination.database(),destination.transport(),destination.trustMaterial(),destination.transportIdentity(),wrong,destination.provisioningPolicyVersion(),destination.operationPolicyVersion()),Code.DESTINATION_MISMATCH);
         var changed=new AtomicBoolean();
         var snapshot=new JdbcObservation(destination,()->{try{ora("UPDATE \"mock_oracle\".\"mock_tiles\" SET \"mock_xml\"='<changed/>' WHERE \"mock_key\"=1;\nINSERT INTO \"mock_oracle\".\"mock_tiles\" VALUES(3,'<extra/>');\nCOMMIT;");changed.set(true);}catch(Exception failure){throw new IllegalStateException("MOCK_CONCURRENT_UPDATE_FAILED");}});
         var observed=snapshot.observe(new ObservationPort.Selection(ready,"mock-oracle"),new TransientCredentials(user.toCharArray(),password.toCharArray()),new ObservationPort.Cancellation());
@@ -362,6 +362,7 @@ public final class DisposableObservationQualification {
     }
 
     public static void main(String[] arguments) throws Exception {
+        retiredPolicy();
         try { qualify(arguments); } catch(java.sql.SQLException failure) { throw new IllegalStateException("DISPOSABLE_JDBC_CODE_"+failure.getErrorCode()); }
     }
     static void qualify(String[] arguments) throws Exception {
@@ -413,5 +414,8 @@ public final class DisposableObservationQualification {
         postgresCancellation(postgres);
         for(String container:List.of(POSTGRES,ORACLE))process(List.of("docker","logs","--tail","10000",container),"");
         System.out.println("D04 disposable qualification assertions: "+passed+" PASS");
+    }
+    private static void retiredPolicy() {
+        throw new IllegalStateException("HISTORICAL_ACCOUNT_POLICY_QUALIFICATION_RETIRED");
     }
 }

@@ -35,10 +35,17 @@ public final class NativeWorkspaceController {
     @PostMapping(value="/api/v2/profiles/{objectId}/publish",consumes=MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> publishProfile(@PathVariable("objectId") String objectId,HttpServletRequest request){return mutate(objectId,true,true,request);}
     private ResponseEntity<?> mutate(String id,boolean profile,boolean publish,HttpServletRequest request) {
-        var owner=sessions.requireOwner(request);
+        var lease=sessions.current(request).orElseThrow(()->new WorkspaceRefusal(WorkspaceRefusal.Code.FORBIDDEN));
+        var owner=lease.owner();
         if(publish&&!profile&&!runtime.canPublish(owner))throw new WorkspaceRefusal(WorkspaceRefusal.Code.FORBIDDEN);
-        var service=runtime.nativeService();
-        try{return response(200,view(service.mutate(owner,new NativeRequestReader().read(id,profile,publish,request.getInputStream()))));}
+        var service=runtime.nativeService(WorkspaceCommit.authenticated(sessions,lease));
+        try {
+            var command=new NativeRequestReader().read(id,profile,publish,request.getInputStream());
+            sessions.guard(lease,()->true).orElseThrow(()->new WorkspaceRefusal(WorkspaceRefusal.Code.FORBIDDEN));
+            var result=service.mutate(owner,command);
+            sessions.guard(lease,()->true).orElseThrow(()->new WorkspaceRefusal(WorkspaceRefusal.Code.FORBIDDEN));
+            return response(200,view(result));
+        }
         catch(IOException invalid){throw new WorkspaceRefusal(WorkspaceRefusal.Code.INVALID_REQUEST);}
     }
     @GetMapping("/api/v2/definitions") public ResponseEntity<?> definitions(HttpServletRequest request){return listing(false,request);}

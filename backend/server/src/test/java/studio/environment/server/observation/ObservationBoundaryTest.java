@@ -7,7 +7,7 @@ import studio.environment.core.definitionv2.NativeDefinition.Engine;
 import studio.environment.core.observation.*;
 
 class ObservationBoundaryTest {
-    ObservationDestination destination() { return new ObservationDestination("invented", Engine.POSTGRESQL, "127.0.0.1", 1, "invented", ObservationDestination.Transport.DISPOSABLE_LOOPBACK, "", "independent-test-transport", Map.of("systemIdentifier", "1", "databaseOid", "2", "databaseName", "invented"), "invented-policy-v1", "invented-reader-v1"); }
+    ObservationDestination destination() { return new ObservationDestination("invented", Engine.POSTGRESQL, "127.0.0.1", 1, "invented", ObservationDestination.Transport.DISPOSABLE_LOOPBACK, "", "independent-test-transport", Map.of("systemIdentifier", "1", "databaseOid", "2", "databaseName", "invented"), "invented-policy-v1", "postgresql-read-operation-v1"); }
     @Test void invalidSelectionAndCancellationRefuseBeforeConnectionAllocationAndClearCredentials() {
         var credentials = new TransientCredentials("invented".toCharArray(), "independent-password-canary".toCharArray());
         var result = new JdbcObservation(destination()).observe(new ObservationPort.Selection(null, "missing"), credentials, new ObservationPort.Cancellation());

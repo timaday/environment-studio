@@ -36,10 +36,14 @@ public final class WorkspaceController {
     public record ErrorView(String code, String message) { }
     @PutMapping(value = "/api/v1/definitions/{objectId}", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> put(@PathVariable("objectId") String objectId, HttpServletRequest request) {
-        var owner = sessions.requireOwner(request);
-        var service = runtime.service();
+        var lease = sessions.current(request).orElseThrow(() -> new WorkspaceRefusal(WorkspaceRefusal.Code.FORBIDDEN));
+        var owner = lease.owner();
+        var service = runtime.service(WorkspaceCommit.authenticated(sessions, lease));
         try {
-            var result = service.put(owner, new DraftRequestReader().read(objectId, request.getInputStream()));
+            var command = new DraftRequestReader().read(objectId, request.getInputStream());
+            sessions.guard(lease, () -> true).orElseThrow(() -> new WorkspaceRefusal(WorkspaceRefusal.Code.FORBIDDEN));
+            var result = service.put(owner, command);
+            sessions.guard(lease, () -> true).orElseThrow(() -> new WorkspaceRefusal(WorkspaceRefusal.Code.FORBIDDEN));
             return switch (result) {
                 case DraftWorkspace.Saved saved -> response(200, view(saved.draft()));
                 case DraftWorkspace.Rejected rejected -> response(422, new Rejected("rejected", diagnostics(rejected.rejection().diagnostics())));
@@ -63,7 +67,7 @@ public final class WorkspaceController {
             case NOT_FOUND -> 404; case CAPACITY, UNAVAILABLE -> 503;
         };
         return response(status, new ErrorView(refusal.getMessage(), switch (refusal.code()) {
-            case FORBIDDEN -> "Publication is not authorized.";
+            case FORBIDDEN -> "The workspace operation is not authorized.";
             case INVALID_REQUEST -> "Provide a valid bounded draft request.";
             case TOO_LARGE -> "Reduce the draft request size.";
             case CONFLICT -> "Read the current revision before retrying with a new request identifier.";

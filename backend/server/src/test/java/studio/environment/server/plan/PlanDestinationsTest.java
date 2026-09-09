@@ -14,7 +14,7 @@ class PlanDestinationsTest {
             .withProperty(prefix+"host","mock-db.invalid").withProperty(prefix+"port","5432").withProperty(prefix+"database","mock_database")
             .withProperty(prefix+"trust-material",Path.of("../../fixtures/plan-http-tls/mock-ca.pem").toAbsolutePath().normalize().toString())
             .withProperty(prefix+"transport-identity","a".repeat(64)).withProperty(prefix+"provisioning-policy-version","mock-policy-v1")
-            .withProperty(prefix+"account-policy-version","postgresql-read-only-v1")
+            .withProperty(prefix+"operation-policy-version","postgresql-read-operation-v1")
             .withProperty(prefix+"expected-physical-identity.systemIdentifier","123").withProperty(prefix+"expected-physical-identity.databaseOid","456")
             .withProperty(prefix+"expected-physical-identity.databaseName","mock_database")
             .withProperty(prefix+"owners[0].issuer","https://mock-issuer.invalid").withProperty(prefix+"owners[0].subject","MockOwner");
@@ -55,15 +55,19 @@ class PlanDestinationsTest {
     }
     @Test void exactIdentityAndOwnerPolicyRejectUnqualifiedValues() {
         String prefix="studio.plans.destinations[0].";
-        for(String[] mutation:new String[][]{{"expected-physical-identity.databaseOid","01"},{"expected-physical-identity.extra","1"},{"transport-identity","A".repeat(64)},{"account-policy-version","unknown"},{"owners[0].issuer","http://mock-issuer.invalid"},{"owners[0].subject","control\nvalue"},{"host","host.invalid/path"}})
+        for(String[] mutation:new String[][]{{"expected-physical-identity.databaseOid","01"},{"expected-physical-identity.extra","1"},{"transport-identity","A".repeat(64)},{"operation-policy-version","unknown"},{"owners[0].issuer","http://mock-issuer.invalid"},{"owners[0].subject","control\nvalue"},{"host","host.invalid/path"}})
             assertSafeRefusal(configured().withProperty(prefix+mutation[0],mutation[1]));
+    }
+    @Test void retiredAccountPolicyCannotSilentlyCertifyOperationPolicy() {
+        assertSafeRefusal(configured().withProperty("studio.plans.destinations[0].account-policy-version", "postgresql-read-only-v1"));
+        assertSafeRefusal(configured().withProperty("studio.plans.destinations[0].operation-policy-version", "postgresql-read-only-v1"));
     }
     private MockEnvironment oracle(Path path) {
         var env=configured(); String p="studio.plans.destinations[0].";
         var source=(org.springframework.core.env.MapPropertySource)env.getPropertySources().get("mockProperties");
         source.getSource().keySet().removeIf(key->key.startsWith(p+"expected-physical-identity."));
         return env.withProperty(p+"engine","oracle").withProperty(p+"trust-material",path.toString())
-            .withProperty(p+"account-policy-version","oracle-account-read-only-v2:"+"a".repeat(64))
+            .withProperty(p+"operation-policy-version","oracle-read-operation-v1")
             .withProperty(p+"expected-physical-identity.dbid","1").withProperty(p+"expected-physical-identity.conId","2")
             .withProperty(p+"expected-physical-identity.conUid","3").withProperty(p+"expected-physical-identity.dbUniqueName","MOCK")
             .withProperty(p+"expected-physical-identity.conName","MOCKPDB").withProperty(p+"expected-physical-identity.pdbGuid","b".repeat(32));

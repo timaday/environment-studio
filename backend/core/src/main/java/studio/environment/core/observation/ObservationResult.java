@@ -5,7 +5,9 @@ import java.util.*;
 public sealed interface ObservationResult permits ObservationResult.Complete, ObservationResult.Refused {
     enum Cleanup { COMPLETE, INCONCLUSIVE }
     enum Code { CAPACITY, INVALID_SELECTION, DESTINATION_UNQUALIFIED, DESTINATION_MISMATCH, METADATA_UNAVAILABLE, VISIBILITY_UNQUALIFIED,
-        ACCOUNT_NOT_READ_ONLY, STORAGE_UNSUPPORTED, INVENTORY_MISMATCH, NULL_SOURCE, EMPTY_SOURCE, INVALID_SOURCE,
+        READ_ACCESS_DENIED, IDENTITY_UNSUPPORTED,
+        /** Historical qualification only; production read-operation adapters never emit this code. */
+        @Deprecated ACCOUNT_NOT_READ_ONLY, STORAGE_UNSUPPORTED, INVENTORY_MISMATCH, NULL_SOURCE, EMPTY_SOURCE, INVALID_SOURCE,
         RESOURCE_LIMIT, CANCELLED, DEADLINE_EXCEEDED, DATABASE_FAILURE, CLEANUP_INCONCLUSIVE }
     Cleanup cleanup();
     record Complete(Observation observation) implements ObservationResult {

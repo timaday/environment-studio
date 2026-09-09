@@ -64,6 +64,9 @@ public final class JdbcObservation implements ObservationPort {
             if (selection == null || selection.compiled() == null || selection.bindingId() == null) throw new ObservationFailure(Code.INVALID_SELECTION);
             binding = selection.compiled().checked().definition().bindings().stream().filter(b -> b.id().equals(selection.bindingId())).findFirst().orElseThrow(() -> new ObservationFailure(Code.INVALID_SELECTION));
             if (binding.engine() != destination.engine() || binding.documents().isEmpty() || binding.documents().size() > 128) throw new ObservationFailure(Code.INVALID_SELECTION);
+            String expectedPolicy = binding.engine() == Engine.POSTGRESQL ? "postgresql-read-operation-v1" : "oracle-read-operation-v1";
+            if (!expectedPolicy.equals(destination.operationPolicyVersion())) throw new ObservationFailure(Code.DESTINATION_UNQUALIFIED);
+            if (binding.engine() == Engine.POSTGRESQL && (binding.schema().startsWith("pg_") || binding.schema().equals("information_schema"))) throw new ObservationFailure(Code.STORAGE_UNSUPPORTED);
             SqlRead.quoted(binding.schema()); SqlRead.quoted(binding.table()); SqlRead.quoted(binding.keyColumn()); SqlRead.quoted(binding.xmlColumn());
             if (cancellation.cancelled()) throw new ObservationFailure(Code.CANCELLED);
             if (DriverLoggingPolicy.verboseDriverLogging()) throw new ObservationFailure(Code.DESTINATION_UNQUALIFIED);
@@ -119,27 +122,21 @@ public final class JdbcObservation implements ObservationPort {
                 connection = connections.open(credentials);
                 credentials.close();
                 sql = new SqlRead(connection, cancellation, deadline);
-                connection.setAutoCommit(false);
-                if (binding.engine() == Engine.POSTGRESQL) {
-                    connection.setReadOnly(true); connection.setTransactionIsolation(Connection.TRANSACTION_REPEATABLE_READ);
-                    sql.execute("SET LOCAL search_path=pg_catalog"); sql.execute("SET LOCAL row_security=off");
-                    sql.execute("SET LOCAL statement_timeout='2000ms'"); sql.execute("SET LOCAL lock_timeout='2000ms'");
-                    sql.execute("LOCK TABLE " + SqlRead.quoted(binding.schema()) + "." + SqlRead.quoted(binding.table()) + " IN ACCESS SHARE MODE");
-                } else sql.execute("SET TRANSACTION READ ONLY");
+                sql.begin(binding);
                 Map<String,String> identity;
                 String version, encoding;
                 try {
                     if (binding.engine() == Engine.POSTGRESQL) {
                         var metadata = PostgresMetadata.verify(sql, binding); identity = metadata.identity(); version = metadata.version(); encoding = metadata.encoding();
-                        if (!"postgresql-read-only-v1".equals(destination.accountPolicyVersion())) throw new ObservationFailure(Code.ACCOUNT_NOT_READ_ONLY);
                     } else {
-                        var metadata = OracleMetadata.verify(sql, binding, destination); identity = metadata.identity(); version = metadata.version(); encoding = metadata.encoding();
+                        var metadata = OracleMetadata.verify(sql, binding); identity = metadata.identity(); version = metadata.version(); encoding = metadata.encoding();
                     }
                 } catch (SQLException denied) { throw new ObservationFailure(Code.METADATA_UNAVAILABLE); }
                 if (!destination.expectedPhysicalIdentity().equals(identity)) throw new ObservationFailure(Code.DESTINATION_MISMATCH);
                 String driver = connection.getMetaData().getDriverVersion();
                 if (!(binding.engine() == Engine.POSTGRESQL ? "42.7.13" : "23.26.3.0.0").equals(driver)) throw new ObservationFailure(Code.STORAGE_UNSUPPORTED);
                 beforeSources.run();
+                sql.verifySnapshot();
                 var documents = readDocuments(sql, binding);
                 sql.check();
                 observation = observation(selection, binding, documents, identity, version, driver, encoding);
@@ -213,17 +210,8 @@ public final class JdbcObservation implements ObservationPort {
         } finally { Arrays.fill(user, '\0'); Arrays.fill(password, '\0'); properties.clear(); }
     }
     private static List<Document> readDocuments(SqlRead sql, Binding binding) throws SQLException, IOException {
-        String table = SqlRead.quoted(binding.schema()) + "." + SqlRead.quoted(binding.table());
-        String keyColumn = SqlRead.quoted(binding.keyColumn()), xmlColumn = SqlRead.quoted(binding.xmlColumn());
-        String length = binding.engine() == Engine.POSTGRESQL ? "char_length(" + xmlColumn + ")" : "DBMS_LOB.GETLENGTH(" + xmlColumn + ")";
-        String bytes = binding.engine() == Engine.POSTGRESQL ? "octet_length(" + xmlColumn + ")" : length;
-        if (!Integer.toString(binding.documents().size()).equals(sql.scalar("SELECT COUNT(*) FROM " + table))) throw new ObservationFailure(Code.INVENTORY_MISMATCH);
-        String boundedKey = keyColumn;
-        if (binding.keyType() == KeyType.TEXT) {
-            String keyLength = binding.engine() == Engine.POSTGRESQL ? "char_length(" + keyColumn + ")" : "LENGTHC(" + keyColumn + ")";
-            boundedKey = "CASE WHEN " + keyLength + " BETWEEN 1 AND 256 THEN " + keyColumn + " ELSE NULL END";
-        }
-        var lengths = sql.rows("SELECT " + boundedKey + "," + length + "," + bytes + " FROM " + table);
+        if (!Integer.toString(binding.documents().size()).equals(sql.sourceScalar(SqlRead.Source.COUNT))) throw new ObservationFailure(Code.INVENTORY_MISMATCH);
+        var lengths = sql.sourceRows(SqlRead.Source.LENGTHS);
         if (lengths.size() != binding.documents().size() || lengths.size() > 128) throw new ObservationFailure(Code.INVENTORY_MISMATCH);
         long totalLowerBound = 0;
         for (var row : lengths) {
@@ -239,7 +227,7 @@ public final class JdbcObservation implements ObservationPort {
         for (var document : binding.documents()) if (ids.put(document.key(), document.id()) != null) throw new ObservationFailure(Code.INVALID_SELECTION);
         var result = new ArrayList<Document>();
         long totalBytes = 0;
-        try (var statement = sql.statement("SELECT " + keyColumn + "," + xmlColumn + " FROM " + table); var rows = statement.executeQuery()) {
+        try (var statement = sql.sourceStatement(SqlRead.Source.DOCUMENTS); var rows = statement.executeQuery()) {
             while (rows.next()) {
                 sql.check(); if (result.size() >= 128) throw new ObservationFailure(Code.RESOURCE_LIMIT);
                 String key;
@@ -297,7 +285,7 @@ public final class JdbcObservation implements ObservationPort {
         var checked = selection.compiled().checked();
         Map<String,Object> endpoint = Map.of("id", destination.id(), "host", destination.host(), "port", destination.port(), "database", destination.database(), "transportIdentity", destination.transportIdentity(),
                 "expectedPhysicalIdentity", destination.expectedPhysicalIdentity(), "observedPhysicalIdentity", identity, "provisioningPolicyVersion", destination.provisioningPolicyVersion());
-        Map<String,Object> metadata = Map.of("adapterVersion", "jdbc-observation-v1", "accountPolicyVersion", destination.accountPolicyVersion(), "visibility", "complete", "leastPrivilege", "verified", "snapshot", binding.engine() == Engine.POSTGRESQL ? "repeatable-read-read-only" : "read-only");
+        Map<String,Object> metadata = Map.of("adapterVersion", "jdbc-observation-v2", "operationPolicyVersion", destination.operationPolicyVersion(), "visibility", "complete", "readOnlyOperation", "verified", "snapshot", binding.engine() == Engine.POSTGRESQL ? "repeatable-read-read-only" : "read-only");
         var frame = new TreeMap<String,Object>();
         frame.put("logicalDigest",checked.logicalDigest()); frame.put("bindingDigest",checked.bindingDigests().get(binding.id()));
         frame.put("engine",binding.engine().name().toLowerCase(Locale.ROOT)); frame.put("engineVersion",version); frame.put("driverVersion",driver); frame.put("storage",binding.storage().name().toLowerCase(Locale.ROOT));

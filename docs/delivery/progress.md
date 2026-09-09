@@ -7,8 +7,8 @@ results; the table below reports capability, not test count.
 Work resumed from verified local and remote `8125e57127b1583664d368b97b82d08ec103fe5d`.
 Both saved D08a/D07c2 worktree manifests still match. The user's 9 September
 correction supersedes D04 account purity: ordinary write-capable accounts must
-work under the versioned closed read-operation policy. Its new contracts are
-reviewed; implementation and fresh qualification are in progress. Earlier database
+work under the versioned closed read-operation policy. Its new contracts and
+implementation are reviewed and integrated; fresh qualification is in progress. Earlier database
 results are historical and do not certify the corrected policy. See
 [continuation evidence](../evidence/20260909-continuation.md).
 
@@ -16,9 +16,9 @@ results are historical and do not certify the corrected policy. See
 | --- | --- | --- |
 | D00 foundation | COMPLETE for starter: CI/build/smoke/GHCR passed | See ../evidence/starter-verification.md and image-reference.json |
 | D01 definitions | Native compilation, owned v2 upload/history and maintainer publication implemented and reviewed | Browser publication workflow and external application qualification |
-| D02 security/state | Hosted sessions, immutable workspace revisions and hosted plan/credential lifecycle reviewed | Browser integration; actual deployment durability/identity external |
+| D02 security/state | Live workspace commit authority corrected and independently reviewed, including revocation during body reads and inconclusive closure | Browser integration; actual deployment durability/identity external |
 | D03 XML | Guarded spans, graph projection, corrected Fifth Edition parser and structural target assembly integrated | Hosted orchestration and guarded SQL/client qualification |
-| D04 database reads | Existing adapters/transport are integrated; corrected operation-policy implementation and qualification are in progress | Write-capable account matrix, closed statements, refreshed TLS/identity/cleanup evidence, browser inspection |
+| D04 database reads | Corrected closed read-operation policy integrated and independently reviewed; combined 475 Java checks pass | Actual write-capable account matrix, refreshed TLS/identity/cleanup evidence, browser inspection |
 | D05 profiles | Value-free capture, portable whole/partial composition, immutable persistence/publication and hosted views integrated | Browser capture/reuse workflow |
 | D06 planning | Hosted plans, revisions, HTTP lifecycle/commands/views and complete structural targets reviewed | Browser workflow, remaining UX data and full hosted heap/transfer qualification |
 | D07 SQL | Package/transaction mechanisms and separate unqualified supervisor integrated/reviewed; disposable rollback/guard matrices passed | Native runtime/console/TLS/commit qualification and hosted export authority |
@@ -36,8 +36,9 @@ the lead's integration harness received independent fixed-candidate review with
 no material findings. Integration and rework are recorded in D01a evidence;
 there is no serial comparison supporting a speed-up claim.
 
-Active work: correct D04 operation policy and the three reproduced review findings,
-then finish the hosted workflow and separate native runtime/console.
+The reviewed [authority/policy integration](../evidence/20260909-authority-policy-integration.md)
+passes 475 Java checks. Active work: actual D04 write-capable account qualification,
+the two XML findings, and the remaining hosted workflow/native runtime.
 Eleven inspection/composition view routes passed independent review, the combined
 450-test Java Docker build and protected smoke; see
 [view integration](../evidence/d06b3-integration.md).
