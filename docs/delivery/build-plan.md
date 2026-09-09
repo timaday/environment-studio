@@ -60,8 +60,11 @@ checks after correcting an independently found test-oracle gap. Publication HTTP
 and the shared hosted lifecycle remain next before operational qualification.
 The [versioned plan model](../evidence/qf34-plan-model.md) now shares the physical
 composition algorithm while retaining distinct v2/v3 metadata: independent review,
-combined Java1157 and actual both-engine production-merge workflows pass. Complete
-v3 content/proof retention and shared lifecycle integration before admission.
+combined Java1157 and actual both-engine production-merge workflows pass. The
+[complete v3 content adapter](../evidence/qf34-plan-content.md) now passes independent
+review, full Java1187 and eight compiled guard mutations. Shared lifecycle,
+versioned views/APIs and combined retained-proof resource qualification remain
+required before admission.
 
 The lead owns shared contracts and compatibility. Independent fixed-candidate
 review, actual RED/GREEN, targeted guard mutations and integrated verification

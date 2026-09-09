@@ -63,8 +63,12 @@ availability stays disabled. The
 [versioned plan model and shared physical composition](../evidence/qf34-plan-model.md)
 now pass independent review and combined Java1157. Actual both-engine workflows
 use the production composition merge with complete source/proof controls.
-Full v3 content evidence, shared lifecycle and versioned API integration remain
-required before admission; a v3 model still refuses existing v2 creation.
+The [complete v3 content adapter](../evidence/qf34-plan-content.md) now retains
+original/typed/final proofs and passes independent review, full Java1187 and eight
+compiled guard mutations. Shared lifecycle, versioned APIs and combined retained-
+proof resource qualification remain required before admission; a v3 model still
+refuses existing v2 creation. Isolated shared lifecycle work is in progress and
+is not wired into runtime composition.
 No Q feedback GitHub publication is authorized. Existing MVP scope and completed
 work remain in place.
 

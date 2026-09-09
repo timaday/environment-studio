@@ -42,8 +42,12 @@ public final class PlanPorts {
     public record Source(String documentId, String xml, String digest) {
         @Override public String toString() { return "PlanSource[redacted]"; }
     }
-    public record Content(List<Source> sources, ObservedGraph graph, Map<ObservedGraph.Key,TargetIntent.Ref> provenance) {
-        public Content { sources = List.copyOf(sources); provenance = Map.copyOf(provenance); }
+    public record Content(List<Source> sources, ObservedGraph graph, Map<ObservedGraph.Key,TargetIntent.Ref> provenance,
+            PlanContentEvidence evidence) {
+        public Content { sources = List.copyOf(sources); provenance = Map.copyOf(provenance); Objects.requireNonNull(evidence); }
+        public Content(List<Source> sources, ObservedGraph graph, Map<ObservedGraph.Key,TargetIntent.Ref> provenance) {
+            this(sources, graph, provenance, new PlanContentEvidence.V2());
+        }
         @Override public String toString() { return "PlanContent[redacted]"; }
     }
     public sealed interface Parent {
