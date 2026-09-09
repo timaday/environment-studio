@@ -88,14 +88,30 @@ or its challenge; the constructor closes its connection before returning, and
 CLOEXEC supplies a second barrier. Credentials, package input and native output
 never traverse this socket. The existing stdout/stderr protocol is unchanged.
 
-On accept, obtain SO_PEERCRED PID/UID/GID from the kernel and pin the process with
-a pidfd. Verify its start identity and live kernel parentage against the registered
+On accept, obtain SO_PEERCRED PID/UID/GID from the kernel and obtain SO_PEERPIDFD
+from that same accepted socket. This pins the socket's retained kernel peer
+identity rather than looking up a potentially recycled numeric PID. Both options
+must succeed with their exact result sizes; missing SO_PEERPIDFD support refuses
+admission, with no `pidfd_open(SO_PEERCRED.pid)` fallback. Verify the returned
+pidfd's CLOEXEC state, correlate its live kernel PID with SO_PEERCRED, and check
+pidfd liveness before and after bounded process-identity reads. Keep the socket
+and pidfd under single-owner native descriptor lifetime rules. A pidfd only pins
+process identity; it does not establish executable identity or launch ownership.
+
+Verify its start identity and live kernel parentage against the registered
 owned launch root and compiled fork/exec graph. Keep the pidfd until cleanup; do
 not reacquire a process by recycled numeric PID. Process start time is not an exec
 generation: every connection receives a fresh ordinal and image inspection even
 when PID/start time are unchanged. Reject ambiguous ancestry or a peer whose
 parent exited before ownership could be established. No peer supplies trusted
 PID, pathname, role, executable digest or chain identifier.
+
+The socket-bound acquisition mechanism is documented in the
+[Linux 6.8 socket implementation](https://github.com/torvalds/linux/blob/v6.8/net/core/sock.c)
+and [UAPI](https://github.com/torvalds/linux/blob/v6.8/include/uapi/asm-generic/socket.h).
+These source references are design evidence only. Qualify actual kernel support,
+exited peers, missing support, cancellation, deadline and descriptor cleanup on
+the intended runtime; never substitute a version string for that evidence.
 
 While the PREPARE constructor is blocked and before suppression, inspect the
 peer's executable, interpreter, loader, mapped guard and complete compiled

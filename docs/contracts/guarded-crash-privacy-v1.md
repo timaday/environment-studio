@@ -71,12 +71,16 @@ successful process exit, so exit status never substitutes for a receipt.
 Use a two-phase handshake before credential-bearing work:
 
 1. **Prepare.** The constructor connects and waits. The parent obtains peer PID,
-   UID and GID from kernel SO_PEERCRED, correlates the owned root/descendant and
+   UID and GID from kernel SO_PEERCRED, pins that socket peer with SO_PEERPIDFD,
+   and correlates the owned root/descendant and
    process-start identity, and verifies the expected executable/interpreter,
    loader and guard installation against the compiled chain. It examines the
    process before suppression: after dumpable zero, even an owning parent may
    be unable to read `/proc/<pid>/exe` or maps. Never temporarily restore
    dumpability in a process that has received secrets.
+   Unsupported peer-pidfd acquisition refuses admission; numeric PID lookup is
+   not a fallback because the peer can exit before that lookup. Retain the pidfd
+   through cleanup and check liveness around subsequent identity reads.
 2. **Establish.** Only after identity acceptance does the parent send a fresh
    unpredictable challenge. The constructor establishes zero dumpability,
    the qualified filter/reset controls and whole-thread coverage, then returns
