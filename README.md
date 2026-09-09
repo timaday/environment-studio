@@ -48,6 +48,9 @@ with fresh full proof checks. [Shared v3 validation](docs/evidence/qf34-shared-v
 now rechecks publication and complete XML proofs, preserves UNKNOWN evidence and
 uses a separate v3 fingerprint. Combined Java1320 passes; versioned HTTP and
 client/content/review qualification remain required before availability.
+The exact `047d1b0` [local image](docs/evidence/shared-validation-artifacts.md)
+repeats Java1320 and passes protected startup/workspace smoke; release qualification
+remains open.
 Complete Oracle CLOB/PostgreSQL text observation, value-free profile composition
 and cross-document structural target materialization are implemented as reviewed
 internal mechanisms. The hosted plan service joins these mechanisms with session

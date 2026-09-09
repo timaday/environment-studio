@@ -125,14 +125,13 @@ and independent API-to-UI mutation checks pass. The [exact artifact refresh](../
 passes revised-container smoke and four hosted/two demo browser cases. Versioned
 history and hosted work remain active; this image predates the profile changes.
 
-Current retained image, exact `76ab78b`:
-`sha256:90e771cd6afb0bdeb75b42d8552c546b56f4c0a273e0d4caea1e4c5a07ac9c61`.
-The [v3 content/native ELF artifact](../evidence/plan-content-artifacts.md)
-passes Java1187 and protected startup/schema3 administration smoke, and records
-its separate supervisor ZIP. Frontend checking,40 frontend tests,40 schema tests
-and production build run afresh and pass; dependency/build-package layers are
-cached. Shared v3 lifecycle and the native launch
-coordinator are outside this image.
+Current retained image, exact `047d1b0`:
+`sha256:de8823c7a751645aca7b4b2dcb2b728a0d8746eaa336b8d70d3876072e6c9c9e`.
+The [shared v3/native owner artifact](../evidence/shared-validation-artifacts.md)
+passes fresh Java1320 and protected startup/schema3 administration smoke, and
+records its separately verified supervisor ZIP. Unchanged frontend and dependency
+layers are cached. Shared v3 lifecycle/views/validation and native owner checks
+are included; publication HTTP and runtime composition remain later candidates.
 The four hosted HTTPS/OIDC and two demo browser cases remain scoped to7111230.
 This is local proof only; preceding image evidence remains historically scoped.
 
