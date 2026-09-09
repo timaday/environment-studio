@@ -24,15 +24,19 @@ public final class PlanBindings {
         @Override public String toString(){return "BindingEntity[redacted]";}
     }
     public static Entity resolve(HostedPlanService.ViewSnapshot snapshot,PlanCommand.Ref requested) {
-        var current=index(snapshot,snapshot.selected(false));
+        if(snapshot.definition().model() instanceof PlanDefinition.V3)throw new PlanRefusal(UNSUPPORTED_DEFINITION);
+        return resolve(snapshot,requested,new studio.environment.core.observation.ObservationPort.Cancellation());
+    }
+    public static Entity resolve(HostedPlanService.ViewSnapshot snapshot,PlanCommand.Ref requested,studio.environment.core.observation.ObservationPort.Cancellation control) {
+        live(control);var current=index(snapshot,snapshot.selected(false),control);
         TargetIntent.Ref ref=switch(requested) {
             case PlanCommand.Ref.Existing existing -> snapshot.references().entrySet().stream().filter(e->e.getValue().equals(existing)).map(Map.Entry::getKey).findFirst().orElseThrow(()->new PlanRefusal(NOT_FOUND));
             case PlanCommand.Ref.Fresh fresh -> new TargetIntent.Ref.Fresh(fresh.slotId(),fresh.typeId());
         };
         if(!snapshot.displayHandles().containsKey(ref))throw new PlanRefusal(NOT_FOUND);
-        var type=snapshot.definition().compiled().checked().definition().logical().entityTypes().stream().filter(t->t.id().equals(ref.type())).findFirst().orElseThrow(()->new PlanRefusal(PROJECTION_REFUSED));
+        var type=snapshot.definition().model().physical().entityTypes().stream().filter(t->t.id().equals(ref.type())).findFirst().orElseThrow(()->new PlanRefusal(PROJECTION_REFUSED));
         var decisions=new HashMap<TargetIntent.Ref,TargetIntent.EntityDecision>();
-        for(var decision:snapshot.draft().intent().entities())if(decisions.putIfAbsent(decision.entity(),decision)!=null)throw new PlanRefusal(PROJECTION_REFUSED);
+        for(var decision:snapshot.draft().intent().entities()){live(control);if(decisions.putIfAbsent(decision.entity(),decision)!=null)throw new PlanRefusal(PROJECTION_REFUSED);}
         var decision=decisions.get(ref);boolean fresh=ref instanceof TargetIntent.Ref.Fresh;
         if(fresh && !(decision instanceof TargetIntent.EntityDecision.Create))throw new PlanRefusal(NOT_FOUND);
         var observed=current.get(ref);if(!fresh && observed==null)throw new PlanRefusal(PROJECTION_REFUSED);
@@ -45,11 +49,11 @@ public final class PlanBindings {
         var declared=new HashSet<String>();type.fields().forEach(f->declared.add(f.id()));
         if(!declared.containsAll(values.keySet()) || fresh && values.values().stream().anyMatch(v->v instanceof TargetIntent.FieldValue.KeepObserved))throw new PlanRefusal(PROJECTION_REFUSED);
         boolean complete=snapshot.target().isPresent();
-        var target=complete?index(snapshot,snapshot.target().orElseThrow()).get(ref):null;
+        var target=complete?index(snapshot,snapshot.target().orElseThrow(),control).get(ref):null;
         if(complete && fresh && target==null)throw new PlanRefusal(PROJECTION_REFUSED);
         var fields=new ArrayList<Field>();
         for(var field:type.fields().stream().sorted(Comparator.comparing(NativeDefinition.Field::id)).toList()) {
-            var before=fresh?state(State.UNAVAILABLE):observed(field,observed);
+            live(control);var before=fresh?state(State.UNAVAILABLE):observed(field,observed);
             Value after;
             if(complete)after=observed(field,target);
             else if(decision instanceof TargetIntent.EntityDecision.Remove)after=state(State.ABSENT);
@@ -63,23 +67,24 @@ public final class PlanBindings {
             };
             fields.add(new Field(field.id(),token(snapshot,ref,field.id()),before,after,change(before,after,fresh)));
         }
-        return new Entity(ref,fields);
+        live(control);return new Entity(ref,fields);
     }
     public static String token(HostedPlanService.ViewSnapshot snapshot,TargetIntent.Ref ref,String fieldId) {
         var handle=snapshot.displayHandle(ref);
         if(!handle.matches("[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}") || !fieldId.matches("[a-z][a-z0-9.-]{0,63}"))throw new PlanRefusal(PROJECTION_REFUSED);
         return "[[value:"+handle+":"+fieldId+"]]";
     }
-    private static Map<TargetIntent.Ref,ObservedGraph.Entity> index(HostedPlanService.ViewSnapshot snapshot,PlanPorts.Content content) {
+    private static Map<TargetIntent.Ref,ObservedGraph.Entity> index(HostedPlanService.ViewSnapshot snapshot,PlanPorts.Content content,studio.environment.core.observation.ObservationPort.Cancellation control) {
         var result=new HashMap<TargetIntent.Ref,ObservedGraph.Entity>();var keys=new HashSet<ObservedGraph.Key>();
         for(var entity:content.graph().entities()) {
-            var provenance=content.provenance().get(entity.key());
+            live(control);var provenance=content.provenance().get(entity.key());
             if(provenance==null || !provenance.type().equals(entity.key().type()) || !keys.add(entity.key()) || result.putIfAbsent(provenance,entity)!=null)throw new PlanRefusal(PROJECTION_REFUSED);
             snapshot.displayHandle(provenance);
         }
         if(keys.size()!=content.provenance().size())throw new PlanRefusal(PROJECTION_REFUSED);
         return result;
     }
+    private static void live(studio.environment.core.observation.ObservationPort.Cancellation control){if(control.cancelled())throw new PlanRefusal(CONFLICT);}
     private static Value observed(NativeDefinition.Field field,ObservedGraph.Entity entity) {
         return entity==null || !entity.fields().containsKey(field.id())?state(State.ABSENT):present(field,entity.fields().get(field.id()));
     }

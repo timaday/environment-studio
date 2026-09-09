@@ -20,6 +20,7 @@ class SharedV3PlanXmlTest {
     final NativeCommand.Reference reference=new NativeCommand.Reference("00000000-0000-4000-8000-000000000001","2");
     PlanDefinition.V3 model=new PlanDefinition.V3(definition(false));
     String xml=XML;
+    Map<String,String> additionalXml=Map.of();
     PublishedProfile profile;
     static SharedV3PlanXmlTest with(studio.environment.core.definitionv3.NativeCompilationResult.Checked definition,String xml){var fixture=new SharedV3PlanXmlTest();fixture.model=new PlanDefinition.V3(definition);fixture.xml=xml;return fixture;}
     static Map<String,Object> evidence(){
@@ -44,7 +45,10 @@ class SharedV3PlanXmlTest {
             public ObservationResult observe(Selection s,TransientCredentials c,Cancellation flag){throw new AssertionError("RESERVATION_REQUIRED");}
             public Reservation reserveV3(V3Selection selected){assertEquals(model.checked(),selected.compiled());return new Reservation.Admitted(new Permit(){
                 public ObservationResult observe(TransientCredentials credentials,Cancellation control){credentials.close();return new ObservationResult.Complete(new ObservationResult.Observation(FINGERPRINT,model.logicalDigest(),model.bindingDigests().get("mock-pg"),
-                        List.of(new ObservationResult.Document("sheet",new ObservationResult.Key("int64","1"),xml,xml.getBytes(java.nio.charset.StandardCharsets.UTF_8).length,xml.length(),digest(xml))),evidence()));}
+                        selected.compiled().definition().bindings().stream().filter(b->b.id().equals(selected.bindingId())).findFirst().orElseThrow().documents().stream().map(document->{
+                            String source=document.id().equals("sheet")?xml:additionalXml.get(document.id());assertNotNull(source);
+                            return new ObservationResult.Document(document.id(),new ObservationResult.Key("int64",document.key()),source,source.getBytes(java.nio.charset.StandardCharsets.UTF_8).length,source.length(),digest(source));
+                        }).toList(),evidence()));}
                 public void close(){}
             });}
         };

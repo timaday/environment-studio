@@ -79,6 +79,9 @@ composition and combined retained-proof resources remain required. The
 complete-stream, shared-retry and descriptor-reuse review. Combined Java1275
 passes; production JNI, mapped byte identity, loader closure and native client
 qualification remain open.
+The [shared controlled v3 views](../evidence/qf34-shared-views.md) pass independent
+physical-origin and contributor-role review. Combined Java1294 with native maps
+passes; shared v3 validation and versioned HTTP are the next backend work.
 
 The lead owns shared contracts and compatibility. Independent fixed-candidate
 review, actual RED/GREEN, targeted guard mutations and integrated verification

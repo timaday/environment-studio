@@ -87,6 +87,11 @@ review: complete bounded streams, original controls, opaque labels, once-only
 receiver ownership and persistent launch cleanup uncertainty. Four new independent
 families pass alongside the existing native launch/JNI cases. Combined Java1275
 passes; production JNI, mapped bytes/loader closure and client admission stay open.
+The [shared controlled v3 views](../evidence/qf34-shared-views.md) pass independent
+physical-origin, admission-isolation and same-field contributor review. Physical
+bindings/locations and typed computed pages preserve complete totals, exact roles,
+masking and final provenance. Combined Java1294 with native maps passes;
+shared v3 validation and versioned HTTP remain required before availability.
 No Q feedback GitHub publication is authorized. Existing MVP scope and completed
 work remain in place.
 

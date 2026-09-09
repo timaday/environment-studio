@@ -547,6 +547,11 @@ public final class HostedPlanService {
                 check();return HostedPlanService.snapshot(pinned);
             });
         }
+        /** Trusted presentation read under this original admission; snapshots confer no authority. */
+        public <T> T read(java.util.function.BiFunction<ViewSnapshot,ObservationPort.Cancellation,T> reader) {
+            Objects.requireNonNull(reader);var selected=snapshot();
+            var result=reader.apply(selected,cancellation);verify();return result;
+        }
         public studio.environment.core.graph.ObservedGraph.Key observed(String handle) {
             return guarded(lease,()->{check();var ref=pinned.originals.get(handle);if(ref==null)throw new PlanRefusal(INVALID_REQUEST);return ref.key();});
         }
