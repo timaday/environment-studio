@@ -465,3 +465,58 @@ test("binding values and full location pages use closed distinct states and boun
     instance.items[0].current = {state}; assert.equal(planView("bindingsResponse")(instance), true);
   }
 });
+
+const workspaceV3 = read("../docs/contracts/openapi-workspace-v3.json");
+const workspaceV3Defs = JSON.parse(JSON.stringify(workspaceV3.components.schemas)
+  .replaceAll("#/components/schemas/", "#/$defs/")
+  .replaceAll("../../schemas/definition-inspection-v3.schema.json", "https://environment.studio/schemas/definition-inspection-v3"));
+// UUID syntax is constrained by the schema's explicit pattern.
+const workspaceV3Ajv = new Ajv({ allErrors: true, strict: true, formats: { uuid: true } })
+  .addSchema(read("../schemas/definition-inspection-v3.schema.json"));
+const workspaceV3Shape = (name) => workspaceV3Ajv.compile({ $defs: workspaceV3Defs, $ref: `#/$defs/${name}` });
+const workspaceV3Mechanisms = { "native-compiler-v3": "1", "xml-path-v1": "1", "xml-span-v1": "1", "generic-graph-v1": "1", "derived-graph-v1": "1" };
+test("v3 workspace exposes only four closed draft/history operations", () => {
+  assert.deepEqual(Object.keys(workspaceV3.paths).sort(), ["/api/v3/definitions", "/api/v3/definitions/{objectId}", "/api/v3/definitions/{objectId}/revisions/{revision}"]);
+  assert.deepEqual(Object.entries(workspaceV3.paths).flatMap(([path, item]) => Object.keys(item).filter(key => key !== "parameters").map(method => `${method} ${path}`)).sort(), [
+    "get /api/v3/definitions", "get /api/v3/definitions/{objectId}", "get /api/v3/definitions/{objectId}/revisions/{revision}", "put /api/v3/definitions/{objectId}",
+  ]);
+  for (const item of Object.values(workspaceV3.paths)) for (const method of ["get", "put"]) if (item[method]) {
+    for (const status of ["403", "413", "429", "503"]) assert.ok(item[method].responses[status]);
+  }
+  const validate = workspaceV3Shape("SaveDefinition");
+  const command = { expectedRevision: "0", requestId: "00000000-0000-4000-8000-000000000031", format: "YAML", source: "invented source é 😀\r\n" };
+  assert.equal(validate(command), true, JSON.stringify(validate.errors));
+  for (const key of ["owner", "publication", "definition", "projection"]) assert.equal(validate({ ...command, [key]: "invented" }), false);
+});
+test("v3 workspace historical projections never advertise current ready-to-publish", () => {
+  const validate = workspaceV3Shape("DefinitionProjection");
+  const model = decimalInspection(read("../fixtures/native-v3/definition.json"));
+  const projection = { kind: "incomplete", model, logicalDigest: "a".repeat(64), bindingDigests: Object.fromEntries(model.bindings.map(b => [b.id, "b".repeat(64)])), mechanisms: workspaceV3Mechanisms,
+    diagnostics: [{ phase: "publication", code: "MECHANISM_UNQUALIFIED", pointer: "", message: "Unqualified." }] };
+  assert.equal(validate(projection), true, JSON.stringify(validate.errors));
+  assert.equal(validate({ ...projection, kind: "historical-ready", diagnostics: [] }), true);
+  assert.equal(validate({ ...projection, kind: "ready-to-publish", diagnostics: [] }), false);
+  assert.equal(validate({ ...projection, kind: "historical-ready" }), false);
+  assert.equal(validate({ ...projection, diagnostics: [] }), false);
+  assert.equal(validate({ ...projection, diagnostics: [{ ...projection.diagnostics[0], phase: "semantic" }] }), false);
+  assert.equal(validate({ ...projection, diagnostics: [{ ...projection.diagnostics[0], code: "unsafe-code" }] }), false);
+  assert.equal(validate({ ...projection, model: decimalInspection(read("../fixtures/native-v2/definition.json")) }), false);
+});
+test("v3 workspace history requires its distinct complete mechanism vector", () => {
+  const validate = workspaceV3Shape("Mechanisms");
+  assert.equal(validate(workspaceV3Mechanisms), true);
+  assert.equal(validate({ ...workspaceV3Mechanisms, "native-compiler-v3": "9".repeat(1024), "xml-child-property-v1": "9" }), true);
+  const missing = { ...workspaceV3Mechanisms }; delete missing["derived-graph-v1"];
+  assert.equal(validate(missing), false);
+  assert.equal(validate({ ...workspaceV3Mechanisms, "native-compiler-v2": "1" }), false);
+  for (const bad of ["0", "01", "1\n", "9".repeat(1025), 1]) assert.equal(validate({ ...workspaceV3Mechanisms, "derived-graph-v1": bad }), false);
+});
+test("v3 workspace metadata is bounded and excludes source or publication authority", () => {
+  const validate = workspaceV3Shape("DefinitionList");
+  const item = { objectId: "00000000-0000-4000-8000-000000000032", workspaceRevision: "1", nativeId: "invented", nativeRevision: "1", sourceDigest: "c".repeat(64), state: "draft", compilationKind: "incomplete", logicalDigest: "d".repeat(64) };
+  assert.equal(validate({ definitions: Array.from({ length: 100 }, () => ({ ...item })) }), true, JSON.stringify(validate.errors));
+  assert.equal(validate({ definitions: Array.from({ length: 101 }, () => ({ ...item })) }), false);
+  assert.equal(validate({ definitions: [item], canPublish: true }), false);
+  assert.equal(validate({ definitions: [{ ...item, source: "invented" }] }), false);
+  assert.equal(validate({ definitions: [{ ...item, compilationKind: "ready-to-publish" }] }), false);
+});

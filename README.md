@@ -10,6 +10,9 @@ guarded SQL for their existing database deployment process.
 **Status: implementation in progress.** Native JSON/YAML definitions compile in
 Java; hosted workspace APIs support immutable definition/profile drafts and
 publication, with explicit maintainer authority and private SQLite storage.
+Separate [v3 definition draft/history APIs](docs/contracts/workspace-http-v3.md)
+retain exact source in an explicitly initialized schema3 workspace. V3 publication,
+profiles and plan integration remain unfinished.
 Complete Oracle CLOB/PostgreSQL text observation, value-free profile composition
 and cross-document structural target materialization are implemented as reviewed
 internal mechanisms. The hosted plan service joins these mechanisms with session

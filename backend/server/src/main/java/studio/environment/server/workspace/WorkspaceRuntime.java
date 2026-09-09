@@ -29,6 +29,11 @@ public final class WorkspaceRuntime {
     NativeWorkspace nativeService(WorkspaceCommit commit) {
         return new NativeWorkspace(new NativeSqliteStore(store.orElseThrow(() -> new WorkspaceRefusal(WorkspaceRefusal.Code.UNAVAILABLE)).withCommit(commit)), new NativeWorkspaceCompiler(), publishers);
     }
+    private final V3WorkspaceOperations v3Operations=new V3WorkspaceOperations();
+    V3WorkspaceOperations v3Operations(){return v3Operations;}
+    V3NativeStore v3Store(){return new V3NativeSqliteStore(store.orElseThrow(()->new WorkspaceRefusal(WorkspaceRefusal.Code.UNAVAILABLE)));}
+    V3NativeWorkspace v3Service(WorkspaceCommit commit){return new V3NativeWorkspace(new V3NativeSqliteStore(store.orElseThrow(()->new WorkspaceRefusal(WorkspaceRefusal.Code.UNAVAILABLE)).withCommit(commit)),new V3NativeWorkspaceCompiler());}
+    public void cleanupV3(studio.environment.core.session.SessionLedger.Lease lease){v3Operations.invalidate(lease);}
     DraftWorkspace service(WorkspaceCommit commit) {
         return new DraftWorkspace(store.orElseThrow(() -> new WorkspaceRefusal(WorkspaceRefusal.Code.UNAVAILABLE)).withCommit(commit),
             command -> new DefinitionBytesCompiler().compile(StrictUtf8.encode(command.source()), DefinitionBytesCompiler.Format.valueOf(command.format().name())));

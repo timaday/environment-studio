@@ -35,8 +35,12 @@ a legal binding-ID collision in numeric checks; the combined Java943 build passe
 [Schema3 persistence and definition drafts](../evidence/qf34-workspace-v3.md) are
 also reviewed: exact history, shared quotas, owner/kind isolation and real failed
 upgrade rollback pass. The exact candidate container passes Java973 with those reviewer tests.
-V3 profile mutation, publication and hosted integration remain next; v3
-availability stays disabled.
+The [v3 draft/history HTTP routes](../evidence/qf34-workspace-http-v3.md) are now
+reviewed and integrated: actual compiler/SQLite, original lease, bounded request
+and response ownership, and seven real mock-OIDC/socket cases pass. Independent
+review corrected checked input-I/O handling and stale completion settlement;
+combined Java1024 and frontend40/schema36 pass. V3 profile mutation, publication
+and plan integration remain next; v3 operational availability stays disabled.
 No Q feedback GitHub publication is authorized. Existing MVP scope and completed
 work remain in place.
 

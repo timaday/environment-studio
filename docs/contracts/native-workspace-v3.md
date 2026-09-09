@@ -4,7 +4,8 @@ This is the explicit versioned extension for [native definitions](native-definit
 and [physical-only profiles](profile-v3.md). Internal typed history and versioned
 digests are [implemented and reviewed](../evidence/qf34-history-v3.md).
 [Schema3 storage and definition drafts](workspace-storage-v3.md) are also
-implemented; HTTP and new publication remain pending. Existing
+implemented, with [draft/history HTTP](workspace-http-v3.md). Profile mutation,
+new publication and plan integration remain pending. Existing
 v1/v2 sources, routes, snapshots, digests and replay records retain their meaning.
 No v3 operation may be implemented by changing a v2 version field or accepting
 v3 through the v2 reader. Internal history support does not enable publication.
@@ -74,7 +75,9 @@ this historical consistency check does not authorize a new publication.
 ## Workspace and HTTP integration boundary
 
 The [explicit schema3 store](workspace-storage-v3.md) implements persistence and
-definition draft saves. Subsequent HTTP and publication integration must preserve
+definition draft saves. Its [definition HTTP routes](workspace-http-v3.md) preserve
+the original lease through bounded input and response transfer. Subsequent profile
+and publication integration must preserve
 exact owner/lease checks, UUID/type continuity, quotas, immutable revision history,
 exact replay before compilation, live maintainer admission for definition
 publication, and explicit profile-owner publication against an eligible maintained

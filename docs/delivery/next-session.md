@@ -53,8 +53,11 @@ checks preserve legal binding IDs and old snapshots. Combined Java943 passes.
 are now reviewed. The exact5925bc8 [container artifact](../evidence/workspace-v3-artifacts.md) passes
 Java973 and protected schema3 administration, including the reviewer tests. Old initialization/upgrade
 commands keep their defaults; new v3 commands are explicit offline operations.
-V3 definition draft/history HTTP is next, followed by remaining profile mutation,
-publication and plan integration; there is no v3 runtime enablement.
+The [v3 draft/history HTTP routes](../evidence/qf34-workspace-http-v3.md) are now
+reviewed and integrated after input-I/O and stale-completion corrections. Full
+Java1024 and frontend40/schema36 pass, including seven actual mock-OIDC/socket
+cases. The retained5925 image predates these routes. Remaining profile mutation,
+publication and plan integration are next; there is no v3 runtime enablement.
 The review environment's supervisor failures remain separately scoped and unresolved
 individually; local Java21.0.12 socket/child-start controls and supervisor168 pass.
 
