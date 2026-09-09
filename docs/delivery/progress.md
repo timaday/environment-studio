@@ -13,9 +13,13 @@ protected startup/workspace smoke. Existing direct digests and historical bytes
 remain unchanged. A property child also declared as an entity remains incomplete
 when creation is enabled. New maximum-heap, native-client and complete hosted
 export qualification remain open. Tim approved the separate
-[derived semantics](../product/derived-graph-decision.md) for QF-0003/0004; closed
-v3 contracts and implementation remain next. No Q feedback GitHub publication is
-authorized. Existing MVP scope and completed work remain in place.
+[derived semantics](../product/derived-graph-decision.md) for QF-0003/0004. The
+[reviewed v3 contracts](../evidence/qf34-v3-contracts.md) now define separate
+computed results, full provenance, shared bounds and physical-only profiles;
+32 schema checks and independent digest controls pass. Java v3 compilation and
+recomputation are next, with availability disabled until integration qualifies
+the required paths. No Q feedback GitHub publication is authorized. Existing MVP
+scope and completed work remain in place.
 
 Current retained child-candidate image:
 `sha256:cad649ef4cc03f1b54d3b7ffa6304a64dcf2acf126fed74d06b6e99dcc0de20f`.

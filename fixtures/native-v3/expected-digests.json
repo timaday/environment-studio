@@ -1,0 +1,25 @@
+{
+  "logicalDigest": "bbfead638fae8c814ec3a7c697e9645af9714163032a6dd6738af49cd5f9affd",
+  "bindingDigests": {
+    "mock-pg": "5485559ee69427dd24b31f1f2d8a9386b44ced3eef33f3363bd0ae86a7e8a13d",
+    "mock-oracle": "e70728ee796ac21a82c365de9b56b783800d8137d6399ee5a968cd8456787373"
+  },
+  "mechanisms": {
+    "mock-pg": {
+      "native-compiler-v3": 1,
+      "xml-path-v1": 1,
+      "xml-span-v1": 1,
+      "generic-graph-v1": 1,
+      "derived-graph-v1": 1,
+      "xml-child-property-v1": 1
+    },
+    "mock-oracle": {
+      "native-compiler-v3": 1,
+      "xml-path-v1": 1,
+      "xml-span-v1": 1,
+      "generic-graph-v1": 1,
+      "derived-graph-v1": 1
+    }
+  },
+  "profileDigest": "b661384049dfe987cfbaaffd305f34b7a7e1f287ef7686851aeae1cbcac321e0"
+}

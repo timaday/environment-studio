@@ -36,6 +36,92 @@ test("unknown type semantics and missing requiredness cannot be silently accepte
 });
 
 const nativeV2 = ajv.compile(read("../schemas/definition-v2.schema.json"));
+const nativeV3 = ajv.compile(read("../schemas/definition-v3.schema.json"));
+const inspectionV3 = ajv.compile(read("../schemas/definition-inspection-v3.schema.json"));
+const decimalInspection = (value) => JSON.parse(JSON.stringify(value, (key, item) => typeof item === "number" ? String(item) : item));
+test("v3 explicitly separates physical bindings from closed derived declarations", () => {
+  const candidate = read("../fixtures/native-v3/definition.json");
+  assert.equal(nativeV3(candidate), true, JSON.stringify(nativeV3.errors));
+  assert.equal(inspectionV3(decimalInspection(candidate)), true, JSON.stringify(inspectionV3.errors));
+  assert.equal(nativeV2(candidate), false);
+  assert.equal(nativeV3(read("../fixtures/native-v2/definition.json")), false);
+  candidate.schemaVersion = "2";
+  assert.equal(nativeV2(candidate), false, "version relabelling cannot add v3 declarations to v2");
+});
+test("v3 requires explicit derived arrays and refuses uploaded computation or authority", () => {
+  const seed = read("../fixtures/native-v3/definition.json");
+  assert.equal(nativeV3(seed), true);
+  for (const mutate of [
+    c => { delete c.logical.derivations; },
+    c => { delete c.logical.computedTypes; },
+    c => { delete c.logical.cooccurrences; },
+    c => { delete c.logical.computedRules; },
+    c => { c.logical.derivedSemantics = { maxTotalNodes: 999999 }; },
+    c => { c.mechanisms = { "derived-graph-v1": 1 }; },
+    c => { c.logical.computedTypes[0].identity = { field: "tone" }; },
+    c => { c.logical.derivations[0].expression = "invented-expression"; },
+    c => { c.logical.derivations[0].normalization = "trim"; },
+    c => { delete c.logical.derivations[0].membershipRelation; },
+    c => { c.logical.cooccurrences[0].includeTargetOnReuse = true; },
+    c => { delete c.logical.cooccurrences[0].maximum; },
+    c => { c.logical.computedRules[0].kind = "inferred-count"; },
+  ]) {
+    const bad = structuredClone(seed); mutate(bad);
+    assert.equal(nativeV3(bad), false);
+    assert.equal(inspectionV3(decimalInspection(bad)), false);
+  }
+  for (const key of ["computedTypes", "derivations", "cooccurrences", "computedRules"]) seed.logical[key] = [];
+  assert.equal(nativeV3(seed), true, "explicitly empty arrays have defined v3 semantics");
+});
+test("v3 bounds declaration arrays at 32 independently of semantic uniqueness", () => {
+  for (const key of ["computedTypes", "derivations", "cooccurrences"]) {
+    const seed = read("../fixtures/native-v3/definition.json");
+    seed.logical[key] = Array.from({ length: 32 }, (_, i) => ({ ...seed.logical[key][0], id: `invented-${i}` }));
+    assert.equal(nativeV3(seed), true, key);
+    assert.equal(inspectionV3(decimalInspection(seed)), true, key);
+    seed.logical[key].push({ ...seed.logical[key][0], id: "invented-over" });
+    assert.equal(nativeV3(seed), false, key);
+    assert.equal(inspectionV3(decimalInspection(seed)), false, key);
+  }
+});
+test("v3 inspection uses canonical bounded decimals without changing source integer semantics", () => {
+  const source = read("../fixtures/native-v3/definition.json");
+  assert.equal(nativeV3(source), true);
+  const shown = decimalInspection(source);
+  shown.revision = "9".repeat(1024);
+  shown.logical.cooccurrences[0].maximum = "9".repeat(1024);
+  assert.equal(inspectionV3(shown), true, JSON.stringify(inspectionV3.errors));
+  for (const bad of ["01", "-1", "1\n", "1.0", "9".repeat(1025), 1]) {
+    const candidate = structuredClone(shown); candidate.logical.cooccurrences[0].maximum = bad;
+    assert.equal(inspectionV3(candidate), false);
+  }
+  source.logical.cooccurrences[0].minimum = -1;
+  assert.equal(nativeV3(source), false);
+});
+test("v3 shape acceptance leaves field eligibility and physical partition references to Java", () => {
+  const source = read("../fixtures/native-v3/definition.json");
+  source.logical.entityTypes[0].fields[1].sensitivity = "secret";
+  source.logical.cooccurrences[0].toDerivation = "not-declared";
+  assert.equal(nativeV3(source), true, "shape checks do not grant semantic acceptance");
+});
+test("v3 portable profiles refuse computed data at every level and keep v2 separate", () => {
+  const validate = ajv.compile(read("../schemas/profile-v3.schema.json"));
+  const inspection = ajv.compile(read("../schemas/profile-inspection-v3.schema.json"));
+  const seed = read("../fixtures/native-v3/profile.json");
+  assert.equal(validate(seed), true);
+  assert.equal(inspection(decimalInspection(seed)), true);
+  assert.equal(profileV2(seed), false);
+  assert.equal(validate(read("../fixtures/profile-v2/profile.json")), false);
+  for (const location of ["root", "entity", "relation"]) for (const key of ["computedTypes", "derivations", "constraints", "contributors", "identity", "values", "locator"]) {
+    const bad = structuredClone(seed);
+    const target = location === "root" ? bad : location === "entity" ? bad.entities[0] : bad.relations[0];
+    target[key] = "invented-donor-canary";
+    assert.equal(validate(bad), false, `${location}.${key}`);
+    assert.equal(inspection(decimalInspection(bad)), false, `${location}.${key}`);
+  }
+  seed.entities[0].type = "tone-group";
+  assert.equal(validate(seed), true, "Java must reject computed slot references against the pinned definition");
+});
 test("child field declarations and historical inspection use the same closed mutually exclusive forms", () => {
   const inspection = ajv.compile(read("../schemas/definition-inspection-v2.schema.json"));
   const candidate = read("../fixtures/native-v2/definition.json");

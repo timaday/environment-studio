@@ -26,7 +26,7 @@ may silently add a donor source, infer a value or choose an unrelated sibling.
 If portable derived constraints are required, choose the third option before
 implementation rather than treating the second as satisfying that requirement.
 
-## Proposed semantics
+## Approved semantics
 
 Each derivation declares a unique ID, one physical source type, one readable
 text field and one distinct computed type. Each computed type belongs to exactly
@@ -91,13 +91,13 @@ minimums still apply to computed types; a positive minimum fails on zero. Relati
 minimums apply to each existing source node and are vacuous when none exist;
 use a type-count minimum to require an instance. Never create a placeholder group.
 
-Initial proposed bounds: at most 32 derivations and 32 co-occurrence declarations;
+Initial bounds: at most 32 derivations and 32 co-occurrence declarations;
 20,000 total physical plus computed nodes and 50,000 total physical, membership
 and co-occurrence edges per graph; 100,000 contributor links across derived nodes
 and edges, counting each occurrence-to-result association; 8 MiB strict UTF-8
 for distinct computed identity values. Existing source, parser, plan and transport
 limits also apply. Enforce bounds during construction before excessive allocation;
-overflow refuses the entire result. These are proposed limits requiring resource
+overflow refuses the entire result. These are contractual limits requiring resource
 qualification, not a claim that the current deployment can support them. The total
 graph caps are an explicit v3 capacity tradeoff: 20,000 physical nodes leave no
 room for a computed node, and 50,000 physical edges leave no room for membership.
@@ -154,5 +154,7 @@ Tim explicitly selected “Approve the proposed authoritative semantics” after
 review of this record. Approval covers authoritative recomputation, physical-only
 v3 profiles, PUBLIC text inputs, the eligibility/absence rules and shared graph
 limits above. It does not qualify runtime behavior or authorize Q publication.
-Write the closed v3 contracts before implementation; QF-0001/0002 remains the
-first implementation slice alongside independent MVP work.
+The [closed v3 contracts and schemas](../evidence/qf34-v3-contracts.md) are now
+reviewed; Java implementation and integration qualification remain next.
+QF-0001/0002 is integrated as the preceding bounded slice. Independent MVP work
+and its remaining qualification gates continue.

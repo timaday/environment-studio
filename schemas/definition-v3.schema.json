@@ -1,0 +1,673 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://environment.studio/schemas/definition-v3",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": {
+      "const": "3"
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9.-]{0,63}$(?![\\s\\S])"
+    },
+    "revision": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "logical": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "entityTypes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9.-]{0,63}$(?![\\s\\S])"
+              },
+              "label": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              "fields": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "pattern": "^[a-z][a-z0-9.-]{0,63}$(?![\\s\\S])"
+                    },
+                    "valueType": {
+                      "enum": [
+                        "text",
+                        "integer",
+                        "boolean",
+                        "uri"
+                      ]
+                    },
+                    "required": {
+                      "type": "boolean"
+                    },
+                    "classification": {
+                      "enum": [
+                        "environment",
+                        "structural"
+                      ]
+                    },
+                    "sensitivity": {
+                      "enum": [
+                        "public",
+                        "internal",
+                        "secret",
+                        "unknown"
+                      ]
+                    },
+                    "readable": {
+                      "type": "boolean"
+                    },
+                    "editable": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "valueType",
+                    "required",
+                    "classification",
+                    "sensitivity",
+                    "readable",
+                    "editable"
+                  ]
+                },
+                "minItems": 1
+              },
+              "identity": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "field": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9.-]{0,63}$(?![\\s\\S])"
+                  },
+                  "scope": {
+                    "const": "type"
+                  },
+                  "normalization": {
+                    "const": "exact"
+                  }
+                },
+                "required": [
+                  "field",
+                  "scope",
+                  "normalization"
+                ]
+              }
+            },
+            "required": [
+              "id",
+              "label",
+              "fields",
+              "identity"
+            ]
+          },
+          "minItems": 1
+        },
+        "relations": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9.-]{0,63}$(?![\\s\\S])"
+              },
+              "fromType": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9.-]{0,63}$(?![\\s\\S])"
+              },
+              "toType": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9.-]{0,63}$(?![\\s\\S])"
+              },
+              "kind": {
+                "enum": [
+                  "reference",
+                  "containment"
+                ]
+              },
+              "minimum": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "maximum": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "includeTargetOnReuse": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "id",
+              "fromType",
+              "toType",
+              "kind",
+              "minimum",
+              "maximum",
+              "includeTargetOnReuse"
+            ]
+          },
+          "minItems": 0
+        },
+        "rules": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9.-]{0,63}$(?![\\s\\S])"
+              },
+              "kind": {
+                "const": "entity-count"
+              },
+              "type": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9.-]{0,63}$(?![\\s\\S])"
+              },
+              "minimum": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "maximum": {
+                "type": "integer",
+                "minimum": 1
+              }
+            },
+            "required": [
+              "id",
+              "kind",
+              "type",
+              "minimum",
+              "maximum"
+            ]
+          },
+          "minItems": 0
+        },
+        "operationCapabilities": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "retain-entity",
+              "create-entity",
+              "remove-entity",
+              "bind-field",
+              "move-relation"
+            ]
+          },
+          "minItems": 0,
+          "uniqueItems": true
+        },
+        "computedTypes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9.-]{0,63}$(?![\\s\\S])"
+              },
+              "label": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              }
+            },
+            "required": [
+              "id",
+              "label"
+            ]
+          },
+          "maxItems": 32
+        },
+        "derivations": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9.-]{0,63}$(?![\\s\\S])"
+              },
+              "sourceType": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9.-]{0,63}$(?![\\s\\S])"
+              },
+              "sourceField": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9.-]{0,63}$(?![\\s\\S])"
+              },
+              "computedType": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9.-]{0,63}$(?![\\s\\S])"
+              },
+              "membershipRelation": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9.-]{0,63}$(?![\\s\\S])"
+              }
+            },
+            "required": [
+              "id",
+              "sourceType",
+              "sourceField",
+              "computedType",
+              "membershipRelation"
+            ]
+          },
+          "maxItems": 32
+        },
+        "cooccurrences": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9.-]{0,63}$(?![\\s\\S])"
+              },
+              "fromDerivation": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9.-]{0,63}$(?![\\s\\S])"
+              },
+              "toDerivation": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9.-]{0,63}$(?![\\s\\S])"
+              },
+              "minimum": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "maximum": {
+                "type": "integer",
+                "minimum": 1
+              }
+            },
+            "required": [
+              "id",
+              "fromDerivation",
+              "toDerivation",
+              "minimum",
+              "maximum"
+            ]
+          },
+          "maxItems": 32
+        },
+        "computedRules": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9.-]{0,63}$(?![\\s\\S])"
+              },
+              "kind": {
+                "const": "entity-count"
+              },
+              "type": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9.-]{0,63}$(?![\\s\\S])"
+              },
+              "minimum": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "maximum": {
+                "type": "integer",
+                "minimum": 1
+              }
+            },
+            "required": [
+              "id",
+              "kind",
+              "type",
+              "minimum",
+              "maximum"
+            ]
+          }
+        }
+      },
+      "required": [
+        "entityTypes",
+        "relations",
+        "rules",
+        "operationCapabilities",
+        "computedTypes",
+        "derivations",
+        "cooccurrences",
+        "computedRules"
+      ]
+    },
+    "bindings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9.-]{0,63}$(?![\\s\\S])"
+          },
+          "engine": {
+            "enum": [
+              "postgresql",
+              "oracle"
+            ]
+          },
+          "storage": {
+            "enum": [
+              "text",
+              "clob"
+            ]
+          },
+          "schema": {
+            "type": "string",
+            "pattern": "^[A-Za-z_][A-Za-z0-9_]{0,127}$(?![\\s\\S])"
+          },
+          "table": {
+            "type": "string",
+            "pattern": "^[A-Za-z_][A-Za-z0-9_]{0,127}$(?![\\s\\S])"
+          },
+          "keyColumn": {
+            "type": "string",
+            "pattern": "^[A-Za-z_][A-Za-z0-9_]{0,127}$(?![\\s\\S])"
+          },
+          "xmlColumn": {
+            "type": "string",
+            "pattern": "^[A-Za-z_][A-Za-z0-9_]{0,127}$(?![\\s\\S])"
+          },
+          "keyType": {
+            "enum": [
+              "text",
+              "int64"
+            ]
+          },
+          "documents": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "pattern": "^[a-z][a-z0-9.-]{0,63}$(?![\\s\\S])"
+                },
+                "key": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 256
+                },
+                "entities": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "pattern": "^[a-z][a-z0-9.-]{0,63}$(?![\\s\\S])"
+                      },
+                      "type": {
+                        "type": "string",
+                        "pattern": "^[a-z][a-z0-9.-]{0,63}$(?![\\s\\S])"
+                      },
+                      "path": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "properties": {
+                            "namespaceUri": {
+                              "type": "string",
+                              "maxLength": 2048
+                            },
+                            "localName": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 128,
+                              "pattern": "^[A-Z_a-z\u00c0-\u00d6\u00d8-\u00f6\u00f8-\u02ff\u0370-\u037d\u037f-\u1fff\u200c-\u200d\u2070-\u218f\u2c00-\u2fef\u3001-\ud7ff\uf900-\ufdcf\ufdf0-\ufffd\ud800\udc00-\udb7f\udfff][A-Z_a-z\u00c0-\u00d6\u00d8-\u00f6\u00f8-\u02ff\u0370-\u037d\u037f-\u1fff\u200c-\u200d\u2070-\u218f\u2c00-\u2fef\u3001-\ud7ff\uf900-\ufdcf\ufdf0-\ufffd\ud800\udc00-\udb7f\udfff\\-.0-9\u00b7\u0300-\u036f\u203f-\u2040]*$(?![\\s\\S])"
+                            }
+                          },
+                          "required": [
+                            "namespaceUri",
+                            "localName"
+                          ]
+                        },
+                        "minItems": 1
+                      },
+                      "fields": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "properties": {
+                            "field": {
+                              "type": "string",
+                              "pattern": "^[a-z][a-z0-9.-]{0,63}$(?![\\s\\S])"
+                            },
+                            "attribute": {
+                              "type": "object",
+                              "additionalProperties": false,
+                              "properties": {
+                                "namespaceUri": {
+                                  "type": "string",
+                                  "maxLength": 2048
+                                },
+                                "localName": {
+                                  "type": "string",
+                                  "minLength": 1,
+                                  "maxLength": 128,
+                                  "pattern": "^[A-Z_a-z\u00c0-\u00d6\u00d8-\u00f6\u00f8-\u02ff\u0370-\u037d\u037f-\u1fff\u200c-\u200d\u2070-\u218f\u2c00-\u2fef\u3001-\ud7ff\uf900-\ufdcf\ufdf0-\ufffd\ud800\udc00-\udb7f\udfff][A-Z_a-z\u00c0-\u00d6\u00d8-\u00f6\u00f8-\u02ff\u0370-\u037d\u037f-\u1fff\u200c-\u200d\u2070-\u218f\u2c00-\u2fef\u3001-\ud7ff\uf900-\ufdcf\ufdf0-\ufffd\ud800\udc00-\udb7f\udfff\\-.0-9\u00b7\u0300-\u036f\u203f-\u2040]*$(?![\\s\\S])"
+                                }
+                              },
+                              "required": [
+                                "namespaceUri",
+                                "localName"
+                              ]
+                            },
+                            "childProperty": {
+                              "type": "object",
+                              "additionalProperties": false,
+                              "properties": {
+                                "element": {
+                                  "type": "object",
+                                  "additionalProperties": false,
+                                  "properties": {
+                                    "namespaceUri": {
+                                      "type": "string",
+                                      "maxLength": 2048
+                                    },
+                                    "localName": {
+                                      "type": "string",
+                                      "minLength": 1,
+                                      "maxLength": 128,
+                                      "pattern": "^[A-Z_a-z\u00c0-\u00d6\u00d8-\u00f6\u00f8-\u02ff\u0370-\u037d\u037f-\u1fff\u200c-\u200d\u2070-\u218f\u2c00-\u2fef\u3001-\ud7ff\uf900-\ufdcf\ufdf0-\ufffd\ud800\udc00-\udb7f\udfff][A-Z_a-z\u00c0-\u00d6\u00d8-\u00f6\u00f8-\u02ff\u0370-\u037d\u037f-\u1fff\u200c-\u200d\u2070-\u218f\u2c00-\u2fef\u3001-\ud7ff\uf900-\ufdcf\ufdf0-\ufffd\ud800\udc00-\udb7f\udfff\\-.0-9\u00b7\u0300-\u036f\u203f-\u2040]*$(?![\\s\\S])"
+                                    }
+                                  },
+                                  "required": [
+                                    "namespaceUri",
+                                    "localName"
+                                  ]
+                                },
+                                "discriminatorAttribute": {
+                                  "type": "object",
+                                  "additionalProperties": false,
+                                  "properties": {
+                                    "namespaceUri": {
+                                      "type": "string",
+                                      "maxLength": 2048
+                                    },
+                                    "localName": {
+                                      "type": "string",
+                                      "minLength": 1,
+                                      "maxLength": 128,
+                                      "pattern": "^[A-Z_a-z\u00c0-\u00d6\u00d8-\u00f6\u00f8-\u02ff\u0370-\u037d\u037f-\u1fff\u200c-\u200d\u2070-\u218f\u2c00-\u2fef\u3001-\ud7ff\uf900-\ufdcf\ufdf0-\ufffd\ud800\udc00-\udb7f\udfff][A-Z_a-z\u00c0-\u00d6\u00d8-\u00f6\u00f8-\u02ff\u0370-\u037d\u037f-\u1fff\u200c-\u200d\u2070-\u218f\u2c00-\u2fef\u3001-\ud7ff\uf900-\ufdcf\ufdf0-\ufffd\ud800\udc00-\udb7f\udfff\\-.0-9\u00b7\u0300-\u036f\u203f-\u2040]*$(?![\\s\\S])"
+                                    }
+                                  },
+                                  "required": [
+                                    "namespaceUri",
+                                    "localName"
+                                  ]
+                                },
+                                "discriminatorValue": {
+                                  "type": "string",
+                                  "maxLength": 1048576
+                                },
+                                "valueAttribute": {
+                                  "type": "object",
+                                  "additionalProperties": false,
+                                  "properties": {
+                                    "namespaceUri": {
+                                      "type": "string",
+                                      "maxLength": 2048
+                                    },
+                                    "localName": {
+                                      "type": "string",
+                                      "minLength": 1,
+                                      "maxLength": 128,
+                                      "pattern": "^[A-Z_a-z\u00c0-\u00d6\u00d8-\u00f6\u00f8-\u02ff\u0370-\u037d\u037f-\u1fff\u200c-\u200d\u2070-\u218f\u2c00-\u2fef\u3001-\ud7ff\uf900-\ufdcf\ufdf0-\ufffd\ud800\udc00-\udb7f\udfff][A-Z_a-z\u00c0-\u00d6\u00d8-\u00f6\u00f8-\u02ff\u0370-\u037d\u037f-\u1fff\u200c-\u200d\u2070-\u218f\u2c00-\u2fef\u3001-\ud7ff\uf900-\ufdcf\ufdf0-\ufffd\ud800\udc00-\udb7f\udfff\\-.0-9\u00b7\u0300-\u036f\u203f-\u2040]*$(?![\\s\\S])"
+                                    }
+                                  },
+                                  "required": [
+                                    "namespaceUri",
+                                    "localName"
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "element",
+                                "discriminatorAttribute",
+                                "discriminatorValue",
+                                "valueAttribute"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "field"
+                          ],
+                          "oneOf": [
+                            {
+                              "required": [
+                                "attribute"
+                              ],
+                              "properties": {
+                                "attribute": {}
+                              }
+                            },
+                            {
+                              "required": [
+                                "childProperty"
+                              ],
+                              "properties": {
+                                "childProperty": {}
+                              }
+                            }
+                          ]
+                        },
+                        "minItems": 0
+                      },
+                      "references": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "properties": {
+                            "relation": {
+                              "type": "string",
+                              "pattern": "^[a-z][a-z0-9.-]{0,63}$(?![\\s\\S])"
+                            },
+                            "attribute": {
+                              "type": "object",
+                              "additionalProperties": false,
+                              "properties": {
+                                "namespaceUri": {
+                                  "type": "string",
+                                  "maxLength": 2048
+                                },
+                                "localName": {
+                                  "type": "string",
+                                  "minLength": 1,
+                                  "maxLength": 128,
+                                  "pattern": "^[A-Z_a-z\u00c0-\u00d6\u00d8-\u00f6\u00f8-\u02ff\u0370-\u037d\u037f-\u1fff\u200c-\u200d\u2070-\u218f\u2c00-\u2fef\u3001-\ud7ff\uf900-\ufdcf\ufdf0-\ufffd\ud800\udc00-\udb7f\udfff][A-Z_a-z\u00c0-\u00d6\u00d8-\u00f6\u00f8-\u02ff\u0370-\u037d\u037f-\u1fff\u200c-\u200d\u2070-\u218f\u2c00-\u2fef\u3001-\ud7ff\uf900-\ufdcf\ufdf0-\ufffd\ud800\udc00-\udb7f\udfff\\-.0-9\u00b7\u0300-\u036f\u203f-\u2040]*$(?![\\s\\S])"
+                                }
+                              },
+                              "required": [
+                                "namespaceUri",
+                                "localName"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "relation",
+                            "attribute"
+                          ]
+                        },
+                        "minItems": 0
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "type",
+                      "path",
+                      "fields",
+                      "references"
+                    ]
+                  },
+                  "minItems": 1
+                }
+              },
+              "required": [
+                "id",
+                "key",
+                "entities"
+              ]
+            },
+            "minItems": 1
+          }
+        },
+        "required": [
+          "id",
+          "engine",
+          "storage",
+          "schema",
+          "table",
+          "keyColumn",
+          "xmlColumn",
+          "keyType",
+          "documents"
+        ]
+      },
+      "minItems": 1
+    }
+  },
+  "required": [
+    "schemaVersion",
+    "id",
+    "revision",
+    "logical",
+    "bindings"
+  ]
+}
