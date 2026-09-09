@@ -154,6 +154,10 @@ files must be suppressed by the qualified fixed startup settings. A clean
 environment alone does not establish this: exercise credential-free native
 crashes and startup failures before any credential-bearing qualification.
 
+The planned [crash-privacy mechanism](guarded-crash-privacy-v1.md) and its private
+tools ABI specify suppression and per-exec identity receipts for a piped-collector
+host. They are not an implemented alternative or a populated qualification record.
+
 The parent requires a controlling console for ordinary credential entry, disables
 echo and owns mutable bounded buffers. Bound allocation while reading, not only
 after an unbounded `Console.readPassword()` call. Restore the captured terminal

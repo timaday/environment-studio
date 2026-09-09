@@ -1,0 +1,327 @@
+# Private crash-privacy ABI v1 — candidate, unimplemented
+
+This specifies the planned boundary in
+[guarded crash privacy](../../../../docs/contracts/guarded-crash-privacy-v1.md).
+It grants no runtime qualification and changes no public command/configuration.
+Only the standalone supervisor may use this private ABI. The compiled registry
+remains empty. All examples, fault probes and evidence must be independently
+invented and credential-free until the separate privacy gates pass.
+
+## Installation and launch prerequisite
+
+The distribution fixes one Linux amd64 guard/JNI library, its absolute trusted
+path, SHA-256, ABI, compiler/libc/JDK identity and closure in its compiled record.
+Loading it follows trusted-file admission; no peer, package, configuration or
+inherited environment chooses its path. JNI methods are package-private native
+methods of `studio.environment.supervisor.PrivacyBridge`, registered by exact
+name and signature. No general native loader, descriptor, process or command API
+is exposed. The web application never loads the library.
+
+The standalone launcher must set
+`-Djdk.lang.Process.launchMechanism=FORK` before `ProcessImpl` initializes.
+Admission verifies the exact pinned JDK and fixed setting. Property text alone
+is insufficient: qualification must witness the actual fork/exec chain. There
+is no POSIX_SPAWN, VFORK or helper fallback. A failed fork, including ENOMEM,
+refuses with owned cleanup; standalone memory qualification measures fork cost.
+The default JDK POSIX_SPAWN path executes `jspawnhelper` with the JVM environment
+before applying the configured child environment. It is not silently exempted
+from the per-exec boundary.
+
+The only private child control environment name is `ES_PRIVACY_CONTROL`.
+The standalone launcher clears any inherited value before starting the supervisor
+JVM. Direct Java invocation must verify the variable is absent before library
+loading; a supplied value refuses. Loading the fixed library in that parent
+with the variable absent performs no constructor handshake and grants no privacy proof: the explicit JNI
+`establishSelf` call, after fixed installation admission, is the sole parent
+self-admission path. There is no separate mode flag and no constructor fallback
+to self-admission.
+
+Every directly owned child launch builds its environment from empty state,
+sets `ES_PRIVACY_CONTROL` to exactly its native-owned socket pathname and sets `LD_PRELOAD` to exactly the
+admitted fixed library. Descendants may inherit only that tool-owned environment
+and transformations explicitly fixed in their compiled interpreter branch;
+they cannot import caller values. A present but empty/malformed endpoint makes the constructor exit 125. A nonempty valid endpoint
+selects the child handshake and must not invoke the parent self-admission path.
+An absent endpoint gives no constructor proof; if that process is an owned child,
+its required receipt is missing and the parent refuses before ARM, credentials
+or package input, even if the child otherwise runs or exits successfully. Absence
+is therefore not a way to admit a child as a parent. Unknown/duplicate environment
+entries refuse the fixed child-environment construction. No public invocation
+can select a role, listener path, library or exception to receipt admission.
+
+The native self-admission call establishes dumpable zero, NO_NEW_PRIVS and the
+qualified TSYNC filter before any credentials are requested. It verifies reset
+1 and reset 2 both fail with EPERM and dumpability remains zero. Existing and
+future JVM threads must be covered. Failed/partial synchronization is a refusal;
+no fallback to a per-thread filter. Fixed fatal-error, heap-dump and core-limit
+checks remain mandatory and independent of the socket protocol.
+
+The filter first requires audit architecture `AUDIT_ARCH_X86_64` (`c000003e`);
+other architectures, including i386 compat entry, terminate the process with
+SECCOMP_RET_KILL_PROCESS. For that audit architecture, syscall numbers carrying
+the x32 bit `40000000` are refused with EPERM before dispatching any syscall rule.
+Only then match native x86-64 prctl and deny PR_SET_DUMPABLE whenever either half
+of its 64-bit value argument is nonzero. Alternate x32/compat syscall encodings
+cannot bypass the reset guard. Qualification exercises those actual entry paths;
+an unrelated kernel ENOSYS/EINVAL refusal is not evidence of the filter policy.
+
+## Channel ownership and identity
+
+A launch owns one AF_UNIX/SOCK_STREAM listener under a fresh 0700 directory;
+the socket is 0600. Its basename is fixed `control.sock`. The entire pathname
+is at most 103 UTF-8 bytes plus NUL, is not abstract, and has no symlink component.
+The native owner creates the directory and socket relative to an admitted owned
+parent directory. Java receives a bounded owned path solely to install the fixed
+child environment. It is never a connection target supplied by a peer.
+
+Use nonblocking native descriptors, CLOEXEC and a native poll/eventfd wakeup.
+Java never receives a raw descriptor or reflects into JDK internals. The compiled
+chain bounds concurrent pending peers to 1–16, including accepted-but-not-active
+connections. Exactly one handshake is active. The listen backlog is bounded by
+the same record; excess connection pressure refuses, rather than extending a
+queue. Kernel backlog capacity is not evidence of an exact pending count:
+qualification must establish the bound on the pinned kernel and test saturation.
+No new peer is accepted after failure or cleanup starts.
+
+Every exec creates a new connection. Forked children must not reuse a connection
+or its challenge; the constructor closes its connection before returning, and
+CLOEXEC supplies a second barrier. Credentials, package input and native output
+never traverse this socket. The existing stdout/stderr protocol is unchanged.
+
+On accept, obtain SO_PEERCRED PID/UID/GID from the kernel and pin the process with
+a pidfd. Verify its start identity and live kernel parentage against the registered
+owned launch root and compiled fork/exec graph. Keep the pidfd until cleanup; do
+not reacquire a process by recycled numeric PID. Process start time is not an exec
+generation: every connection receives a fresh ordinal and image inspection even
+when PID/start time are unchanged. Reject ambiguous ancestry or a peer whose
+parent exited before ownership could be established. No peer supplies trusted
+PID, pathname, role, executable digest or chain identifier.
+
+While the PREPARE constructor is blocked and before suppression, inspect the
+peer's executable, interpreter, loader, mapped guard and complete compiled
+installation closure using native owned descriptors and bounded reads. Match
+those objects to the exact next allowed node/branch of the compiled graph. A
+script is checked as a script plus its actual interpreter; `/proc/pid/exe` alone
+does not identify script bytes. While the constructor is blocked, read the peer's
+actual NUL-separated `/proc/pid/cmdline` with a 16 KiB total bound, at most 128
+arguments and 1024 bytes per argument. Require exact argument count/order/bytes
+against the parent-owned typed launch node. For a script, the compiled record
+fixes the exact shebang/interpreter shape and argument position containing its
+absolute script pathname; open that script under trusted-file rules and match its
+inode/device/content hash to the compiled script record. Match all interpreter
+options and the remaining fixed or typed tool-owned arguments too. A different
+script under the same interpreter, `sh -c`, stdin script, extra argument, unknown
+shebang option or ambiguous argv representation refuses. A script's pathname
+alone is insufficient; no claimed child path establishes script identity.
+
+Typed dynamic arguments may only be the already-admitted endpoint/account/public
+trust/control inputs allowed by the runtime contract; they are never new command
+text or configuration inferred from the peer. Account-name visibility retains
+its separate existing qualification/disclosure requirement. Compare actual argv
+in bounded mutable memory and wipe it; never log or persist it. Recheck process
+identity and exact script association before CHALLENGE.
+Store a 32-byte digest of the accepted canonical identity record in memory.
+The identity record is the ASCII domain `ES_PRIVACY_IDENTITY_1\n`, followed by
+raw compiled runtime SHA-256 (32 bytes), compiled chain SHA-256 (32), node ordinal
+u32, peer UID u32, GID u32, PID u32, kernel process start ticks u64, executable
+st_dev u64, st_ino u64, executable SHA-256 (32), verified closure SHA-256 (32),
+and guard SHA-256 (32). Integers use the wire's big-endian encoding. Hash exactly
+those bytes; never JSON, display strings or a peer-provided record. All metadata
+comes from the pinned peer/file descriptors. Peer PID, exec ordinal,
+node/object ordinal and kernel process start ticks must be strictly positive.
+UID, GID, device and inode metadata must be available and match their exact
+qualified/kernel values; numeric zero is not a generic missing-value sentinel.
+Unavailable mandatory evidence is always refused.
+
+The closure digest is SHA-256 over ASCII `ES_PRIVACY_CLOSURE_1\n`, entry count
+u32, then each verified compiled object in increasing object-ordinal order:
+ordinal u32, st_dev u64, st_ino u64, content SHA-256 (32). Include the executable,
+loader, guard, required interpreter/script and every required mapped installation
+object. The compiled chain fixes required/allowed objects and branches; an
+unexpected executable mapping or absent mandatory object refuses. Bound this list
+to 512 verified object occurrences per entire launch, each admitted file to
+512 MiB and cumulative bytes hashed to 2 GiB per launch, using at most 64 KiB
+scratch. Every handshake/exec/branch consumes the same counters; re-verifying a
+previous object consumes another occurrence and its hashed bytes again. Neither
+a fresh connection nor a new ordinal resets these budgets. The unchanged startup
+deadline may refuse earlier.
+Unknown compiled closure encodings or incomplete records refuse, not an empty
+record hash. Anonymous executable/JIT mappings require an explicit qualified
+runtime branch; their absence from a file list never self-approves them.
+
+Do not reset a suppressed peer to dumpable one to inspect it. Static binaries,
+AT_SECURE, set-ID/file capabilities, unknown loaders, absent/ignored preload and
+uninspectable identity refuse. No secret can enter any process until the required
+final node has completed admission. The verified constructor/loader closure must
+establish that PREPARE occurs before any secret-consuming work or untracked fork.
+
+## Fixed wire encoding
+
+All integers are unsigned big-endian; no native struct layout, padding, strings,
+JSON, NUL terminators or extensible fields occur on the wire. Every frame starts
+with this exact 12-byte header:
+
+| Offset | Bytes | Meaning |
+| --- | ---: | --- |
+| 0 | 8 | ASCII `ESPRV001` |
+| 8 | 1 | Type below |
+| 9 | 3 | Zero, reserved |
+
+The type fixes the total length. A header never supplies an allocation size.
+Use fixed mutable buffers of at most 108 bytes; reject unknown type, nonzero
+reserved bytes, truncation, duplicate frame or any byte beyond the expected frame.
+Stream fragmentation does not change grammar or deadlines. A frame is complete
+only after every byte has been read. A parser never hunts for a later magic word.
+
+| Type | Direction | Payload / total frame size |
+| --- | --- | --- |
+| `01` PREPARE | child → parent | Empty / 12 bytes |
+| `02` CHALLENGE | parent → child | Correlation tuple / 96 bytes |
+| `03` ESTABLISHED | child → parent | Tuple + proof fields / 108 bytes |
+| `04` ACK | parent → child | Correlation tuple / 96 bytes |
+| `7e` ABORT | parent → child | Empty / 12 bytes |
+| `7f` REFUSED | child → parent | Refusal code u16, zero u16 / 16 bytes |
+
+The 84-byte correlation tuple is, in order: fresh per-launch random identifier
+(16 bytes), assigned per-launch exec ordinal (u32, 1–64), fresh unpredictable
+per-connection challenge (32 bytes), and accepted identity-record SHA-256
+(32 bytes). The parent generates identifiers/challenges from the qualified OS
+random source; failure refuses. The child copies the tuple exactly, never changes
+or interprets its identity digest. Tuples are control data, not credentials.
+
+ESTABLISHED adds exactly: dumpability u8=`0`; NO_NEW_PRIVS u8=`1`; thread coverage
+u8=`1` (successful TSYNC, including the currently single-threaded case); reserved
+u8=`0`; reset-to-1 errno u16=`1` (EPERM); reset-to-2 errno u16=`1`; Linux audit
+architecture u32=`c000003e`. Every field must equal the expected constant. These
+claims are meaningful only in the verified constructor/installation, not a peer's
+self-asserted policy. Tests exercise actual kernel behavior on existing threads.
+
+Child refusal codes are closed: `1` PLATFORM, `2` SUPPRESSION, `3` THREAD_SYNC,
+`4` RESET_CONTROL, `5` PROTOCOL, `6` DEADLINE. They carry no OS message, exception,
+path, native output or arbitrary errno. Any refusal is terminal for that launch.
+Unknown refusal codes also fail closed. Child protocol failure exits with fixed
+status 125 after closing its control descriptor; it emits no stdout/stderr text.
+ABORT may terminate any child wait, but never converts a failure into success.
+
+## State machine and deadlines
+
+One native coordinator owns these transitions and all descriptor operations:
+
+1. `CREATED`: listener exists, launch deadline fixed, no process admitted.
+2. `ROOT_REGISTERED`: capture live kernel identity from the exact Java-owned
+   process handle's PID. Registration may follow a pending connection, but no
+   connection is processed before registration. A failed Java start closes the
+   launch; an unreturned/uncertain process handle cannot report clean admission.
+3. `PREPARE`: accept a permitted peer, read one PREPARE, verify identity/graph,
+   assign its ordinal, send one CHALLENGE.
+4. `ESTABLISHING`: child receives CHALLENGE, establishes/checks suppression, then
+   sends one ESTABLISHED. Parent validates the complete tuple and proof fields.
+5. `ACK_SENT`: send one ACK; require child EOF with no extra bytes and successful
+   local connection closure. Only then commit that graph-node admission.
+6. `AWAIT_NEXT`: allow only a compiled next branch/exec, including admitted
+   concurrent interpreter pipeline nodes. Repeat fresh PREPARE for every exec.
+7. `FINAL_ADMITTED`: all mandatory nodes are admitted and the required final
+   process is alive. Publish one immutable admission event to the owning Java
+   lifecycle. A receipt count alone cannot reach this state.
+8. `FAILED` or `CLOSING`: terminal, no new admission, trigger owned cleanup.
+9. `CLOSED_COMPLETE` or `CLOSED_INCONCLUSIVE`: sticky descriptor/endpoint result.
+
+Compute the startup deadline once when creating the launch: the earlier of its
+surrounding operation deadline and CLOCK_MONOTONIC now + 10 seconds. JNI/native
+code owns this clock; Java passes remaining operation nanoseconds, not a raw
+System.nanoTime value assumed to share an epoch with native time. Reject a
+nonpositive duration, arithmetic overflow, or duration beyond the compiled
+chain lifetime, whose hard ceiling is 180 seconds. This is an outer bound, not a
+replacement for current 10-second authentication, 10-second bootstrap/settings,
+120-second transaction, 10-second cleanup or terminal-entry/restoration clocks.
+Each shorter clock still starts and expires at its existing phase boundary;
+unused time in another phase cannot extend it. Any setup,
+root registration, pending peer, hashing, read, write, child transition or retry
+consumes that same budget. Reads/writes poll with remaining time and cancellation;
+EINTR never restarts a clock. No operation waits indefinitely in a JNI call.
+
+The listener remains monitored through owned process cleanup. After admission,
+monitoring uses the retained surrounding operation deadline; the spent startup
+budget cannot be reopened to admit another exec. After final
+credential-bearing admission, any attempted additional exec/handshake fails the
+operation; no new startup allowance exists. Credential-free later branches are
+allowed only when explicitly represented before final admission. The controller
+checks live admission before ARM, credential delivery and package/commit writes.
+A fault after commit may have been sent preserves the transaction protocol's
+UNKNOWN outcome; it cannot be rewritten as a confirmed rollback.
+
+## Private JNI surface
+
+These are exact Java method signatures; their named immutable result types and
+closed enums must be implemented together, without sentinel null/zero success.
+Native linkage errors are fixed local refusal, never fallback. The compiled chain
+ordinal selects only an installed entry; no JNI argument describes executable
+commands, library locations or new trust policy.
+
+```java
+static native SelfResult establishSelf(int compiledMechanism);
+static native OpenResult openLaunch(int compiledChain, long operationRemainingNanos);
+static native RootResult registerRoot(long launch, long ownedPid);
+static native Event nextEvent(long launch);
+static native Status status(long launch);
+static native void cancel(long launch);
+static native CloseResult closeLaunch(long launch, long cleanupRemainingNanos);
+```
+
+`SelfResult` is ESTABLISHED or a fixed Failure. `OpenResult` is a valid nonzero
+opaque launch token and bounded socket path, or Failure. `RootResult` is REGISTERED
+or Failure. `Event` is FINAL_ADMITTED with a native-owned final identity token,
+FAILED with Failure, or CLOSED. `Status` is STARTING, ADMITTED, FAILED or CLOSED.
+`CloseResult` is COMPLETE or INCONCLUSIVE. Failure is one of PLATFORM,
+INSTALLATION, SELF_PRIVACY, THREAD_SYNC, RESOURCE, IDENTITY, CHAIN, PROTOCOL,
+DEADLINE, CANCELLED or CLEANUP. No result includes syscall text or raw output.
+
+A token is a generation-checked native registry handle, not a descriptor/address.
+Bound the registry to one live supervisor invocation and at most four concurrent
+launches. An invalid/stale/wrong-invocation token refuses; it cannot touch a newly
+reused descriptor. Successful close retains a tombstone until invocation teardown
+so repeat close returns its original result, with no renewed deadline. Token
+exhaustion refuses. `cleanupRemainingNanos` conveys the already-running Java
+cleanup budget, not a configurable timeout. The first close fixes a native
+absolute deadline no later than that remaining budget or ten seconds from first
+close; repeated calls can only shorten it. A nonpositive remaining budget starts
+immediate best-effort descriptor shutdown and cannot report unconfirmed cleanup
+as COMPLETE. No caller can renew the owning lifecycle's clock.
+
+One dedicated Java coordinator calls `nextEvent`; concurrent callers refuse.
+`cancel` and `closeLaunch` are the only cross-thread operations and wake native
+polling via the owned eventfd. `status` reads a latched immutable state and never
+consumes a frame. FINAL_ADMITTED is emitted once; the same coordinator continues
+monitoring for failure/cleanup so post-admission faults reach the owning lifecycle.
+No unbounded event queue or retained credential buffer exists in the bridge.
+
+The native owner retains each listener, accepted descriptor, pidfd, directory
+handle and identity-read descriptor until it has closed it or latched uncertainty.
+No raw descriptors cross JNI. All control/identity scratch buffers are bounded
+and wiped on success, refusal and interrupted cleanup. JNI must not pin a Java
+array across blocking I/O. Control/identity native scratch is at most 1 MiB per
+launch, excluding immutable compiled installation records; allocation failure
+refuses. The compiled closure contents and platform representation of device,
+inode and process start ticks require exact qualification before admission.
+
+## Cleanup and qualification gates
+
+A failed handshake triggers Java's existing owned-process/pipe cleanup and terminal
+restoration. Native close cancels its coordinator, closes every owned descriptor,
+unlinks only its exact socket and removes its owned directory. Join the coordinator
+and establish these outcomes within the existing absolute cleanup deadline.
+A close syscall, worker join, process exit or endpoint removal not established
+within that deadline is sticky INCONCLUSIVE. Native COMPLETE alone is not whole
+operation cleanup: Java must also establish process and all three pipe closure,
+credential buffer wiping and terminal restoration. Never retry a Linux close on a
+numeric descriptor after it may have been released/reused.
+
+Before implementation review: independent byte fixtures for every frame; all
+partial boundaries and hostile lengths/types; wrong PID/start/exec/chain/image;
+concurrent pipeline width; missing/static/secure preload; stale challenge; failed
+TSYNC and reset1/2 controls; final-process exit; backpressure and cancellation;
+late fork/exec; exact output preservation; JNI handle reuse and cleanup exhaustion.
+Then qualify the exact FORK/JDK/native client/loader closure and credential-free
+crashes/diagnostics. No authenticated native database probe is authorized by this
+ABI document. Existing external transport tests establish feasibility only; their
+JDK-internal descriptor bridge and ancestry-only receipt do not implement this ABI.

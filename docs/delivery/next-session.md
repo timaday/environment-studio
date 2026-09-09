@@ -90,7 +90,11 @@ dumpable1, then challenges establishment of zero/TSYNC/reset denial. The candida
 JDK launcher must use fixed FORK: tracing found an otherwise uncovered jspawnhelper
 exec in POSIX_SPAWN. Actual external FORK tracing removes that extra exec, but
 pointer-only descendant trace rows do not certify every executable identity. The
-private ABI and full fault matrix remain work in progress. No global collector/
+shared contract and [private ABI](../../backend/tools/guarded-supervisor/docs/privacy-abi-v1.md)
+are reviewed; implementation and the full fault matrix remain in progress. See
+[privacy investigation evidence](../evidence/d07c3-privacy-investigation.md).
+The next bounded native author task is the suppression primitive and actual
+existing/future-thread controls, without Main/registry wiring. No global collector/
 kernel or shared-runtime change is allowed.
 
 The fresh pinned disposable PostgreSQL/Oracle lab is owned by this work unit;
