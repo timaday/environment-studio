@@ -341,3 +341,12 @@ shared view capacity after logout (one assertion RED); the first nonblocking
 output change passes that regression. It still needs adverse checks, independent
 review, full integration and transport/OCI qualification. Keep its working files
 separate from the frozen labels candidate and newer root native integration.
+
+The full retained current/changed-target byte workload is independently reviewed
+in [heap evidence](../evidence/d06b5-heap-investigation.md). Its frozen external lab
+is `/home/tim/.tmp/es-target-heap-wvzeiess`: 128 MiB retained across four plans,
+four separate replacements with 16 MiB incoming observation, exact XML witnesses
+and revoke/recovery pass on the exact 1bda699 image at 6 GiB/one CPU. Preserve its
+candidate/evidence manifests. This is a separate byte-heavy shape; do not combine
+its result with the complex draft/entered-value workloads into an unmeasured
+maximum or infer whole-hosted HTTP qualification.

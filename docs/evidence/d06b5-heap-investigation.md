@@ -94,10 +94,9 @@ The earlier eight-document typed-only OOM is historical and is not public
 uploadability evidence. Initial ambiguous Java imports and repeated projection
 IDs were also harness setup failures, not RED behavior tests.
 
-Still required: maximum retained current and independently changed target source
-bytes; the largest admitted command/response shapes beyond the entered-value
-page extension below; simultaneous observation/projection scratch; old/new
-replacement overlap; actual slow/blocked HTTP output, revocation, cancellation,
+Still required: the largest admitted command/response shapes beyond the entered-value
+page extension below; remaining graph/observation/projection scratch combinations;
+actual slow/blocked HTTP output, revocation, cancellation,
 deadline and disconnect recovery; and whole hosted-process overhead. The 6 GiB
 candidate must not be advertised as qualified before those checks and independent
 review. Investigate the substantial one-CPU GC cost as part of responsiveness.
@@ -148,6 +147,60 @@ External artifacts in `/home/tim/.tmp/es-heap-qualification-20260909`:
 - `runtime-entered-values-6g.log` and `entered-run-result.json` for the exact runtime.
 
 The deployment example still uses 1 GiB. Increasing it remains required, but 6 GiB
-is not yet certified for the unfinished source/target, graph/scratch, hosted
-process, slow-output and cleanup matrix. Full retained source/target qualification
-is continuing in a separate owned lab.
+is not yet certified for the unfinished graph/scratch, hosted process, slow-output
+and cleanup matrix.
+
+## Retained current and independently changed target bytes
+
+The same exact image, 6 GiB/one-CPU settings and protected invocation passed a
+separate source-byte workload: four plans each retain 128 current documents and
+128 independently changed targets, each document 131,072 ASCII bytes. The total
+retained current/target source scope is **134,217,728 bytes (128 MiB)**.
+The actual byte compiler accepts the 36,638-byte invented definition. Each
+observation projects 128 glyphs with one declared identity field and no edges;
+comment padding supplies the remaining bytes. This is a source-byte dimension,
+not the maximum graph/draft complexity combined with it.
+
+Each command reserves scratch before building and decoding its closed JSON body.
+The real command reader, service and target adapter edit one identity character
+per document. An independent witness checks every current/target character,
+exactly 512 differences across the four plans, unchanged byte sizes and distinct
+changed target strings. No typed complete target substitutes for materialization.
+
+Four further semantic edits replace targets at full capacity. That path drops the
+old target before materialization; it does not establish old/new target overlap.
+Four separate reinspections construct a complete 16 MiB incoming observation while
+the old 128 MiB current/changed-target scope remains retained. Scope witnesses
+before replacement and counts inside the observation callback verify this overlap.
+Each reinspection is edited back to a distinct same-size target before proceeding.
+After revocation, four new plans are inspected and edited simultaneously, then
+revoked. All exact witnesses pass again.
+
+The final run exited 0 after **11.792 seconds**, with 16 successful edit commands
+and 12 full-source observations. The maximum sampled cgroup peak was
+**490,557,440 bytes**, with no recorded OOM event; aggregate GC was 481 ms over
+64 collections. Requested-GC heap samples were 147,303,504 bytes at full retained
+scope and 14,183,664 bytes after recovery/revocation. These samples do not prove
+erasure, complete collection or return of memory to the OS.
+
+The lead independently reviewed both new harness sources, the unchanged mock
+generators, exact scope witnesses, actual command/target paths, invocation and
+results. All 12 candidate hashes, 10 evidence hashes and 342 copied runtime hashes
+matched. The costly runtime was not repeated without a changed workload or an
+unresolved result. An initial wrong reserve-overload compilation was a harness
+setup error, not a production RED.
+
+External lab: `/home/tim/.tmp/es-target-heap-wvzeiess`.
+
+- `HeapTargetBoundary.java`, `RetainedTargetsProbe.java` and dependencies;
+  `candidate.sha256`, SHA-256
+  `b97e29665c7fe00413cd30deb0de4ec1229da058d9586537beaf458abbb71729`.
+- `full-result.json`, `full.log`, `review.md` and fixed runtime inventory;
+  `evidence.sha256`, SHA-256
+  `239deed324f677ee4f57ed1dccbc3a39f4047b4ea0a9d1274ddbb9a9d95c6005`.
+
+The mock completed observation port and empty publication policies retain the
+earlier limitations: no JDBC/TLS, workspace publication HTTP, Servlet/socket,
+export or deployment qualification. This does not combine 20,000 entities,
+50,000 edges, dense XML, 64 MiB entered values or maximum encoded responses.
+The remaining whole-process and transfer evidence still blocks capacity claims.

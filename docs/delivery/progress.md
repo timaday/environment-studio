@@ -214,8 +214,11 @@ The runtime registry remains empty. Preserve its frozen author archive.
 The independently reviewed [heap investigation](../evidence/d06b5-heap-investigation.md)
 found that the current 1 GiB Compose allocation exhausts heap on one legal draft.
 A 6 GiB candidate passes the measured four-plan, validation and capacity-recovery
-workloads, with substantial one-CPU GC cost. This is partial local qualification;
-maximum source/value/response/scratch overlap and blocked HTTP transfer remain open.
+workloads, with substantial one-CPU GC cost. The independently reviewed extensions
+cover 64 MiB entered values with bounded page encoding and a separate 128 MiB
+retained current/changed-target workload with observation replacement. This is
+partial local qualification; remaining graph/scratch/whole-process combinations
+and blocked HTTP transfer remain open.
 No allocation or scope limit changed.
 
 
