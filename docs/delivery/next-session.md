@@ -53,16 +53,29 @@ assigned original author deltas preserved. Its fixed 16-file terminal candidate
 is `/home/tim/.tmp/es-d07c2-terminal-candidate-20260909.sha256`, manifest SHA-256
 `189bc5b5dd4cac4251b16adb16fe86615bbde7b99151009d2054f6a99f1ecb71`.
 The author ran actual bounded-entry/fallback RED/GREEN, 120-second trickle expiry,
-four Java/PTTY cases and the full Java519/assembly suite. Root independent review
-is active. Do not merge the original 46-file overlay wholesale or enable its empty
-native registry. Effective crash privacy and native-client execution remain open.
+four Java/PTTY cases and the full Java519/assembly suite. Root independently
+accepted the terminal source, ran all48 supervisor tests and eight additional
+controls, and killed three targeted guard mutants. The separate integration tree
+`/home/tim/.tmp/es-d07c2-integration-20260909` adds the reviewed build-only pinned
+C/Python prerequisites and a safe-code HTTP test assertion on top of `54d6127`.
+Combined Java519/frontend34/schema22, OCI build and protected smoke pass; the
+reviewed18 files were copied to root with source hashes verified. See
+[terminal integration evidence](../evidence/d07c2-terminal-continuation.md).
+Do not merge the original 46-file overlay wholesale or enable its empty registry.
+Effective crash privacy and native-client execution remain open.
 The root full rerun stopped at one unchanged server test's initial credential POST
 (expected200, actual400), before the supervisor module. Log:
 `/home/tim/.tmp/es-d07c2-independent-full-20260909.log`. Eight exact-case repetitions
-passed; cause is not established and the investigation remains open. Do not call
-that rerun a Java519 pass or silently dismiss the failure as a flake. Six separate
-independent terminal frame/input controls passed. The container build also needs
-an explicit pinned C compiler/header prerequisite for the new native terminal tests.
+passed, as did 24 subsequent credential submissions and the later integrated OCI
+suite. Cause is not established and the investigation remains open. Do not call
+that failed host rerun a Java519 pass or silently dismiss the failure as a flake.
+
+The latest local image is `environment-studio:d07c2-review-20260909`, ID
+`sha256:14ef3102f46f69de995c8d4e78ee0cbc65d2f6af99ebecb40908c042165f0989`,
+source label `54d6127+c2-7aa4c3d8`. The separate supervisor ZIP is under
+`/home/tim/.tmp/es-d07c2-supervisor-artifacts-20260909`, SHA-256
+`91e672a3cd988e589bd0d414dbd808b9c66f7f1c842a054ecd24439efd0b1d2c`.
+Neither is a new published or release-qualified artifact.
 
 An external credential-free privacy prototype under
 `/tmp/es-private-receipt-7o7je7e_` reports private Unix-domain per-exec receipts
@@ -71,7 +84,14 @@ demonstrates that a late per-thread seccomp installation misses existing JVM
 threads; a fresh-JVM TSYNC prototype closes that tested gap. This is investigation,
 not a reviewed implementation or qualification. Production needs a contract,
 owned native socket bridge, exact executable-chain admission and full crash matrix
-before any native DB credential entry. No global collector/kernel change is allowed.
+before any native DB credential entry. The reviewed planned mechanism uses a
+private two-phase handshake: parent verifies the blocked child's executable while
+dumpable1, then challenges establishment of zero/TSYNC/reset denial. The candidate
+JDK launcher must use fixed FORK: tracing found an otherwise uncovered jspawnhelper
+exec in POSIX_SPAWN. Actual external FORK tracing removes that extra exec, but
+pointer-only descendant trace rows do not certify every executable identity. The
+private ABI and full fault matrix remain work in progress. No global collector/
+kernel or shared-runtime change is allowed.
 
 The fresh pinned disposable PostgreSQL/Oracle lab is owned by this work unit;
 nonsecret paths/IDs are in `/home/tim/.tmp/es-read-policy-dc90674a/state.json`.

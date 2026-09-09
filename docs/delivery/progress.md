@@ -22,7 +22,7 @@ Earlier database results are historical and do not certify the corrected policy.
 | D04 database reads | Corrected closed read-operation policy reviewed; actual two-engine write-capable account, snapshot, read-effects, cancellation and verified-TLS matrix passed with independent owner rerun | Native-client privacy/TLS qualification; actual deployment and browser database integration |
 | D05 profiles | Value-free capture, portable whole/partial composition, immutable persistence/publication and hosted views integrated | Browser capture/reuse workflow |
 | D06 planning | Hosted plans, revisions, HTTP lifecycle/commands/views and complete structural targets reviewed | Browser workflow, remaining UX data and full hosted heap/transfer qualification |
-| D07 SQL | Package/transaction mechanisms and separate unqualified supervisor integrated/reviewed; disposable rollback/guard matrices passed | Native runtime/console/TLS/commit qualification and hosted export authority |
+| D07 SQL | Package/transaction mechanisms and separate unqualified supervisor reviewed; bounded terminal input/restoration integrated with actual PTY and mutation evidence; disposable rollback/guard matrices passed | Effective native crash privacy, actual client TLS/transcripts/COMMIT qualification and hosted export authority |
 | D08 UX | Reviewed hosted definition/plan/inspection/Raw/Formatted slice with exact replay and expiry teardown; actual mock HTTPS/OIDC role flows pass at both widths | Profile capture/reuse, structural/value editing, bindings, validation/export/readback and representative operator sessions |
 | D09 deployment/release | OCI pipeline/contract; actual HiveForge unverified | Exact platform deployment and qualification matrix |
 
@@ -57,6 +57,13 @@ The local image is `environment-studio:d08a-review-20260909`, source label
 Full workflow/native-runtime work remains active, and actual browser-to-database
 qualification is unfinished. The reviewed [plan context contract](../contracts/hosted-plan-context-v1.md)
 specifies labels, observed identity and the complete binding rail before implementation.
+The [bounded terminal continuation](../evidence/d07c2-terminal-continuation.md)
+passed independent fixed-source review, actual PTY/deadline checks, three targeted
+guard mutations and the combined Java519/frontend34/schema22 OCI build and protected
+smoke. A separate supervisor ZIP was exported. Runtime privacy/console wiring and
+native authentication remain disabled. One initial host HTTP test400 did not
+reproduce in eight full-case and 24 credential-path controls or the combined OCI
+suite; its cause remains unresolved and a safe-code assertion aids recurrence.
 Eleven inspection/composition view routes passed independent review, the combined
 450-test Java Docker build and protected smoke; see
 [view integration](../evidence/d06b3-integration.md).

@@ -4,7 +4,7 @@ package studio.environment.supervisor;
 public final class Main {
     private Main() { }
     public static void main(String[] args) {
-        Supervisor.Result result=execute(()->new Supervisor().apply(args,Admission.COMPILED_REGISTRY,Supervisor.UNAVAILABLE_CONSOLE,Supervisor.UNAVAILABLE_RUNTIME));
+        Supervisor.Result result=execute(()->RuntimePrivacy.established()?new Supervisor().apply(args,Admission.COMPILED_REGISTRY,Supervisor.UNAVAILABLE_CONSOLE,Supervisor.UNAVAILABLE_RUNTIME):new Supervisor.Result("REFUSED","RUNTIME_PRIVACY_UNQUALIFIED",SessionEngine.Cleanup.COMPLETE));
         System.out.println(result.json());System.exit(result.exit());
     }
     static Supervisor.Result execute(java.util.function.Supplier<Supervisor.Result> operation){

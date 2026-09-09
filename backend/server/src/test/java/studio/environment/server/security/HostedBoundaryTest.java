@@ -214,7 +214,13 @@ class HostedBoundaryTest {
         var json=tools.jackson.databind.json.JsonMapper.builder().build();var definition=json.readTree(java.nio.file.Files.readAllBytes(java.nio.file.Path.of("../../fixtures/native-v2/definition.json")));
         for(var type:definition.get("logical").get("entityTypes"))if(type.get("id").asString().equals("glyph"))for(var field:type.get("fields"))if(field.get("id").asString().equals("tone")){var value=(tools.jackson.databind.node.ObjectNode)field;value.put("readable",true);value.put("sensitivity","secret");}
         var plan=socketPlan("view-maintainer",json.writeValueAsString(definition));var client=plan.client;String path="/api/v1/plans/"+plan.planId,views=path+"/views/";
-        String operation=reserve(plan,"1");assertEquals(200,client.request("POST","/api/v1/operations/"+operation+"/credentials",mockCredentials(),true).status());
+        String operation=reserve(plan,"1");var inspected=client.request("POST","/api/v1/operations/"+operation+"/credentials",mockCredentials(),true);
+        assertEquals(200,inspected.status(),()->{
+            try {
+                String code=json.readTree(inspected.body()).path("code").asString();
+                return java.util.Set.of("MALFORMED_BODY","BODY_TOO_LARGE","BODY_DEADLINE","CANCELLED").contains(code)?code:"UNRECOGNIZED_REFUSAL";
+            } catch(RuntimeException unavailable) { return "UNRECOGNIZED_REFUSAL"; }
+        });
         var entities=json.readTree(client.request("POST",views+"entities","{\"revision\":\"2\",\"side\":\"current\",\"offset\":0,\"limit\":100}",true).body());String alpha=null;
         for(var entity:entities.get("items"))if(entity.get("typeId").asString().equals("glyph"))for(var field:entity.get("fields")){if(field.get("fieldId").asString().equals("tone")){assertTrue(field.get("masked").asBoolean());assertTrue(field.get("value").isNull());}if(field.get("fieldId").asString().equals("tag") && field.get("value").asString().equals("alpha"))alpha=entity.get("entity").get("handle").asString();}
         var ref=Map.of("kind","existing","handle",alpha);var keep=Map.of("kind","keep-observed");
