@@ -74,8 +74,11 @@ constructor/descriptor-reuse tests. Combined Java844 passes on the reviewed XML
 adapter plus native root candidate. Preserve its frozen six-file manifest and ABI
 hash. The [reviewed direct-parent prerequisite](../evidence/d07c3-privacy-parent.md)
 now checks actual live parent edges between existing pins; combined Java943 and
-independent cancellation/cleanup controls pass. Full image/ancestry admission and
-production coordinator/JNI remain next.
+independent cancellation/cleanup controls pass. The
+[exact argument verifier](../evidence/d07c3-privacy-arguments.md) is also reviewed
+and integrated; current-head Java985 and four additional independent process
+controls pass. Full image/ancestry admission and production coordinator/JNI remain
+next. Native file hashing is isolated work in progress, not a qualified dependency.
 
 Read-only remote verification now confirms `dbb457ab408d808aced8bb3176e4677277629975`
 following an external push; root did not retry the earlier rejected push. The

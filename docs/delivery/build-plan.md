@@ -55,6 +55,10 @@ profile/hosted paths. [Inspection capability fields](../evidence/inspection-capa
 now separate UI availability from configured API admission; a false UI flag is
 not backend enforcement. [Exact 7111230 container and browser checks](../evidence/derived-target-artifacts.md)
 pass; native/client, combined resource and deployment qualification remain open.
+The [native argument prerequisite](../evidence/d07c3-privacy-arguments.md) is now
+independently reviewed with current-head Java985 and additional process controls.
+Complete image/script/loader identity and coordinator/JNI before client admission;
+bounded file hashing is isolated work in progress.
 
 ## Daily checkpoints
 

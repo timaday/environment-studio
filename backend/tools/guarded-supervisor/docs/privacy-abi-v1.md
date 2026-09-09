@@ -201,6 +201,40 @@ deadline. Tests use actual independent mock processes plus narrow syscall fault
 injection, including death/reparenting, legal comm, exact closed-number reuse and
 refused foreign launch controls. Production registry/JNI remains unchanged.
 
+## Private argument inspection prerequisite
+
+`es_arguments_check(es_peer *peer, const unsigned char *expected, size_t length)`
+checks the actual NUL-separated command line against an immutable parent-owned
+expected byte vector. This private C prerequisite accepts no PID, path, claimed
+child command, descriptor transfer or runtime policy. Expected bytes come from
+the future compiled launch node and its already-admitted typed arguments, never
+from peer input. Caller serialization keeps the peer and expected buffer stable.
+Reject null/overlapping buffers and an invalid vector before touching the peer:
+1–128 arguments, at most1024 non-NUL bytes per argument, at most16 KiB total
+including all terminators, and an exact final NUL. Empty arguments are explicit;
+an empty vector is invalid. Byte equality does not infer encoding or normalize
+text; admission of typed argument values is the owning launch boundary's job.
+
+Use the retained peer's original kernel pin and original cancellation/deadline.
+Read verified local procfs cmdline with no-follow/nonblocking/CLOEXEC temporary
+descriptors, at most16 KiB payload plus one EOF/overflow witness byte. Require
+exact length, terminator positions and every byte. Repeat the complete independent
+read, with pinned liveness/start checks before, between and after all reads,
+including final EOF. A mismatch, changed vector, truncation, extra bytes,
+unavailable/non-procfs file, dead peer, deadline or cancellation refuses. Close
+owned temporary descriptors once, wipe scratch on every exit, and give close
+uncertainty precedence as CLEANUP. Borrowed controls are never closed/drained.
+The future coordinator must latch uncertainty; a retry cannot erase it.
+
+Success establishes only observed argument equality at these checked boundaries.
+It is not executable/script/loader identity, parentage, an exec-generation token,
+constructor blocking, future liveness or runtime admission. The complete image
+and graph checks remain mandatory before CHALLENGE. The [Linux command-line interface](https://man7.org/linux/man-pages/man5/proc_pid_cmdline.5.html)
+reflects mutable process argument memory; this prerequisite cannot certify that it did not change
+between checks. Tests use actual independently invented child execs plus narrow
+read/liveness/cancellation/cleanup faults; no credentials enter these processes.
+A stalled kernel syscall is not made interruptible by the startup deadline.
+
 ## Fixed wire encoding
 
 All integers are unsigned big-endian; no native struct layout, padding, strings,

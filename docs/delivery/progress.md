@@ -85,7 +85,11 @@ production JNI/coordinator, privacy admission and client qualification remain op
 The [direct-parent check](../evidence/d07c3-privacy-parent.md) is now reviewed: two
 retained kernel pins must establish the same direct edge across bounded reads and
 final liveness checks. Combined Java943 and independent final-cancellation/cleanup
-controls pass. Full image/ancestry admission and production wiring remain open.
+controls pass. The [exact argument verifier](../evidence/d07c3-privacy-arguments.md)
+is now reviewed and integrated: two bounded cmdline readings retain original
+identity/cancellation authority; all985 current-head Java tests and four additional
+independent process controls pass. Full image/ancestry admission and production
+wiring remain open. The current retained image predates this argument verifier.
 
 Earlier exact-source OCI/browser artifact was `c4a324636d4aeaa20012349e68cce7eb2b025f8b`.
 Reviewed observed context and response/session recovery are integrated; the
