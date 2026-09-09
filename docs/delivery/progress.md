@@ -59,7 +59,12 @@ prerequisite. [Actual both-engine derived workflows](../evidence/qf34-database-w
 pass exact merge/proof, physical-only capture and whole/partial reuse controls;
 independent review corrected a composition-oracle gap before the final rerun.
 Publication HTTP and shared hosted plan integration remain next; v3 operational
-availability stays disabled.
+availability stays disabled. The
+[versioned plan model and shared physical composition](../evidence/qf34-plan-model.md)
+now pass independent review and combined Java1157. Actual both-engine workflows
+use the production composition merge with complete source/proof controls.
+Full v3 content evidence, shared lifecycle and versioned API integration remain
+required before admission; a v3 model still refuses existing v2 creation.
 No Q feedback GitHub publication is authorized. Existing MVP scope and completed
 work remain in place.
 

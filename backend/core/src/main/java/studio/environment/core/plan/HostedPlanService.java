@@ -656,7 +656,7 @@ public final class HostedPlanService {
             if(result instanceof ProfileComposer.CompositionResult.Prepared prepared) proposal=prepared.draft();
             else if(result instanceof ProfileComposer.CompositionResult.NeedsResolution unresolved) proposal=unresolved.draft();
             else throw new PlanRefusal(PROFILE_REFUSED);
-            var draft=PlanComposition.merge(snapshot.plan.definition.compiled(),snapshot.draft,snapshot.target,proposal);
+            var draft=PlanComposition.merge(snapshot.plan.definition.model(),snapshot.draft,snapshot.target,proposal);
             long values=DraftEncoding.enteredBytes(draft);
             acknowledgement=guarded(lease,()-> {
                 compositionCurrent(snapshot); var plan=snapshot.plan; var state=ownedState(lease,admission.planId);
@@ -862,7 +862,7 @@ public final class HostedPlanService {
             if(result instanceof ProfileComposer.CompositionResult.Prepared prepared) proposal=prepared.draft();
             else if(result instanceof ProfileComposer.CompositionResult.NeedsResolution unresolved) proposal=unresolved.draft();
             else throw new PlanRefusal(PROFILE_REFUSED);
-            var draft=PlanComposition.merge(snapshot.plan.definition.compiled(),snapshot.draft,snapshot.target,proposal);
+            var draft=PlanComposition.merge(snapshot.plan.definition.model(),snapshot.draft,snapshot.target,proposal);
             long values=DraftEncoding.enteredBytes(draft);
             acknowledgement=guarded(lease,()-> {
                 compositionCurrent(snapshot); var plan=snapshot.plan; var state=state(lease);

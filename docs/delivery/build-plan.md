@@ -58,6 +58,10 @@ passes independent review and combined Java1151. The separate
 passes complete target/proof, physical-only capture and whole/partial reuse
 checks after correcting an independently found test-oracle gap. Publication HTTP
 and the shared hosted lifecycle remain next before operational qualification.
+The [versioned plan model](../evidence/qf34-plan-model.md) now shares the physical
+composition algorithm while retaining distinct v2/v3 metadata: independent review,
+combined Java1157 and actual both-engine production-merge workflows pass. Complete
+v3 content/proof retention and shared lifecycle integration before admission.
 
 The lead owns shared contracts and compatibility. Independent fixed-candidate
 review, actual RED/GREEN, targeted guard mutations and integrated verification

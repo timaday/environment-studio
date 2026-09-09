@@ -20,8 +20,19 @@ public final class PlanPorts {
         PublishedProfile profile(Owner owner, NativeCommand.Reference reference, PublishedDefinition definition);
     }
     public record PublishedDefinition(NativeCommand.Reference reference, String publicationDigest,
-            ReadyToPublish compiled, List<NativeCommand.Policy> policies) {
-        public PublishedDefinition { policies = List.copyOf(policies); }
+            PlanDefinition model, List<NativeCommand.Policy> policies) {
+        public PublishedDefinition { Objects.requireNonNull(model); policies = List.copyOf(policies); }
+        public PublishedDefinition(NativeCommand.Reference reference, String publicationDigest,
+                ReadyToPublish compiled, List<NativeCommand.Policy> policies) {
+            this(reference, publicationDigest, new PlanDefinition.V2(compiled), policies);
+        }
+        /** Legacy v2 access is closed; checked v3 metadata cannot manufacture readiness. */
+        public ReadyToPublish compiled() {
+            return switch (model) {
+                case PlanDefinition.V2 v2 -> v2.ready();
+                case PlanDefinition.V3 ignored -> throw new PlanRefusal(PlanRefusal.Code.UNSUPPORTED_DEFINITION);
+            };
+        }
         @Override public String toString() { return "PublishedDefinitionPin[redacted]"; }
     }
     public record PublishedProfile(NativeCommand.Reference reference, String publicationDigest, ProfileResult.Checked checked) {
