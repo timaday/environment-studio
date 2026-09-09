@@ -286,6 +286,59 @@ sticky/permission/owner/privilege, FIFO/device, cancellation and close-uncertain
 controls are required before integrating this prerequisite. Full native resource,
 runtime closure and production coordinator qualification remain separate work.
 
+## Private executable association prerequisite
+
+`es_image_check` may compare one retained trusted installation file with the
+current executable of an already acquired socket-bound `es_peer`. Borrow the
+existing `es_file`, `es_hash` and `es_peer` owners in stable caller-serialized
+storage; all must share the same original cancellation descriptor and absolute
+startup deadline. The expected32-byte SHA-256 comes only from the compiled
+installation record, never peer text, configuration or uploaded data. This adds
+no public path, process handle, JNI method or qualified runtime registry entry.
+
+Validate owner states, distinct owned descriptors and matching original controls
+before acquisition. Refuse missing or foreign scope. The ordinary refused output
+is zeroed; an output overlapping any borrowed owner or expected digest is invalid
+and must not overwrite it. No borrowed file/control descriptor is closed or
+drained, and neither file nor hash budgets are reset. Existing peer/hash failures
+retain those owners' documented terminal cleanup behavior.
+
+Hash the retained trusted file and require the compiled expected digest. Open
+verified local procfs with no-follow directory descriptors, then the numeric
+directory of the already pinned peer, with liveness/identity checks before and
+after every potentially changing observation. Only that verified directory's
+fixed `exe` magic link may be followed to acquire its actual read-only CLOEXEC
+regular-file descriptor; no peer-supplied pathname or numeric pidfd lookup is
+accepted. Hash that descriptor with the shared hash owner and require exact
+device/inode/size/content equality to the trusted file. Repeat executable
+acquisition independently, retaining the original process pin and comparing the
+same identity again. Each of the three file hash occurrences consumes the same
+launch-wide512 occurrence/2GiB byte limits; per-file512MiB and the original
+deadline still apply. No separate content-sized buffer is introduced.
+
+Close each temporary executable/proc directory descriptor once, wipe local
+metadata/digests, and recheck the original peer/control evidence after final
+temporary cleanup before returning the descriptor-derived identity. Close
+uncertainty overrides earlier outcomes and never permits a retry of a reused
+descriptor number. A failure is terminal for the caller's pending admission;
+this prerequisite cannot retry its way into a successful handshake.
+
+The result establishes the observed executable association at these bounded
+checks only. It does not establish a script's bytes/argv, interpreter options,
+loader/maps closure, constructor blocking, an exec generation, future immutability,
+ancestry, privacy suppression or admission. A future coordinator must still
+associate every fresh connection/ordinal and complete the entire compiled chain
+before CHALLENGE/credentials. Concurrent mutation by root/the invoking operator
+remains outside the trusted-installation model; a stalled filesystem syscall is
+not made interruptible by checking the clock.
+
+Acceptance uses actual socket-bound live child pins and independently invented
+executables, plus changed/wrong file/hash, pathname replacement, dead peers,
+foreign control scopes, cancellation/deadline through final close, metadata/hash
+failures and exact descriptor-reuse cleanup controls. Mutation tests must witness
+real association/evidence guards, not only compilation failures. No actual native
+client, script/loader qualification or production library installation is inferred.
+
 ## Private bounded file hashing prerequisite
 
 The private native file-hash owner may measure one already-owned read-only regular

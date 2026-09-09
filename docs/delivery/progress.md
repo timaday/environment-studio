@@ -107,8 +107,11 @@ limits, content oracles, eight mutants and72 independent serialized thread contr
 pass within the recorded scope. Complete native memory/loader/coordinator cleanup
 is unqualified. The [trusted file-opening prerequisite](../evidence/d07c3-privacy-file.md)
 is now independently reviewed and integrated: full Java1086, actual4095-byte path
-and tmpfs controls, plus nine meaningful guard mutants pass. Exact executable
-association is isolated work in progress; script/loader closure and production
+and tmpfs controls, plus nine meaningful guard mutants pass. The
+[executable association prerequisite](../evidence/d07c3-privacy-image.md) is now
+independently reviewed: full Java1100 and thirteen compiled guard mutations pass.
+Its retrospective scaffold RED followed initial implementation; the ordering gap
+and prior setup failures remain explicit. Script/loader closure and production
 native admission remain unfinished.
 
 Earlier exact-source OCI/browser artifact was `c4a324636d4aeaa20012349e68cce7eb2b025f8b`.
