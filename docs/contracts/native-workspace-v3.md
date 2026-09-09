@@ -96,6 +96,57 @@ verification before use. No automatic source conversion, reinterpretation of old
 snapshots or startup migration is authorized by this contract. This work concerns
 the application's private workspace, never managed configuration database writes.
 
+## Internal publication commands
+
+The next application slice provides separate typed definition/profile publication
+commands through `V3PublicationWorkspace`. It reuses the owned schema3 store and
+current versioned definition/profile compiler ports. It adds no route, public
+configuration, runtime availability assertion or way to remove the compiler's
+current MECHANISM_UNQUALIFIED blocker. Public publication and complete integrated
+qualification remain subsequent work.
+
+Definition publication requires the deployment-owned maintainer predicate before
+replay and again before append. Profile publication requires the authenticated
+profile owner, preserving the existing role distinction. Exact successful command
+replay precedes current lookup or compilation; a replay returns historical data
+without creating a new publication. Store-level owner, partition, immutable
+revision, stale-command and final authenticated commit checks remain mandatory.
+
+For an unseen command, read the exact owned current draft of the requested kind.
+Refuse an already published revision, unsupported compiler/schema, or incomplete
+historical definition. Definition publication requires exactly one explicit
+policy for every binding/document and no extra or duplicate entries. Recompile
+the draft's exact source/format through the current v3 compiler; require no
+publication diagnostics and exact equality of the freshly checked definition,
+logical/binding digests and mechanism vector to the stored checked result. A
+stored historical-ready flag is insufficient. A null compiler result is unavailable.
+Current actual compilation remains incomplete, so no production publication can
+succeed through this slice.
+
+For a profile draft, resolve its exact owned immutable historical definition
+reference, require an existing publication and supported compiler/schema with
+empty historical diagnostics, then apply the same current definition recompilation
+check. Recompile the exact profile source against that fresh checked definition;
+require equality of checked physical profile/content digest and unchanged exact
+definition reference. No current-definition substitution, donor values, computed
+membership or stale compiled profile may enter publication. Missing/foreign/
+wrong-kind/version references keep the store's indistinguishable refusal.
+
+A successful qualified command appends one bounded next revision with unchanged
+source/format/content and the existing v3 publication framing. `sourceRevision`
+is the preceding current revision. Definition policies are complete and sorted;
+profile policies are empty. Reject revision overflow before constructing a larger
+revision. All failures leave revision/replay state unchanged; atomic append
+refusals propagate once without retry. No v2 artifact/digest is reinterpreted.
+
+Acceptance uses actual schema3 SQLite and current compilers to prove refusal of
+both incomplete drafts and test-only historical-ready data. Positive publication,
+immutable history/replay, policy coverage, maintainer recheck, reference continuity,
+stale concurrency, capacity and commit-refusal cases may use an explicitly labelled
+test compiler witness. Such witnesses exercise the application/store transition;
+they do not qualify the real compiler or enable public routes. Preserve a meaningful
+failing behavior test, actual guard mutants and independent fixed-candidate review.
+
 ## Acceptance
 
 Use independent v3 source/profile fixtures, frozen digest oracles and old v2

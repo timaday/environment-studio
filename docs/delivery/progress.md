@@ -46,8 +46,10 @@ independent capacity/expansion/continuity controls and combined Java1053 pass.
 The [profile HTTP draft/history routes](../evidence/qf34-profile-http-v3.md) now
 pass independent reference/history/large-integer controls and combined Java1072,
 frontend40/schema40. They share the original four-operation transfer registry and
-authenticated commit. New publication and plan integration remain next; v3
-operational availability stays disabled.
+authenticated commit. [Internal publication commands](../evidence/qf34-publication-v3.md)
+now pass independent review, ten compiled guard mutations and combined Java1115.
+The actual compiler continues to refuse publication. Publication HTTP, observation
+and plan integration remain next; v3 operational availability stays disabled.
 No Q feedback GitHub publication is authorized. Existing MVP scope and completed
 work remain in place.
 

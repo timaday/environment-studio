@@ -12,8 +12,10 @@ Java; hosted workspace APIs support immutable definition/profile drafts and
 publication, with explicit maintainer authority and private SQLite storage.
 Separate [v3 definition](docs/contracts/workspace-http-v3.md) and
 [profile draft/history APIs](docs/contracts/workspace-profile-http-v3.md) retain
-exact source in an explicitly initialized schema3 workspace. V3 publication and
-plan integration remain unfinished.
+exact source in an explicitly initialized schema3 workspace.
+[Internal v3 publication commands](docs/evidence/qf34-publication-v3.md) now enforce
+fresh qualification; the current compiler still refuses publication. V3
+publication HTTP and plan integration remain unfinished.
 Complete Oracle CLOB/PostgreSQL text observation, value-free profile composition
 and cross-document structural target materialization are implemented as reviewed
 internal mechanisms. The hosted plan service joins these mechanisms with session

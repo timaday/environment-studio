@@ -46,8 +46,11 @@ the advertised contract. Q publication to GitHub is not authorized.
 
 The [profile HTTP draft/history routes](../evidence/qf34-profile-http-v3.md) are
 now reviewed and integrated: combined Java1072, frontend40/schema40 and independent
-reference, exact-revision and owner controls pass. New publication and plan
-integration remain the next v3 boundaries before operational qualification.
+reference, exact-revision and owner controls pass.
+[Internal publication commands](../evidence/qf34-publication-v3.md) now pass
+independent review and combined Java1115; the actual compiler still refuses
+publication. Publication HTTP, observation and plan integration remain the next
+v3 boundaries before operational qualification.
 
 The lead owns shared contracts and compatibility. Independent fixed-candidate
 review, actual RED/GREEN, targeted guard mutations and integrated verification
