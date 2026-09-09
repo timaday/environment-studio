@@ -77,6 +77,10 @@ cancellation/deadline scope flaw and strengthened constructor/descriptor-reuse
 witnesses. Combined Java844 and independent native controls pass. The root
 registers the Java-owned child and correlates its first connection; image/ancestry,
 production JNI/coordinator, privacy admission and client qualification remain open.
+The [direct-parent check](../evidence/d07c3-privacy-parent.md) is now reviewed: two
+retained kernel pins must establish the same direct edge across bounded reads and
+final liveness checks. Combined Java943 and independent final-cancellation/cleanup
+controls pass. Full image/ancestry admission and production wiring remain open.
 
 Earlier exact-source OCI/browser artifact was `c4a324636d4aeaa20012349e68cce7eb2b025f8b`.
 Reviewed observed context and response/session recovery are integrated; the

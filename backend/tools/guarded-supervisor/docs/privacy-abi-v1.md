@@ -171,6 +171,36 @@ uninspectable identity refuse. No secret can enter any process until the require
 final node has completed admission. The verified constructor/loader closure must
 establish that PREPARE occurs before any secret-consuming work or untracked fork.
 
+## Private direct-parent inspection prerequisite
+
+Before the complete coordinator, `es_parent_check(es_peer *child, es_peer *parent)`
+may check one live direct kernel parent edge between two existing acquired pins.
+It returns `es_peer_result`: OK is only that bounded process fact, never compiled
+chain, Java launch, image, suppression or runtime admission. It accepts no PID,
+pathname, claimed ancestry or new pin acquisition. Both caller-serialized owners
+must remain live and share the same borrowed cancellation descriptor and original
+startup deadline. Null, overlapping/same owners, same PID/pin or foreign controls
+refuse before mutating either owner. Existing pinned identity rechecks may close
+their own failed pin under the peer's sticky cleanup contract.
+
+Use verified local procfs, no-follow/nonblocking/CLOEXEC temporary descriptors and
+at most 16 KiB per parent record including the EOF witness. Parse PID, direct PPID
+and start ticks from the child's actual stat record, allowing legal comm delimiters;
+require exact child identity and the pinned parent's PID. Recheck both original
+pins before/after each bounded record read and read the parent edge twice. An
+exited/reparented child, dead parent, malformed/unavailable evidence, cancellation
+or deadline refuses. No liveness/parent check establishes an exec generation or
+atomic lifetime beyond the checked boundaries. The future coordinator must retain
+both pins and reject any subsequent missing or contradictory graph evidence.
+
+Close each temporary descriptor once and wipe scratch on every return. A close
+error takes precedence as CLEANUP; the invoking coordinator must latch it and
+cannot retry the inspection to erase uncertainty. No borrowed control descriptor
+is closed or drained. A stalled kernel syscall is not made interruptible by the
+deadline. Tests use actual independent mock processes plus narrow syscall fault
+injection, including death/reparenting, legal comm, exact closed-number reuse and
+refused foreign launch controls. Production registry/JNI remains unchanged.
+
 ## Fixed wire encoding
 
 All integers are unsigned big-endian; no native struct layout, padding, strings,
