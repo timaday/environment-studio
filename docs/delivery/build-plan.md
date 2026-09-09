@@ -53,7 +53,8 @@ The later 5fa6695 independent review's retained-origin defect is
 RED and full Java850. Preserve later XML/root changes. Finish final derived
 profile/hosted paths. [Inspection capability fields](../evidence/inspection-capability-clarification.md)
 now separate UI availability from configured API admission; a false UI flag is
-not backend enforcement. Exact revised-container/browser checks remain pending.
+not backend enforcement. [Exact 7111230 container and browser checks](../evidence/derived-target-artifacts.md)
+pass; native/client, combined resource and deployment qualification remain open.
 
 ## Daily checkpoints
 

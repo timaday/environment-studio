@@ -30,8 +30,8 @@ compiler, core derived computation and the
 full Java828 passes. The [typed/final-target integration](../evidence/qf34-derived-target.md)
 now passes combined Java894 with actual XML and complete contributor comparison.
 V3 remains unavailable pending physical-only profile/history and hosted qualification.
-The latest retained `71e3040` correction OCI image predates the target/capability
-changes; see progress.md.
+The latest retained `7111230` OCI image includes target/capability changes and
+passes protected smoke and four hosted/two demo browser cases; see progress.md.
 No Q feedback may be uploaded to GitHub without publication authorization.
 
 The latest independent review adds a confirmed retained-origin consistency defect
@@ -42,8 +42,9 @@ Preserve current XML/root work; do not reset to the reviewed 5fa6695 snapshot.
 Typed preparation, physical assembly and complete final comparison are reviewed.
 The [inspection clarification](../evidence/inspection-capability-clarification.md)
 uses explicit UI/API configuration fields while preserving operation and owner
-gates. Frontend40/schema32 and full Java894 pass; revised-container/browser checks
-remain pending. Physical-only v3 profiles are the next active implementation slice.
+gates. Frontend40/schema32 and full Java894 pass, plus the
+[exact artifact/browser refresh](../evidence/derived-target-artifacts.md).
+Physical-only v3 profiles are the next active implementation slice.
 The review environment's supervisor failures remain separately scoped and unresolved
 individually; local Java21.0.12 socket/child-start controls and supervisor168 pass.
 

@@ -46,8 +46,9 @@ Record `es-capability-independent-review-20260909.md`, SHA-256
 `8eda59250591f859881097c8ca0cab3f4cbc00a55314b335febb8e93a31bd27a`.
 
 The [combined Java894 verification](qf34-derived-target.md) includes this change.
-Its Java source matches the final candidate. Browser E2E and exact revised-container
-verification are pending; no new runtime inspection/export qualification is claimed.
+Its Java source matches the final candidate. The [exact 7111230 artifact refresh](derived-target-artifacts.md)
+passes OCI/protected smoke, four hosted and two demo browser cases; no new runtime
+inspection/export qualification is claimed.
 The existing browser harness can enable both UI booleans only through mock response
 interception for component-flow evidence. This is not production enablement.
 

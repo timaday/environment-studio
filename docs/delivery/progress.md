@@ -42,16 +42,16 @@ remain separately recorded; individual unresolved failures are not dismissed.
 The [inspection capability clarification](../evidence/inspection-capability-clarification.md)
 now distinguishes disabled browser controls from configured API composition;
 actual request admission remains independent. Focused Java20, frontend40/schema32
-and independent API-to-UI mutation checks pass. Exact revised-container/browser
-checks are pending. Profiles and hosted work remain active.
+and independent API-to-UI mutation checks pass. The [exact artifact refresh](../evidence/derived-target-artifacts.md)
+passes revised-container smoke and four hosted/two demo browser cases. Profiles
+and hosted work remain active.
 
-Current retained correction image, exact `71e3040`:
-`sha256:443244ff5607562059ee6e766ab7f2a1e7cb50a8352625b0e37a3b692188ac89`.
-Its exact build and protected startup/workspace smoke pass;
-it predates subsequent target and capability changes. The candidate and supervisor
-ZIP identities are recorded in the origin-fix evidence. It is local only; the earlier c4a3246 image below remains the latest
-candidate with hosted HTTPS/OIDC browser evidence. The preceding child-candidate
-image remains recorded in QF-0001/0002 evidence.
+Current retained image, exact `7111230`:
+`sha256:eabf02b76e4986fd84007253e4434a418f551260d8eecab49118306bee581125`.
+Its exact build and protected startup/workspace smoke pass; it includes target
+and capability changes but predates profile WIP. The artifact evidence records
+the supervisor ZIP and four hosted HTTPS/OIDC plus two demo browser cases.
+This is local proof only; preceding image evidence remains historically scoped.
 
 The [hosted heap evidence](../evidence/d06b8-hosted-heap.md) now includes reviewed
 complete source-byte, dense-field and full-graph workloads, plus four simultaneous
