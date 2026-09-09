@@ -10,6 +10,13 @@ import studio.environment.server.definition.NativeDefinitionBytesCompiler;
 import static org.junit.jupiter.api.Assertions.*;
 
 class GraphProjectionAdapterTest {
+    @Test void historicalCompilerMechanismCannotAuthorizeFreshProjection() throws Exception {
+        var checked = definition().checked(); var versions = new java.util.TreeMap<>(checked.mechanisms());
+        versions.put("native-compiler-v2", java.math.BigInteger.ONE);
+        var historical = new NativeCompilationResult.ReadyToPublish(new NativeCompilationResult.Checked(
+            checked.definition(), checked.logicalDigest(), checked.bindingDigests(), versions));
+        refused(adapter.project(historical, "mock-pg", sources()), "UNSUPPORTED_MECHANISM");
+    }
     private final GraphProjectionAdapter adapter = new GraphProjectionAdapter();
     private NativeCompilationResult.ReadyToPublish definition() throws Exception {
         return assertInstanceOf(NativeCompilationResult.ReadyToPublish.class, new NativeDefinitionBytesCompiler().compile(

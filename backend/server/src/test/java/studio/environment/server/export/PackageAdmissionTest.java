@@ -7,13 +7,19 @@ import tools.jackson.databind.json.JsonMapper;
 import static org.junit.jupiter.api.Assertions.*;
 
 class PackageAdmissionTest {
+    @Test void historicalCompilerMechanismCannotAuthorizeExecution() throws Exception {
+        var mapper = JsonMapper.builder().build(); var old = execution();
+        ((tools.jackson.databind.node.ObjectNode) old.get("mechanisms")).put("native-compiler-v2", "1");
+        assertEquals("SCHEMA_VIOLATION", assertInstanceOf(PackageAdmission.Result.Rejected.class,
+            new PackageAdmission().read(mapper.writeValueAsBytes(old), payload())).code());
+    }
     @Test void independentlyMatchesFrozenExecutionFramingOracle() throws Exception {
         var mapper = JsonMapper.builder().build();
         var manifest = mapper.readTree(Files.readAllBytes(Path.of("../../fixtures/guarded-package-v1/manifest.json")));
         byte[] payload = Files.readAllBytes(Path.of("../../fixtures/guarded-package-v1/payload.json"));
         var result = assertInstanceOf(PackageAdmission.Result.Accepted.class, new PackageAdmission().read(mapper.writeValueAsBytes(manifest.get("execution")), payload));
         assertEquals("9d5d0598978013c117393121f97ae687e429602fc46f25a5ad51a501dd2c90b8", result.payloadDigest());
-        assertEquals("5b521d695676f345a9e8ec7eceeb09ea5c99cf83b8134179aa89af4b11b21fcc", result.programDigest());
+        assertEquals("dabb86943f35e26b373e11c1711da368937241ce43688c43ba952ae654999aa8", result.programDigest());
     }
     private static byte[] payload() throws Exception {return Files.readAllBytes(Path.of("../../fixtures/guarded-package-v1/payload.json"));}
     private static tools.jackson.databind.node.ObjectNode execution() throws Exception {return (tools.jackson.databind.node.ObjectNode)JsonMapper.builder().build().readTree(Files.readAllBytes(Path.of("../../fixtures/guarded-package-v1/manifest.json"))).get("execution").deepCopy();}

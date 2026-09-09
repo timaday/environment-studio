@@ -134,6 +134,7 @@ test("guarded manifest refuses foreign commands, credentials and incompatible ex
     (candidate) => { candidate.execution.client.family = "sqlplus"; },
     (candidate) => { candidate.execution.templateVersion = "uploaded-template"; },
     (candidate) => { candidate.execution.mechanisms["xml-span-v1"] = "2"; },
+    (candidate) => { candidate.execution.mechanisms["native-compiler-v2"] = "1"; },
     (candidate) => { candidate.execution.exportPolicies[0].content = "deny"; },
     (candidate) => { candidate.execution.bindingDigest += "\n"; },
     (candidate) => { candidate.members["tail.sql"] = candidate.members["transaction.sql"]; },

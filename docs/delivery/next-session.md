@@ -16,6 +16,37 @@ Pinned tools were restored under `/home/tim/.tmp/es-toolchain-20260909`:
 official artifact checksums. Old `/tmp/es-lead-toolchain` paths no longer exist.
 The previous push-review blocker is historical: the remote now matches the checkpoint.
 
+## Current 9 September continuation
+
+Reviewed authority/policy implementation is committed locally as
+`f4f2add0c6f3b46c00e03a8f0b11102e62163a50`. The two XML findings now have an
+independently reviewed 29-file candidate with compiler mechanism 2. Combined
+Java509, frontend7/schema22, Docker build, protected smoke and separate supervisor
+assembly passed; see [exact evidence](../evidence/xml-final-context-readiness.md).
+The local image is `environment-studio:xml-review-20260909`, image ID
+`sha256:56cb74e3baa6282c90bedb8dc3446a801786d1c6d2da4c5e12112cfc5aa63a72`.
+It carries the f4f2add-plus-candidate source label, not a later commit label.
+Remote last observed `8125e57`; no subsequent push/CI/GHCR success is claimed.
+
+Original D08a and D07c2 worktrees remain untouched and hash-verified. D08a work now
+continues in `/home/tim/.tmp/es-d08a-continuation-20260909`, based on f4f2add plus
+only its 21 author files. Its uncertain-save regression reproduced (1 fail, 2 pass).
+No new browser PASS or integration is claimed. The requested enterprise-ux-design
+skill remains unavailable; user location clarification is pending, while backend
+and existing-flow corrections continue.
+
+The active DB author owns fresh pinned disposable PostgreSQL/Oracle containers;
+nonsecret lab paths/IDs are in `/home/tim/.tmp/es-read-policy-dc90674a/state.json`.
+Actual owner/direct/column/active-role write controls, read-only DML denial,
+unchanged inspection and cleanup witnesses have passed; adverse matrix and current
+policy TLS qualification continue, with separate evidence/review still required.
+Do not use old provisioning harnesses or treat the old absent lab as this new lab.
+Native DB credential entry remains blocked pending effective crash privacy.
+
+Two prior subagent turns exhausted account quota. The remaining DB author completed
+independent XML review while its lab runner was stopped; it remains active. Preserve
+fixed author manifests and arrange independent review for each later material slice.
+
 ## Integrated checkpoint
 
 - Initial hosted HTTP: `33705b1`; closed view schemas: `c074cfa`.
@@ -27,7 +58,7 @@ The previous push-review blocker is historical: the remote now matches the check
   [D06b3 integration](../evidence/d06b3-integration.md); 450 integrated Java tests,
   22 schema tests, 7 frontend component tests and protected smoke passed.
 
-The latest local image is `environment-studio:d06b3-review`, runtime manifest
+The earlier D06b3 local image is `environment-studio:d06b3-review`, runtime manifest
 `3f1252f59a9a74e092f07d808efd8165522b9c2a3eb79f2e7f408100c52dfb44`.
 Inspection/export capability flags remain false. The native registry is empty.
 These are local development candidates, not published or release-qualified artifacts.

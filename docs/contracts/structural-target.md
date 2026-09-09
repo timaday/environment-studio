@@ -122,6 +122,22 @@ document ID. Inspect relative xml:base declarations inside the moved fragment
 against this same preserved context. No normalization or inferred application
 meaning excuses a difference.
 
+For every moved root, compare the original source-parent context with the final
+assembled target-parent context after all scalar edits, ancestor edits, creations
+and moves. Original cached destination context is insufficient. Do not compare
+against a newly edited source-parent context: the preserved subtree came from the
+original source. Resolve each moved root's final destination through source-bound
+placement provenance and require one exact final occurrence. Apply this check to
+existing destinations and created parents beneath edited existing ancestors.
+
+The complete namespace map (including unused/default bindings), nearest inherited
+xml:lang/xml:space values and full ordered xml:base chain/document-base context
+must all satisfy the preceding rules. Equal final source/destination edits cannot
+excuse a difference from the original context. An ancestor edit hidden by an
+unchanged nearer declaration may preserve the effective context; test that positive
+case with independent exact output. A mismatch refuses the entire target, never
+returns a partial candidate or silently restores/normalizes an ancestor value.
+
 Make an extracted move fragment independently parseable by adding its inherited
 namespace bindings to its root where not already locally declared, including an
 explicit empty default namespace when appropriate. This is a bounded, separately

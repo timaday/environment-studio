@@ -156,9 +156,9 @@ declared semantics are internally consistent and supported by the registered
 mechanism versions; it does not mean a database/client or actual application has
 been qualified. Workspace publication is an explicit immutable revision action;
 plans cannot supply their own compiler or capability result.
-The initial trusted registry pins `native-compiler-v2=1`, `xml-path-v1=1`,
-`xml-span-v1=1` and `generic-graph-v1=1`. Registry values are integers (`I1;` in
-digest framing), not strings. The first two define this format and its direct
+The current trusted registry pins `native-compiler-v2=2`, `xml-path-v1=1`,
+`xml-span-v1=1` and `generic-graph-v1=1`. Registry values are integers (`I2;` for the compiler and `I1;` for the other
+mechanisms in digest framing), not strings. The first two define this format and its direct
 child/attribute projections; xml-span-v1 is the qualified D03a mechanism;
 generic-graph-v1 provides the declared graph/count checks. Uploaded content cannot
 replace registry versions or claim mechanism availability. Unknown vocabulary
@@ -171,6 +171,30 @@ or projections requiring more than 256 attributes (required fields plus required
 reference attributes) are incomplete under `xml-span-v1`. Optional observed
 attributes and namespace declarations still count toward the adapter's actual
 per-document limit. Runtime budget checks remain mandatory for each observation.
+
+Compiler mechanism revision 2 aligns static readiness with the registered parser's
+element-namespace capabilities. Any element at any position in a projection path
+using one of the following namespaces is recognized but incomplete, with publication
+diagnostic XML_NAMESPACE_UNSUPPORTED pointing at that expanded name's namespaceUri:
+
+- `http://www.w3.org/2001/XInclude`
+- `http://www.w3.org/2000/09/xmldsig#`
+- `http://www.w3.org/2009/xmldsig11#`
+- `http://www.w3.org/2001/04/xmlenc#`
+- `http://www.w3.org/2009/xmlenc11#`
+
+These are element-vocabulary refusals. Attribute names and namespace declarations
+retain their existing independently qualified behavior; a declaration alone does
+not invoke an unsupported mechanism. Compiler and parser use the same framework-free
+capability definition; lexical validity remains a separate requirement.
+
+Previously stored compiler mechanism revision 1 results remain readable and exact
+retries retain the stored result. They cannot newly publish, create plans or authorize
+inspection/export under the current registry. Re-save/recompile and explicitly
+publish a new definition revision; there is no automatic history rewrite. The schema
+and readable compiler codec names remain version 2. Current compilation changes the
+binding digest because its mechanism vector changes; logical/profile compatibility
+still follows the documented logical digest independently.
 
 Use separate versioned SHA-256 digests with unambiguous length framing and stable
 ordering. The logical digest covers types, field semantics, identity, relations,

@@ -109,8 +109,13 @@ public final class NativeDefinitionCompiler {
             Map<String, Relation> relations, boolean create, List<DefinitionDiagnostic> diagnostics) {
         if (projection.path().size() > 128)
             incomplete("XML_DEPTH_UNSUPPORTED", path + "/path", "Select a path within the XML mechanism depth limit of 128.", diagnostics);
-        for (int i = 0; i < projection.path().size(); i++)
-            name(projection.path().get(i), false, path + "/path/" + i, diagnostics);
+        for (int i = 0; i < projection.path().size(); i++) {
+            var elementName = projection.path().get(i);
+            name(elementName, false, path + "/path/" + i, diagnostics);
+            if (!NativeXmlCapabilities.supportsElementNamespace(elementName.namespaceUri()))
+                incomplete("XML_NAMESPACE_UNSUPPORTED", path + "/path/" + i + "/namespaceUri",
+                    "Select an element namespace supported by the registered XML mechanism.", diagnostics);
+        }
         EntityType type = types.get(projection.type());
         if (type == null) unknownType(path + "/type", diagnostics);
         Map<String, Field> fields = new HashMap<>();

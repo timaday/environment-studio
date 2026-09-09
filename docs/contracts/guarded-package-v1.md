@@ -333,3 +333,9 @@ for the prohibition on transaction control inside an enclosing transaction, and
 [Oracle SET TRANSACTION](https://docs.oracle.com/en/database/oracle/oracle-database/26/sqlrf/SET-TRANSACTION.html)
 for explicit transaction start and first-statement ordering. These rules inform
 the candidate protocol; actual exact-client qualification remains mandatory.
+
+Current packages require compiler mechanism `native-compiler-v2=2`, matching the
+[current publication registry](native-definition-v2.md#publication-and-digest-authority).
+The strict manifest schema and package admission refuse mechanism revision 1;
+reinspection and a new reviewed/exported artifact are required. Historical workspace
+readability does not authorize execution of an old package.

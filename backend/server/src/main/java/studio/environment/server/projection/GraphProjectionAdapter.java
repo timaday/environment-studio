@@ -22,7 +22,7 @@ import studio.environment.server.xml.XmlResult;
 public final class GraphProjectionAdapter {
     private static final int MAX_DOCUMENTS = 128;
     private static final long MAX_UTF8_BYTES = 16L * 1024 * 1024;
-    private static final Map<String, BigInteger> MECHANISMS = Map.of("native-compiler-v2", BigInteger.ONE,
+    private static final Map<String, BigInteger> MECHANISMS = Map.of("native-compiler-v2", BigInteger.TWO,
             "xml-path-v1", BigInteger.ONE, "xml-span-v1", BigInteger.ONE, "generic-graph-v1", BigInteger.ONE);
     private final LosslessXmlAdapter xml = new LosslessXmlAdapter();
     private final GraphValidator validator = new GraphValidator();

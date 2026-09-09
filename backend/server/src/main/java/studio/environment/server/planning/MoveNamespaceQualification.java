@@ -35,7 +35,7 @@ final class MoveNamespaceQualification {
         }
         return new Context(namespaces, language, space, context.documentBase(), bases);
     }
-    static String qualify(XmlDocument source, XmlDocument.ElementRef root, Context sourceParent, Context targetParent) {
+    static void verifyContext(XmlDocument source, XmlDocument.ElementRef root, Context sourceParent, Context targetParent) {
         if (!sourceParent.namespaces().equals(targetParent.namespaces())) fail("MOVE_NAMESPACE_CONTEXT_MISMATCH");
         if (!sourceParent.language().equals(targetParent.language()) || !sourceParent.space().equals(targetParent.space())) fail("MOVE_INHERITED_XML_CONTEXT_MISMATCH");
         if (!sourceParent.documentBase().equals(targetParent.documentBase()) || !sourceParent.baseChain().equals(targetParent.baseChain())) fail("MOVE_BASE_CONTEXT_MISMATCH");
@@ -54,6 +54,9 @@ final class MoveNamespaceQualification {
             }
             resolution.put(element.index(), localKnown);
         }
+    }
+    static String qualify(XmlDocument source, XmlDocument.ElementRef root, Context sourceParent, Context targetParent) {
+        verifyContext(source, root, sourceParent, targetParent);
         Map<String, String> local = new HashMap<>();
         for (var attribute : root.attributes()) if (attribute.name().namespaceUri().equals(PlanningXml.XMLNS)) local.put(prefix(attribute), attribute.value());
         int point = root.startTag().end() - (root.selfClosing() ? 2 : 1);

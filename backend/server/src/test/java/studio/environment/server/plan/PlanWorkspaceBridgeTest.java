@@ -40,4 +40,12 @@ class PlanWorkspaceBridgeTest {
         assertEquals(PlanRefusal.Code.PUBLICATION_REQUIRED,assertThrows(PlanRefusal.class,()->bridge(stored(false,"native-compiler-v2")).definition(owner,reference)).code());
         assertEquals(PlanRefusal.Code.UNSUPPORTED_DEFINITION,assertThrows(PlanRefusal.class,()->bridge(stored(true,"future-compiler")).definition(owner,reference)).code());
     }
+    @Test void historicalPublishedCompilerCannotCreateNewPlan() throws Exception {
+        var current = stored(true, "native-compiler-v2"); var checked = ((NativeRevision.Definition) current.content()).checked();
+        var mechanisms = new TreeMap<>(checked.mechanisms()); mechanisms.put("native-compiler-v2", java.math.BigInteger.ONE);
+        var old = new NativeRevision(current.objectId(), current.workspaceRevision(), current.format(), current.source(), current.sourceDigest(),
+            current.compilerVersion(), current.schemaVersion(), new NativeRevision.Definition(new NativeCompilationResult.Checked(
+                checked.definition(), checked.logicalDigest(), checked.bindingDigests(), mechanisms), List.of()), current.publication());
+        assertEquals(PlanRefusal.Code.UNSUPPORTED_DEFINITION, assertThrows(PlanRefusal.class, () -> bridge(old).definition(owner, reference)).code());
+    }
 }

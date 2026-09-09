@@ -77,9 +77,10 @@ class NativeWorkspaceTest {
         assertEquals(WorkspaceRefusal.Code.CAPACITY,assertThrows(WorkspaceRefusal.class,()->workspace.mutate(owner,save("32"))).code());
         assertEquals(first,workspace.mutate(owner,original));assertEquals("32",store.read(owner,id,Optional.empty(),false).workspaceRevision());
     }
-    @Test void historicalMechanismVersionRemainsReadableButCannotNewlyPublish() throws Exception {
+    @org.junit.jupiter.params.ParameterizedTest @org.junit.jupiter.params.provider.CsvSource({"xml-span-v1,2", "native-compiler-v2,1"})
+    void historicalMechanismVersionRemainsReadableButCannotNewlyPublish(String mechanism, String version) throws Exception {
         var command=save("0");var current=new NativeWorkspaceCompiler().definition(command);var checked=current.checked();
-        var versions=new TreeMap<>(checked.mechanisms());versions.put("xml-span-v1",java.math.BigInteger.TWO);
+        var versions=new TreeMap<>(checked.mechanisms());versions.put(mechanism,new java.math.BigInteger(version));
         var historical=new NativeRevision.Definition(new studio.environment.core.definitionv2.NativeCompilationResult.Checked(checked.definition(),checked.logicalDigest(),checked.bindingDigests(),versions),List.of());
         var draft=new NativeRevision(id,"1",command.format(),command.source(),NativeWorkspaceDigests.source(command.source()),"native-compiler-v2","2",historical,Optional.empty());
         store.append(owner,command,draft);reopen();assertEquals(draft,store.read(owner,id,Optional.empty(),false));assertEquals(draft,workspace.mutate(owner,command));

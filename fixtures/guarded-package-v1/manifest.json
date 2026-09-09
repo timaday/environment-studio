@@ -14,7 +14,7 @@
     "writerVersion": "1",
     "parserVersion": "7.2.2-es-xml10-fifth-1",
     "mechanisms": {
-      "native-compiler-v2": "1",
+      "native-compiler-v2": "2",
       "xml-path-v1": "1",
       "xml-span-v1": "1",
       "generic-graph-v1": "1",
@@ -51,7 +51,7 @@
       }
     ]
   },
-  "programDigest": "5b521d695676f345a9e8ec7eceeb09ea5c99cf83b8134179aa89af4b11b21fcc",
+  "programDigest": "dabb86943f35e26b373e11c1711da368937241ce43688c43ba952ae654999aa8",
   "counts": {
     "records": 1,
     "changedRecords": 1,

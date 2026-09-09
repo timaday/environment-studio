@@ -17,7 +17,7 @@ import static studio.environment.core.definitionv2.NativeDefinition.*;
 
 /** Frozen ES-LOGICAL-2 / ES-BINDING-2 framing; no parser serialization enters a digest. */
 final class NativeDigests {
-    static final Map<String, BigInteger> MECHANISMS = Map.of("native-compiler-v2", BigInteger.ONE,
+    static final Map<String, BigInteger> MECHANISMS = Map.of("native-compiler-v2", BigInteger.TWO,
             "xml-path-v1", BigInteger.ONE, "xml-span-v1", BigInteger.ONE, "generic-graph-v1", BigInteger.ONE);
     private NativeDigests() { }
     static NativeCompilationResult.Checked checked(NativeDefinition definition) {

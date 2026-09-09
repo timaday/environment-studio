@@ -25,7 +25,7 @@ class GuardedPackageInspectorTest {
     @Test void verifiesWholeContainerMetadataButNeverClaimsTemplateOrGenerationAuthority()throws Exception {
         var inspector=new GuardedPackageInspector();var result=assertInstanceOf(GuardedPackageInspector.Result.Unqualified.class,inspector.inspect(archive(m->{})));
         assertEquals("TEMPLATE_QUALIFICATION_UNAVAILABLE",result.code());assertFalse(inspector.generationAvailable());assertEquals(1,result.counts().changedRecords());assertEquals(19,result.counts().originalBytes());
-        assertEquals("5b521d695676f345a9e8ec7eceeb09ea5c99cf83b8134179aa89af4b11b21fcc",result.programDigest());assertFalse(result.toString().contains("MockDb"));
+        assertEquals("dabb86943f35e26b373e11c1711da368937241ce43688c43ba952ae654999aa8",result.programDigest());assertFalse(result.toString().contains("MockDb"));
     }
     @Test void manifestMemberProgramAndCountTamperingRefusesDespiteValidZipCrc()throws Exception {
         var inspector=new GuardedPackageInspector();

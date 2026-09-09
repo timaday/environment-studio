@@ -113,7 +113,7 @@
           ],
           "properties": {
             "native-compiler-v2": {
-              "const": "1"
+              "const": "2"
             },
             "xml-path-v1": {
               "const": "1"

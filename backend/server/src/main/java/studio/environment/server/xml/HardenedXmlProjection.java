@@ -11,7 +11,6 @@ import java.util.HashMap;
 import java.util.HexFormat;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import javax.xml.XMLConstants;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamConstants;
@@ -21,9 +20,6 @@ import org.codehaus.stax2.XMLInputFactory2;
 import static studio.environment.server.xml.XmlDocument.*;
 
 final class HardenedXmlProjection {
-    private static final Set<String> UNSUPPORTED_NAMESPACES = Set.of("http://www.w3.org/2001/XInclude",
-            "http://www.w3.org/2000/09/xmldsig#", "http://www.w3.org/2009/xmldsig11#",
-            "http://www.w3.org/2001/04/xmlenc#", "http://www.w3.org/2009/xmlenc11#");
     HardenedXmlProjection() { factory(); }
 
     XmlDocument project(String source) {
@@ -77,7 +73,7 @@ final class HardenedXmlProjection {
     private static void projectElement(XMLStreamReader reader, String digest, List<XmlLexicalScanner.Element> lexical,
             List<ElementRef> elements) {
         String uri = empty(reader.getNamespaceURI());
-        if (UNSUPPORTED_NAMESPACES.contains(uri)) throw new XmlRefusal("UNSUPPORTED_XML");
+        if (!studio.environment.core.definitionv2.NativeXmlCapabilities.supportsElementNamespace(uri)) throw new XmlRefusal("UNSUPPORTED_XML");
         if (elements.size() >= lexical.size()) throw new XmlRefusal("INVALID_XML");
         var element = lexical.get(elements.size());
         String qualifiedName = qualified(reader.getPrefix(), reader.getLocalName());

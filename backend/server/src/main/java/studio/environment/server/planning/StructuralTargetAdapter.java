@@ -38,7 +38,7 @@ public final class StructuralTargetAdapter {
         final Map<String, TargetSource> sources = new TreeMap<>();
         final Map<XmlAssembly.Symbol.Original, XmlDocument.ElementRef> sourceElements = new HashMap<>();
         final Map<XmlAssembly.Symbol.Original, List<NativeDefinition.ExpandedName>> sourcePaths = new HashMap<>();
-        final Map<TargetPlacement.Parent.Existing, MoveNamespaceQualification.Context> parentContexts = new HashMap<>();
+        final Set<TargetPlacement.Parent.Existing> admittedParents = new HashSet<>();
         final Map<TargetIntent.Ref.Existing, MoveNamespaceQualification.Context> moveSourceContexts = new HashMap<>();
         final Map<TargetIntent.Ref, TargetPlacement> placements = new LinkedHashMap<>();
         final Map<String, NativeDefinition.Projection> projections = new HashMap<>();
@@ -84,6 +84,7 @@ public final class StructuralTargetAdapter {
                 long inserted = 0;
                 for (var edit : edits) if (edit.insertion().isPresent()) { inserted += PlanningXml.utf8(edit.insertion().get().document().source()); if (inserted > PlanningXml.MAX_BYTES) fail("RESOURCE_LIMIT"); }
                 var changed = assembly.apply(source, edits); recordPositions(entry.getKey(), changed);
+                verifyFinalMoveContexts(entry.getKey(), changed.document());
                 bytes += PlanningXml.utf8(changed.document().source()); if (bytes > PlanningXml.MAX_BYTES) fail("RESOURCE_LIMIT");
                 if (!changed.document().source().equals(entry.getValue().source())) affectedDocuments.add(entry.getKey());
                 result.add(new TargetSource(entry.getKey(), changed.document().source(), sources.get(entry.getKey()).documentBase()));
@@ -110,7 +111,7 @@ public final class StructuralTargetAdapter {
                 }
                 for (var placement : placements.values()) if (placement.parent() instanceof TargetPlacement.Parent.Existing parent && parent.documentId().equals(source.documentId())) {
                     if (!document.digest().equals(parent.sourceDigest())) fail("STALE_PARENT");
-                    parentContexts.put(parent, MoveNamespaceQualification.context(document, document.elements().get(parent.elementIndex()), source.documentBase()));
+                    admittedParents.add(parent);
                 }
                 for (var assignment : intent.containment()) if (assignment.child() instanceof TargetIntent.Ref.Existing old) {
                     var origin = original.get(old).origin();
@@ -193,15 +194,20 @@ public final class StructuralTargetAdapter {
             var root = element(move); var path = new ArrayList<>(projections.get(placements.get(move).projectionId()).path());
             path.addAll(oldPath.subList(root.ancestry().size() + 1, oldPath.size())); return List.copyOf(path);
         }
-        private MoveNamespaceQualification.Context parentContext(TargetPlacement.Parent parent, Set<TargetIntent.Ref> path) {
-            if (parent instanceof TargetPlacement.Parent.Existing old) { parent(old); return parentContexts.get(old); }
-            if (parent instanceof TargetPlacement.Parent.Created created && path.add(created.entity()) && path.size() <= 128) {
-                var placement = placements.get(created.entity()); if (placement == null) fail("INVALID_PARENT");
-                var context = parentContext(placement.parent(), path);
-                var element = parsed(xml.project(PlanningXml.create(projections.get(placement.projectionId()), target.get(created.entity()), references(created.entity())))).elements().getFirst();
-                return MoveNamespaceQualification.extend(context, element);
+        private void verifyFinalMoveContexts(String documentId, XmlDocument document) {
+            var ordered = moves.stream().filter(move -> placements.get(move).documentId().equals(documentId)).sorted(
+                java.util.Comparator.comparing((TargetIntent.Ref.Existing move) -> original.get(move).origin().documentId())
+                    .thenComparingInt(move -> original.get(move).origin().elementIndex())).toList();
+            for (var move : ordered) {
+                var origin = original.get(move).origin();
+                var position = positions.get(new XmlAssembly.Symbol.Original(origin.documentId(), origin.elementIndex()));
+                if (position == null || !position.document().equals(documentId)) fail("ELEMENT_PROVENANCE_MISMATCH");
+                var root = document.elements().get(position.index());
+                if (root.ancestry().isEmpty()) fail("ROOT_MOVE_UNSUPPORTED");
+                var parent = document.elements().get(root.ancestry().getLast());
+                var finalContext = MoveNamespaceQualification.context(document, parent, sources.get(documentId).documentBase());
+                MoveNamespaceQualification.verifyContext(document, root, moveSourceContexts.get(move), finalContext);
             }
-            fail("PLACEMENT_CYCLE"); return null;
         }
         private XmlAssembly.Fragment fragment(TargetIntent.Ref ref, Set<TargetIntent.Ref> path) {
             if (!path.add(ref) || path.size() > 128) { fail("PLACEMENT_CYCLE"); return null; }
@@ -215,7 +221,7 @@ public final class StructuralTargetAdapter {
             } else {
                 var old = (TargetIntent.Ref.Existing)ref; var origin = original.get(old).origin(); var source = parsed(xml.project(sources.get(origin.documentId()).source())); var root = element(old);
                 var context = moveSourceContexts.get(old);
-                String markup = MoveNamespaceQualification.qualify(source, root, context, parentContext(placement.parent(), new HashSet<>()));
+                String markup = MoveNamespaceQualification.qualify(source, root, context, context);
                 var document = parsed(xml.project(markup)); List<XmlAssembly.Symbol> symbols = new ArrayList<>();
                 for (var element : source.elements()) if (inside(old, origin.documentId(), element)) symbols.add(new XmlAssembly.Symbol.Original(origin.documentId(), element.index()));
                 fragment = new XmlAssembly.Fragment(document, symbols);
@@ -272,7 +278,7 @@ public final class StructuralTargetAdapter {
         }
         private XmlDocument.ElementRef element(TargetIntent.Ref.Existing ref) { var origin = original.get(ref).origin(); return sourceElements.get(new XmlAssembly.Symbol.Original(origin.documentId(), origin.elementIndex())); }
         private XmlDocument.ElementRef parent(TargetPlacement.Parent.Existing parent) {
-            if (!parentContexts.containsKey(parent)) { fail("STALE_PARENT"); return null; }
+            if (!admittedParents.contains(parent)) { fail("STALE_PARENT"); return null; }
             return sourceElements.get(new XmlAssembly.Symbol.Original(parent.documentId(), parent.elementIndex()));
         }
         private ProjectionResult.Accepted project(List<TargetSource> sources) {

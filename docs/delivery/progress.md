@@ -15,9 +15,9 @@ results are historical and do not certify the corrected policy. See
 | Slice | State | Next evidence |
 | --- | --- | --- |
 | D00 foundation | COMPLETE for starter: CI/build/smoke/GHCR passed | See ../evidence/starter-verification.md and image-reference.json |
-| D01 definitions | Native compilation, owned v2 upload/history and maintainer publication implemented and reviewed | Browser publication workflow and external application qualification |
+| D01 definitions | Native compilation/readiness aligned to XML capabilities; compiler mechanism 2 with readable historical revisions; owned upload/publication reviewed | Browser publication workflow and external application qualification |
 | D02 security/state | Live workspace commit authority corrected and independently reviewed, including revocation during body reads and inconclusive closure | Browser integration; actual deployment durability/identity external |
-| D03 XML | Guarded spans, graph projection, corrected Fifth Edition parser and structural target assembly integrated | Hosted orchestration and guarded SQL/client qualification |
+| D03 XML | Final assembled move context corrected and independently reviewed, including edited ancestors and created parents; guarded spans/projection preserved | Hosted orchestration and guarded SQL/client qualification |
 | D04 database reads | Corrected closed read-operation policy integrated and independently reviewed; combined 475 Java checks pass | Actual write-capable account matrix, refreshed TLS/identity/cleanup evidence, browser inspection |
 | D05 profiles | Value-free capture, portable whole/partial composition, immutable persistence/publication and hosted views integrated | Browser capture/reuse workflow |
 | D06 planning | Hosted plans, revisions, HTTP lifecycle/commands/views and complete structural targets reviewed | Browser workflow, remaining UX data and full hosted heap/transfer qualification |
@@ -37,8 +37,14 @@ no material findings. Integration and rework are recorded in D01a evidence;
 there is no serial comparison supporting a speed-up claim.
 
 The reviewed [authority/policy integration](../evidence/20260909-authority-policy-integration.md)
-passes 475 Java checks. Active work: actual D04 write-capable account qualification,
-the two XML findings, and the remaining hosted workflow/native runtime.
+passes 475 Java checks at `f4f2add`. The subsequent reviewed
+[XML corrections](../evidence/xml-final-context-readiness.md) pass the integrated
+509-test Java reactor and Docker build, 7 frontend/22 schema tests, protected
+container smoke and separate supervisor assembly. All three requested review
+findings now have reviewed fixes. Active work: fresh D04 write-capable account
+matrix/adverse/TLS qualification and the remaining hosted workflow/native runtime.
+The D08a uncertainty RED was reproduced in a fresh f4f2add-based continuation tree;
+browser work remains active and unreviewed.
 Eleven inspection/composition view routes passed independent review, the combined
 450-test Java Docker build and protected smoke; see
 [view integration](../evidence/d06b3-integration.md).

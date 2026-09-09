@@ -42,7 +42,7 @@ def expected(definition):
                 projection['fields'].sort(key=lambda mapping: mapping['field'])
                 projection['references'].sort(key=lambda mapping: mapping['relation'])
         body = {'logicalDigest': logical_digest, 'mechanisms': {
-            'native-compiler-v2': 1, 'xml-path-v1': 1, 'xml-span-v1': 1, 'generic-graph-v1': 1}, 'binding': binding}
+            'native-compiler-v2': 2, 'xml-path-v1': 1, 'xml-span-v1': 1, 'generic-graph-v1': 1}, 'binding': binding}
         bindings[identifier] = sha256(b'ES-BINDING-2\0' + frame(body)).hexdigest()
     return {'logicalDigest': logical_digest, 'bindingDigests': bindings}
 

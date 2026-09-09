@@ -17,7 +17,7 @@ class NativePublicationTest {
             List.of(new NativeDefinition.Document("one","one",List.of()),new NativeDefinition.Document("two","two",List.of())));
         var definition = new NativeDefinition("invented",BigInteger.ONE,new Logical(List.of(),List.of(),List.of(),List.of()),List.of(binding));
         var checked = new NativeCompilationResult.Checked(definition,"1".repeat(64),Map.of("mock","2".repeat(64)),
-            Map.of("native-compiler-v2",BigInteger.ONE,"xml-path-v1",BigInteger.ONE,"xml-span-v1",BigInteger.ONE,"generic-graph-v1",BigInteger.ONE));
+            Map.of("native-compiler-v2",BigInteger.TWO,"xml-path-v1",BigInteger.ONE,"xml-span-v1",BigInteger.ONE,"generic-graph-v1",BigInteger.ONE));
         return new NativeRevision(id,"1",DraftCommand.Format.JSON,"independent mock source","3".repeat(64),"native-compiler-v2","2",new NativeRevision.Definition(checked,List.of()),Optional.empty());
     }
     NativeCommand.PublishDefinition publish(List<NativeCommand.Policy> policies) { return new NativeCommand.PublishDefinition(id,"1",UUID.randomUUID().toString(),policies); }
@@ -26,7 +26,7 @@ class NativePublicationTest {
         var store = store(current,calls);
         var service = new NativeWorkspace(store,null, ignored -> true);
         var result = service.mutate(owner,publish(List.of(new NativeCommand.Policy("mock","two","deny"),new NativeCommand.Policy("mock","one","protected-self-contained"))));
-        assertEquals("43a73feed4d8d4bd5d3588a38fee3ee6d33c495569515164173952ed82647866",result.publication().orElseThrow().digest());
+        assertEquals("766f940697b574347b89d68c8518b1aac9f913217f4da060d2e0482545689ea9",result.publication().orElseThrow().digest());
         assertEquals("2",result.workspaceRevision()); assertEquals("published",result.state());
         assertEquals(current.content(),result.content()); assertEquals(current.source(),result.source());
         assertEquals("one",result.publication().orElseThrow().exportPolicies().getFirst().documentId());

@@ -20,7 +20,7 @@ class PackageCheckTest {
         var out=new ByteArrayOutputStream();assertInstanceOf(StrictPackageZip.WriteResult.Written.class,new StrictPackageZip().write(List.of(new StrictPackageZip.Member("manifest.json",mapper.writeValueAsBytes(manifest)),new StrictPackageZip.Member("payload.json",payload),new StrictPackageZip.Member("transaction.sql",sql),new StrictPackageZip.Member("instructions.txt",PackageInstructions.bytes())),out));return out.toByteArray();
     }
     @Test void completeArchiveAndExactRegenerationAreBothRequired()throws Exception{
-        byte[] correct=archive(false);var regenerated=PackageCheck.read(correct,AdmittedFiles.sha256(correct));assertEquals("5b521d695676f345a9e8ec7eceeb09ea5c99cf83b8134179aa89af4b11b21fcc",regenerated.inputs().programDigest());assertFalse(regenerated.program().qualified());
+        byte[] correct=archive(false);var regenerated=PackageCheck.read(correct,AdmittedFiles.sha256(correct));assertEquals("dabb86943f35e26b373e11c1711da368937241ce43688c43ba952ae654999aa8",regenerated.inputs().programDigest());assertFalse(regenerated.program().qualified());
         assertEquals("ARCHIVE_HASH_MISMATCH",assertThrows(Refusal.class,()->PackageCheck.read(correct,"0".repeat(64))).code);
         byte[] altered=archive(true);assertEquals("PROGRAM_MISMATCH",assertThrows(Refusal.class,()->PackageCheck.read(altered,AdmittedFiles.sha256(altered))).code);
         byte[] truncated=Arrays.copyOf(correct,correct.length-1);assertThrows(Refusal.class,()->PackageCheck.read(truncated,AdmittedFiles.sha256(truncated)));
