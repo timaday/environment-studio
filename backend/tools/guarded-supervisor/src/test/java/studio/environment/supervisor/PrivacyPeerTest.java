@@ -50,5 +50,8 @@ class PrivacyPeerTest {
     @Test void invalidAliasAndReinitializationPreserveDescriptorOwners() throws Exception {for(String mode:List.of("fd-alias","short-cred","reinit"))check(mode);}
     @Test void callerCannotExtendTheMaximumLaunchAllowance() throws Exception {for(String mode:List.of("excess-deadline","long-deadline","max-deadline"))check(mode);}
     @Test void missingOutputTerminatesLivePinWithoutClosingBorrowedDescriptors() throws Exception {check("null-output");}
+    @Test void adoptedKernelPinTransfersOnceAndUsesExistingIdentityChecks() throws Exception {for(String mode:List.of("adopt-live","adopt-cancel","adopt-dead","adopt-cloexec","adopt-mismatch","adopt-nonpin","adopt-start","adopt-alias"))check(mode);}
+    @Test void adoptionRejectsForeignMetadataAndRetainsUntransferredPins() throws Exception {for(String mode:List.of("adopt-uid","adopt-gid","adopt-reinit","adopt-null"))check(mode);}
+    @Test void transferredPinCloseUncertaintyCannotRetryReusedNumber() throws Exception {check("adopt-uncertain");}
     @AfterAll static void cleanup() throws Exception {if(probe!=null)Files.deleteIfExists(probe);if(scratch!=null)Files.deleteIfExists(scratch);}
 }

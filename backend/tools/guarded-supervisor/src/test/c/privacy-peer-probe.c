@@ -63,7 +63,37 @@ ssize_t __wrap_read(int fd,void *data,size_t size){
 int __real_close(int);
 int __wrap_close(int fd){if(fd==special)special=-1;int r=__real_close(fd);if(fd==installed&&close_fault){close_fault=0;errno=EINTR;return -1;}return r;}
 int main(int argc,char **argv){CHECK(argc==2);mode=argv[1];atexit(cleanup);connect_child();int cancel=eventfd(0,EFD_CLOEXEC|EFD_NONBLOCK);CHECK(cancel>=0);borrowed_cancel=cancel;es_peer p={0};es_peer_identity id;
- if(!strcmp(argv[1],"live")||!strcmp(mode,"comm")||!strcmp(mode,"partial")){CHECK(es_peer_open(&p,connection,cancel,now()+1000000000ULL)==ES_PEER_OK);CHECK(es_peer_read(&p,&id)==ES_PEER_OK);CHECK(id.pid==(uint32_t)child&&id.uid==geteuid()&&id.gid==getegid()&&id.start_ticks>0);CHECK(fcntl(p.pidfd,F_GETFD)&FD_CLOEXEC);CHECK(es_peer_close(&p)==ES_PEER_OK);CHECK(fcntl(connection,F_GETFD)>=0&&fcntl(cancel,F_GETFD)>=0);}
+ if(!strncmp(mode,"adopt-",6)){
+  int pin=-1;socklen_t length=sizeof(pin);CHECK(!getsockopt(connection,SOL_SOCKET,77,&pin,&length));CHECK(pin>=0);int original=pin;
+  es_peer_identity expected={.pid=(uint32_t)child,.uid=(uint32_t)geteuid(),.gid=(uint32_t)getegid()};
+  if(!strcmp(mode,"adopt-cancel")){uint64_t one=1;CHECK(write(cancel,&one,8)==8);}
+  if(!strcmp(mode,"adopt-dead"))stop_child();
+  if(!strcmp(mode,"adopt-cloexec"))CHECK(!fcntl(pin,F_SETFD,0));
+  if(!strcmp(mode,"adopt-mismatch"))expected.pid++;
+  if(!strcmp(mode,"adopt-uid"))expected.uid^=1;
+  if(!strcmp(mode,"adopt-gid"))expected.gid^=1;
+  if(!strcmp(mode,"adopt-start"))expected.start_ticks=1;
+  if(!strcmp(mode,"adopt-nonpin")){CHECK(!close(pin));pin=open("/dev/null",O_RDONLY|O_CLOEXEC);CHECK(pin>=0);original=pin;}
+  if(!strcmp(mode,"adopt-uncertain")){
+   CHECK(es_peer_adopt_kernel_pin(&p,&pin,expected,cancel,now()+1000000000ULL)==ES_PEER_OK);CHECK(pin==-1);installed=original;close_fault=1;
+   CHECK(es_peer_close(&p)==ES_PEER_CLEANUP);int replacement=open("/dev/null",O_RDONLY|O_CLOEXEC);CHECK(replacement==original);CHECK(es_peer_close(&p)==ES_PEER_CLEANUP);CHECK(fcntl(replacement,F_GETFD)>=0);CHECK(close(replacement)==0);CHECK(close(cancel)==0);return 0;
+  }
+  if(!strcmp(mode,"adopt-reinit")){
+   CHECK(es_peer_open(&p,connection,cancel,now()+1000000000ULL)==ES_PEER_OK);int retained=p.pidfd;
+   CHECK(es_peer_adopt_kernel_pin(&p,&pin,expected,cancel,now()+1000000000ULL)==ES_PEER_INVALID);CHECK(pin==original&&p.pidfd==retained);CHECK(fcntl(pin,F_GETFD)>=0);CHECK(close(pin)==0);CHECK(es_peer_close(&p)==ES_PEER_OK);CHECK(close(cancel)==0);return 0;
+  }
+  if(!strcmp(mode,"adopt-null")){CHECK(es_peer_adopt_kernel_pin(NULL,&pin,expected,cancel,now()+1000000000ULL)==ES_PEER_INVALID);CHECK(pin==original&&fcntl(pin,F_GETFD)>=0);CHECK(close(pin)==0);CHECK(close(cancel)==0);return 0;}
+  int borrowed=!strcmp(mode,"adopt-alias")?pin:cancel;
+  es_peer_result r=es_peer_adopt_kernel_pin(&p,&pin,expected,borrowed,now()+1000000000ULL);
+  if(!strcmp(mode,"adopt-start")||!strcmp(mode,"adopt-alias")){CHECK(r==ES_PEER_INVALID);CHECK(pin==original&&fcntl(pin,F_GETFD)>=0);CHECK(!close(pin));}
+  else {CHECK(pin==-1);
+   if(!strcmp(mode,"adopt-live")){CHECK(r==ES_PEER_OK);CHECK(es_peer_read(&p,&id)==ES_PEER_OK);CHECK(id.pid==expected.pid&&id.start_ticks>0);CHECK(es_peer_close(&p)==ES_PEER_OK);}
+   else {CHECK(r==(!strcmp(mode,"adopt-cancel")?ES_PEER_CANCELLED:(!strcmp(mode,"adopt-dead")||!strcmp(mode,"adopt-nonpin"))?ES_PEER_DEAD:ES_PEER_IDENTITY));CHECK(es_peer_close(&p)==r);}
+   CHECK(fcntl(original,F_GETFD)==-1&&errno==EBADF);
+  }
+  CHECK(fcntl(cancel,F_GETFD)>=0&&fcntl(connection,F_GETFD)>=0);
+ }
+ else if(!strcmp(argv[1],"live")||!strcmp(mode,"comm")||!strcmp(mode,"partial")){CHECK(es_peer_open(&p,connection,cancel,now()+1000000000ULL)==ES_PEER_OK);CHECK(es_peer_read(&p,&id)==ES_PEER_OK);CHECK(id.pid==(uint32_t)child&&id.uid==geteuid()&&id.gid==getegid()&&id.start_ticks>0);CHECK(fcntl(p.pidfd,F_GETFD)&FD_CLOEXEC);CHECK(es_peer_close(&p)==ES_PEER_OK);CHECK(fcntl(connection,F_GETFD)>=0&&fcntl(cancel,F_GETFD)>=0);}
  else if(!strcmp(argv[1],"dead")){stop_child();CHECK(es_peer_open(&p,connection,cancel,now()+1000000000ULL)==ES_PEER_DEAD);}
  else if(!strcmp(argv[1],"exit")){CHECK(es_peer_open(&p,connection,cancel,now()+1000000000ULL)==ES_PEER_OK);stop_child();memset(&id,0xff,sizeof(id));CHECK(es_peer_read(&p,&id)==ES_PEER_DEAD);es_peer_identity zero={0};CHECK(!memcmp(&id,&zero,sizeof(id)));CHECK(es_peer_close(&p)==ES_PEER_DEAD);}
  else if(!strcmp(argv[1],"deadline")){CHECK(es_peer_open(&p,connection,cancel,now()-1)==ES_PEER_DEADLINE);}

@@ -116,3 +116,12 @@ es_peer_result es_peer_read(es_peer *p,es_peer_identity *out){
  es_peer_result r=identity(p,out);return r?end(p,r):ES_PEER_OK;
 }
 es_peer_result es_peer_close(es_peer *p){if(!p||!p->state)return ES_PEER_INVALID;return end(p,ES_PEER_OK);}
+
+es_peer_result es_peer_adopt_kernel_pin(es_peer *p,int *owned_pidfd,es_peer_identity expected,int cancel_fd,uint64_t deadline_ns){
+ if(!p||p->state||!owned_pidfd||owned_pidfd==&p->pidfd||*owned_pidfd<0||cancel_fd<0||*owned_pidfd==cancel_fd||!expected.pid||expected.pid>INT_MAX||expected.start_ticks)return ES_PEER_INVALID;
+ int fd=*owned_pidfd;*owned_pidfd=-1;
+ p->pidfd=fd;p->cancel_fd=cancel_fd;p->deadline_ns=deadline_ns;p->state=1;p->identity=expected;
+ es_peer_result r=guard(p);if(r)return end(p,r);
+ int flags=fcntl(fd,F_GETFD);if(flags<0||!(flags&FD_CLOEXEC))return end(p,ES_PEER_IDENTITY);
+ es_peer_identity id={0};r=identity(p,&id);if(r)return end(p,r);p->identity=id;return ES_PEER_OK;
+}

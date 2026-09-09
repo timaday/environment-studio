@@ -22,9 +22,9 @@ Latest tested source: `1bda69993ff1257b063d08a357fd2b260d8be385`. The
 [artifact refresh](../evidence/d06b4-artifacts.md) records Java623,
 frontend34/schema24, protected container/workspace smoke and four exact-source
 hosted browser cases. Observed destination and summary transfer authority are
-reviewed and integrated. Native fork capture is isolated at
-`/home/tim/.tmp/es-privacy-fork-ypizpz4x`, base `c4529e4`; do not integrate its
-unfrozen author files. Memory investigation is external at
+reviewed and integrated. Native fork capture was independently reviewed and integrated from the fixed
+`/home/tim/.tmp/es-privacy-fork-ypizpz4x` candidate, base `c4529e4`; preserve its
+frozen files. Memory investigation is external at
 `/home/tim/.tmp/es-heap-qualification-20260909`; use uploadable two-document
 unresolved fixtures and actual command-parser results, not the earlier typed-only
 eight-document probe as end-to-end scope evidence. No deployment allocation has
@@ -310,3 +310,11 @@ summary-publication race. Corrected621 full Java and independent47 focused check
 pass, with four killed admission/publication mutants. The additional committed/
 uncommitted transfer regressions are retained. New image/browser checks follow;
 labels, full operator workflow and heap/backpressure remain unfinished.
+
+The [private fork capture prerequisite](../evidence/d07c3-privacy-fork.md) is now
+independently reviewed and locally integrated. Fixed candidate11 passed the
+combined Java643 reactor, actual Java FORK/POSIX controls, nine author guard
+mutants and four additional independent native controls. It captures a private
+kernel sender pin before exec; Java wrapper/root registration, listener/coordinator,
+image/ancestry/privacy admission and native-client qualification remain open.
+The runtime registry remains empty. Preserve its frozen author archive.

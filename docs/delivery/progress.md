@@ -8,7 +8,7 @@ Latest verified source is `1bda69993ff1257b063d08a357fd2b260d8be385`.
 Reviewed observed identity and live summary publication are integrated; the
 [exact-source artifact refresh](../evidence/d06b4-artifacts.md) passed Java623,
 frontend34/schema24, four hosted browser cases and protected container/workspace
-smoke. Native fork capture remains isolated work; maximum heap/transfer/recovery,
+smoke. Native fork capture is now integrated as a private prerequisite; maximum heap/transfer/recovery,
 remaining operator workflow and external publication/deployment remain unfinished.
 
 Work resumed from verified local and remote `8125e57127b1583664d368b97b82d08ec103fe5d`.
@@ -202,3 +202,11 @@ summary-publication race. Corrected621 full Java and independent47 focused check
 pass, with four killed admission/publication mutants. The additional committed/
 uncommitted transfer regressions are retained. New image/browser checks follow;
 labels, full operator workflow and heap/backpressure remain unfinished.
+
+The [private fork capture prerequisite](../evidence/d07c3-privacy-fork.md) is now
+independently reviewed and locally integrated. Fixed candidate11 passed the
+combined Java643 reactor, actual Java FORK/POSIX controls, nine author guard
+mutants and four additional independent native controls. It captures a private
+kernel sender pin before exec; Java wrapper/root registration, listener/coordinator,
+image/ancestry/privacy admission and native-client qualification remain open.
+The runtime registry remains empty. Preserve its frozen author archive.

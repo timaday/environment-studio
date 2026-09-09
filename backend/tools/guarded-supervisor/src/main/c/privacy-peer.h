@@ -19,6 +19,16 @@ typedef struct {
    Reads use verified local procfs, <=16 KiB scratch and checks between syscalls;
    a stalled kernel syscall is not made interruptible by this deadline.
    PID/start ticks must be positive; zero UID/GID are valid exact identities. */
+/* Adopt only a kernel-delivered process pin from the caller's owned private
+   channel. This helper does not prove how the caller obtained it. Invalid fresh
+   object/arguments, nonzero initial start ticks and cancel-fd alias preserve
+   *owned_pidfd. Otherwise ownership transfers immediately and the caller slot
+   becomes -1; every later refusal closes once with sticky cleanup. expected
+   contains the exact kernel PID/UID/GID, never a claimed established identity.
+   Positive start ticks are obtained by the existing bounded pinned validation.
+   No numeric pidfd acquisition occurs. Cancellation remains borrowed. */
+es_peer_result es_peer_adopt_kernel_pin(es_peer *,int *owned_pidfd,
+ es_peer_identity expected,int cancel_fd,uint64_t deadline_ns);
 es_peer_result es_peer_open(es_peer *,int socket_fd,int cancel_fd,uint64_t deadline_ns);
 /* Recheck original pinned process, never reopen a pidfd by numeric PID.
    On failure output is zeroed and terminal cleanup is sticky. */
