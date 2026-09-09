@@ -27,6 +27,13 @@ authoritative recomputation, physical-only v3 profiles, PUBLIC text and shared
 graph caps. No derived runtime exists; closed v3 contracts precede that work.
 No Q feedback may be uploaded to GitHub without publication authorization.
 
+The full source/dense/graph HTTP workloads and all three four-observation overlap
+workloads now have reviewed passing results in
+[d06b8](../evidence/d06b8-hosted-heap.md). Preserve both external heap labs and
+their final manifests. The original overlap validity assertion was a harness
+error; the corrected separate runner preserves it as failure evidence. These
+results cover exact c4a3246, not newer mechanisms or all combined maxima.
+
 The [private native connection candidate](../evidence/d07c3-privacy-connection.md)
 is independently reviewed and integrated after the Java launch owner. Preserve
 its final nine-file author manifest and eight unchanged source/test files.

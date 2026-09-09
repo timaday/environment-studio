@@ -11,6 +11,13 @@ design are reviewed, runtime changes pending. Tim approved the separate
 v3 contracts and implementation remain next. No Q feedback GitHub publication is
 authorized. Existing MVP scope and completed work remain in place.
 
+The [hosted heap evidence](../evidence/d06b8-hosted-heap.md) now includes reviewed
+complete source-byte, dense-field and full-graph workloads, plus four simultaneous
+incoming observations beside four retained current/changed targets. All six
+separate workloads passed on exact c4a3246 at 6 GiB/one CPU with completed cleanup.
+Combined maxima and subsequent changed mechanisms remain unqualified; allocation
+and complete export/runtime work stay open.
+
 The [private native connection owner](../evidence/d07c3-privacy-connection.md)
 is independently reviewed and passes the latest 713-case Java integration plus
 three additional actual native refusal/cleanup controls. Accepted-socket transfer

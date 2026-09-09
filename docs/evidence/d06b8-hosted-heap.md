@@ -153,3 +153,91 @@ and cumulative disclosure. Only public contracts, independent mock workload boun
 aggregate results and exact public code/artifact identities are included. Repository
 integrity, staged-content guard, diff whitespace check and all 11 Python tooling
 tests passed. No production code or scope limit changed in this evidence update.
+
+## Complete source, field and graph workloads
+
+The same exact c4a3246 production artifact, actual HTTPS/OIDC routes and 6 GiB /
+one-CPU container completed three separately shaped workloads. Each retained four
+current and changed targets, reinspected/re-edited them serially, then created
+four fresh-owner plans with full changed-target recovery. All current and target
+XML characters were compared through actual Raw responses with independently
+constructed expectations; these were complete inventories, not sampled pages.
+Each run recorded twelve observations, zero OOM events, both cleanup markers
+true and no cleanup failures.
+
+| Shape per plan and per current/target side | Seconds | Peak cgroup bytes | GC ms |
+| --- | ---: | ---: | ---: |
+| 128 documents, 16 MiB strict UTF-8 each side; 128 explicit one-character identity edits | 48.405 | 630,370,304 | 1,014 |
+| Four documents, 1,536 entities with 256 present fields; 3,393,172 bytes each side | 71.770 | 1,625,870,336 | 12,995 |
+| Eight documents, 20,000 entities and 50,000 edges; 1,140,296 bytes each side | 408.123 | 828,235,776 | 9,109 |
+
+Actual complete edit commands were respectively 24,830, 12,653,694 and 8,870,126
+bytes. Graph identity edits explicitly rebound every affected reference to its
+original stable target; retained-reference identity was not silently rewritten.
+Final passive Java heap values were 267,655,120, 1,184,644,632 and 316,760,496
+bytes. No requested GC or immediate memory-erasure claim applies.
+
+Source/result identities in `/home/tim/.tmp/es-hosted-heap-20260909`:
+
+- Source run `es-hosted-heap-68c82fa6f2`; source22 manifest
+  `hosted-source-target-candidate.sha256`, SHA
+  `886d7b2161d14adf20e83f329afb8676d7dd77beac500a6cacec4a0e1abdc8fe`;
+  result3 manifest `hosted-source-target-evidence.sha256`, SHA
+  `2a31a5fdfa0806ea540210ffb4ca6c4e9ca082c08ec46b4d966c59753e3c18ce`.
+- Dense run `es-hosted-heap-6606f6d85b`, graph run `es-hosted-heap-c8c1f236bb`;
+  source23 manifest `hosted-graph-dense-candidate.sha256`, SHA
+  `3629ea0899fe6528aae383b729b5296625a4f1f208ea8a05ead4ec7f6b95f348`;
+  result5 manifest `hosted-graph-dense-evidence.sha256`, SHA
+  `117c622d11948f264d94f08398322b036fae7db3582e84480441dd9718dfd8bc`.
+
+Independent review accepted the frozen harnesses and all three completed results
+within these separate workload bounds. These runs do not combine every maximum.
+
+## Four incoming observations overlapping retained targets
+
+A separate external lab, `/home/tim/.tmp/es-hosted-overlap-20260909`, retains the
+same production code. Its mock observation holds actual source collections and
+accepted graph projections at a four-arrival latch before conversion/installation.
+Reachability fences retain both through the wait; an absolute ten-second hold,
+twenty-millisecond cancellation polling and independent loopback release bound
+this test point. Only harness classes/control routes changed. Independent review
+read both complete Java harness classes and verified all 345 production files
+byte-identical to the previously jar-verified runtime.
+
+The original run falsely required `inspectionValid=false` during reinspection.
+An actual independent core held-read test confirmed the contracted old validity,
+revision and content remain until success or failure. No product change was
+needed. Original failure `315ef09b2a` and the first corrected runner's optional-key
+setup failure `5fbfd9e3f5` remain preserved with completed cleanup. The final separate
+`run_overlap_corrected2.py` compares prior validity/counts/revision and each plan's
+own active operation. It handles an omitted inactive operation ID explicitly.
+
+| Separate shape | Run suffix | Seconds | Peak cgroup bytes | GC ms |
+| --- | --- | ---: | ---: | ---: |
+| Full source bytes | `770ef4942c` | 37.411 | 705,650,688 | 1,155 |
+| Dense present fields | `e28b0b05e6` | 49.761 | 1,832,452,096 | 9,339 |
+| Full entity/edge graph | `3d9484d9b9` | 264.362 | 846,327,808 | 7,175 |
+
+Each passed with four incoming projections held while four old current/changed
+targets remained inspectable. The byte shape holds 64 MiB incoming source beside
+128 MiB old current/target character content, counted as strict UTF-8 content,
+not actual JVM object allocation. After release, every operation succeeded,
+revision advanced once, and the complete no-op inventory had equal current/target
+digests. Four subsequent changed targets passed full independent XML witnesses.
+Every run had eight observations, zero OOM events, both cleanup markers true,
+no cleanup failures, Docker stop exit 0 and terminated container exit 143. Runs
+were sequential and cleanup completed before the next run.
+
+Frozen source26 manifest `overlap-corrected2-candidate.sha256`, SHA
+`61a473c3085baf3938316d4247eb41d4ed4bd6dcc0192a0acf7faa96496a14f4`;
+results8 manifest `overlap-corrected2-results.sha256`, SHA
+`9bc07ac3e8720325be53c035a1bfa63d6dc1489877fbe38dd9d0c59dc8a1dfec`.
+Root independently verified both manifests, corrected Python source and result
+witnesses. The other reviewer verified the Java hold, production identity and
+actual prior-validity control. Final passive heaps were 378,798,480, 1,242,120,488
+and 342,905,416 bytes. The latch is not evidence for cancellation races at release,
+all simultaneous server phases, combined maxima or immediate heap return.
+
+These are exact older-artifact workload results. They do not qualify subsequent
+child-property/derived mechanisms, native-client export or a new deployment
+allocation. The full resource and operator workflow qualification remains active.
