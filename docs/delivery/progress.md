@@ -72,8 +72,10 @@ stay readable. Versioned creation, observation, physical commands and pages shar
 existing ownership/capacity. [Shared v3 comparison](../evidence/qf34-shared-comparison.md)
 now passes corrected independent review and full Java1217. Review reproduced a
 same-revision failed-inspection race; original cancellation and final context
-checks now refuse its late result. Capture remains a separate candidate;
-versioned APIs, runtime composition and combined proof resources stay open.
+checks now refuse its late result. [Shared v3 profile capture](../evidence/qf34-shared-capture.md)
+now passes independent mapping/invalidation review and combined Java1224. It
+captures verified original physical shape, with schema3 bytes and no target values.
+Versioned APIs, runtime composition and combined proof resources stay open.
 No Q feedback GitHub publication is authorized. Existing MVP scope and completed
 work remain in place.
 

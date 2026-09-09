@@ -27,6 +27,8 @@ now joins creation, observation, target work and physical commands; runtime
 composition, profiles and validation remain in progress. The
 [shared v3 comparison](docs/evidence/qf34-shared-comparison.md) now verifies complete
 original/target proofs and rejects results invalidated by reinspection.
+[Shared v3 profile capture](docs/evidence/qf34-shared-capture.md) now returns bounded
+physical-only schema3 source from freshly verified original observation.
 Complete Oracle CLOB/PostgreSQL text observation, value-free profile composition
 and cross-document structural target materialization are implemented as reviewed
 internal mechanisms. The hosted plan service joins these mechanisms with session

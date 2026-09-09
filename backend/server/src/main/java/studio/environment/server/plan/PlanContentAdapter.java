@@ -72,6 +72,19 @@ public final class PlanContentAdapter implements ContentAdapter {
         if(!(encoded instanceof ProfileBytesAdapter.ExportResult.Encoded bytes)) throw new PlanRefusal(PlanRefusal.Code.PROFILE_REFUSED);
         return new Capture(new String(bytes.bytes(),StandardCharsets.UTF_8),accepted.checked());
     }
+    @Override public Capture captureV3(PublishedDefinition definition,studio.environment.core.derived.DerivedInput.Pin expected,Content current,ProfileCapture.Command command,studio.environment.core.observation.ObservationPort.Cancellation cancellation) {
+        if(!(definition.model() instanceof studio.environment.core.plan.PlanDefinition.V3 model))throw new PlanRefusal(PlanRefusal.Code.UNSUPPORTED_DEFINITION);
+        V3PlanReadContent.original(model,expected,current,cancellation);
+        var snapshot=new DerivedGraphProjectionAdapter.Snapshot(expected.revisionToken(),expected.logicalDigest(),expected.bindingId(),expected.bindingDigest(),
+                current.sources().stream().map(s->new DocumentSource(s.documentId(),s.xml())).toList());
+        var profiles=new studio.environment.server.profile.V3ProfileBytesAdapter();
+        var result=profiles.capture(model.checked(),expected,snapshot,command,cancellation::cancelled);
+        if(!(result instanceof studio.environment.server.profile.V3ProfileBytesAdapter.Result.Accepted accepted))throw new PlanRefusal(PlanRefusal.Code.PROFILE_REFUSED);
+        var encoded=profiles.write(model.checked(),accepted.checked());
+        if(!(encoded instanceof studio.environment.server.profile.V3ProfileBytesAdapter.ExportResult.Encoded bytes))throw new PlanRefusal(PlanRefusal.Code.PROFILE_REFUSED);
+        V3PlanReadContent.live(cancellation);
+        return new Capture(new String(bytes.bytes(),StandardCharsets.UTF_8),accepted.checked());
+    }
     @Override public DocumentView compare(studio.environment.core.plan.HostedPlanService.ViewSnapshot snapshot,boolean target,String documentId,ViewMode mode) {
         return PlanDocumentViews.render(snapshot,target,documentId,mode);
     }

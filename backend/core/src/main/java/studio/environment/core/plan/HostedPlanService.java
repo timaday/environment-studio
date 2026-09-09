@@ -559,7 +559,9 @@ public final class HostedPlanService {
         }
         public CapturedProfile capture(studio.environment.core.profile.ProfileCapture.Command command) {
             var snap=snapshot();guarded(lease,()->{check();inspected(pinned);if(pinned.active!=null || pinned.rendering)throw new PlanRefusal(PLAN_BUSY);return true;});
-            var result=content.capture(snap.definition(),snap.binding(),snap.selected(false),command);
+            var result=snap.definition().model() instanceof PlanDefinition.V3
+                    ?content.captureV3(snap.definition(),snap.v3Pins().orElseThrow(()->new PlanRefusal(PROJECTION_REFUSED)).original(),snap.selected(false),command,cancellation)
+                    :content.capture(snap.definition(),snap.binding(),snap.selected(false),command);
             if(utf8(result.source())>MIB)throw new PlanRefusal(RESOURCE_LIMIT);verify();return new CapturedProfile(result,snap.definition().reference());
         }
         public CompositionPreview preview(NativeCommand.Reference reference,List<String> roots) {
@@ -840,10 +842,12 @@ public final class HostedPlanService {
             return rendering(plan,revision);
         });
         try {
-            var captured=content.capture(snapshot.plan.definition,snapshot.plan.binding,snapshot.current,command);
+            var captured=snapshot.plan.definition.model() instanceof PlanDefinition.V3
+                    ?content.captureV3(snapshot.plan.definition,v3Pin(snapshot,snapshot.observationFingerprint),snapshot.current,command,snapshot.cancellation)
+                    :content.capture(snapshot.plan.definition,snapshot.plan.binding,snapshot.current,command);
             if(utf8(captured.source())>MIB) throw new PlanRefusal(RESOURCE_LIMIT);
             return guarded(lease,()-> {
-                if(snapshot.plan.retired || !snapshot.plan.inspectionValid || snapshot.generation!=snapshot.plan.generation || !revision.equals(snapshot.plan.revision.toString())) throw new PlanRefusal(CONFLICT);
+                if(snapshot.plan.retired || !snapshot.plan.inspectionValid || snapshot.cancellation.cancelled() || snapshot.generation!=snapshot.plan.generation || !revision.equals(snapshot.plan.revision.toString())) throw new PlanRefusal(CONFLICT);
                 return new CapturedProfile(captured,snapshot.plan.definition.reference());
             });
         } finally { synchronized(lock) { materializationScratch=false; snapshot.plan.rendering=false;snapshot.plan.workCancellation=null; clearRetired(snapshot.plan); } }

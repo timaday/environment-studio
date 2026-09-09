@@ -81,6 +81,9 @@ public final class PlanPorts {
             return new V3PlanContent.Result.Refused("UNSUPPORTED_DEFINITION");
         }
         Capture capture(PublishedDefinition definition, String binding, Content current, ProfileCapture.Command command);
+        default Capture captureV3(PublishedDefinition definition,studio.environment.core.derived.DerivedInput.Pin expected,Content current,ProfileCapture.Command command,ObservationPort.Cancellation cancellation) {
+            throw new PlanRefusal(PlanRefusal.Code.UNSUPPORTED_DEFINITION);
+        }
         default DocumentView compare(HostedPlanService.ViewSnapshot snapshot,boolean target,String documentId,ViewMode mode) {
             throw new PlanRefusal(PlanRefusal.Code.DISCLOSURE_REQUIRED);
         }
