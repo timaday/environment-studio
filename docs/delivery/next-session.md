@@ -32,8 +32,9 @@ now passes combined Java894 with actual XML and complete contributor comparison.
 [Physical-only v3 profile ports](../evidence/qf34-profile-v3.md) are reviewed and
 pass full Java912 plus independent inventory/byte/cancellation controls. V3 remains
 unavailable pending versioned history and hosted qualification.
-The latest retained `7111230` OCI image includes target/capability changes and
-passes protected smoke and four hosted/two demo browser cases; see progress.md.
+The latest retained `aaddcfb` [profile image](../evidence/profile-v3-artifacts.md)
+passes Java914 and protected smoke. Four hosted/two demo browser cases remain
+scoped to the preceding7111230; see progress.md.
 No Q feedback may be uploaded to GitHub without publication authorization.
 
 The latest independent review adds a confirmed retained-origin consistency defect

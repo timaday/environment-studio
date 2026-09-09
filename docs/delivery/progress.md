@@ -48,11 +48,12 @@ and independent API-to-UI mutation checks pass. The [exact artifact refresh](../
 passes revised-container smoke and four hosted/two demo browser cases. Versioned
 history and hosted work remain active; this image predates the profile changes.
 
-Current retained image, exact `7111230`:
-`sha256:eabf02b76e4986fd84007253e4434a418f551260d8eecab49118306bee581125`.
-Its exact build and protected startup/workspace smoke pass; it includes target
-and capability changes but predates profile WIP. The artifact evidence records
-the supervisor ZIP and four hosted HTTPS/OIDC plus two demo browser cases.
+Current retained image, exact `aaddcfb`:
+`sha256:6f02aa37d7a125dbe1e8bc9d26090bab85a400cc0466f22304a2266da80545e4`.
+The [profile artifact](../evidence/profile-v3-artifacts.md) passes Java914 and
+protected startup/workspace smoke, and records its separate supervisor ZIP.
+It includes the reviewed profile ports; history/native WIP remain outside it.
+The four hosted HTTPS/OIDC and two demo browser cases remain scoped to7111230.
 This is local proof only; preceding image evidence remains historically scoped.
 
 The [hosted heap evidence](../evidence/d06b8-hosted-heap.md) now includes reviewed
