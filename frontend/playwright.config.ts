@@ -1,13 +1,30 @@
 import { defineConfig, devices } from "@playwright/test";
 
+const hosted = process.env.ES_HOSTED_BROWSER === "1";
+const hostedOutput = process.env.ES_HOSTED_BROWSER_OUTPUT_DIR;
+if (
+  hosted &&
+  (!hostedOutput || !/^\/dev\/shm\/es-browser-results-[A-Za-z0-9_-]+$/.test(hostedOutput))
+)
+  throw new Error("HOSTED_BROWSER_PRIVATE_OUTPUT_REQUIRED");
+// Suppress automatic failure DOM snapshots in the credential/raw-document harness.
+if (hosted) process.env.PLAYWRIGHT_NO_COPY_PROMPT = "1";
 export default defineConfig({
   testDir: "./e2e",
+  outputDir: hosted ? hostedOutput : "test-results",
+  testMatch: hosted ? "hosted-workflow.spec.ts" : "definition-review.spec.ts",
   fullyParallel: false,
   forbidOnly: true,
   retries: 0,
   workers: 1,
   reporter: "list",
-  use: { baseURL: "http://127.0.0.1:4173", trace: "retain-on-failure" },
+  use: {
+    baseURL: hosted ? "https://localhost:18443" : "http://127.0.0.1:4173",
+    trace: "off",
+    screenshot: "off",
+    video: "off",
+    ignoreHTTPSErrors: hosted,
+  },
   projects: [
     {
       name: "desktop",
@@ -18,10 +35,13 @@ export default defineConfig({
       use: { ...devices["Desktop Chrome"], viewport: { width: 390, height: 844 } },
     },
   ],
-  webServer: {
-    command: "npm run build && npm exec vite preview -- --host 127.0.0.1 --port 4173 --strictPort",
-    url: "http://127.0.0.1:4173",
-    reuseExistingServer: false,
-    timeout: 60_000,
-  },
+  webServer: hosted
+    ? undefined
+    : {
+        command:
+          "npm run build && npm exec vite preview -- --host 127.0.0.1 --port 4173 --strictPort",
+        url: "http://127.0.0.1:4173",
+        reuseExistingServer: false,
+        timeout: 60_000,
+      },
 });

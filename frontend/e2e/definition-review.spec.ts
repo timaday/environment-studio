@@ -1,6 +1,20 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
 
+test.beforeEach(async ({ page }) => {
+  await page.route("**/api/v1/capabilities", (route) =>
+    route.fulfill({
+      json: {
+        mode: "demo",
+        definitionWorkspaceEnabled: false,
+        inspectionEnabled: false,
+        exportEnabled: false,
+        blockers: [],
+      },
+    }),
+  );
+});
+
 // Exercises independently invented, explicitly labelled demo data only.
 test("operator can review definition source and blockers using the keyboard", async ({ page }) => {
   await page.goto("/");

@@ -20,6 +20,7 @@ final class MockIssuer implements AutoCloseable {
     private final RSAKey key;
     private final RSAKey otherKey;
     private final Map<String, Map<String, String>> codes = new ConcurrentHashMap<>();
+    final java.util.List<String> issuedCodes = new java.util.concurrent.CopyOnWriteArrayList<>();
     final java.util.List<String> receivedVerifiers = new java.util.concurrent.CopyOnWriteArrayList<>();
     final java.util.List<String> issuedTokens = new java.util.concurrent.CopyOnWriteArrayList<>();
     volatile TokenMode mode = TokenMode.VALID;
@@ -44,6 +45,7 @@ final class MockIssuer implements AutoCloseable {
                     reply(exchange, 400, "{}"); return;
                 }
                 String code = UUID.randomUUID().toString();
+                issuedCodes.add(code);
                 codes.put(code, params);
                 exchange.getResponseHeaders().add("Location", params.get("redirect_uri") + "?code=" + code + "&state=" + params.get("state"));
                 exchange.sendResponseHeaders(302, -1);
@@ -91,5 +93,5 @@ final class MockIssuer implements AutoCloseable {
         exchange.getResponseBody().write(bytes);
         exchange.close();
     }
-    public void close() { server.stop(0); receivedVerifiers.clear(); issuedTokens.clear(); codes.clear(); }
+    public void close() { server.stop(0); receivedVerifiers.clear(); issuedTokens.clear(); issuedCodes.clear(); codes.clear(); }
 }

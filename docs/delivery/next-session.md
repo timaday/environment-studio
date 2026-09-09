@@ -19,8 +19,8 @@ The previous push-review blocker is historical: the remote now matches the check
 ## Current 9 September continuation
 
 Reviewed authority/policy implementation is committed locally as
-`f4f2add0c6f3b46c00e03a8f0b11102e62163a50`. The two XML findings now have an
-independently reviewed 29-file candidate with compiler mechanism 2. Combined
+`f4f2add0c6f3b46c00e03a8f0b11102e62163a50`. The two XML findings are committed as
+`40b67ae`, with compiler mechanism 2. Combined
 Java509, frontend7/schema22, Docker build, protected smoke and separate supervisor
 assembly passed; see [exact evidence](../evidence/xml-final-context-readiness.md).
 The local image is `environment-studio:xml-review-20260909`, image ID
@@ -28,19 +28,50 @@ The local image is `environment-studio:xml-review-20260909`, image ID
 It carries the f4f2add-plus-candidate source label, not a later commit label.
 Remote last observed `8125e57`; no subsequent push/CI/GHCR success is claimed.
 
-Original D08a and D07c2 worktrees remain untouched and hash-verified. D08a work
-continues in `/home/tim/.tmp/es-d08a-continuation-20260909`, now based on `40b67ae`
-plus its assigned overlay. Actual uncertain save/publication/navigation REDs have
-regression fixes. Both desktop and narrow HTTPS/OIDC inspection/comparison flows
-pass with explicit test-only capability enablement and a mock observation port.
-The first 22-file review manifest is
-`/home/tim/.tmp/es-d08a-review1-20260909.sha256`, SHA-256
-`7369f4da54a5d20a57e7cfa41bb6b6de9d9014164f554987769c39ebbeaeed3d`.
-Independent review found further create/reservation recovery, navigation, polling
-and stale-display defects. The browser slice remains unreviewed for integration;
-these corrections and the remaining operator workflow are active. The requested
-enterprise-ux-design skill remains unavailable; location clarification is pending.
-Backend and existing-flow corrections continue.
+Original D08a and D07c2 worktrees remain untouched and hash-verified. D08a's fresh
+continuation `/home/tim/.tmp/es-d08a-continuation-20260909` is frozen at `28b7a5d`
+plus its reviewed 23-file overlay. Review2 accepted the corrected exact replay,
+navigation, expiry, polling, stale-response and inventory recovery. Its source
+was copied into the integration tree with all hashes verified. Java509,
+frontend34/schema22, four hosted role/browser cases, two demo browser cases, OCI
+build and protected smoke pass. See [D08a evidence](../evidence/d08a-hosted-workspace.md)
+for actual REDs, manifests, local image identity and reproduction. Browser
+observation is an explicit mock port, not JDBC or deployment qualification.
+The original review1 findings are historical; do not restore their defective code.
+
+`7132409` records the independently reviewed current-policy DB/TLS qualification.
+`28b7a5d` adds the reviewed, still-planned
+[labels/observed-identity/binding contract](../contracts/hosted-plan-context-v1.md).
+Complete its closed schemas and backend before advertising that context in the UI.
+The requested enterprise-ux-design skill remains unavailable; its location
+clarification is pending. New design references need user approval. Independent
+backend work and corrections to the existing approved flow continue.
+
+D07c2 now has a separate continuation at
+`/home/tim/.tmp/es-d07c2-continuation-20260909`, based on `28b7a5d`, with only
+assigned original author deltas preserved. Its fixed 16-file terminal candidate
+is `/home/tim/.tmp/es-d07c2-terminal-candidate-20260909.sha256`, manifest SHA-256
+`189bc5b5dd4cac4251b16adb16fe86615bbde7b99151009d2054f6a99f1ecb71`.
+The author ran actual bounded-entry/fallback RED/GREEN, 120-second trickle expiry,
+four Java/PTTY cases and the full Java519/assembly suite. Root independent review
+is active. Do not merge the original 46-file overlay wholesale or enable its empty
+native registry. Effective crash privacy and native-client execution remain open.
+The root full rerun stopped at one unchanged server test's initial credential POST
+(expected200, actual400), before the supervisor module. Log:
+`/home/tim/.tmp/es-d07c2-independent-full-20260909.log`. Eight exact-case repetitions
+passed; cause is not established and the investigation remains open. Do not call
+that rerun a Java519 pass or silently dismiss the failure as a flake. Six separate
+independent terminal frame/input controls passed. The container build also needs
+an explicit pinned C compiler/header prerequisite for the new native terminal tests.
+
+An external credential-free privacy prototype under
+`/tmp/es-private-receipt-7o7je7e_` reports private Unix-domain per-exec receipts
+separate from native stdout, including the pinned orapki child chain. It also
+demonstrates that a late per-thread seccomp installation misses existing JVM
+threads; a fresh-JVM TSYNC prototype closes that tested gap. This is investigation,
+not a reviewed implementation or qualification. Production needs a contract,
+owned native socket bridge, exact executable-chain admission and full crash matrix
+before any native DB credential entry. No global collector/kernel change is allowed.
 
 The fresh pinned disposable PostgreSQL/Oracle lab is owned by this work unit;
 nonsecret paths/IDs are in `/home/tim/.tmp/es-read-policy-dc90674a/state.json`.
@@ -79,9 +110,10 @@ The earlier D06b3 local image is `environment-studio:d06b3-review`, runtime mani
 Inspection/export capability flags remain false. The native registry is empty.
 These are local development candidates, not published or release-qualified artifacts.
 
-## Preserved work in progress
+## Original pause snapshots — historical
 
-Two isolated worktrees contain unreviewed work beyond the integrated checkpoint:
+These two original worktrees preserve the pause state; use the current continuation
+candidates above for active work:
 
 | Slice | Worktree / branch | Resume with |
 | --- | --- | --- |
@@ -151,21 +183,20 @@ without heap dumps. Increase measured deployment memory if needed, not accepted 
 
 ## Environment and external limits
 
-Use `/tmp/es-lead-toolchain/maven/bin/mvn` and Node 24 from
-`/tmp/es-lead-toolchain/node/bin`; JDK 21. Root IDE-generated Java output has
+Use Maven3.9.16 and Node24.20.0 under `/home/tim/.tmp/es-toolchain-20260909`;
+JDK21. The old `/tmp/es-lead-toolchain` paths are absent. Root IDE-generated Java output has
 interfered with host Maven before, so use isolated worktrees or Docker. Root
 filesystem space is limited; large preparation artifacts are under `/home/tim`.
 Its `.tmp` parent is group-writable and correctly fails trusted-file admission;
 qualified native installations/configuration need a separately owned protected
 directory, not a global permission change.
 
-Shared disposable database instances are preserved. The TLS lab is
-`es-tls-pg-2cce40c4` on loopback 32787 and `es-tls-oracle-2cce40c4` on 32788;
-all lab reader accounts were disabled, reader sessions absent and original trust
-settings restored after the JDBC matrix. Lab keys/bootstrap material remain
-outside the checkout in memory-backed storage. If a reboot removes that material,
-recreate the invented lab; do not fetch real configuration. Preserve older
-qualification instances and inspect ownership before any cleanup.
+The old `es-tls-*-2cce40c4` lab and its RAM keys were absent after the pause.
+Use only the current owned lab state file identified above, after checking IDs
+and ownership. Current private keys/bootstrap material remain outside the checkout
+in owned RAM. If a reboot removes them, recreate the independent mock lab; do not
+fetch real configuration or reuse stale qualification settings. Coordinate with
+the active DB author before running probes or cleanup.
 
 Actual application/IdP/accounts/PKI/HiveForge qualification remains external.
 The already-authorized push was rejected by automatic approval review because

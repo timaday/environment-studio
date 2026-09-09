@@ -8,21 +8,22 @@ Work resumed from verified local and remote `8125e57127b1583664d368b97b82d08ec10
 Both saved D08a/D07c2 worktree manifests still match. The user's 9 September
 correction supersedes D04 account purity: ordinary write-capable accounts must
 work under the versioned closed read-operation policy. Its new contracts and
-implementation are reviewed and integrated; fresh qualification is in progress. Earlier database
-results are historical and do not certify the corrected policy. See
+implementation are reviewed and integrated; fresh disposable qualification has
+passed for both engines, including verified TLS and independent owner controls.
+Earlier database results are historical and do not certify the corrected policy. See
 [continuation evidence](../evidence/20260909-continuation.md).
 
 | Slice | State | Next evidence |
 | --- | --- | --- |
 | D00 foundation | COMPLETE for starter: CI/build/smoke/GHCR passed | See ../evidence/starter-verification.md and image-reference.json |
-| D01 definitions | Native compilation/readiness aligned to XML capabilities; compiler mechanism 2 with readable historical revisions; owned upload/publication reviewed | Browser publication workflow and external application qualification |
+| D01 definitions | Native compilation/readiness aligned to XML capabilities; compiler mechanism 2 with readable historical revisions; owned upload/publication and hosted recovery reviewed | Full operator workflow and external application qualification |
 | D02 security/state | Live workspace commit authority corrected and independently reviewed, including revocation during body reads and inconclusive closure | Browser integration; actual deployment durability/identity external |
 | D03 XML | Final assembled move context corrected and independently reviewed, including edited ancestors and created parents; guarded spans/projection preserved | Hosted orchestration and guarded SQL/client qualification |
 | D04 database reads | Corrected closed read-operation policy reviewed; actual two-engine write-capable account, snapshot, read-effects, cancellation and verified-TLS matrix passed with independent owner rerun | Native-client privacy/TLS qualification; actual deployment and browser database integration |
 | D05 profiles | Value-free capture, portable whole/partial composition, immutable persistence/publication and hosted views integrated | Browser capture/reuse workflow |
 | D06 planning | Hosted plans, revisions, HTTP lifecycle/commands/views and complete structural targets reviewed | Browser workflow, remaining UX data and full hosted heap/transfer qualification |
 | D07 SQL | Package/transaction mechanisms and separate unqualified supervisor integrated/reviewed; disposable rollback/guard matrices passed | Native runtime/console/TLS/commit qualification and hosted export authority |
-| D08 UX | Synthetic comparison and definition inspector; component keyboard/axe checks pass | Backend integration, editing workflow and representative operator sessions |
+| D08 UX | Reviewed hosted definition/plan/inspection/Raw/Formatted slice with exact replay and expiry teardown; actual mock HTTPS/OIDC role flows pass at both widths | Profile capture/reuse, structural/value editing, bindings, validation/export/readback and representative operator sessions |
 | D09 deployment/release | OCI pipeline/contract; actual HiveForge unverified | Exact platform deployment and qualification matrix |
 
 Repository information boundary and Amazon Q feedback rules are documented in
@@ -46,11 +47,16 @@ and [current-policy TLS addendum](../evidence/d04-read-operation-tls.md) record
 actual write-capable account RED/GREEN, independent unchanged-state and cleanup
 witnesses, read-effect controls and TLS positives/negatives. Independent root
 compilation and TLS owner rerun passed on the compiler-2 integrated code.
-D08a now passes the existing inspection/comparison task on desktop and narrow
-HTTPS/OIDC browser sessions, with a mock observation port. Independent review
-identified mutation-recovery, navigation and stale-display gaps; corrections and
-full workflow/native-runtime work remain active. No D08a integration or real
-browser-to-database qualification is claimed.
+D08a's corrected fixed candidate passed independent review, 34 component/22 schema
+tests, the 509-test Java reactor, four desktop/narrow HTTPS/OIDC role flows, two
+demo browser cases, OCI build and protected smoke. Its observation port is an
+explicit mock. Exact replay, expiry, late replies, polling and inventory recovery
+have actual adverse evidence; see [D08a evidence](../evidence/d08a-hosted-workspace.md).
+The local image is `environment-studio:d08a-review-20260909`, source label
+`28b7a5d+d08a-24089f27`; it is not a published or release-qualified image.
+Full workflow/native-runtime work remains active, and actual browser-to-database
+qualification is unfinished. The reviewed [plan context contract](../contracts/hosted-plan-context-v1.md)
+specifies labels, observed identity and the complete binding rail before implementation.
 Eleven inspection/composition view routes passed independent review, the combined
 450-test Java Docker build and protected smoke; see
 [view integration](../evidence/d06b3-integration.md).

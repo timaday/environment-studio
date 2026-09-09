@@ -1,7 +1,7 @@
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
-import App from "./App";
+import App from "./DemoWorkspace";
 
 describe("synthetic comparison workbench", () => {
   it("clearly labels the demo and cannot export", () => {
@@ -9,7 +9,7 @@ describe("synthetic comparison workbench", () => {
     expect(screen.getByText(/Synthetic example/)).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Export SQL" })).toBeDisabled();
     expect(
-      screen.getByText(/Database inspection and SQL export are not implemented/),
+      screen.getByText(/This synthetic demo does not connect to a database/),
     ).toBeInTheDocument();
   });
 
@@ -52,3 +52,5 @@ describe("synthetic comparison workbench", () => {
     expect(screen.getByRole("button", { name: "Export SQL" })).toBeDisabled();
   });
 });
+
+// Capability routing uses server results; demo tests above are explicitly isolated.

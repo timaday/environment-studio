@@ -16,8 +16,12 @@ internal mechanisms. The hosted plan service joins these mechanisms with session
 leases and revision/cleanup enforcement; see [integration evidence](docs/evidence/d06b1-integration.md).
 The nine initial hosted plan HTTP routes enforce owned revisions and one-shot
 inspection credentials; see [HTTP integration](docs/evidence/d06b2-integration.md).
-The UI still presents synthetic previews. Browser inspection/transformation and
-guarded SQL export remain **unavailable**. See [workspace and structural integration](docs/evidence/d01c-d06a-integration.md),
+The hosted browser now supports definition save/publication, plan creation,
+inspection status/recovery and Raw/Formatted document comparison. Its first
+[browser slice](docs/evidence/d08a-hosted-workspace.md) is verified with a mock
+observation port. Production inspection capability remains disabled pending
+qualification; profile/edit/export/readback UI remains unfinished. See
+[workspace and structural integration](docs/evidence/d01c-d06a-integration.md),
 [observation evidence](docs/evidence/d04a-integration.md) and
 [profile evidence](docs/evidence/d05a-integration.md).
 
@@ -42,19 +46,27 @@ Starter CI and GHCR publication have passed. [Verification evidence](docs/eviden
 Use Node 24, JDK 21, Maven 3.9.16 and Python 3.11+. Dependencies are pinned in
 the manifests/lockfile. Docker is needed for the container and database gates.
 
+Start the loopback demo backend before opening the Vite application:
+
+```bash
+mvn -B -ntp -f backend/pom.xml verify
+mvn -B -ntp -f backend/pom.xml install
+mvn -f backend/server/pom.xml spring-boot:run -Dspring-boot.run.arguments="--studio.mode=demo --server.address=127.0.0.1 --server.port=18080"
+```
+
+In a second terminal:
+
 ```bash
 npm ci --prefix frontend
 npm run dev --prefix frontend
 ```
 
-The Vite development server binds to loopback. It shows clearly labelled
-synthetic data and cannot connect to a database. In a second terminal:
-
-```bash
-mvn -B -ntp -f backend/pom.xml verify
-mvn -B -ntp -f backend/pom.xml install
-mvn -f backend/server/pom.xml spring-boot:run
-```
+The Vite development server binds to loopback and forwards `/api` requests only
+to `127.0.0.1:18080`. Backend capabilities select the labelled synthetic demo;
+an unavailable backend displays Workspace unavailable. Demo accepts no database
+credentials and cannot connect to a database. This development proxy does not
+configure hosted HTTPS/OIDC or change the container's normal port 8080. Vite
+preview does not inherit the proxy.
 
 Build and run the combined Java + React application:
 
@@ -67,9 +79,9 @@ docker run --rm --read-only --cap-drop ALL --security-opt no-new-privileges \
 Open `http://localhost:8080`. Default mode is `demo`; it accepts no credentials.
 Health probes report process health, **not configuration validity**.
 Hosted authentication requires explicit OIDC/public-origin configuration; see
-[the session contract](docs/contracts/hosted-session.md). Its current UI still
-shows synthetic previews. Real identity-provider/HiveForge qualification and
-database functionality remain separate work.
+[the session contract](docs/contracts/hosted-session.md). Hosted views use actual
+server capabilities and authority. Real identity-provider/HiveForge qualification
+and complete browser-to-database workflow evidence remain separate work.
 
 ## CI and container publication
 
