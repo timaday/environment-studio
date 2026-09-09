@@ -56,7 +56,8 @@ commands keep their defaults; new v3 commands are explicit offline operations.
 The [v3 draft/history HTTP routes](../evidence/qf34-workspace-http-v3.md) are now
 reviewed and integrated after input-I/O and stale-completion corrections. Full
 Java1024 and frontend40/schema36 pass, including seven actual mock-OIDC/socket
-cases. The retained5925 image predates these routes. Remaining profile mutation,
+cases. The exact9454d9f [image refresh](../evidence/workspace-http-v3-artifacts.md)
+passes Java1024, frontend40/schema36 and protected smoke. Remaining profile mutation,
 publication and plan integration are next; there is no v3 runtime enablement.
 The review environment's supervisor failures remain separately scoped and unresolved
 individually; local Java21.0.12 socket/child-start controls and supervisor168 pass.
@@ -81,7 +82,11 @@ independent cancellation/cleanup controls pass. The
 [exact argument verifier](../evidence/d07c3-privacy-arguments.md) is also reviewed
 and integrated; current-head Java985 and four additional independent process
 controls pass. Full image/ancestry admission and production coordinator/JNI remain
-next. Native file hashing is isolated work in progress, not a qualified dependency.
+next. The [bounded native file-hash prerequisite](../evidence/d07c3-privacy-hash.md)
+is now reviewed and integrated; combined Java1036 passes with all six hashes exact.
+It remains a prerequisite, not trusted image/loader admission or production wiring.
+Its pinned OpenSSL Docker installation and complete native memory/thread cleanup
+still need qualification; the retained9454d9f image predates hashing.
 
 Read-only remote verification now confirms `dbb457ab408d808aced8bb3176e4677277629975`
 following an external push; root did not retry the earlier rejected push. The

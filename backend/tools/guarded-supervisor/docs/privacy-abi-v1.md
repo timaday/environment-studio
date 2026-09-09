@@ -235,6 +235,65 @@ between checks. Tests use actual independently invented child execs plus narrow
 read/liveness/cancellation/cleanup faults; no credentials enter these processes.
 A stalled kernel syscall is not made interruptible by the startup deadline.
 
+## Private bounded file hashing prerequisite
+
+The private native file-hash owner may measure one already-owned read-only regular
+file descriptor. It receives no pathname, PID, executable policy or configuration.
+Successful hashing returns descriptor-derived device/inode/size plus SHA-256 only;
+it does not establish trusted ancestry/ownership, executable or script association,
+loader closure, current process identity, privacy or runtime admission. The caller
+keeps the borrowed file and cancellation eventfd open and stable for every call.
+No descriptor crosses production JNI or transfers to this owner.
+
+Use a fresh zeroed `es_hash` owner for one launch. Keep its storage stable and never
+copy an initialized owner. `es_hash_open` fixes its borrowed
+cancellation descriptor and original absolute CLOCK_MONOTONIC startup deadline,
+with at most ten seconds remaining. It initializes one private OpenSSL3 library
+context with configuration loading disabled, the fixed built-in default provider
+and an explicitly fetched SHA2-256 implementation. No supplied algorithm, provider,
+module, engine, pathname or fallback exists. The pinned build dependency is Ubuntu
+libssl-dev/libssl3t64 3.0.13-0ubuntu3.15; runtime installation and the library's whole
+loader closure still require separate qualification before production wiring.
+The native child fork hook must never invoke this allocating library.
+
+`es_hash_file` borrows one distinct descriptor with O_RDONLY and CLOEXEC, verifies
+it is a regular file, and uses bounded pread from offset zero without changing its
+file offset. Size is at most512 MiB. Read exact initial size plus one EOF witness,
+reject truncation/growth or changed device/inode/size/mode/uid/gid/mtime/ctime, and
+recheck cancellation/deadline before/after every read, finalization and metadata
+check. A stable metadata reading is not an immutable-file or atomic future-content
+proof. Trusted installation admission and subsequent association checks remain
+independent. A stalled filesystem syscall is not made interruptible by the clock.
+
+The same owner allows at most512 object occurrences and2 GiB successfully hashed
+bytes over the whole launch; repeated files consume another occurrence and bytes.
+Use at most64 KiB file scratch. EOF witnesses consume no hash bytes. Capacity is
+checked before reading/hashing beyond the remaining budget. Invalid arguments
+refuse before ownership/counters change; null or overlapping outputs cannot
+corrupt the owner. After a valid operation begins, every refusal is sticky and
+cannot be retried or reinitialized to regain a budget. Distinct output and mutable
+file/digest/metadata scratch are wiped on refusal and before local release.
+
+`es_hash_close` releases each acquired EVP/provider/library object once, including
+partial initialization. Provider unload uncertainty is terminal CLEANUP; repeated
+close returns its established result without another release. Never close or
+drain either borrowed descriptor. OpenSSL internal allocation and initialization
+must still fit the complete native1 MiB-per-launch bound under the pinned runtime;
+64 KiB file scratch alone does not qualify that bound or the library closure.
+The fixed result set is OK, INVALID, PLATFORM, CANCELLED, DEADLINE, RESOURCE,
+FILE, CRYPTO, IO and CLEANUP. Only OK from file hashing carries a measured record.
+Open/close OK grants no file or process admission.
+
+Required actual controls include independent SHA256 vectors, partial/EINTR reads,
+unchanged offset/descriptors, exact size/aggregate/occurrence limits, wrong file
+kind/mode, truncation/growth or metadata/content change, deadline/cancellation
+through the final read, typed library failures, close-once ownership and wiped
+outputs. Review the fixed implementation/dependency before integrating it.
+The [OpenSSL EVP API](https://docs.openssl.org/3.0/man3/EVP_DigestInit/)
+defines explicit digest selection/update/finalization. The
+[Linux userspace crypto documentation](https://docs.kernel.org/crypto/userspace-if.html)
+marks AF_ALG deprecated; this implementation does not use it.
+
 ## Fixed wire encoding
 
 All integers are unsigned big-endian; no native struct layout, padding, strings,

@@ -25,6 +25,8 @@ WORKDIR /build
 RUN apt-get update -qq && apt-get install -y --no-install-recommends \
     gcc=4:13.2.0-7ubuntu1 \
     libc6-dev=2.39-0ubuntu8.8 \
+    libssl-dev=3.0.13-0ubuntu3.15 \
+    libssl3t64=3.0.13-0ubuntu3.15 \
     python3=3.12.3-0ubuntu2.1 \
     python3-minimal=3.12.3-0ubuntu2.1 \
     python3.12=3.12.3-1ubuntu0.16 \

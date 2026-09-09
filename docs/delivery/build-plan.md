@@ -57,8 +57,11 @@ not backend enforcement. [Exact 7111230 container and browser checks](../evidenc
 pass; native/client, combined resource and deployment qualification remain open.
 The [native argument prerequisite](../evidence/d07c3-privacy-arguments.md) is now
 independently reviewed with current-head Java985 and additional process controls.
-Complete image/script/loader identity and coordinator/JNI before client admission;
-bounded file hashing is isolated work in progress.
+The [bounded file-hash prerequisite](../evidence/d07c3-privacy-hash.md) is now
+independently reviewed with combined Java1036; native resource/loader qualification
+remains open. Complete image/script/loader identity and coordinator/JNI before
+client admission. The exact9454d9f [HTTP artifact](../evidence/workspace-http-v3-artifacts.md)
+passes Java1024, frontend40/schema36 and protected smoke; it predates hashing.
 
 ## Daily checkpoints
 

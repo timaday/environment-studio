@@ -58,12 +58,12 @@ and independent API-to-UI mutation checks pass. The [exact artifact refresh](../
 passes revised-container smoke and four hosted/two demo browser cases. Versioned
 history and hosted work remain active; this image predates the profile changes.
 
-Current retained image, exact `5925bc8`:
-`sha256:4f9663a4ac349926166bc1f42247ba83aeaf4fd2177f45ea27fffb697ca148e1`.
-The [workspace artifact](../evidence/workspace-v3-artifacts.md) passes Java973 and
-protected startup/schema3 administration smoke, and records its separate supervisor
-ZIP. It includes reviewed profiles, separate history, schema3 drafts and the native
-direct-parent prerequisite. V3 HTTP and later native identity work remain outside it.
+Current retained image, exact `9454d9f`:
+`sha256:8fcac3b1d26eba0c8cec050358defa6282f8fe282923f95aced135133e92f9af`.
+The [HTTP workspace artifact](../evidence/workspace-http-v3-artifacts.md) passes
+Java1024, frontend40/schema36 and protected startup/schema3 administration smoke,
+and records its separate supervisor ZIP. It includes draft/history HTTP and the
+native argument verifier. Later hashing and profile draft work remain outside it.
 The four hosted HTTPS/OIDC and two demo browser cases remain scoped to7111230.
 This is local proof only; preceding image evidence remains historically scoped.
 
@@ -93,7 +93,11 @@ controls pass. The [exact argument verifier](../evidence/d07c3-privacy-arguments
 is now reviewed and integrated: two bounded cmdline readings retain original
 identity/cancellation authority; all985 current-head Java tests and four additional
 independent process controls pass. Full image/ancestry admission and production
-wiring remain open. The current retained image predates this argument verifier.
+wiring remain open. The [bounded native file-hash prerequisite](../evidence/d07c3-privacy-hash.md)
+is now independently reviewed and integrated; combined Java1036 passes. Exact
+limits, content oracles, eight mutants and72 independent serialized thread controls
+pass within the recorded scope. Complete native memory/loader/coordinator cleanup
+is unqualified. The retained image predates hashing.
 
 Earlier exact-source OCI/browser artifact was `c4a324636d4aeaa20012349e68cce7eb2b025f8b`.
 Reviewed observed context and response/session recovery are integrated; the
