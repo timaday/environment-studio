@@ -79,6 +79,8 @@ captures verified original physical shape, with schema3 bytes and no target valu
 corrected compatibility and independent provenance review: whole/partial preview,
 Fresh/Existing reuse and original cancellation through target materialization.
 Combined Java1253 includes the native launch owner and independent tests.
+The [shared versioned workspace adapter](../evidence/qf34-shared-workspace.md)
+passes independent selected-pin/authority-loss review and combined Java1260.
 Versioned APIs, runtime composition and combined proof resources stay open.
 No Q feedback GitHub publication is authorized. Existing MVP scope and completed
 work remain in place.

@@ -34,6 +34,9 @@ whole/partial reuse and complete target proofs under the original plan owner.
 The [native launch owner](docs/evidence/d07c3-privacy-native-launch.md) joins
 root capture and its first connection; production JNI and client admission remain
 unqualified. Both reviewed slices pass combined Java1253.
+The [shared versioned workspace adapter](docs/evidence/qf34-shared-workspace.md)
+now preserves selected publication pins and fresh qualification; combined Java1260
+passes. Runtime registration remains unfinished.
 Complete Oracle CLOB/PostgreSQL text observation, value-free profile composition
 and cross-document structural target materialization are implemented as reviewed
 internal mechanisms. The hosted plan service joins these mechanisms with session
