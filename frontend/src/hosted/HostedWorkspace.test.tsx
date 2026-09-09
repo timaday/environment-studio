@@ -29,6 +29,8 @@ it("retains an uncertain definition command across workspace navigation", async 
         mode: "hosted",
         definitionWorkspaceEnabled: true,
         inspectionEnabled: false,
+        inspectionUiEnabled: false,
+        inspectionApiConfigured: false,
         exportEnabled: false,
         blockers: [],
       }}

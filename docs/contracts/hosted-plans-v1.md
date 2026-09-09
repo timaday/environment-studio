@@ -5,7 +5,9 @@ This extends [planning](planning.md), [hosted sessions](hosted-session.md),
 [profiles](profile-v2.md) and [structural targets](structural-target.md).
 The application service and its initial HTTP/view boundaries are implemented;
 see [delivery evidence](../delivery/progress.md) for qualification and remaining
-browser/export work. Installed routes do not override advertised capabilities. No caller
+browser/export work. [Inspection capability fields](hosted-destinations-v1.md#inspection-capability-response)
+distinguish qualified UI availability from configured API composition; each API
+operation enforces its own admission independently of the UI flag. No caller
 can submit an observation, projection, validation result or export capability.
 
 ## Plan ownership, revisions and budgets
@@ -261,7 +263,7 @@ Matching readback establishes state, not which artifact caused it. An UNKNOWN
 external commit never triggers an automatic retry. Verification leaves the
 editing baseline unchanged; explicit reinspection is a separate action.
 
-## Qualification before route enablement
+## Integrated qualification
 
 Use real mock OIDC sessions plus independent mock observation/materialization
 ports for races, and both existing disposable DB engines for the integrated
@@ -277,4 +279,6 @@ SQLite, response DTOs and temporary files. Test full-scope one-to-two materializ
 after whole and partial composition, with distinct fresh values and unchanged
 dependencies on both engines. Mutate live-lease/revision guards, missing required
 check, UNKNOWN handling and content policy; surviving authority mutants block.
-No hosted capability flag changes until its actual path and privacy gates pass.
+UI availability and qualified-adapter advertisements require the actual integrated
+path and privacy gates to pass. `inspectionApiConfigured` reports composition
+only; existing configured inspection routes retain their operation gates.

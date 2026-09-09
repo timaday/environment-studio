@@ -35,6 +35,8 @@ public final class PlanRuntime {
         this.service=Optional.of(service); this.destinations=List.copyOf(destinations); this.allowed=allowed;
     }
     HostedPlanService service() { return service.orElseThrow(Unavailable::new); }
+    /** Configuration diagnostic only; every operation still enforces its own admission. */
+    public boolean inspectionApiConfigured() { return service.isPresent(); }
     List<PlanDestinations.Display> visible(Owner owner) {service();return destinations.stream().filter(d->allowed.test(owner,d.id())).toList();}
     HostedPlanService.Ack create(SessionLedger.Lease lease,PlanMetadataReader.Create command) {
         if(!allowed.test(lease.owner(),command.destinationId())) throw new DestinationDenied();

@@ -125,7 +125,7 @@ export function HostedWorkspace({ capabilities }: { capabilities: Capabilities }
             <div hidden={view !== "Plans"}>
               <Plans
                 api={api}
-                inspectionEnabled={capabilities.inspectionEnabled}
+                inspectionUiEnabled={capabilities.inspectionUiEnabled}
                 active={view === "Plans"}
                 definitionVersion={version}
               />

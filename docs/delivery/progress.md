@@ -24,8 +24,11 @@ now computes exact groups, memberships, co-occurrences and complete contributor
 proofs with shared limits and explicit UNKNOWN/refusal. The
 [reviewed observed XML adapter](../evidence/qf34-derived-projection.md) now builds
 actual source/selector proofs and checks independent snapshot pins; full Java828
-passes, including v2 compatibility controls. Independent target materialization/
-reprojection and profile/hosted integrations are next; v3 availability remains disabled.
+passes, including v2 compatibility controls. The [reviewed target integration](../evidence/qf34-derived-target.md)
+now prepares typed decisions, materializes actual XML and compares complete final
+derived proofs through verified physical mappings. Combined Java894 passes.
+Physical-only profile/history and hosted integration remain next; v3 availability
+stays disabled.
 No Q feedback GitHub publication is authorized. Existing MVP scope and completed
 work remain in place.
 
@@ -36,17 +39,17 @@ splice retained fields from different original entities, and distinct identities
 cannot claim one original occurrence. Full Java850 passes, including supervisor168
 on the recorded local platform. The incoming review's Java21.0.8 native failures
 remain separately recorded; individual unresolved failures are not dismissed.
-Typed-target preparation is reviewed but not yet integrated; final comparison,
-profiles and hosted work remain active. Inspection UI availability versus configured
-API admission needs explicit contract/naming alignment without disabling authorized
-read-only operations or enabling the unqualified UI.
+The [inspection capability clarification](../evidence/inspection-capability-clarification.md)
+now distinguishes disabled browser controls from configured API composition;
+actual request admission remains independent. Focused Java20, frontend40/schema32
+and independent API-to-UI mutation checks pass. Exact revised-container/browser
+checks are pending. Profiles and hosted work remain active.
 
-Current retained internal v3 compiler image:
-`sha256:2379b3001e2afe9592eeed4f7c15056309d7989732bcacc7da672714680218ca`.
-Its exact build passes Java781, frontend34/schema32 and protected container smoke;
-it predates the subsequent internal derived engine.
-The candidate manifest and supervisor ZIP identity are recorded in the compiler
-evidence. It is local only; the earlier c4a3246 image below remains the latest
+Current retained correction image, exact `71e3040`:
+`sha256:443244ff5607562059ee6e766ab7f2a1e7cb50a8352625b0e37a3b692188ac89`.
+Its exact build and protected startup/workspace smoke pass;
+it predates subsequent target and capability changes. The candidate and supervisor
+ZIP identities are recorded in the origin-fix evidence. It is local only; the earlier c4a3246 image below remains the latest
 candidate with hosted HTTPS/OIDC browser evidence. The preceding child-candidate
 image remains recorded in QF-0001/0002 evidence.
 

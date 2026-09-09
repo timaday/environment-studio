@@ -2,6 +2,8 @@ export type Capabilities = {
   mode: "demo" | "hosted";
   definitionWorkspaceEnabled: boolean;
   inspectionEnabled: boolean;
+  inspectionUiEnabled: boolean;
+  inspectionApiConfigured: boolean;
   exportEnabled: boolean;
   blockers: string[];
 };

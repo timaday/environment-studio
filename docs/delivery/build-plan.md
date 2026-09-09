@@ -42,7 +42,7 @@ the advertised contract. Q publication to GitHub is not authorized.
 | Work | Dependency and acceptance |
 | --- | --- |
 | QF-0001/0002 child-property fields and mechanism compatibility | [Reviewed mapping slice integrated](../evidence/qf12-child-property.md): closed declarations, shared source locators, projection/creation/moves/views, target reprojection, whole/partial reuse, historical replay and per-binding compatibility. Java754, independent guard controls and exact candidate OCI smoke pass. Combined capacity, native clients and complete hosted export remain separate open gates. |
-| QF-0003/0004 computed groups and co-occurrence | Tim approved [authoritative recomputation with physical-only v3 profiles](../product/derived-graph-decision.md), PUBLIC text inputs and shared graph limits. Contracts, internal compiler and derived engine are reviewed. The [observed XML adapter](../evidence/qf34-derived-projection.md) now supplies actual complete source proofs; Java828 and existing schema32 pass. Implement independent typed/final-target recomputation next, then profile/hosted integration and qualification before availability. |
+| QF-0003/0004 computed groups and co-occurrence | Tim approved [authoritative recomputation with physical-only v3 profiles](../product/derived-graph-decision.md), PUBLIC text inputs and shared graph limits. Contracts, internal compiler, derived engine and [actual observed XML](../evidence/qf34-derived-projection.md) are reviewed. [Typed/final-target integration](../evidence/qf34-derived-target.md) now compares complete proofs after actual XML materialization; combined Java894 passes. Complete physical-only profile/history, hosted integration and qualification before availability. |
 
 The lead owns shared contracts and compatibility. Independent fixed-candidate
 review, actual RED/GREEN, targeted guard mutations and integrated verification
@@ -51,8 +51,9 @@ remain required. Private models and original Q inputs stay outside the repositor
 The later 5fa6695 independent review's retained-origin defect is
 [corrected and reviewed](../evidence/derived-retained-origin-fix.md), with actual
 RED and full Java850. Preserve later XML/root changes. Finish final derived
-comparison/profile/hosted paths and clarify inspection UI versus configured API
-admission; a false UI flag must not be described as backend enforcement.
+profile/hosted paths. [Inspection capability fields](../evidence/inspection-capability-clarification.md)
+now separate UI availability from configured API admission; a false UI flag is
+not backend enforcement. Exact revised-container/browser checks remain pending.
 
 ## Daily checkpoints
 

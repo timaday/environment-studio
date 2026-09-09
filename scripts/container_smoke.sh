@@ -27,6 +27,7 @@ while True:
 with urlopen(base+'/api/v1/capabilities',timeout=3) as response:
     data=json.load(response)
     assert data['mode']=='demo' and data['exportEnabled'] is False and data['inspectionEnabled'] is False
+    assert data['inspectionUiEnabled'] is False and data['inspectionApiConfigured'] is False
 with urlopen(base+'/',timeout=3) as response:
     assert 'Environment Studio' in response.read().decode()
 try:

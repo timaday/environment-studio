@@ -19,6 +19,8 @@ it("rejects malformed capability booleans instead of enabling controls", async (
         JSON.stringify({
           mode: "hosted",
           inspectionEnabled: "true",
+          inspectionUiEnabled: false,
+          inspectionApiConfigured: true,
           definitionWorkspaceEnabled: true,
           exportEnabled: false,
           blockers: [],

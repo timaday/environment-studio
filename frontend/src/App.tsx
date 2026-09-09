@@ -14,6 +14,9 @@ export default function App() {
         if (
           (value.mode !== "demo" && value.mode !== "hosted") ||
           typeof value.inspectionEnabled !== "boolean" ||
+          typeof value.inspectionUiEnabled !== "boolean" ||
+          typeof value.inspectionApiConfigured !== "boolean" ||
+          value.inspectionEnabled !== value.inspectionUiEnabled ||
           typeof value.definitionWorkspaceEnabled !== "boolean" ||
           typeof value.exportEnabled !== "boolean" ||
           !Array.isArray(value.blockers)

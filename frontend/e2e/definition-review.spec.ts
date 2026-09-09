@@ -8,6 +8,8 @@ test.beforeEach(async ({ page }) => {
         mode: "demo",
         definitionWorkspaceEnabled: false,
         inspectionEnabled: false,
+        inspectionUiEnabled: false,
+        inspectionApiConfigured: false,
         exportEnabled: false,
         blockers: [],
       },

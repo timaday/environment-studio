@@ -2,7 +2,7 @@ openapi: 3.1.0
 info:
   title: Environment Studio API
   version: 0.1.0
-  description: Demo capabilities, hosted sessions and private definition drafts. Database/export remain unavailable.
+  description: Demo capabilities, hosted sessions and private definition drafts. Configured hosted inspection APIs enforce operation admission; inspection UI and export remain unqualified.
 paths:
   /api/v1/capabilities:
     get:
@@ -10,17 +10,28 @@ paths:
       summary: Read implemented runtime capability state
       responses:
         '200':
-          description: Current runtime capabilities; inspection and export remain unavailable
+          description: UI availability and backend composition are separate; configured inspection APIs still enforce each operation's admission
           content:
             application/json:
               schema:
                 type: object
                 additionalProperties: false
-                required: [mode, definitionWorkspaceEnabled, inspectionEnabled, exportEnabled, qualifiedDatabaseAdapters, blockers]
+                required: [mode, definitionWorkspaceEnabled, inspectionEnabled, inspectionUiEnabled, inspectionApiConfigured, exportEnabled, qualifiedDatabaseAdapters, blockers]
                 properties:
                   mode: {type: string, enum: [demo, hosted]}
                   definitionWorkspaceEnabled: {type: boolean}
-                  inspectionEnabled: {type: boolean, const: false}
+                  inspectionEnabled:
+                    type: boolean
+                    const: false
+                    deprecated: true
+                    description: Compatibility alias equal to inspectionUiEnabled; never server operation authority
+                  inspectionUiEnabled:
+                    type: boolean
+                    const: false
+                    description: Qualified operator inspection UI availability
+                  inspectionApiConfigured:
+                    type: boolean
+                    description: Hosted workspace and valid destinations compose the backend service; not qualification, connectivity or per-owner admission
                   exportEnabled: {type: boolean, const: false}
                   qualifiedDatabaseAdapters:
                     type: array

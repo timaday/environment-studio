@@ -7,6 +7,13 @@ routes are implemented; [integration evidence](../evidence/d06b2-integration.md)
 does not establish browser, native-client or export qualification. Existing native
 workspace APIs remain the publication and immutable-profile persistence boundary.
 
+The [capability response](hosted-destinations-v1.md#inspection-capability-response)
+reports `inspectionUiEnabled` separately from `inspectionApiConfigured`.
+Configured hosted inspection routes remain available subject to the checks below
+when the UI flag is false. The deprecated `inspectionEnabled` alias refers only
+to UI availability. None of these booleans authorizes a request or substitutes
+for complete observation evidence.
+
 Every route requires the current hosted lease, approved Host, owner authorization
 and no-store responses. Every unsafe request additionally requires Origin and
 CSRF. Demo denies the routes. Cross-owner, foreign-lease and missing objects

@@ -142,6 +142,8 @@ it("clears retained source at known absolute expiry without another request", as
         mode: "hosted",
         definitionWorkspaceEnabled: true,
         inspectionEnabled: true,
+        inspectionUiEnabled: true,
+        inspectionApiConfigured: true,
         exportEnabled: false,
         blockers: [],
       }}
@@ -186,7 +188,7 @@ it("retains the exact uncertain plan create command and locks its inputs", async
       return { ...plan, currentCounts: { ...plan.currentCounts, documents: 0 } };
     throw new ApiFailure(404, "NOT_FOUND");
   });
-  render(<Plans api={{ get, post } as unknown as HostedApi} inspectionEnabled />);
+  render(<Plans api={{ get, post } as unknown as HostedApi} inspectionUiEnabled />);
   const user = userEvent.setup();
   await screen.findByRole("option", { name: "mock · workspace 2" });
   await user.selectOptions(

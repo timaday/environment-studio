@@ -25,6 +25,26 @@ class PlanDestinationsTest {
         assertTrue(destinations.visible(new Owner("https://mock-issuer.invalid","mockowner")).isEmpty());
         assertTrue(new PlanDestinations(new MockEnvironment()).visible(new Owner("https://mock-issuer.invalid","MockOwner")).isEmpty());
     }
+    @Test void inspectionApiConfigurationRequiresHostedWorkspaceAndDestinationsWithoutConnecting() {
+        var workspace=org.mockito.Mockito.mock(studio.environment.server.workspace.WorkspaceRuntime.class);
+        var sessions=new org.springframework.beans.factory.support.DefaultListableBeanFactory();
+        sessions.registerSingleton("mockSessions",org.mockito.Mockito.mock(studio.environment.server.session.HostedSessions.class));
+        var provider=sessions.getBeanProvider(studio.environment.server.session.HostedSessions.class);
+        var hosted=studio.environment.server.security.RuntimeConfiguration.RuntimeMode.HOSTED;
+        var demo=studio.environment.server.security.RuntimeConfiguration.RuntimeMode.DEMO;
+        org.mockito.Mockito.when(workspace.enabled()).thenReturn(true);
+        var missing=new PlanRuntime(new MockEnvironment(),hosted,workspace,provider);
+        assertFalse(missing.inspectionApiConfigured());
+        assertThrows(PlanRuntime.Unavailable.class,missing::service);
+        assertFalse(new PlanRuntime(configured(),demo,workspace,provider).inspectionApiConfigured());
+        org.mockito.Mockito.when(workspace.enabled()).thenReturn(false);
+        assertFalse(new PlanRuntime(configured(),hosted,workspace,provider).inspectionApiConfigured());
+        org.mockito.Mockito.when(workspace.enabled()).thenReturn(true);
+        var composed=new PlanRuntime(configured(),hosted,workspace,provider);
+        assertTrue(composed.inspectionApiConfigured());
+        assertNotNull(composed.service());
+        assertTrue(composed.visible(new Owner("https://mock-issuer.invalid","foreign-owner")).isEmpty());
+    }
     @Test void refusesUnknownMalformedAndNoncontiguousConfigurationWithoutEcho() {
         for(var env:new MockEnvironment[]{configured().withProperty("studio.plans.destinations[0].password","SyntheticNeverEcho"),configured().withProperty("studio.plans.destinations[0].engine","other"),configured().withProperty("studio.plans.destinations[2].id","gap"),configured().withProperty("studio.plans.destinations[0].owners[1].issuer","https://mock-issuer.invalid").withProperty("studio.plans.destinations[0].owners[1].subject","MockOwner")}) {
             var error=assertThrows(IllegalStateException.class,()->new PlanDestinations(env));

@@ -192,7 +192,9 @@ export function Inspection({
         Read-only, one-shot database observation. Credentials remain transient and are never saved.
         Polling does not extend the session idle deadline.
       </p>
-      {!enabled && <p id="inspection-disabled">Inspection is not enabled for this deployment.</p>}
+      {!enabled && (
+        <p id="inspection-disabled">Browser inspection is not yet available in this deployment.</p>
+      )}
       {!reserved && (
         <label>
           <input

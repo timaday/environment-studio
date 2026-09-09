@@ -23,12 +23,12 @@ type CreateCommand = Readonly<{
 }>;
 export function Plans({
   api,
-  inspectionEnabled,
+  inspectionUiEnabled,
   active = true,
   definitionVersion = 0,
 }: {
   api: HostedApi;
-  inspectionEnabled: boolean;
+  inspectionUiEnabled: boolean;
   active?: boolean;
   definitionVersion?: number;
 }) {
@@ -289,7 +289,7 @@ export function Plans({
             key={plan.planId}
             api={api}
             plan={plan}
-            enabled={inspectionEnabled}
+            enabled={inspectionUiEnabled}
             visible={active}
             refresh={refresh}
           />

@@ -83,5 +83,31 @@ destination list response exposes only id, engine, host, port and database;
 owner lists, trust paths and expected identity/provisioning records stay server-side.
 No startup validation connects to a database or asks for credentials. Missing
 workspace/destinations yields the safe services-unavailable response; configured
-but malformed entries fail startup. A capability flag remains false until its
-actual operation, privacy and qualification gates are complete.
+but malformed entries fail startup.
+
+## Inspection capability response
+
+`GET /api/v1/capabilities` distinguishes browser availability from configured
+backend composition. These booleans are required and have separate meanings:
+
+| Field | Meaning |
+| --- | --- |
+| `inspectionUiEnabled` | The operator inspection UI is qualified and available. Currently always false. |
+| `inspectionApiConfigured` | Hosted mode, an enabled private workspace and at least one valid destination compose the inspection service. False in demo or when that composition is absent. |
+| `inspectionEnabled` | Deprecated compatibility alias of `inspectionUiEnabled`; always equal to it. It never represented per-request server authority. |
+
+`inspectionApiConfigured` is a configuration diagnostic, not a qualification,
+connectivity or owner-admission result. It exposes no destination or owner data,
+does not connect to a database, and can be true while the UI remains disabled.
+An explicitly configured hosted API can accept an inspection only through its
+existing live-lease, owner/destination, revision, one-shot credential, read-operation,
+transaction, TLS, identity and cleanup gates. Neither true nor false UI state
+replaces those checks. Ordinary write-capable accounts remain supported through
+the closed read-operation policy; no write probe or grant revocation is required.
+
+The browser uses `inspectionUiEnabled` only to expose inspection controls; it
+must not infer availability from API configuration. Missing/nonboolean fields or
+a conflicting compatibility alias make its capability response unavailable.
+New clients require these fields; old clients can continue reading the alias.
+`qualifiedDatabaseAdapters` stays empty, `exportEnabled` stays false, and existing
+qualification blockers remain until actual integrated qualification passes.

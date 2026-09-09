@@ -27,7 +27,10 @@ test("maintainer saves, publishes, inspects and reviews an owned session plan", 
   await page.route("**/api/v1/capabilities", async (route) => {
     const response = await route.fetch();
     const body = await response.json();
-    await route.fulfill({ response, json: { ...body, inspectionEnabled: true } });
+    await route.fulfill({
+      response,
+      json: { ...body, inspectionEnabled: true, inspectionUiEnabled: true },
+    });
   });
   await page.goto("/");
   await page.getByRole("link", { name: "Sign in with OIDC" }).click();

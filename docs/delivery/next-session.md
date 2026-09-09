@@ -27,9 +27,11 @@ authoritative recomputation, physical-only v3 profiles, PUBLIC text and shared
 graph caps. QF-0001/0002 is reviewed and integrated. V3 contracts, the internal
 compiler, core derived computation and the
 [observed XML adapter](../evidence/qf34-derived-projection.md) are now reviewed;
-full Java828 passes. V3 remains unavailable pending independent typed/final-target
-recomputation, physical-only profile/history and hosted qualification. The latest
-retained compiler OCI image predates the engine/XML changes; see progress.md.
+full Java828 passes. The [typed/final-target integration](../evidence/qf34-derived-target.md)
+now passes combined Java894 with actual XML and complete contributor comparison.
+V3 remains unavailable pending physical-only profile/history and hosted qualification.
+The latest retained `71e3040` correction OCI image predates the target/capability
+changes; see progress.md.
 No Q feedback may be uploaded to GitHub without publication authorization.
 
 The latest independent review adds a confirmed retained-origin consistency defect
@@ -37,9 +39,11 @@ and an inspection UI/API capability wording inconsistency. The
 [origin fix](../evidence/derived-retained-origin-fix.md) now has actual RED3/GREEN,
 independent review/guard mutations and full Java850 on 864156a plus the fixed pair.
 Preserve current XML/root work; do not reset to the reviewed 5fa6695 snapshot.
-Typed-target preparation is reviewed in isolated archives; physical assembly and
-complete final comparison are active WIP. Explicitly align inspection UI availability
-and configured API admission next, preserving current read-operation and owner gates.
+Typed preparation, physical assembly and complete final comparison are reviewed.
+The [inspection clarification](../evidence/inspection-capability-clarification.md)
+uses explicit UI/API configuration fields while preserving operation and owner
+gates. Frontend40/schema32 and full Java894 pass; revised-container/browser checks
+remain pending. Physical-only v3 profiles are the next active implementation slice.
 The review environment's supervisor failures remain separately scoped and unresolved
 individually; local Java21.0.12 socket/child-start controls and supervisor168 pass.
 

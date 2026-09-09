@@ -19,8 +19,9 @@ inspection credentials; see [HTTP integration](docs/evidence/d06b2-integration.m
 The hosted browser now supports definition save/publication, plan creation,
 inspection status/recovery and Raw/Formatted document comparison. Its first
 [browser slice](docs/evidence/d08a-hosted-workspace.md) is verified with a mock
-observation port. Production inspection capability remains disabled pending
-qualification; profile/edit/export/readback UI remains unfinished. See
+observation port. The inspection UI remains disabled pending qualification;
+explicitly configured hosted inspection APIs enforce ownership, destination and
+read-operation checks independently. Profile/edit/export/readback UI remains unfinished. See
 [workspace and structural integration](docs/evidence/d01c-d06a-integration.md),
 [observation evidence](docs/evidence/d04a-integration.md) and
 [profile evidence](docs/evidence/d05a-integration.md).
