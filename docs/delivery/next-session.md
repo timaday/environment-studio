@@ -18,6 +18,12 @@ The previous push-review blocker is historical: the remote now matches the check
 
 ## Current 9 September continuation
 
+The [private native connection candidate](../evidence/d07c3-privacy-connection.md)
+is independently reviewed and integrated after the Java launch owner. Preserve
+its final nine-file author manifest and eight unchanged source/test files.
+Latest-base full Java713 and three independent native adverse controls passed;
+production coordinator/JNI, image/root/ancestry checks and admission remain next.
+
 Read-only remote verification now confirms `dbb457ab408d808aced8bb3176e4677277629975`
 following an external push; root did not retry the earlier rejected push. The
 existing [CI run 34360507393](https://github.com/timaday/environment-studio/actions/runs/34360507393)

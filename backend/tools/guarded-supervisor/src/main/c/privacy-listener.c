@@ -167,6 +167,7 @@ es_listener_result es_listener_borrow(es_listener *p,uint64_t token,int *fd){
 es_listener_cleanup es_listener_close_peer(es_listener *p,uint64_t token){
  es_listener_slot *slot=find_slot(p,token);if(!slot)return ES_LISTENER_CLOSE_INVALID;
  if(slot->state==2)return slot->cleanup;
+ if(slot->state==3){p->cleanup=ES_LISTENER_CLOSED_INCONCLUSIVE;fail(p,ES_LISTENER_FAILED);return ES_LISTENER_CLOSED_INCONCLUSIVE;}
  slot->cleanup=close_fd(p,&slot->fd)?ES_LISTENER_CLOSED_COMPLETE:ES_LISTENER_CLOSED_INCONCLUSIVE;
  slot->state=2;p->live--;if(slot->cleanup==ES_LISTENER_CLOSED_INCONCLUSIVE)fail(p,ES_LISTENER_FAILED);return slot->cleanup;
 }
@@ -190,4 +191,30 @@ es_listener_cleanup es_listener_close(es_listener *p,uint64_t deadline){
   else p->directory_created=0;
  }
  close_fd(p,&p->directory_fd);wipe(p->path,sizeof(p->path));wipe(p->parent_path,sizeof(p->parent_path));wipe(p->directory_name,sizeof(p->directory_name));p->state=3;return p->cleanup;
+}
+es_listener_result es_listener_take(es_listener *p,uint64_t token,int *out){
+ /* Never wipe an output alias that is itself part of the current owner. */
+ if(p&&out&&(uintptr_t)out>=(uintptr_t)p&&(uintptr_t)out-(uintptr_t)p<sizeof(*p))return ES_LISTENER_INVALID;
+ if(out)*out=-1;
+ if(!p||!p->state||!out)return ES_LISTENER_INVALID;
+ es_listener_slot *slot=find_slot(p,token);if(!slot||slot->state!=1||slot->fd<0)return ES_LISTENER_INVALID;
+ es_listener_result r=guard(p,NULL);if(r)return fail(p,r);
+ if(!namespace_matches(p))return fail(p,ES_LISTENER_IDENTITY);
+ for(unsigned i=0;i<p->accepted;i++)if(p->peers[i].state==3)return ES_LISTENER_CAPACITY;
+ int fd=slot->fd;slot->fd=-1;slot->state=3;slot->transferred=1;*out=fd;
+ return ES_LISTENER_OK;
+}
+es_listener_result es_listener_transfer_live(es_listener *p,uint64_t token){
+ es_listener_slot *slot=find_slot(p,token);if(!slot||slot->state!=3)return ES_LISTENER_INVALID;
+ es_listener_result r=guard(p,NULL);if(r)return fail(p,r);
+ return namespace_matches(p)?ES_LISTENER_OK:fail(p,ES_LISTENER_IDENTITY);
+}
+es_listener_cleanup es_listener_finish_transfer(es_listener *p,uint64_t token,es_listener_cleanup outcome){
+ es_listener_slot *slot=find_slot(p,token);
+ if(!slot||!slot->transferred||(outcome!=ES_LISTENER_CLOSED_COMPLETE&&outcome!=ES_LISTENER_CLOSED_INCONCLUSIVE))return ES_LISTENER_CLOSE_INVALID;
+ if(slot->state==2)return slot->cleanup;
+ if(slot->state!=3||!p->live)return ES_LISTENER_CLOSE_INVALID;
+ slot->cleanup=outcome;slot->state=2;p->live--;
+ if(outcome==ES_LISTENER_CLOSED_INCONCLUSIVE){p->cleanup=outcome;fail(p,ES_LISTENER_FAILED);}
+ return outcome;
 }

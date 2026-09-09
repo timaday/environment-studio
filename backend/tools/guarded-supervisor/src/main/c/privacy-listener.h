@@ -11,7 +11,7 @@ typedef enum { ES_LISTENER_OK=0,ES_LISTENER_ACCEPTED=1,
  ES_LISTENER_IO=8,ES_LISTENER_FAILED=9 } es_listener_result;
 typedef enum { ES_LISTENER_CLOSED_COMPLETE=0,
  ES_LISTENER_CLOSED_INCONCLUSIVE=1,ES_LISTENER_CLOSE_INVALID=2 } es_listener_cleanup;
-typedef struct {int fd;unsigned state;es_listener_cleanup cleanup;} es_listener_slot;
+typedef struct {int fd;unsigned state,transferred;es_listener_cleanup cleanup;} es_listener_slot;
 typedef struct {
  unsigned state,width,live,accepted;uint32_t generation;
  int parent_fd,cancel_fd,directory_fd,socket_path_fd,listen_fd;
@@ -54,6 +54,19 @@ es_listener_result es_listener_path(es_listener *,char out[ES_LISTENER_PATH_BYTE
 es_listener_result es_listener_accept(es_listener *,uint64_t *token);
 es_listener_result es_listener_borrow(es_listener *,uint64_t token,int *fd);
 es_listener_cleanup es_listener_close_peer(es_listener *,uint64_t token);
+/* Native-only transfer to the single active connection owner. Output storage
+   must not alias this listener. Successful take moves fd to *owned_fd and clears
+   the listener FD slot; token/capacity remain outstanding until finish_transfer.
+   A second transfer, stale token or another active transfer refuses. No raw FD
+   may cross JNI. Borrow/close_peer cannot act on a transferred descriptor.
+   Listener close preserves outstanding transfer uncertainty and never closes a
+   transferred number; receiver must still close and settle its original token.
+   finish_transfer accepts only the trusted recipient's actual close outcome;
+   it cannot erase earlier listener uncertainty. Repeat settlement preserves its
+   tombstone. These calls share the listener's single serialized native owner. */
+es_listener_result es_listener_take(es_listener *,uint64_t token,int *owned_fd);
+es_listener_result es_listener_transfer_live(es_listener *,uint64_t token);
+es_listener_cleanup es_listener_finish_transfer(es_listener *,uint64_t token,es_listener_cleanup);
 /* Close has its own already-running absolute cleanup deadline. First close fixes
    <=10s remaining; subsequent calls cannot renew it. Expired/invalid allowance
    still attempts bounded descriptor shutdown and stays INCONCLUSIVE. Cancellation

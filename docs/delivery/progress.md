@@ -4,6 +4,12 @@ Updated: 9 September 2026. See [starter evidence](../evidence/starter-verificati
 and [D01a integration](../evidence/d01a-integration.md) for actual commands and
 results; the table below reports capability, not test count.
 
+The [private native connection owner](../evidence/d07c3-privacy-connection.md)
+is independently reviewed and passes the latest 713-case Java integration plus
+three additional actual native refusal/cleanup controls. Accepted-socket transfer
+retains listener capacity until real receiver close. PREPARE is only a private
+prerequisite; coordinator/JNI/admission and native-client qualification remain open.
+
 Latest exact-source OCI/browser artifact is `c4a324636d4aeaa20012349e68cce7eb2b025f8b`.
 Reviewed observed context and response/session recovery are integrated; the
 [exact-source artifact refresh](../evidence/d06b4-artifacts.md) passed Java683,

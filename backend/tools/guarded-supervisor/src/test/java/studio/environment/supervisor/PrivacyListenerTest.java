@@ -44,5 +44,8 @@ class PrivacyListenerTest {
     @Test void fullPathBoundaryAndInvalidAdmissionsAreExplicit() throws Exception {for(String mode:List.of("maximum-path","invalid","bad-parent-mode","symlink-parent"))check(mode);}
     @Test void realQueueSaturationDoesNotIncreaseAcceptedOwnerBound() throws Exception {check("saturation");}
     @Test void closedTokensAndMaximumLaunchAcceptsRemainBounded() throws Exception {check("generations");}
+    @Test void transferredSocketRetainsCapacityAndCannotBeClosedByListener() throws Exception {for(String mode:List.of("transfer","transfer-close"))check(mode);}
+    @Test void transferredCapacityAndSingleActiveHandshakeCannotBeBypassed() throws Exception {for(String mode:List.of("transfer-capacity","transfer-one-active"))check(mode);}
+    @Test void transferAliasesAndFalseSettlementsPreserveActualOwnership() throws Exception {for(String mode:List.of("transfer-alias","transfer-invalid-settlement","transfer-early-close"))check(mode);}
     @AfterAll static void cleanup() throws Exception {if(probe!=null)Files.deleteIfExists(probe);if(scratch!=null)Files.deleteIfExists(scratch);}
 }

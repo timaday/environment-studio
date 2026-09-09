@@ -55,7 +55,7 @@ int main(int argc,char **argv){
  uint64_t deadline=now()+1000000000ULL;
  if(!strcmp(argv[1],"deadline"))deadline=now()-1;
  if(!strcmp(mode,"umask"))umask(0777);
- es_listener_result result=es_listener_open(&listener,parent,parent_path,cancel,deadline,1);
+ es_listener_result result=es_listener_open(&listener,parent,parent_path,cancel,deadline,!strcmp(mode,"transfer-one-active")?2:1);
  if(!strcmp(mode,"unsupported")){CHECK(result==ES_LISTENER_PLATFORM);CHECK(es_listener_close(&listener,now()+1000000000ULL)==ES_LISTENER_CLOSED_COMPLETE);return 0;}
  if(!strcmp(argv[1],"deadline")){CHECK(result==ES_LISTENER_DEADLINE);CHECK(es_listener_close(&listener,now()+1000000000ULL)==ES_LISTENER_CLOSED_COMPLETE);return 0;}
  CHECK(result==ES_LISTENER_OK);
@@ -83,6 +83,37 @@ int main(int argc,char **argv){
  }
  client=socket(AF_UNIX,SOCK_STREAM|SOCK_CLOEXEC,0);CHECK(client>=0);struct sockaddr_un address={.sun_family=AF_UNIX};memcpy(address.sun_path,path,strlen(path)+1);CHECK(!connect(client,(struct sockaddr*)&address,sizeof(address)));
  uint64_t token=0;CHECK(es_listener_accept(&listener,&token)==ES_LISTENER_ACCEPTED&&token!=0);int fd=-1;CHECK(es_listener_borrow(&listener,token,&fd)==ES_LISTENER_OK);CHECK(fd>=0&&(fcntl(fd,F_GETFD)&FD_CLOEXEC)&&(fcntl(fd,F_GETFL)&O_NONBLOCK));
+ if(!strcmp(mode,"transfer-alias")){
+  CHECK(es_listener_take(&listener,token,&listener.peers[0].fd)==ES_LISTENER_INVALID&&listener.peers[0].fd==fd);
+  CHECK(es_listener_take(&listener,token,&listener.cancel_fd)==ES_LISTENER_INVALID&&listener.cancel_fd==cancel);
+  CHECK(es_listener_take(&listener,token,NULL)==ES_LISTENER_INVALID);CHECK(fcntl(fd,F_GETFD)>=0);
+ }
+ if(!strcmp(mode,"transfer-one-active")){
+  int second=socket(AF_UNIX,SOCK_STREAM|SOCK_CLOEXEC,0);CHECK(second>=0&&!connect(second,(struct sockaddr*)&address,sizeof(address)));
+  uint64_t second_token;CHECK(es_listener_accept(&listener,&second_token)==ES_LISTENER_ACCEPTED);
+  int owned=-1,other=-1;CHECK(es_listener_take(&listener,token,&owned)==ES_LISTENER_OK);
+  CHECK(es_listener_take(&listener,second_token,&other)==ES_LISTENER_CAPACITY&&other==-1&&listener.live==2);
+  CHECK(es_listener_borrow(&listener,second_token,&other)==ES_LISTENER_OK&&fcntl(other,F_GETFD)>=0);
+  CHECK(!close(owned));CHECK(es_listener_finish_transfer(&listener,token,ES_LISTENER_CLOSED_COMPLETE)==ES_LISTENER_CLOSED_COMPLETE);
+  CHECK(es_listener_take(&listener,second_token,&owned)==ES_LISTENER_OK&&listener.live==1);CHECK(!close(owned));
+  CHECK(es_listener_finish_transfer(&listener,second_token,ES_LISTENER_CLOSED_COMPLETE)==ES_LISTENER_CLOSED_COMPLETE&&listener.live==0);
+  CHECK(!close(second));CHECK(es_listener_close(&listener,now()+1000000000ULL)==ES_LISTENER_CLOSED_COMPLETE);return 0;
+ }
+ if(!strcmp(mode,"transfer")||!strcmp(mode,"transfer-close")||!strcmp(mode,"transfer-capacity")||!strcmp(mode,"transfer-early-close")||!strcmp(mode,"transfer-invalid-settlement")){
+  int owned=-1;CHECK(es_listener_take(&listener,token,&owned)==ES_LISTENER_OK&&owned==fd);CHECK(listener.live==1&&listener.peers[(uint32_t)token-1].fd==-1);
+  int ignored=99;CHECK(es_listener_borrow(&listener,token,&ignored)==ES_LISTENER_INVALID&&ignored==-1);
+  CHECK(es_listener_take(&listener,token,&ignored)==ES_LISTENER_INVALID&&ignored==-1);CHECK(fcntl(owned,F_GETFD)>=0);
+  if(!strcmp(mode,"transfer-close")){CHECK(es_listener_close(&listener,now()+1000000000ULL)==ES_LISTENER_CLOSED_INCONCLUSIVE);CHECK(fcntl(owned,F_GETFD)>=0);}
+  if(!strcmp(mode,"transfer-capacity")){uint64_t extra=99;CHECK(es_listener_accept(&listener,&extra)==ES_LISTENER_CAPACITY&&extra==0&&listener.live==1);}
+  if(!strcmp(mode,"transfer-early-close")){CHECK(es_listener_close_peer(&listener,token)==ES_LISTENER_CLOSED_INCONCLUSIVE&&fcntl(owned,F_GETFD)>=0&&listener.live==1);}
+  if(!strcmp(mode,"transfer-invalid-settlement")){
+   CHECK(es_listener_finish_transfer(&listener,token,ES_LISTENER_CLOSE_INVALID)==ES_LISTENER_CLOSE_INVALID&&listener.live==1);
+   CHECK(es_listener_finish_transfer(&listener,token^(1ULL<<32),ES_LISTENER_CLOSED_COMPLETE)==ES_LISTENER_CLOSE_INVALID&&fcntl(owned,F_GETFD)>=0);
+  }
+  CHECK(!close(owned));CHECK(es_listener_finish_transfer(&listener,token,ES_LISTENER_CLOSED_COMPLETE)==ES_LISTENER_CLOSED_COMPLETE);CHECK(listener.live==0);
+  CHECK(es_listener_finish_transfer(&listener,token,ES_LISTENER_CLOSED_COMPLETE)==ES_LISTENER_CLOSED_COMPLETE);
+  CHECK(es_listener_close(&listener,now()+1000000000ULL)==((!strcmp(mode,"transfer-close")||!strcmp(mode,"transfer-early-close"))?ES_LISTENER_CLOSED_INCONCLUSIVE:ES_LISTENER_CLOSED_COMPLETE));return 0;
+ }
  if(!strcmp(mode,"capacity")){uint64_t extra=99;CHECK(es_listener_accept(&listener,&extra)==ES_LISTENER_CAPACITY&&extra==0);}
  CHECK(es_listener_close_peer(&listener,token)==ES_LISTENER_CLOSED_COMPLETE);CHECK(es_listener_close_peer(&listener,token)==ES_LISTENER_CLOSED_COMPLETE);
  if(!strcmp(mode,"close-uncertain")){
