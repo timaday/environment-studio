@@ -7,6 +7,7 @@
 #include <sys/random.h>
 #include <time.h>
 #include <unistd.h>
+#include "privacy-image.h"
 #define NS10 10000000000ULL
 #define MAGIC 0x4c415531U
 static void wipe(void *v,size_t n){volatile unsigned char *p=v;while(n--)*p++=0;}
@@ -64,6 +65,7 @@ static void settle(es_launch *p){
  unsigned bad=0;
  if(p->connection.state&&es_connection_close(&p->connection,cleanup_clock(p))!=ES_CONNECTION_CLOSED_COMPLETE)bad=1;
  if(p->root.state&&es_root_close(&p->root,cleanup_clock(p))!=ES_ROOT_CLOSED_COMPLETE)bad=1;
+ if(p->hash.state&&es_hash_close(&p->hash)!=ES_HASH_OK)bad=1;
  if(p->listener.state&&es_listener_close(&p->listener,cleanup_clock(p))!=ES_LISTENER_CLOSED_COMPLETE)bad=1;
  pthread_mutex_lock(&p->mutex);int fd=p->cancel_fd;p->cancel_fd=-1;pthread_mutex_unlock(&p->mutex);
  if(fd>=0&&close(fd))bad=1;
@@ -232,6 +234,84 @@ es_launch_result es_launch_maps(es_launch *p,es_maps_snapshot *out){
  result=maps_result(es_maps_sample(&p->connection.peer,out));
  pthread_mutex_lock(&p->mutex);p->root_active=0;
  if(result==ES_LAUNCH_CLEANUP)p->inconclusive=1;
+ if(!result)result=guard(p);
+ if(result)wipe(out,sizeof(*out));
+ return leave(p,result);
+}
+
+static es_launch_result image_hash_result(es_hash_result r){
+ switch(r){
+ case ES_HASH_OK:return ES_LAUNCH_OK;case ES_HASH_INVALID:return ES_LAUNCH_INVALID;
+ case ES_HASH_PLATFORM:return ES_LAUNCH_PLATFORM;case ES_HASH_CANCELLED:return ES_LAUNCH_CANCELLED;
+ case ES_HASH_DEADLINE:return ES_LAUNCH_DEADLINE;case ES_HASH_RESOURCE:return ES_LAUNCH_RESOURCE;
+ case ES_HASH_FILE:return ES_LAUNCH_IDENTITY;case ES_HASH_CLEANUP:return ES_LAUNCH_CLEANUP;
+ default:return ES_LAUNCH_IO;}
+}
+static es_launch_result image_file_result(es_file_result r){
+ switch(r){
+ case ES_FILE_OK:return ES_LAUNCH_OK;case ES_FILE_INVALID:return ES_LAUNCH_INVALID;
+ case ES_FILE_PLATFORM:return ES_LAUNCH_PLATFORM;case ES_FILE_CANCELLED:return ES_LAUNCH_CANCELLED;
+ case ES_FILE_DEADLINE:return ES_LAUNCH_DEADLINE;case ES_FILE_TRUST:return ES_LAUNCH_IDENTITY;
+ case ES_FILE_CLEANUP:return ES_LAUNCH_CLEANUP;default:return ES_LAUNCH_IO;}
+}
+static es_launch_result image_result(es_image_result r){
+ switch(r){
+ case ES_IMAGE_OK:return ES_LAUNCH_OK;case ES_IMAGE_INVALID:return ES_LAUNCH_INVALID;
+ case ES_IMAGE_PLATFORM:return ES_LAUNCH_PLATFORM;case ES_IMAGE_CANCELLED:return ES_LAUNCH_CANCELLED;
+ case ES_IMAGE_DEADLINE:return ES_LAUNCH_DEADLINE;case ES_IMAGE_IDENTITY:return ES_LAUNCH_IDENTITY;
+ case ES_IMAGE_RESOURCE:return ES_LAUNCH_RESOURCE;case ES_IMAGE_CLEANUP:return ES_LAUNCH_CLEANUP;
+ default:return ES_LAUNCH_IO;}
+}
+static es_launch_result image_elf_result(es_elf_result r){
+ switch(r){
+ case ES_ELF_OK:return ES_LAUNCH_OK;case ES_ELF_INVALID:return ES_LAUNCH_INVALID;
+ case ES_ELF_PLATFORM:return ES_LAUNCH_PLATFORM;case ES_ELF_CANCELLED:return ES_LAUNCH_CANCELLED;
+ case ES_ELF_DEADLINE:return ES_LAUNCH_DEADLINE;case ES_ELF_IDENTITY:return ES_LAUNCH_IDENTITY;
+ case ES_ELF_RESOURCE:return ES_LAUNCH_RESOURCE;case ES_ELF_CLEANUP:return ES_LAUNCH_CLEANUP;
+ case ES_ELF_FORMAT:return ES_LAUNCH_PROTOCOL;default:return ES_LAUNCH_IO;}
+}
+static es_launch_result image_peer_result(es_peer_result r){
+ switch(r){
+ case ES_PEER_OK:return ES_LAUNCH_OK;case ES_PEER_INVALID:return ES_LAUNCH_INVALID;
+ case ES_PEER_UNSUPPORTED:return ES_LAUNCH_PLATFORM;case ES_PEER_CANCELLED:return ES_LAUNCH_CANCELLED;
+ case ES_PEER_DEADLINE:return ES_LAUNCH_DEADLINE;case ES_PEER_IDENTITY:case ES_PEER_DEAD:return ES_LAUNCH_IDENTITY;
+ case ES_PEER_CLEANUP:return ES_LAUNCH_CLEANUP;default:return ES_LAUNCH_IO;}
+}
+es_launch_result es_launch_image(es_launch *p,const es_launch_image_record *record,es_elf_layout *out){
+ if(!out)return ES_LAUNCH_INVALID;
+ if((p&&overlaps(p,sizeof(*p),out,sizeof(*out)))||(record&&overlaps(record,sizeof(*record),out,sizeof(*out))))return ES_LAUNCH_INVALID;
+ wipe(out,sizeof(*out));
+ if(!valid(p)||!record||overlaps(p,sizeof(*p),record,sizeof(*record))||!record->path_length||record->path_length>4095
+    ||record->path[record->path_length]||memchr(record->path,0,record->path_length))return ES_LAUNCH_INVALID;
+ pthread_mutex_lock(&p->mutex);++p->users;es_launch_result result=guard(p);
+ if(result)return leave(p,result);
+ if(!p->receiver_bound||!pthread_equal(p->receiver,pthread_self())||p->image_entered||p->phase!=ES_LAUNCH_PHASE_CORRELATED
+    ||!p->disarm_done||p->root_active||p->disarm_active)return leave(p,ES_LAUNCH_PROTOCOL);
+ p->image_entered=1;p->root_active=1;
+ if(p->connection.peer.cancel_fd!=p->cancel_fd||p->connection.peer.deadline_ns!=p->startup_deadline){p->root_active=0;return leave(p,ES_LAUNCH_INVALID);}
+ pthread_mutex_unlock(&p->mutex);
+ es_launch_image_record selected={0};selected.path_length=record->path_length;
+ memcpy(selected.path,record->path,selected.path_length);memcpy(selected.expected_sha256,record->expected_sha256,32);
+ es_file file={0};es_hash_identity image={0};es_peer_identity identity={0};unsigned uncertain=0;
+ result=image_hash_result(es_hash_open(&p->hash,p->cancel_fd,p->startup_deadline));
+ if(!result)result=image_file_result(es_file_open(&file,p->cancel_fd,p->startup_deadline,(const char*)selected.path,selected.path_length));
+ if(!result)result=image_result(es_image_check(&p->connection.peer,&file,&p->hash,selected.expected_sha256,&image));
+ if(!result)result=image_elf_result(es_elf_check(&file,&p->hash,selected.expected_sha256,out));
+ if(!result){unsigned interpreter=0,dynamic=0;
+  for(unsigned i=0;i<out->phnum;i++){
+   if(out->programs[i].type==3){interpreter++;if(!out->programs[i].filesz)result=ES_LAUNCH_PROTOCOL;}
+   if(out->programs[i].type==2){dynamic++;if(!out->programs[i].filesz)result=ES_LAUNCH_PROTOCOL;}
+  }
+  if(interpreter!=1||dynamic!=1)result=ES_LAUNCH_PROTOCOL;
+ }
+ if(result==ES_LAUNCH_CLEANUP)uncertain=1;
+ if(file.state){es_file_result closed=es_file_close(&file);if(closed==ES_FILE_CLEANUP||file.cleanup==ES_FILE_CLEANUP){uncertain=1;if(!result)result=ES_LAUNCH_CLEANUP;}}
+ es_launch_result live_result=image_peer_result(es_peer_read(&p->connection.peer,&identity));
+ if(live_result==ES_LAUNCH_CLEANUP)uncertain=1;
+ if(!result)result=live_result;
+ if(p->hash.cleanup==ES_HASH_CLEANUP||p->hash.terminal==ES_HASH_CLEANUP)uncertain=1;
+ wipe(&selected,sizeof(selected));wipe(&image,sizeof(image));wipe(&identity,sizeof(identity));wipe(&file,sizeof(file));
+ pthread_mutex_lock(&p->mutex);p->root_active=0;p->inconclusive|=uncertain;
  if(!result)result=guard(p);
  if(result)wipe(out,sizeof(*out));
  return leave(p,result);

@@ -1156,3 +1156,8 @@ All existing namespace, kernel pin, frame, close-once, output wiping and origina
 The next private receiver-owned prerequisite is specified in
 [privacy-maps-v1](privacy-maps-v1.md). It extends the existing launch owner
 without granting image, loader, privacy or client admission.
+
+The following [owned executable inspection](privacy-owned-image-v1.md) composes
+existing file/image/ELF primitives under the same launch and hash ownership. It
+adds structural executable evidence only; loader and runtime admission remain
+unqualified.

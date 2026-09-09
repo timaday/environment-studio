@@ -40,6 +40,9 @@ passes. Runtime registration remains unfinished.
 The [native maps sampler](docs/evidence/d07c3-privacy-maps.md) now retains complete
 bounded mapping evidence under the launch owner. Equal samples do not establish
 mapped byte identity; production JNI and client admission remain unqualified.
+The [launch-owned executable inspection](docs/evidence/d07c3-privacy-owned-image.md)
+now joins trusted-file, executable association and structural ELF checks under
+one original hash/cleanup owner. Mapped bytes and loader closure remain required.
 The [shared v3 views](docs/evidence/qf34-shared-views.md) now present physical
 bindings/locations and computed contributors under the original plan owner,
 with fresh full proof checks. Versioned HTTP and validation remain in progress.

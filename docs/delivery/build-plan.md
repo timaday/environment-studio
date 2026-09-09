@@ -79,6 +79,10 @@ composition and combined retained-proof resources remain required. The
 complete-stream, shared-retry and descriptor-reuse review. Combined Java1275
 passes; production JNI, mapped byte identity, loader closure and native client
 qualification remain open.
+The [launch-owned executable inspection](../evidence/d07c3-privacy-owned-image.md)
+now joins trusted-file/image/ELF checks under the original startup and hash owner;
+independent dynamic/static and held-cleanup controls and combined Java1304 pass. Mapped byte identity,
+loader closure, production JNI and native client qualification remain required.
 The [shared controlled v3 views](../evidence/qf34-shared-views.md) pass independent
 physical-origin and contributor-role review. Combined Java1294 with native maps
 passes; shared v3 validation and versioned HTTP are the next backend work.

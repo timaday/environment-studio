@@ -1,6 +1,6 @@
 # Handoff and capability status
 
-Updated: 9 September 2026. See [starter evidence](../evidence/starter-verification.md)
+Updated: 10 September 2026. See [starter evidence](../evidence/starter-verification.md)
 and [D01a integration](../evidence/d01a-integration.md) for actual commands and
 results; the table below reports capability, not test count.
 
@@ -87,6 +87,12 @@ review: complete bounded streams, original controls, opaque labels, once-only
 receiver ownership and persistent launch cleanup uncertainty. Four new independent
 families pass alongside the existing native launch/JNI cases. Combined Java1275
 passes; production JNI, mapped bytes/loader closure and client admission stay open.
+The [launch-owned executable inspection](../evidence/d07c3-privacy-owned-image.md)
+passes independent dynamic ET_EXEC/PIE, static PIE refusal and held hash-cleanup
+review. Trusted-file/image/ELF work shares the original startup scope, one hash
+budget and the existing cleanup owner. Combined Java1304 passes. This supplies
+structural executable evidence; mapped bytes, loader closure and client
+qualification remain open.
 The [shared controlled v3 views](../evidence/qf34-shared-views.md) pass independent
 physical-origin, admission-isolation and same-field contributor review. Physical
 bindings/locations and typed computed pages preserve complete totals, exact roles,
