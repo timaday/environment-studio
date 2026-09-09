@@ -19,15 +19,19 @@ computed results, full provenance, shared bounds and physical-only profiles;
 32 schema checks and independent digest controls pass. The
 [reviewed internal Java v3 compiler](../evidence/qf34-v3-compilation.md) now rejects
 invalid declarations and produces matching v3 digests; every valid result remains
-incomplete. Full Java781 passes. The separate derived engine and its complete
-contributor/target/profile integrations are next; v3 availability remains disabled.
+incomplete. The [reviewed internal derived engine](../evidence/qf34-derived-engine.md)
+now computes exact groups, memberships, co-occurrences and complete contributor
+proofs with shared limits and explicit UNKNOWN/refusal. Full Java813 passes.
+Actual XML-backed input, independent target materialization/reprojection and
+profile/hosted integrations are next; v3 availability remains disabled.
 No Q feedback GitHub publication is authorized. Existing MVP scope and completed
 work remain in place.
 
 Current retained internal v3 compiler image:
 `sha256:2379b3001e2afe9592eeed4f7c15056309d7989732bcacc7da672714680218ca`.
 Its exact build passes Java781, frontend34/schema32 and protected container smoke;
-the candidate manifest and supervisor ZIP identity are recorded in the compiler
+it predates the subsequent internal derived engine.
+The candidate manifest and supervisor ZIP identity are recorded in the compiler
 evidence. It is local only; the earlier c4a3246 image below remains the latest
 candidate with hosted HTTPS/OIDC browser evidence. The preceding child-candidate
 image remains recorded in QF-0001/0002 evidence.

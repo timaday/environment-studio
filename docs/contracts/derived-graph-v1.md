@@ -143,6 +143,40 @@ and lifecycle qualification before being advertised as an available workload.
 
 ## Required independent evidence
 
+The first implementation boundary is an internal computation port over a complete
+physical input supplied by an adapter. It is not an HTTP DTO, publication result
+or permission to trust caller-created graph records. The port receives expected
+snapshot pins separately from supplied input pins: opaque transient revision token,
+logical digest, binding ID/digest and the complete document-to-source-digest map.
+It checks equality and the selected checked definition. Tokens and hashes confer
+no owner, database or export authority. Observed source inventory, qualified field
+selection and physical validation are adapter prerequisites; typed input additionally
+requires complete explicit physical topology/decisions. Those adapters and their
+live revision/owner checks require separate qualification before runtime availability.
+
+The internal physical input contains actual entity and edge lists, never claimed
+counts. Every entity has a separate Observed reference (physical key and origin)
+or Target reference (Existing/Fresh), and explicit source-field states Present,
+Absent or Unresolved. One input uses one reference kind. A Present field carries
+its exact text and a separate observed-location or target-decision proof. Observed
+proof identifies the value attribute and, for a child locator, the selected child
+name, parent index and discriminator attribute. Attribute pins include document,
+source digest, owner element index, expanded/qualified name, decoded value,
+UTF-16 value span and quote. Core checks pin consistency; only the XML adapter
+can establish that those spans and selectors actually belong to the source.
+Target proof retains the explicit typed decision and observed evidence for KeepObserved;
+fresh/Entered values have no fabricated XML pin. Required source-field states
+may not be omitted; absence is explicit. Unresolved observed input is invalid;
+unresolved target input produces incomplete computation without a graph.
+
+Core groups and checks only eligible derivation inputs after the complete input
+boundary checks. Other physical rules retain their independently validated result.
+Every physical entity/edge still contributes to shared capacity. A Complete result
+contains the computed partition, all contributors and explicit count/cardinality
+outcomes; failed rules cannot authorize a target. No first internal implementation
+may advertise the still-unimplemented adapters, typed materialization comparison,
+hosted views, profile/history or export as qualified.
+
 Exercise the decision record's invented tuples, plus directional/self edges,
 optional absence on each side, last-contributor deletion, whitespace and Unicode
 ordering/equality. Use independent expected node, edge and complete contributor
