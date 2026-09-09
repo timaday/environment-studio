@@ -85,7 +85,10 @@ independent dynamic/static and held-cleanup controls and combined Java1304 pass.
 loader closure, production JNI and native client qualification remain required.
 The [shared controlled v3 views](../evidence/qf34-shared-views.md) pass independent
 physical-origin and contributor-role review. Combined Java1294 with native maps
-passes; shared v3 validation and versioned HTTP are the next backend work.
+passes. [Shared v3 validation](../evidence/qf34-shared-validation.md) now passes
+independent policy/origin review and combined Java1320. It retains UNKNOWN checks,
+fresh publication/full XML verification and a separate v3 identity. Versioned
+publication and plan HTTP are the next backend work; export remains unavailable.
 
 The lead owns shared contracts and compatibility. Independent fixed-candidate
 review, actual RED/GREEN, targeted guard mutations and integrated verification

@@ -97,7 +97,17 @@ The [shared controlled v3 views](../evidence/qf34-shared-views.md) pass independ
 physical-origin, admission-isolation and same-field contributor review. Physical
 bindings/locations and typed computed pages preserve complete totals, exact roles,
 masking and final provenance. Combined Java1294 with native maps passes;
-shared v3 validation and versioned HTTP remain required before availability.
+versioned HTTP remains required before availability.
+The [shared v3 validation](../evidence/qf34-shared-validation.md) passes independent
+policy-substitution and original-origin review. All ten checks, complete physical/
+computed rules and a separate v3 fingerprint retain fresh publication and XML
+authority. Missing target remains UNKNOWN; export stays unavailable. Combined
+Java1320 passes, including the reviewed native owner. The same candidate passes
+actual shared inspection/reuse/command/view/validation workflows on both owned
+TLS mock database engines with unchanged state and complete successful cleanup;
+test-only publication witnesses confer no admission. Versioned publication/plan
+HTTP, actual client/content/review evidence and combined resource qualification
+remain open.
 No Q feedback GitHub publication is authorized. Existing MVP scope and completed
 work remain in place.
 

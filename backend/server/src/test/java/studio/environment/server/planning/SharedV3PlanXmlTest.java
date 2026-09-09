@@ -22,6 +22,7 @@ class SharedV3PlanXmlTest {
     String xml=XML;
     Map<String,String> additionalXml=Map.of();
     PublishedProfile profile;
+    java.util.function.UnaryOperator<PublishedDefinition> definitionLookup=java.util.function.UnaryOperator.identity();
     static SharedV3PlanXmlTest with(studio.environment.core.definitionv3.NativeCompilationResult.Checked definition,String xml){var fixture=new SharedV3PlanXmlTest();fixture.model=new PlanDefinition.V3(definition);fixture.xml=xml;return fixture;}
     static Map<String,Object> evidence(){
         var identity=Map.of("systemIdentifier","731","databaseOid","19","databaseName","invented_db");
@@ -37,7 +38,7 @@ class SharedV3PlanXmlTest {
         var published=new PublishedDefinition(reference,"mock-published",model,List.of());
         var workspace=new Workspace(){
             public PublishedDefinition definition(Owner o,NativeCommand.Reference r){throw new AssertionError("VERSION_MUST_BE_EXPLICIT");}
-            public PublishedDefinition definitionV3(Owner o,NativeCommand.Reference r){assertEquals(lease.owner(),o);assertEquals(reference,r);return published;}
+            public PublishedDefinition definitionV3(Owner o,NativeCommand.Reference r){assertEquals(lease.owner(),o);assertEquals(reference,r);return definitionLookup.apply(published);}
             public PublishedProfile profile(Owner o,NativeCommand.Reference r,PublishedDefinition d){throw new AssertionError("V3_PROFILE_PORT_REQUIRED");}
             public PublishedProfile profileV3(Owner o,NativeCommand.Reference r,PublishedDefinition d){assertEquals(lease.owner(),o);assertEquals(published,d);assertNotNull(profile);assertEquals(profile.reference(),r);return profile;}
         };

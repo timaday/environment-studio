@@ -23,8 +23,7 @@ separate fingerprints and passes actual mock database/TLS and derived-projection
 checks; hosted v3 availability remains disabled.
 The [internal plan content adapter](docs/evidence/qf34-plan-content.md) now retains
 complete original and target proofs. The [shared internal v3 lifecycle](docs/evidence/qf34-shared-lifecycle.md)
-now joins creation, observation, target work and physical commands; runtime
-composition, profiles and validation remain in progress. The
+now joins creation, observation, target work and physical commands. The
 [shared v3 comparison](docs/evidence/qf34-shared-comparison.md) now verifies complete
 original/target proofs and rejects results invalidated by reinspection.
 [Shared v3 profile capture](docs/evidence/qf34-shared-capture.md) now returns bounded
@@ -45,7 +44,10 @@ now joins trusted-file, executable association and structural ELF checks under
 one original hash/cleanup owner. Mapped bytes and loader closure remain required.
 The [shared v3 views](docs/evidence/qf34-shared-views.md) now present physical
 bindings/locations and computed contributors under the original plan owner,
-with fresh full proof checks. Versioned HTTP and validation remain in progress.
+with fresh full proof checks. [Shared v3 validation](docs/evidence/qf34-shared-validation.md)
+now rechecks publication and complete XML proofs, preserves UNKNOWN evidence and
+uses a separate v3 fingerprint. Combined Java1320 passes; versioned HTTP and
+client/content/review qualification remain required before availability.
 Complete Oracle CLOB/PostgreSQL text observation, value-free profile composition
 and cross-document structural target materialization are implemented as reviewed
 internal mechanisms. The hosted plan service joins these mechanisms with session

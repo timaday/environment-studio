@@ -557,6 +557,22 @@ public final class HostedPlanService {
         }
         public Materialization materialize() {verify();var result=HostedPlanService.this.materialize(lease,planId,revision,this);verify();return result;}
         public Validation validation() {verify();var result=validate(lease,planId,revision);verify();return result;}
+        public V3Validation validationV3() {
+            return read((snapshot,control)->{
+                var context=guarded(lease,()->{
+                    check();inspected(pinned);
+                    if(!(snapshot.definition().model() instanceof PlanDefinition.V3))throw new PlanRefusal(UNSUPPORTED_DEFINITION);
+                    if(pinned.active!=null || pinned.rendering)throw new PlanRefusal(PLAN_BUSY);
+                    return new PlanValidationV3.Context(planId,pinned.destination.id(),List.copyOf(pinned.profiles));
+                });
+                var publication=workspace.definitionV3(lease.owner(),snapshot.definition().reference());
+                verify();
+                if(!snapshot.definition().equals(publication))throw new PlanRefusal(UNSUPPORTED_DEFINITION);
+                content.verifyV3(snapshot,snapshot.target().isPresent(),control);
+                verify();
+                return PlanValidationV3.evaluate(context,snapshot,control);
+            });
+        }
         public DocumentView document(boolean targetSide,String documentId,ViewMode mode,boolean disclosed) {
             if(!disclosed)throw new PlanRefusal(DISCLOSURE_REQUIRED);
             var snap=snapshot();
@@ -1080,6 +1096,19 @@ public final class HostedPlanService {
     public record Validation(String inputFingerprint,List<studio.environment.core.CheckResult> checks,
             Map<String,studio.environment.core.Outcome> applicationRules,boolean exportAvailable) {
         public Validation { checks=List.copyOf(checks); applicationRules=Map.copyOf(applicationRules); }
+    }
+    public record V3Validation(String inputFingerprint,List<studio.environment.core.CheckResult> checks,
+            Map<String,studio.environment.core.Outcome> applicationRules,
+            Optional<List<studio.environment.core.derived.DerivedResult.RuleCheck>> computedRules) {
+        public V3Validation { checks=List.copyOf(checks);applicationRules=Collections.unmodifiableMap(new TreeMap<>(applicationRules));computedRules=computedRules.map(List::copyOf); }
+        public boolean targetComplete(){return computedRules.isPresent();}
+        public boolean exportAvailable(){return false;}
+        @Override public String toString(){return "PlanValidationV3[redacted]";}
+    }
+    public V3Validation validateV3(SessionLedger.Lease lease,String planId,String revision) {
+        try(var admission=reserveView(lease,planId)) {
+            return admission.run(()->{admission.pin(revision);return admission.validationV3();});
+        }
     }
     public Validation validate(SessionLedger.Lease lease,String planId,String revision) {
         return guarded(lease,()-> {
