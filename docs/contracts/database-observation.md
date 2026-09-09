@@ -14,7 +14,7 @@ one server-configured destination. Requests select an allowlisted destination ID
 they cannot supply JDBC URLs, arbitrary driver properties, SQL, trust-all TLS or
 remote resolver options. The destination includes engine, exact host/port/database
 or service, verified TLS settings, independent expected database identity and the
-qualified adapter/account-policy version. Runtime configuration stays outside the
+qualified adapter/operation-policy version. Runtime configuration stays outside the
 checkout and image. Plaintext loopback endpoints are allowed only in an explicit
 disposable-test composition, never through a hosted request or production default.
 
@@ -70,114 +70,117 @@ source digests, declared document IDs, engine/storage versions and destination
 identity form immutable transient evidence. Sort semantic output by declared
 document ID; database collation does not define Java identity equality.
 
-## Visibility and read-only account evidence
+## Read-only operation policy — revision 2
 
-A successful SELECT, COUNT or JDBC `readOnly` flag cannot establish complete
-visibility or least privilege. Require the qualified account provisioning policy
-plus verifiable engine metadata. Refuse metadata denial, unsupported security
-features and incomplete evidence instead of interpreting them as empty results.
+Inspection and fresh readback accept ordinary write-capable accounts. Ownership,
+direct or column-level write grants, active role grants, grant options and unrelated
+write-capable routines are not account disqualifiers. Studio never changes external
+users, roles, grants, database settings or schema objects to make an account eligible.
+The separately authorized persistence of Studio workspace metadata is unaffected.
 
-PostgreSQL rejects enabled RLS/policies and unsupported relation kinds. Verify
-effective SELECT access and reject ownership, superuser/admin/replication/BYPASSRLS
-authority, reachable privileged roles and table/column write privileges, including
-role and PUBLIC grants. `row_security=off` supplies an additional refusal if a
-policy would filter rows; it does not bypass the policy. Qualification challenges
-column grants and reachable roles, not only direct table grants.
-The pinned pristine PostgreSQL policy permits exactly the vendor `PUBLIC`
-`SELECT` and `UPDATE` grants on `pg_catalog.pg_settings`, with no grant option or
-additional table/column grants. Verify the built-in view's owner/provenance and
-closed ACL before excluding that one UPDATE from the global write scan; missing
-or changed evidence refuses. This view changes the current session's settings
-under PostgreSQL's parameter permissions, and is never an eligible observation
-binding. It does not permit writes to managed data. Reject all other effective
-write/admin paths, including explicit privileged parameter grants. Vendor object
-integrity remains part of the identified provisioning policy.
+The guarantee is qualified, closed read operations under an enforced read-only
+transaction, complete metadata and source visibility, followed by rollback and
+confirmed closure. It is not account purity or a claim that arbitrary SQL, DDL,
+autonomous routines, or operations outside Studio could never write. A successful
+SELECT or JDBC readOnly hint alone proves none of these conditions. No write probe
+or provisioning statement is part of the runtime inspection/readback adapter.
 
-Oracle rejects applicable enabled VPD, label-security/redaction, fine-grained
-auditing (FGA), or other unqualified policy mechanisms. Before reading any bound
-source row, require complete `SYS.DBA_AUDIT_POLICIES` metadata and reject any
-enabled policy on the bound owner/table, including policies without a handler
-or with non-SELECT statement declarations. Do not evaluate policy conditions or
-infer that a handler is harmless. Unavailable catalog access is
-`METADATA_UNAVAILABLE`; a present enabled policy is `VISIBILITY_UNQUALIFIED`.
-Disabled policies do not authorize any other unsupported mechanism. Qualify
-clean-table success, enabled-policy refusal before source SELECT, denied catalog
-access and an independent handler canary. Account READ ONLY does not establish
-absence of external handler effects. Obtain the metadata needed to prove policy
-coverage using explicitly provisioned read-only grants. Absence in a restricted
-view is not proof of absence. Reject table ownership and effective object,
-column, schema or system write/admin privileges, including active roles/PUBLIC.
-`SESSION_PRIVS` alone is insufficient. The external provisioning policy must
-also exclude unqualified write-capable routines; arbitrary account purity cannot
-be inferred from a few catalog rows. The disposable harness provisions and
-adversely tests the exact supported policy, with no production qualification claim.
-The qualified Oracle policy requires an account-level **READ ONLY local PDB
-user**, verified through explicitly provisioned `DBA_USERS.READ_ONLY=YES` and
-`COMMON=NO` for the authenticated database user. The pinned 23.26.3 server lacks
-READ_ONLY in ALL_USERS; a restricted or unavailable metadata column must refuse,
-not trigger an alternate success path. Obtain a fresh physical connection after
-provisioning. A togglable session READ_ONLY parameter and a read-only transaction
-are not substitutes for the account restriction. Retain the read-only transaction
-and every visibility/completeness check in addition to the account requirement.
+Require `operationPolicyVersion` exactly `postgresql-read-operation-v1` or
+`oracle-read-operation-v1` for the matching engine, adapter `jdbc-observation-v2`,
+and fingerprint domain `ES-OBSERVATION-2`. Old `accountPolicyVersion` configuration,
+old policy identifiers and old observation evidence are not accepted or automatically
+translated. Reconfigure the external destination explicitly and obtain a fresh
+observation. Earlier account-policy and TLS qualification remains historical; it
+does not certify the changed operation policy or its complete statement sequence.
 
-Compare the complete independently captured pristine vendor PUBLIC object-grant
-baseline for the exact image, server patch and installed components. This includes
-EXECUTE, read and inherited write grants with grant options and common/inherited
-status; reject every difference. PUBLIC must be included explicitly, not inferred
-from SESSION_ROLES. Every baseline target requires vendor-maintained provenance
-and external assurance against replacement/customization. Owner SYS alone is
-insufficient. Resolve exact object identity/type through complete DBA_OBJECTS;
-TYPE=UNKNOWN requires exactly one valid target, never a guessed or skipped entry.
-For a USER target use complete DBA_USERS identity/provenance instead. Missing or
-ambiguous target metadata refuses, except the single pinned vendor grant on
-`SYS.PUBLIC` with type `USER` and privilege `INHERIT PRIVILEGES`. Oracle documents
-PUBLIC as a special intrinsic role absent from DBA_ROLES, and prohibits ordinary
-grants on user PUBLIC. This exact baseline entry uses provenance marker
-`PUBLIC_SPECIAL_ROLE`, not a fabricated ORACLE_MAINTAINED value. Require its exact
-grant metadata in the independently approved baseline; no other missing user or
-object receives this treatment. Do not grant the reader access to SYS.USER$ or
-interpret undocumented internal flags. Newly provisioned non-vendor users must not
-leave additional PUBLIC INHERIT PRIVILEGES grants outside the approved baseline.
-The disposable harness revokes that automatic grant only for its own mock users.
+### Closed execution boundary
 
-Outside that exact baseline, permit only session creation and required table and
-metadata reads without delegation. Reject ownership, additional EXECUTE, role or
-system administration, account-management privileges, and effective object,
-column, schema or PUBLIC write/admin paths even when account READ ONLY would
-block their use. Inherited vendor persistent-write grants are admitted only with
-the qualified account-mode enforcement, never through a blanket SYS/XDB exemption.
-The grant digest identifies permissions, not routine implementations. The adapter
-executes only closed qualified reads and invokes no uploaded expression, custom
-routine or arbitrary procedure. Account mode is not claimed to constrain arbitrary
-external network/file effects; those routines are not an application capability.
+Before opening a physical connection, validate the entire selected binding and all
+identifiers against the qualified identifier grammar. The JDBC boundary accepts a
+closed typed vocabulary of tool-owned control/metadata operations and narrowly
+constructed source/length/lock operations, not caller-provided SQL strings or an
+expression tree. Dynamic identifiers are validated and quoted; metadata values are
+bound parameters. A starts-with-SELECT check is insufficient. No uploaded predicates,
+expressions, routines, `SELECT FOR UPDATE`, DDL/DML, `SET ROLE`, mode reset, transaction
+restart, connection-property override or reconnect path is admitted. Cleanup may
+rollback and close only. Repeated setup after entering observation refuses.
 
-The baseline digest uses domain `ES-ORACLE-PUBLIC-GRANTS-2`, a zero byte, then the
-native v2 framed array of closed objects `{owner, objectName, objectType, privilege,
-grantable, common, inherited, oracleMaintained}`. Fields are exact catalog strings
-except the explicitly identified PUBLIC_SPECIAL_ROLE provenance marker above.
-Deduplicate and sort by that tuple using unsigned UTF-8 bytes. Exclude
-object bodies and subobjects when resolving the grant target. The independently
-provisioned expected digest is bound through
-`accountPolicyVersion = oracle-account-read-only-v2:<lowercase SHA-256>`.
-The reader never establishes its own expected baseline from current privileges.
+PostgreSQL establishes server-side `REPEATABLE READ READ ONLY` before observation,
+sets `search_path=pg_catalog` and `row_security=off`, and verifies all four effective
+settings with snapshot-free SHOW commands before the qualified table lock or
+metadata/source access; SELECT current_setting is not an equivalent ordering.
+Recheck before source transfer. Acquire the existing `ACCESS SHARE` lock before
+the first snapshot SELECT. Read identity, metadata and full inventory in that
+snapshot while holding the lock; release it only at rollback. Require effective
+table SELECT and schema USAGE; ownership and
+active inherited read grants satisfy these checks. Column-level write grants remain
+acceptable; column-only SELECT is not advertised as sufficient for the explicit
+lock. Refuse system-catalog/information-schema source bindings, nonordinary storage,
+RLS flags/policies, unsupported triggers and incomplete metadata regardless of any
+owner/BYPASSRLS privileges. No global role/write/delegation scan or pg_settings ACL
+baseline is needed: those operations are absent from the closed execution surface.
 
-`leastPrivilege=verified` means verified against this identified provisioning
-policy, including its vendor-software trust assumption and enforced account mode.
-Qualification must demonstrate managed-table DML denial in an ordinary transaction,
-plus denial of otherwise permitted vendor persistent writes, normal definer-rights
-writes and autonomous definer-rights writes. Each case needs a known-working
-READ WRITE control and independent unchanged-state readback for READ ONLY.
-Attempt self ALTER USER READ WRITE and disable the session READ_ONLY parameter,
-then repeat write attempts; neither may defeat account restrictions. These are
-qualification harness actions, never runtime adapter SQL. Retain grant-drift,
-visibility, canary and observed cancellation/cleanup adversaries.
+Oracle executes `SET TRANSACTION READ ONLY` as the first transaction statement.
+Refuse SYS explicitly, administrative authentication (`ISDBA`), proxy sessions and
+unsupported common/vendor identities before source access; the qualified identity
+is an ordinary local PDB user, with no account READ_ONLY requirement. SYS does not
+provide the required read consistency even after SET TRANSACTION READ ONLY. Qualify
+transaction setup and unchanged snapshot behavior on the actual pinned server;
+never invent an unavailable effective-mode metadata field or infer mode from account
+READ_ONLY. Any setup failure invalidates the operation.
 
-The actual pinned disposable server passed these account-control cases before
-this policy was selected. Vendor controls use zero-row DML to check statement
-authorization and enforcement; no actual vendor-row mutation is claimed.
-Blanket vendor-grant revocation is not the policy:
-the earlier experiment broke recursive vendor DDL and did not qualify an
-observation. Application connections perform no provisioning or mode changes.
+Oracle effective read access is ownership, or at least one legitimate SELECT/READ
+path through the authenticated user, PUBLIC or enabled SESSION_ROLES, or applicable
+active system/schema SELECT/READ ANY TABLE privilege. Duplicate direct/role READ and
+SELECT paths are valid. Inactive reachable roles do not supply effective access.
+Require complete relevant metadata; missing access never becomes an empty success.
+Missing effective read access returns READ_ACCESS_DENIED; unsupported authenticated
+identity returns IDENTITY_UNSUPPORTED. The retired ACCOUNT_NOT_READ_ONLY code is
+not emitted by this operation policy. Unknown operation policy is
+DESTINATION_UNQUALIFIED.
+Refuse vendor-maintained source owners/system objects instead of applying ordinary
+ANY TABLE semantics to dictionary objects. Qualify catalog/package references with
+SYS, including SYS.DBMS_LOB and SYS.DUAL, so an ordinary owner cannot shadow them.
+The closed catalog vocabulary uses trusted vendor routines only; installed vendor
+software integrity is an external trust assumption, not a grant-digest claim.
+
+### Visibility and read effects
+
+Retain the supported local base table/storage/key/encoding checks and complete source
+inventory. PostgreSQL RLS/policy refusal applies even when the current account owns
+the table or can bypass RLS. row_security=off adds refusal, not authorization.
+
+Oracle rejects applicable enabled VPD, label-security/redaction, fine-grained auditing
+(FGA), or other unqualified policy mechanisms before any bound source row or length
+is read. Require complete SYS.DBA_AUDIT_POLICIES metadata and reject any enabled
+policy on the bound owner/table, including policies without a handler or with
+non-SELECT statement declarations. Never evaluate conditions or infer harmlessness.
+Unavailable catalog access is METADATA_UNAVAILABLE; a present enabled policy is
+VISIBILITY_UNQUALIFIED. Restricted catalog absence is not proof of absence. Required
+metadata permissions may already exist or be supplied in the separate authorized
+external workflow; Studio performs no grant changes. The old complete vendor PUBLIC
+ACL digest and account-level READ_ONLY provisioning checks are retired: they do not
+prove the safety of the actual qualified read path. FGA/other read-effect barriers
+remain because an enabled handler may have effects outside an ordinary transaction.
+
+### Qualification of write-capable accounts
+
+Use independently invented disposable databases only. Observe meaningful RED/GREEN
+for table owners and accounts with direct, column-level and active role-inherited
+write grants; Oracle redundant direct/role SELECT/READ paths; and denied/inactive-only
+read paths. A separate READ WRITE control must actually change an invented managed
+row. Under the inspection transaction configuration ordinary managed-table DML must
+be rejected, and independent committed-state checks must show inspection preserved
+the complete original rows. Write controls are qualification harness operations only.
+Do not expect Oracle read-only transactions to block autonomous routines or every DDL
+commit effect; show those statements cannot reach the runtime JDBC boundary instead.
+
+Challenge owner-shadowed routines/catalog names, supplied SQL and malformed identifiers,
+mode setup failure/mismatch/reset, extra physical connection attempts, metadata denial,
+RLS/VPD/redaction/FGA, stale/missing/extra inventory, cancellation, timeout and cleanup
+failure. Record exact engines/drivers, expected statements and connection count.
+Credential/content canaries must be absent from logs, storage, URLs and diagnostic
+artifacts. Preserve destination/TLS controls; do not promote inconclusive cleanup.
 
 ## Bounds, cleanup and fingerprint
 
@@ -210,7 +213,7 @@ capacity before allocating another worker/connection. Inconclusive work retains
 its permit. Cancelling a Future is not evidence that driver or remote work ended.
 
 The observation fingerprint uses the native v2 framing algorithm with domain
-`ES-OBSERVATION-1`, a zero byte, then a closed object containing logical digest,
+`ES-OBSERVATION-2`, a zero byte, then a closed object containing logical digest,
 binding digest, engine/driver/storage/encoding versions, independent/observed
 destination identity, and all document IDs, typed keys, exact XML values and
 source digests in stable document-ID order. Exclude credentials and timestamps.
@@ -236,8 +239,9 @@ decimal strings and the PDB GUID uses 32 lowercase hexadecimal digits.
 invented observed peer certificate. Actual driver TLS/host verification is still
 required outside the explicit disposable loopback-test composition.
 
-`metadata` contains `adapterVersion`, `accountPolicyVersion`, `visibility`
-(`complete`), `leastPrivilege` (`verified`) and `snapshot`
+`metadata` contains `adapterVersion` (`jdbc-observation-v2`),
+`operationPolicyVersion` (the exact engine identifier above), `visibility`
+(`complete`), `readOnlyOperation` (`verified`) and `snapshot`
 (`repeatable-read-read-only` for PostgreSQL or `read-only` for Oracle).
 Only the adapter may assemble these successful facts after executing the checks.
 Each document contains `documentId`, `key: {type, value}`, exact `xml`, integer
@@ -251,14 +255,15 @@ binding ID and transient credentials/cancellation. Destination configuration is
 adapter-owned. Return a complete observation only with cleanup COMPLETE;
 otherwise return a typed refusal with cleanup COMPLETE or INCONCLUSIVE. No
 public caller can provide a compiler result, metadata PASS or destination witness.
-Read-only provisioning may grant the necessary identity/metadata reads explicitly,
+The external account must have the necessary identity/metadata read access,
 including PostgreSQL `pg_control_system` and Oracle `SYS.V_$DATABASE` /
 `SYS.V_$CONTAINERS`. The application never creates those grants itself.
 
 ## Acceptance and investigation
 
-Use the native v2 invented family on both disposable engines with a genuinely
-read-only account. Observe baseline/no-op fidelity, complete membership and
+Use the native v2 invented family on both disposable engines with ordinary
+write-capable accounts under the operation policy above. Observe baseline/no-op
+fidelity, complete membership and
 concurrent changes across one snapshot. Challenge missing/extra rows, denied
 metadata/SELECT, RLS/VPD-hidden rows, role/column write grants, wrong destination,
 null/empty values, multibyte CLOB streaming, exact size boundaries, stalled reads,

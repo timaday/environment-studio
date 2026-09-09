@@ -19,8 +19,10 @@ generic review findings may cross the repository boundary.
 
 Connection lifecycle: new operation → validate approved endpoint/options/TLS →
 request supported authentication → consistent read → close physical connection.
-JDBC readOnly is a hint, not authorization: qualify an actual least-privilege
-read-only account. No shared credential-bearing pool or reconnect loop. A timeout
+JDBC readOnly is a hint, not authorization: enforce the versioned closed
+[read-only operation policy](database-observation.md) on ordinary write-capable
+accounts. No external account/grant mutation makes a caller eligible. No shared
+credential-bearing pool or reconnect loop. A timeout
 with unconfirmed session cleanup is UNKNOWN. Minimize immutable String copies
 but do not claim guaranteed JVM/driver/OS memory erasure.
 

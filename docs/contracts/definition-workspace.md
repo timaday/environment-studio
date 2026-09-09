@@ -136,3 +136,7 @@ responses. The local filesystem evidence does not qualify actual HiveForge
 volume, backup or multi-replica behavior. Valid whole-workspace rollback cannot
 be detected without external freshness evidence; backup/restore and total-volume
 loss remain deployment responsibilities, never claimed locally proved.
+
+The [live commit-admission rule](native-workspace-v2.md#mutation-and-storage-integrity)
+also governs v1 saves: revoked/expired authority during request reading or
+compilation must persist no new revision or replay record.

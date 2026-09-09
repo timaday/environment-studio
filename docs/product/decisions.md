@@ -5,6 +5,7 @@
 | Environment Studio name and Midnight theme | User | Use approved SVG assets and shared tokens |
 | XML consistently stored across many records | User | Complete inventory and per-document lossless edits are fundamental |
 | Oracle and PostgreSQL | User | Separate adapters and qualification matrices; no silent storage conversion |
+| Read-only operations accept ordinary write-capable accounts | User correction, 2026-09-09 | Replace account-purity checks with versioned enforced read-only transactions and closed qualified reads; no external account/grant/schema changes for eligibility; old qualification does not certify this policy |
 | Java + React | User preference adopted | Java 21 core, Spring Boot adapter, TypeScript React UI |
 | Definitions do not know application concepts | Later user correction | Supersedes fixed server/service/webapp hierarchy in the Full Specification |
 | All or part of profiles reusable | Later user correction | Supersedes earlier full-profile-only MVP boundary |

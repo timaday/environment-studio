@@ -142,6 +142,23 @@ kind under an existing object ID conflicts. UUID object IDs share one catalog
 namespace and the 100-object owner quota across v1 definitions, v2 definitions
 and profiles.
 
+Workspace mutation authority is checked again at the durable commit boundary, not
+only before reading a request. Read/parse/compile, replay/revision checks and SQLite
+lock acquisition occur before final commit admission. Admission atomically verifies
+the exact original session lease and current idle/absolute expiry without renewing
+lifetime. If revocation/expiry wins admission, roll back and persist no new revision
+or replay record. This rule also applies to v1 definition saves.
+
+At most one commit may be in flight per lease. An admitted commit is ordered before a
+later revocation; logout cannot undo that transaction. Revocation immediately denies
+later commands, while the admitted commit and actual connection cleanup retain the
+lease's bounded capacity. Inconclusive completion quarantines it. Never hold the
+global session authority monitor across request reads, compilation, SQLite I/O or
+cleanup, and never interpret an interrupted thread as proof of rollback/close.
+SQLite lock deadlines do not guarantee a bound on operating-system commit I/O.
+A lost response retains original-command replay semantics; do not invent another
+request ID or claim a known outcome before the store establishes it.
+
 V2 command identity uses domain `ES-WORKSPACE-COMMAND-2`, a zero byte and native
 framing of the closed decoded command with `kind` added (`save-definition`,
 `publish-definition`, `save-profile`, `publish-profile`). Include all request

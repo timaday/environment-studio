@@ -1,13 +1,16 @@
 # Handoff and capability status
 
-Updated: 8 September 2026. See [starter evidence](../evidence/starter-verification.md)
+Updated: 9 September 2026. See [starter evidence](../evidence/starter-verification.md)
 and [D01a integration](../evidence/d01a-integration.md) for actual commands and
 results; the table below reports capability, not test count.
 
-Paused at Tim's request on 8 September after the reviewed `6336d3d` checkpoint.
-The main integration tree is committed; separate browser/native-runtime WIP is
-preserved for tomorrow. Use [the next-session handoff](next-session.md), including
-the exact remaining failing tests and stopped test-harness state.
+Work resumed from verified local and remote `8125e57127b1583664d368b97b82d08ec103fe5d`.
+Both saved D08a/D07c2 worktree manifests still match. The user's 9 September
+correction supersedes D04 account purity: ordinary write-capable accounts must
+work under the versioned closed read-operation policy. Its new contracts are
+reviewed; implementation and fresh qualification are in progress. Earlier database
+results are historical and do not certify the corrected policy. See
+[continuation evidence](../evidence/20260909-continuation.md).
 
 | Slice | State | Next evidence |
 | --- | --- | --- |
@@ -15,7 +18,7 @@ the exact remaining failing tests and stopped test-harness state.
 | D01 definitions | Native compilation, owned v2 upload/history and maintainer publication implemented and reviewed | Browser publication workflow and external application qualification |
 | D02 security/state | Hosted sessions, immutable workspace revisions and hosted plan/credential lifecycle reviewed | Browser integration; actual deployment durability/identity external |
 | D03 XML | Guarded spans, graph projection, corrected Fifth Edition parser and structural target assembly integrated | Hosted orchestration and guarded SQL/client qualification |
-| D04 database reads | Both engine adapters/hosted transport integrated; disposable matrices, shared permits and three JDBC TLS combinations passed | Browser inspection; external PKI/accounts/deployment qualification |
+| D04 database reads | Existing adapters/transport are integrated; corrected operation-policy implementation and qualification are in progress | Write-capable account matrix, closed statements, refreshed TLS/identity/cleanup evidence, browser inspection |
 | D05 profiles | Value-free capture, portable whole/partial composition, immutable persistence/publication and hosted views integrated | Browser capture/reuse workflow |
 | D06 planning | Hosted plans, revisions, HTTP lifecycle/commands/views and complete structural targets reviewed | Browser workflow, remaining UX data and full hosted heap/transfer qualification |
 | D07 SQL | Package/transaction mechanisms and separate unqualified supervisor integrated/reviewed; disposable rollback/guard matrices passed | Native runtime/console/TLS/commit qualification and hosted export authority |
@@ -33,8 +36,8 @@ the lead's integration harness received independent fixed-candidate review with
 no material findings. Integration and rework are recorded in D01a evidence;
 there is no serial comparison supporting a speed-up claim.
 
-Active work: connecting the hosted browser workflow, completing its remaining
-data contracts and qualifying the separate native runtime/console.
+Active work: correct D04 operation policy and the three reproduced review findings,
+then finish the hosted workflow and separate native runtime/console.
 Eleven inspection/composition view routes passed independent review, the combined
 450-test Java Docker build and protected smoke; see
 [view integration](../evidence/d06b3-integration.md).

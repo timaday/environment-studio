@@ -1,10 +1,10 @@
-# Hosted destination configuration — planned D06b2
+# Hosted destination configuration — operation policy revision 2
 
 This is trusted operator configuration, supplied outside the checkout and image.
 It connects [hosted plans](hosted-plans-v1.md) to the existing
 [read-only observation adapters](database-observation.md). A browser may select
 an authorized ID only. Configuration is neither a publication nor proof of
-database identity, least privilege, TLS or export readiness.
+database identity, read-only operation enforcement, TLS or export readiness.
 
 `studio.plans.destinations` is an ordered list of at most 32 closed entries.
 Bind properties strictly, following the existing workspace publisher boundary:
@@ -28,7 +28,7 @@ property spelling is equivalent to the listed Java names):
 | `transportIdentity` | 64 lowercase hex characters identifying independently approved endpoint/trust policy; not derived from the current connection |
 | `expectedPhysicalIdentity` | Exact closed engine-specific object below, obtained independently before inspection |
 | `provisioningPolicyVersion` | Nonempty tool-safe ASCII policy identifier, at most 256 characters; letters/digits and `.-:_` only |
-| `accountPolicyVersion` | Exact supported D04 policy identifier below |
+| `operationPolicyVersion` | Exact supported D04 policy identifier below |
 | `owners` | 1–64 exact `{issuer, subject}` pairs; no roles, wildcards or groups |
 
 Both owner strings are nonblank, valid scalar Unicode, without control characters.
@@ -48,11 +48,14 @@ Oracle identity is exactly `dbid`, `dbUniqueName`, `conId`, `conUid`, `conName`,
 pdbGuid is exactly 32 lowercase hex characters. All identity strings reject
 control characters. Extra/missing engine fields refuse, not infer another engine.
 
-PostgreSQL accountPolicyVersion is exactly `postgresql-read-only-v1`. Oracle is
-`oracle-account-read-only-v2:` followed by the independently approved pristine
-PUBLIC-grant baseline SHA-256 (64 lowercase hex characters). Configuration pins
-the expected policy; the adapter must still verify all actual evidence. Policy
-labels never replace the verifiable read-only account and visibility checks.
+`operationPolicyVersion` is exactly `postgresql-read-operation-v1` or
+`oracle-read-operation-v1` for the selected engine. Revision 2 replaces the retired
+`accountPolicyVersion` field and its identifiers. Reject old/unknown fields and
+policy values at startup; do not translate them or reuse old observation evidence.
+This is an explicit breaking external configuration revision, with no store migration.
+Configuration pins the required closed read-operation policy; the adapter verifies
+actual transaction, visibility, identity and cleanup evidence. It does not require
+an account without write privileges or a pristine vendor PUBLIC-grant digest.
 
 Hosted transport is fixed to VERIFIED_TLS: full certificate-chain and hostname
 validation, with no plaintext flag, arbitrary JDBC property bag, trust-all mode,

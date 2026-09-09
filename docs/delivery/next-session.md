@@ -1,9 +1,20 @@
-# Resume after the 8 September 2026 pause
+# Continuation from the 8 September 2026 pause
 
-Tim explicitly requested a pause until tomorrow. The overall implementation task
-is unfinished; this is a checkpoint, not completion or an external-blocker claim.
-Read [progress](progress.md) and the linked integration evidence before starting.
-Do not restart completed D01–D07 analysis or repeat unaffected qualification.
+Resumed on 9 September at the user's request. Local and remote checkpoint verified
+as `8125e57127b1583664d368b97b82d08ec103fe5d`; both WIP manifests below matched.
+The new user correction requires ordinary write-capable accounts under enforced
+read-only operations before further DB qualification. Read the revised
+[observation contract](../contracts/database-observation.md) and
+[continuation evidence](../evidence/20260909-continuation.md) before old harnesses.
+No old account-purity result qualifies this policy. The work remains active.
+
+The old disposable containers and RAM TLS material are absent after the pause;
+public runtime artifacts and both author worktrees remain available. Recreate
+independent disposable qualification resources when the corrected adapter is ready.
+Pinned tools were restored under `/home/tim/.tmp/es-toolchain-20260909`:
+`apache-maven-3.9.16/bin/mvn` and `node-v24.20.0-linux-x64/bin/node`, verified against
+official artifact checksums. Old `/tmp/es-lead-toolchain` paths no longer exist.
+The previous push-review blocker is historical: the remote now matches the checkpoint.
 
 ## Integrated checkpoint
 
