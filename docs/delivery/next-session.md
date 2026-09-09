@@ -18,6 +18,14 @@ The previous push-review blocker is historical: the remote now matches the check
 
 ## Current 9 September continuation
 
+Read-only remote verification now confirms `dbb457ab408d808aced8bb3176e4677277629975`
+following an external push; root did not retry the earlier rejected push. The
+existing [CI run 34360507393](https://github.com/timaday/environment-studio/actions/runs/34360507393)
+was dispatched for that exact revision and passed Java700, frontend34/schema24,
+protected/workspace smoke, separate supervisor artifact and two demo browser cases.
+See [artifact evidence](../evidence/d06b4-artifacts.md). Its feature-branch dispatch cannot publish
+GHCR. Older remote/checkpoint statements below retain their historical scope.
+
 Latest exact-source OCI/browser artifact: `c4a324636d4aeaa20012349e68cce7eb2b025f8b`. The
 [artifact refresh](../evidence/d06b4-artifacts.md) records Java683,
 frontend34/schema24, protected container/workspace smoke and four exact-source
@@ -29,9 +37,10 @@ frozen files. Memory investigation is external at
 unresolved fixtures and actual command-parser results, not the earlier typed-only
 eight-document probe as end-to-end scope evidence. The [heap investigation](../evidence/d06b5-heap-investigation.md) demonstrates
 1 GiB OOM on a legal draft and specific 6 GiB four-plan/validation/recovery passes.
-The one-CPU run spent substantial time in GC. Whole-process maximum scope and
-blocked transfers remain unqualified; no deployment allocation has yet been
-accepted. This work remains active.
+The one-CPU run spent substantial time in GC. Maximum combined scope remains
+unqualified; the newer [hosted HTTPS workload](../evidence/d06b8-hosted-heap.md)
+passed unread deadline/disconnect/logout recovery. No deployment allocation has
+yet been accepted. This work remains active.
 
 The [native Java launch owner](../evidence/d07c3-privacy-launch.md) is independently
 reviewed; the corrected exact three files pass Java700 on `d7894a3`. A cleanup
@@ -41,8 +50,10 @@ existing process-owner adoption and complete native admission remain next work.
 The exact c4a3246 hosted HTTP heap lab is external at
 `/home/tim/.tmp/es-hosted-heap-20260909`; do not confuse its mock observation with
 database qualification. Its independent reviewer identified a harness Docker-stop
-timeout that skips issuer cleanup; correct and recheck that failure path before
-accepting final harness evidence.
+timeout that skipped issuer cleanup; the corrected runner passed the independent
+failure control and the full retained HTTPS deadline/disconnect/logout workload.
+See [hosted heap evidence](../evidence/d06b8-hosted-heap.md). Remaining source/graph
+and observation-overlap qualification stays active; no allocation is approved.
 
 The [buffered request correction](../evidence/buffered-request-completion.md) is
 independently accepted and integrated after `21649ba`. Full combined Java590,

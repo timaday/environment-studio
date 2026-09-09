@@ -12,6 +12,14 @@ smoke. The reviewed native Java launch owner passes the later Java700 integratio
 its registry remains empty. Native primitives remain private prerequisites; whole-process heap/transfer qualification,
 remaining operator workflow and external publication/deployment remain unfinished.
 
+Remote update observed on 9 September: read-only `git ls-remote` now confirms
+`dbb457ab408d808aced8bb3176e4677277629975` on the implementation branch, following
+an external push. Root dispatched the existing [CI workflow run 34360507393](https://github.com/timaday/environment-studio/actions/runs/34360507393)
+for that exact revision; it passed Java700, frontend34/schema24, protected/workspace
+smoke, supervisor artifact and two demo browser cases. Feature-branch workflow dispatch
+does not publish GHCR images. The earlier automatic push rejection remains
+recorded; root did not retry or bypass it.
+
 Work resumed from verified local and remote `8125e57127b1583664d368b97b82d08ec103fe5d`.
 Both saved D08a/D07c2 worktree manifests still match. The user's 9 September
 correction supersedes D04 account purity: ordinary write-capable accounts must
@@ -132,10 +140,11 @@ Request only generic decisions through the Q handoff when needed. Do not mark
 `release-evidence.json` PASS by editing a
 status field alone; provide evidence files for the exact candidate context.
 
-Delivery tooling blocker: the authorized branch push was rejected by automatic
-approval review because the session requires approval while its approval setting
-is Never. Local commits and implementation continue; no GitHub upload, PR/CI or
-published-image evidence is claimed for these new slices.
+Earlier delivery tooling blocker: the authorized branch push was rejected by
+automatic approval review because approval was required while its setting was
+Never. The external push and exact-revision CI dispatch observed above supersede
+the old remote state. CI subsequently passed as recorded above; image publication
+and actual HiveForge qualification remain unfinished.
 
 The reviewed [D07c3 suppression primitive](../evidence/d07c3-privacy-controls.md)
 now supplies native dumpability/NO_NEW_PRIVS/TSYNC/reset controls with seven actual
@@ -243,6 +252,9 @@ is independently reviewed and integrated. Review reproduced a caller waiting pas
 a shortened cleanup deadline; the corrected owner observes the shared budget.
 Java700, actual FORK capture/POSIX_SPAWN refusal and seven killed guard mutants
 support this slice. Production JNI/coordinator and native-client admission remain
-unfinished. The actual hosted HTTP heap harness now exercises the exact c4a3246
-application with mock observation and independent workspace publication; its
-capacity results and adverse transfer combinations remain under investigation.
+unfinished. The [actual hosted HTTPS heap workload](../evidence/d06b8-hosted-heap.md)
+passes the exact c4a3246 application with mock observation and real workspace publication:
+four full unresolved drafts/64 MiB entered values, normal large responses and
+unread deadline/disconnect/logout recovery. Independent review corrected a harness
+cleanup fault and strengthened semantic witnesses. Source/graph/observation-overlap
+combinations remain under investigation; the allocation is not yet qualified.

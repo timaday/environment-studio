@@ -1,5 +1,10 @@
 # D06b5 — hosted heap investigation
 
+Later [hosted HTTPS evidence](d06b8-hosted-heap.md) extends the unresolved/entered
+workload through the actual c4a3246 application, with workspace publication,
+semantic response checks and successful unread deadline/disconnect/logout recovery.
+The application-only results below retain their original artifact and scope.
+
 The current 1 GiB Compose allocation cannot support one legal maximum-entity
 draft. Increasing the allocation to 6 GiB passed the specific four-plan,
 validation and revocation/reinspection workloads below. This is a candidate

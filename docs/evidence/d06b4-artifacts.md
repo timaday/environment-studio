@@ -1,5 +1,42 @@
 # D06b4 — image and hosted browser refresh
 
+## Remote CI at dbb457a
+
+Read-only `git ls-remote` confirmed the implementation branch at
+`dbb457ab408d808aced8bb3176e4677277629975` after an external push. Root dispatched
+the existing workflow for that exact revision; [run 34360507393](https://github.com/timaday/environment-studio/actions/runs/34360507393)
+completed successfully on 9 September. The earlier rejected automated push was
+not retried or bypassed.
+
+The remote quality job passed repository/content checks and all 11 Python tests,
+Java700 (core167/parser7/server387/supervisor139), frontend34/schema24, production
+build, supervisor assembly/checksums and hostile-environment launch. Protected
+container startup/static/health/demo denial and private workspace initialization,
+permissions, overwrite refusal and explicit offline schema2 upgrade checks passed.
+Its browser target passed **two demo keyboard/accessibility cases**. The four
+hosted HTTPS/OIDC role cases below retain their exact c4a3246 source scope; this CI
+result does not rerun those four hosted cases.
+
+The CI build reports application OCI manifest
+`sha256:052bae491a6b9f8b2f59d45cccfffbfbce818bb9799f21556ac93710487ccce0`
+and image config
+`sha256:09741af2f8bb0e47faf5d7fa31cdb258785fecc3000a89ad040bccfc0da8649c`.
+It loaded the image only into the CI runner. The publish job was skipped by the
+feature-branch condition; these are not GHCR publication or HiveForge evidence.
+The retained local application image remains the c4a3246 image recorded below.
+
+The separate supervisor candidate was uploaded as
+`guarded-supervisor-candidate-dbb457ab408d808aced8bb3176e4677277629975`,
+Actions artifact10107824136. Root downloaded the archive using `gh run download`
+and computed the inner ZIP SHA-256:
+`fd842dac1292b847183a2930ebda73e0c539c9b9dcf686a57ea78a2f8175abe9`.
+Local file:
+`/home/tim/.tmp/es-ci-dbb457a-artifacts-20260909/environment-studio-guarded-0.1.0-SNAPSHOT.zip`.
+The API's separate artifact-container digest is
+`sha256:92d499983f879157ce2a7c71a3c272af065ce32c8d39393a0fa3fd306eb6b3e0`;
+it is not the inner ZIP hash. Runtime registry remains empty.
+Downloaded CI log: `/home/tim/.tmp/es-ci-dbb457a-20260909.log`.
+
 ## Response recovery refresh at c4a3246
 
 Exact source: `c4a324636d4aeaa20012349e68cce7eb2b025f8b`, including the reviewed
