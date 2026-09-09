@@ -57,8 +57,11 @@ The [v3 draft/history HTTP routes](../evidence/qf34-workspace-http-v3.md) are no
 reviewed and integrated after input-I/O and stale-completion corrections. Full
 Java1024 and frontend40/schema36 pass, including seven actual mock-OIDC/socket
 cases. The exact9454d9f [image refresh](../evidence/workspace-http-v3-artifacts.md)
-passes Java1024, frontend40/schema36 and protected smoke. Remaining profile mutation,
-publication and plan integration are next; there is no v3 runtime enablement.
+passes Java1024, frontend40/schema36 and protected smoke. The
+[owned profile draft command](../evidence/qf34-profile-drafts-v3.md) is now reviewed
+and integrated with combined Java1053, six author mutants and three independent
+SQLite controls. Profile HTTP is isolated implementation work in progress; new
+publication and plan integration remain next. There is no v3 runtime enablement.
 The review environment's supervisor failures remain separately scoped and unresolved
 individually; local Java21.0.12 socket/child-start controls and supervisor168 pass.
 

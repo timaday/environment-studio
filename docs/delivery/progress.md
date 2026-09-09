@@ -39,8 +39,12 @@ The [v3 draft/history HTTP routes](../evidence/qf34-workspace-http-v3.md) are no
 reviewed and integrated: actual compiler/SQLite, original lease, bounded request
 and response ownership, and seven real mock-OIDC/socket cases pass. Independent
 review corrected checked input-I/O handling and stale completion settlement;
-combined Java1024 and frontend40/schema36 pass. V3 profile mutation, publication
-and plan integration remain next; v3 operational availability stays disabled.
+combined Java1024 and frontend40/schema36 pass. The
+[owned profile draft command](../evidence/qf34-profile-drafts-v3.md) now persists
+exact physical-only source against an immutable historical definition reference;
+independent capacity/expansion/continuity controls and combined Java1053 pass.
+Profile HTTP, new publication and plan integration remain next; v3 operational
+availability stays disabled.
 No Q feedback GitHub publication is authorized. Existing MVP scope and completed
 work remain in place.
 

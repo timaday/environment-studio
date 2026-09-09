@@ -4,8 +4,9 @@ This is the explicit versioned extension for [native definitions](native-definit
 and [physical-only profiles](profile-v3.md). Internal typed history and versioned
 digests are [implemented and reviewed](../evidence/qf34-history-v3.md).
 [Schema3 storage and definition drafts](workspace-storage-v3.md) are also
-implemented, with [draft/history HTTP](workspace-http-v3.md). Profile mutation,
-new publication and plan integration remain pending. Existing
+implemented, with [definition draft/history HTTP](workspace-http-v3.md) and
+[internal profile draft commands](profile-v3.md#owned-profile-draft-command).
+Profile HTTP, new publication and plan integration remain pending. Existing
 v1/v2 sources, routes, snapshots, digests and replay records retain their meaning.
 No v3 operation may be implemented by changing a v2 version field or accepting
 v3 through the v2 reader. Internal history support does not enable publication.

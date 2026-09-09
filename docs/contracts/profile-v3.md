@@ -2,8 +2,10 @@
 
 Status: internal validation, capture, import and composition are implemented for
 [native v3](native-definition-v3.md); see [profile evidence](../evidence/qf34-profile-v3.md).
-Persistence, publication and hosted composition remain unimplemented for this
-version. [Profile v2](profile-v2.md) and its historical bytes remain unchanged.
+Separate historical persistence is [implemented](native-workspace-v3.md).
+The [owned profile draft command](../evidence/qf34-profile-drafts-v3.md) is also
+implemented. Publication, profile HTTP and hosted composition remain subsequent
+work. [Profile v2](profile-v2.md) and its historical bytes remain unchanged.
 
 ## Closed portable shape and digest
 
@@ -131,3 +133,52 @@ Both discard results if cancellation is observed at their final boundary. Missin
 or changed source inventory/digests, stale revision and incomplete derived evidence
 refuse. Failed global rules may remain inspectable in a complete observation;
 they cannot authorize later target validation or export.
+
+## Owned profile draft command
+
+The internal application provides `V3ProfileWorkspace.saveProfile(owner,
+NativeCommand.SaveProfile)` with a narrow versioned compiler port. It consumes
+the already closed command fields, including exact source and the immutable
+`definition: {objectId, workspaceRevision}` reference. It adds no HTTP route,
+capture command, publication or plan authority. Definition draft handling stays
+separate. The shared schema3 store remains the only persistence boundary.
+
+Resolve successful exact command replay first, before definition lookup or
+compilation. Otherwise resolve the exact owned v3 definition revision, require
+its historical publication and empty historical diagnostics, and validate the
+profile against that pinned checked model using the actual v3 portable parser
+and physical validator. Historical publication permits this value-free draft
+validation only; it does not establish current publication or runtime readiness.
+The existing internal validator independently verifies the checked model and
+permits only its explicit MECHANISM_UNQUALIFIED blocker. No caller may submit
+a checked profile, compiler result, donor values or claimed computed membership.
+
+A successful save creates the next bounded immutable revision, preserving exact
+source/format, its source digest, `profile-compiler-v3`, schemaVersion3, checked
+physical profile/content digest and the exact definition reference. It has no
+publication record. A later draft on the definition object does not change the
+selected immutable publication. Incomplete or unpublished definition history
+refuses with safe publication diagnostics; missing/foreign/wrong-version
+references retain the store's404 behavior. Unsupported compiler/schema history
+refuses, and unsupported/tampered checked models cannot pass the actual validator.
+
+Byte refusal remains413 rather than a truncated profile or generic semantic
+success. Other profile validation diagnostics map to bounded safe422 without
+source/value text. The current portable reader and physical validator return one
+safe refusal diagnostic; their closed result types permit at most256. A future
+producer needing more than256 must signal typed TOO_LARGE before constructing
+that list, without truncation or an incidental constructor exception. A null
+compiler result refuses as unavailable. Every failure
+leaves revision/replay state unchanged. Existing object/kind/native-ID continuity,
+100 shared objects,32 revisions, workspace byte budgets, atomic stale-command
+checks and final original-lease commit admission apply without new defaults.
+
+Acceptance uses actual portable JSON/YAML import and private SQLite, with
+independently invented historical publications installed explicitly by the test
+harness. Those records exercise historical reference/replay semantics; they do
+not prove that the current compiler can publish. Demonstrate exact history and
+replay after later definition edits, restart, cross-owner/kind/version isolation,
+computed slot/edge/value rejection, wrong digest, byte limits, stale concurrent
+saves and commit revocation. Keep donor canaries out of stored profile bytes and
+incidental logging. Current v3 publication and operator capture/composition remain
+subsequent integrated work.
