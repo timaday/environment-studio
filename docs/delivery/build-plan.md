@@ -64,8 +64,10 @@ The [native argument prerequisite](../evidence/d07c3-privacy-arguments.md) is no
 independently reviewed with current-head Java985 and additional process controls.
 The [bounded file-hash prerequisite](../evidence/d07c3-privacy-hash.md) is now
 independently reviewed with combined Java1036; native resource/loader qualification
-remains open. Complete image/script/loader identity and coordinator/JNI before
-client admission. The exact9454d9f [HTTP artifact](../evidence/workspace-http-v3-artifacts.md)
+remains open. The [trusted-file opening prerequisite](../evidence/d07c3-privacy-file.md)
+now passes independent review, full Java1086 and nine actual guard mutants.
+Complete executable/script/loader identity and coordinator/JNI before client
+admission. The exact9454d9f [HTTP artifact](../evidence/workspace-http-v3-artifacts.md)
 passes Java1024, frontend40/schema36 and protected smoke; it predates hashing.
 
 ## Daily checkpoints

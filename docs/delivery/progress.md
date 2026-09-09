@@ -105,8 +105,11 @@ wiring remain open. The [bounded native file-hash prerequisite](../evidence/d07c
 is now independently reviewed and integrated; combined Java1036 passes. Exact
 limits, content oracles, eight mutants and72 independent serialized thread controls
 pass within the recorded scope. Complete native memory/loader/coordinator cleanup
-is unqualified. Trusted file opening is isolated work in progress before image
-association; no production native admission is enabled.
+is unqualified. The [trusted file-opening prerequisite](../evidence/d07c3-privacy-file.md)
+is now independently reviewed and integrated: full Java1086, actual4095-byte path
+and tmpfs controls, plus nine meaningful guard mutants pass. Exact executable
+association is isolated work in progress; script/loader closure and production
+native admission remain unfinished.
 
 Earlier exact-source OCI/browser artifact was `c4a324636d4aeaa20012349e68cce7eb2b025f8b`.
 Reviewed observed context and response/session recovery are integrated; the

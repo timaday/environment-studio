@@ -235,6 +235,57 @@ between checks. Tests use actual independently invented child execs plus narrow
 read/liveness/cancellation/cleanup faults; no credentials enter these processes.
 A stalled kernel syscall is not made interruptible by the startup deadline.
 
+## Private trusted file opening prerequisite
+
+Before image/script/loader association, `es_file_open` may open a tool-owned
+normalized absolute installation pathname into one native owner. This does not
+admit executable content or associate a file with a process. The compiled runtime
+will supply the pathname; it is not a new public configuration field or JNI path
+parameter. Existing Java external-file/package admission is unchanged.
+
+Use fresh zeroed stable noncopyable storage and caller-serialized operations.
+Borrow the original cancellation eventfd and absolute CLOCK_MONOTONIC startup
+deadline, with at most ten seconds remaining. Path bytes are strict UTF-8,
+1..4095 bytes excluding NUL; reject embedded NUL/CR/LF, relative paths, empty
+components, dot/dot-dot components and trailing slash before acquiring resources.
+Invalid caller inputs leave the owner unchanged. Keep the borrowed control
+descriptor open and stable until this owner closes.
+
+Traverse from a no-follow directory descriptor using single-component openat.
+Use CLOEXEC throughout and nonblocking final O_RDONLY/O_NOFOLLOW open, then verify
+the actual descriptor is a regular file. Before the final open, inspect the
+anchored no-follow entry to refuse a known FIFO/device/other-owner entry without
+opening it; recheck the opened descriptor and retain that single read handle.
+Do not check a pathname and reopen it
+for hashing. Each opened component must be on an admitted local Linux ext2/3/4,
+tmpfs or overlay filesystem and owned by root or the invoking UID, with matching
+real/effective UID. Group/other write authority refuses, except sticky directories
+whose next component is independently root/operator-owned. On these qualified
+Linux filesystem semantics, the POSIX ACL group mask also bounds named-user/group
+write authority. Unsupported filesystem/ownership evidence refuses. Set-ID final
+files or any security.capability attribute refuse; unavailable capability-xattr
+evidence is not absence. Intermediate and final symbolic links are never followed.
+
+Retain only the admitted file descriptor. At most two traversal descriptors are
+owned simultaneously and temporary path/metadata scratch is wiped. Check the
+original controls before/after traversal and metadata operations and before
+publishing the descriptor. Close every owned temporary descriptor once; cleanup
+uncertainty overrides an earlier refusal and cannot be retried. Failed initialized
+owners must still close; no reopen or second ownership transfer is allowed.
+`es_file_close` releases its retained descriptor once and preserves the established
+cleanup result. No cancellation descriptor is closed or drained. The private
+result set is OK, INVALID, PLATFORM, CANCELLED, DEADLINE, TRUST, IO and CLEANUP.
+
+On successful open the retained descriptor can be borrowed by `es_hash_file` under
+the same original launch controls and shared hash budgets. Neither primitive
+proves expected digest, current path association, immutable future contents,
+executable/script/loader membership or privacy. Concurrent root/same-operator
+installation mutation remains outside the existing trust boundary; filesystem
+syscalls are not made interruptible by the clock. Actual traversal, symbolic-link,
+sticky/permission/owner/privilege, FIFO/device, cancellation and close-uncertainty
+controls are required before integrating this prerequisite. Full native resource,
+runtime closure and production coordinator qualification remain separate work.
+
 ## Private bounded file hashing prerequisite
 
 The private native file-hash owner may measure one already-owned read-only regular
