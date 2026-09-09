@@ -22,13 +22,11 @@ import studio.environment.server.xml.XmlResult;
 public final class GraphProjectionAdapter {
     private static final int MAX_DOCUMENTS = 128;
     private static final long MAX_UTF8_BYTES = 16L * 1024 * 1024;
-    private static final Map<String, BigInteger> MECHANISMS = Map.of("native-compiler-v2", BigInteger.TWO,
-            "xml-path-v1", BigInteger.ONE, "xml-span-v1", BigInteger.ONE, "generic-graph-v1", BigInteger.ONE);
     private final LosslessXmlAdapter xml = new LosslessXmlAdapter();
     private final GraphValidator validator = new GraphValidator();
     public ProjectionResult project(ReadyToPublish definition, String bindingId, List<DocumentSource> documents) {
         if (definition == null || documents == null) return rejected("INVALID_INPUT", "", "");
-        if (!MECHANISMS.equals(definition.checked().mechanisms())) return rejected("UNSUPPORTED_MECHANISM", "", "");
+        if (!studio.environment.core.definitionv2.NativeMechanisms.matchesDependencies(definition.checked())) return rejected("UNSUPPORTED_MECHANISM", "", "");
         NativeDefinition.Binding binding = definition.checked().definition().bindings().stream()
                 .filter(candidate -> candidate.id().equals(bindingId)).findFirst().orElse(null);
         if (binding == null) return rejected("UNKNOWN_BINDING", "", "");
@@ -56,11 +54,14 @@ public final class GraphProjectionAdapter {
             XmlResult parsed = xml.project(entry.getValue().source());
             if (parsed instanceof XmlResult.Rejected refusal) return rejected(refusal.diagnostics().getFirst().code(), documentId, "");
             XmlDocument document = ((XmlResult.Accepted) parsed).document();
+            var locator=new FieldLocatorResolver(document);
             Map<List<XmlDocument.ExpandedName>, NativeDefinition.Projection> paths = new HashMap<>();
             for (var projection : declarations.get(documentId).entities()) {
                 List<XmlDocument.ExpandedName> path = projection.path().stream().map(GraphProjectionAdapter::name).toList();
                 if (paths.putIfAbsent(path, projection) != null) return rejected("AMBIGUOUS_PROJECTION", documentId, projection.id());
             }
+            var invalid=locator.validate(declarations.get(documentId));
+            if(invalid.isPresent())return rejected(invalid.orElseThrow().code(),documentId,"");
             for (var element : document.elements()) {
                 List<XmlDocument.ExpandedName> path = new ArrayList<>(element.ancestry().size() + 1);
                 element.ancestry().forEach(index -> path.add(document.elements().get(index).name())); path.add(element.name());
@@ -71,7 +72,9 @@ public final class GraphProjectionAdapter {
                 element.attributes().forEach(attribute -> attributes.put(attribute.name(), attribute.value()));
                 Map<String, String> fields = new TreeMap<>();
                 for (var mapping : projection.fields()) {
-                    String value = attributes.get(name(mapping.attribute())); if (value != null) fields.put(mapping.field(), value);
+                    var located=locator.resolve(element,mapping.locator());
+                    if(located instanceof FieldLocatorResolver.Refused refused)return rejected(refused.code(),documentId,projection.id());
+                    if(located instanceof FieldLocatorResolver.Located value)fields.put(mapping.field(),value.attribute().value());
                 }
                 Map<String, String> references = new TreeMap<>();
                 for (var mapping : projection.references()) {

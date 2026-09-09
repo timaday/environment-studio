@@ -4,12 +4,24 @@ Updated: 9 September 2026. See [starter evidence](../evidence/starter-verificati
 and [D01a integration](../evidence/d01a-integration.md) for actual commands and
 results; the table below reports capability, not test count.
 
-Amended Q work is active under [child-property-v1](../contracts/child-property-v1.md).
-QF-0001/0002 are one authorized capability extension; contracts and compatibility
-design are reviewed, runtime changes pending. Tim approved the separate
+The reviewed [QF-0001/0002 mapping extension](../evidence/qf12-child-property.md)
+is now integrated under [child-property-v1](../contracts/child-property-v1.md).
+Projection, scalar/structural changes, creation, views, whole/partial profile reuse,
+history and per-binding dependencies pass Java754 and independent guard controls.
+The exact candidate OCI build repeats Java754/frontend34/schema26 and passes
+protected startup/workspace smoke. Existing direct digests and historical bytes
+remain unchanged. A property child also declared as an entity remains incomplete
+when creation is enabled. New maximum-heap, native-client and complete hosted
+export qualification remain open. Tim approved the separate
 [derived semantics](../product/derived-graph-decision.md) for QF-0003/0004; closed
 v3 contracts and implementation remain next. No Q feedback GitHub publication is
 authorized. Existing MVP scope and completed work remain in place.
+
+Current retained child-candidate image:
+`sha256:cad649ef4cc03f1b54d3b7ffa6304a64dcf2acf126fed74d06b6e99dcc0de20f`.
+Its explicit candidate source manifest and supervisor ZIP identity are recorded
+in the QF evidence. It is local only; the earlier c4a3246 image below remains the
+latest candidate with hosted HTTPS/OIDC browser evidence.
 
 The [hosted heap evidence](../evidence/d06b8-hosted-heap.md) now includes reviewed
 complete source-byte, dense-field and full-graph workloads, plus four simultaneous

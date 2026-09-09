@@ -16,6 +16,7 @@ final class NativeSnapshotCodec {
         .streamReadConstraints(tools.jackson.core.StreamReadConstraints.builder().maxNestingDepth(64).maxTokenCount(200_000)
             .maxStringLength(1_048_576).maxNumberLength(1024).maxDocumentLength(2_097_152).build()).build())
         .addModule(new SimpleModule().addSerializer(BigInteger.class,ToStringSerializer.instance))
+        .addModule(NativeFieldMappingCodec.module())
         .enable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES).build();
     private static final com.networknt.schema.Schema DEFINITION_SHAPE=shape("definition-inspection-v2.schema.json");
     private static final com.networknt.schema.Schema PROFILE_SHAPE=shape("profile-inspection-v2.schema.json");
@@ -49,7 +50,7 @@ final class NativeSnapshotCodec {
             if(content instanceof NativeRevision.Definition d) {
                 if(!d.ready())new studio.environment.core.definitionv2.NativeCompilationResult.Incomplete(d.checked(),d.diagnostics());
                 if(!d.checked().logicalDigest().matches("[a-f0-9]{64}")||d.checked().bindingDigests().values().stream().anyMatch(v->!v.matches("[a-f0-9]{64}")))throw unavailable();
-                if(!d.checked().mechanisms().keySet().equals(Set.of("native-compiler-v2","xml-path-v1","xml-span-v1","generic-graph-v1"))
+                if(!d.checked().mechanisms().keySet().equals(studio.environment.core.definitionv2.NativeMechanisms.required(d.checked().definition()).keySet())
                     ||d.checked().mechanisms().values().stream().anyMatch(v->v==null||v.signum()<=0||v.toString().length()>1024))throw unavailable();
                 var ids=new HashSet<String>();d.checked().definition().bindings().forEach(b->ids.add(b.id()));if(!ids.equals(d.checked().bindingDigests().keySet()))throw unavailable();
             }

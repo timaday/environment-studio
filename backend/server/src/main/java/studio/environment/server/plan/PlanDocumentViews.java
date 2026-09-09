@@ -6,6 +6,7 @@ import studio.environment.core.plan.PlanRefusal;
 import studio.environment.core.plan.HostedPlanService;
 import studio.environment.core.plan.PlanBindings;
 import studio.environment.server.xml.*;
+import studio.environment.server.projection.FieldLocatorResolver;
 
 /** Display transformations use qualified attribute spans, never global replacement or writer authority. */
 final class PlanDocumentViews {
@@ -29,6 +30,8 @@ final class PlanDocumentViews {
         var xml=accepted.document();
         var binding=definition.compiled().checked().definition().bindings().stream().filter(item->item.id().equals(bindingId)).findFirst().orElseThrow();
         var declaration=binding.documents().stream().filter(document->document.id().equals(source.documentId())).findFirst().orElseThrow();
+        var locator=new FieldLocatorResolver(xml);
+        if(locator.validate(declaration).isPresent())throw new PlanRefusal(PlanRefusal.Code.PROJECTION_REFUSED);
         var types=new HashMap<String,studio.environment.core.definitionv2.NativeDefinition.EntityType>();
         definition.compiled().checked().definition().logical().entityTypes().forEach(type->types.put(type.id(),type));
         for(var element:xml.elements()) for(var projection:declaration.entities()) {
@@ -38,8 +41,10 @@ final class PlanDocumentViews {
             for(int index=0;index<path.size();index++) if(!path.get(index).namespaceUri().equals(projection.path().get(index).namespaceUri()) || !path.get(index).localName().equals(projection.path().get(index).localName())) { matches=false; break; }
             if(!matches) continue;
             var fields=new HashMap<String,studio.environment.core.definitionv2.NativeDefinition.Field>(); types.get(projection.type()).fields().forEach(field->fields.put(field.id(),field));
-            for(var mapping:projection.fields()) for(var attribute:element.attributes()) if(attribute.name().namespaceUri().equals(mapping.attribute().namespaceUri()) && attribute.name().localName().equals(mapping.attribute().localName())) {
-                if(!fields.get(mapping.field()).readable()) throw new PlanRefusal(PlanRefusal.Code.DISCLOSURE_REQUIRED);
+            for(var mapping:projection.fields()) {
+                var located=locator.resolve(element,mapping.locator());
+                if(located instanceof FieldLocatorResolver.Refused)throw new PlanRefusal(PlanRefusal.Code.PROJECTION_REFUSED);
+                if(located instanceof FieldLocatorResolver.Located && !fields.get(mapping.field()).readable())throw new PlanRefusal(PlanRefusal.Code.DISCLOSURE_REQUIRED);
             }
         }
         if(mode==ViewMode.RAW) return new DocumentView(source.documentId(),mode,source.xml(),true,false,true,List.of());

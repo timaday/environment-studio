@@ -20,12 +20,26 @@ final class PlanningXml {
     static final Comparator<String> UTF8 = (a, b) -> java.util.Arrays.compareUnsigned(a.getBytes(StandardCharsets.UTF_8), b.getBytes(StandardCharsets.UTF_8));
     static final Comparator<NativeDefinition.ExpandedName> NAMES = Comparator.comparing(NativeDefinition.ExpandedName::namespaceUri, UTF8).thenComparing(NativeDefinition.ExpandedName::localName, UTF8);
     private PlanningXml() { }
+    private record Group(NativeDefinition.ExpandedName element,NativeDefinition.ExpandedName discriminator,String value) { }
     static String create(NativeDefinition.Projection projection, ExpectedTarget.Entity entity, Map<String, String> references) {
         Map<NativeDefinition.ExpandedName, String> attributes = new TreeMap<>(NAMES);
-        projection.fields().forEach(mapping -> { if (entity.fields().containsKey(mapping.field())) attributes.put(mapping.attribute(), entity.fields().get(mapping.field())); });
-        projection.references().forEach(mapping -> { if (references.containsKey(mapping.relation())) attributes.put(mapping.attribute(), references.get(mapping.relation())); });
+        var groups=new TreeMap<Group,Map<NativeDefinition.ExpandedName,String>>(Comparator.comparing(Group::element,NAMES).thenComparing(Group::discriminator,NAMES).thenComparing(Group::value,UTF8));
+        for(var mapping:projection.fields()) {
+            if(!entity.fields().containsKey(mapping.field()))continue;
+            String value=entity.fields().get(mapping.field());
+            switch(mapping.locator()) {
+                case NativeDefinition.DirectAttribute direct -> put(attributes,direct.attribute(),value);
+                case NativeDefinition.ChildProperty child -> {
+                    var group=new Group(child.element(),child.discriminatorAttribute(),child.discriminatorValue());
+                    var values=groups.computeIfAbsent(group,k->{var map=new TreeMap<NativeDefinition.ExpandedName,String>(NAMES);map.put(k.discriminator(),k.value());return map;});
+                    put(values,child.valueAttribute(),value);
+                }
+            }
+        }
+        projection.references().forEach(mapping -> { if (references.containsKey(mapping.relation())) put(attributes,mapping.attribute(),references.get(mapping.relation())); });
         var name = projection.path().getLast();
         TreeSet<String> namespaces = new TreeSet<>(UTF8); namespaces.add(name.namespaceUri()); attributes.keySet().forEach(n -> namespaces.add(n.namespaceUri()));
+        groups.forEach((group,values)->{namespaces.add(group.element().namespaceUri());values.keySet().forEach(n->namespaces.add(n.namespaceUri()));});
         namespaces.remove(""); namespaces.remove(XML);
         Map<String, String> prefixes = new TreeMap<>(UTF8); int index = 0;
         for (String namespace : namespaces) prefixes.put(namespace, "ns" + index++);
@@ -33,8 +47,21 @@ final class PlanningXml {
         Bounded out = new Bounded(); out.add("<"); out.add(qualified(name, prefixes));
         if (name.namespaceUri().isEmpty()) out.add(" xmlns=\"\"");
         for (String namespace : namespaces) { out.add(" xmlns:"); out.add(prefixes.get(namespace)); out.add("=\""); escape(namespace, out); out.add("\""); }
-        for (var attribute : attributes.entrySet()) { out.add(" "); out.add(qualified(attribute.getKey(), prefixes)); out.add("=\""); escape(attribute.getValue(), out); out.add("\""); }
-        out.add("/>"); return out.value();
+        attributes(attributes,prefixes,out);
+        if(groups.isEmpty()) {out.add("/>");return out.value();}
+        out.add(">");
+        groups.forEach((group,values)->{
+            out.add("<");out.add(qualified(group.element(),prefixes));
+            if(group.element().namespaceUri().isEmpty())out.add(" xmlns=\"\"");
+            attributes(values,prefixes,out);out.add("/>");
+        });
+        out.add("</");out.add(qualified(name,prefixes));out.add(">");return out.value();
+    }
+    private static void put(Map<NativeDefinition.ExpandedName,String> attributes,NativeDefinition.ExpandedName name,String value) {
+        if(attributes.putIfAbsent(name,value)!=null)fail("ATTRIBUTE_ALIAS");
+    }
+    private static void attributes(Map<NativeDefinition.ExpandedName,String> attributes,Map<String,String> prefixes,Bounded out) {
+        for(var attribute:attributes.entrySet()) {out.add(" ");out.add(qualified(attribute.getKey(),prefixes));out.add("=\"");escape(attribute.getValue(),out);out.add("\"");}
     }
     private static String qualified(NativeDefinition.ExpandedName name, Map<String, String> prefixes) { return name.namespaceUri().isEmpty() ? name.localName() : prefixes.get(name.namespaceUri()) + ":" + name.localName(); }
     static List<NativeDefinition.ExpandedName> path(XmlDocument document, XmlDocument.ElementRef element) {

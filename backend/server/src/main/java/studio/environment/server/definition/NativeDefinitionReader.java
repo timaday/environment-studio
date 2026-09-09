@@ -36,8 +36,14 @@ final class NativeDefinitionReader {
                 text(binding, "schema"), text(binding, "table"), text(binding, "keyColumn"), text(binding, "xmlColumn"), enumeration(binding, "keyType", KeyType.class),
                 list(binding.get("documents"), document -> new Document(text(document, "id"), text(document, "key"),
                         list(document.get("entities"), projection -> new Projection(text(projection, "id"), text(projection, "type"), list(projection.get("path"), NativeDefinitionReader::name),
-                                list(projection.get("fields"), field -> new FieldMapping(text(field, "field"), name(field.get("attribute")))),
+                                list(projection.get("fields"), NativeDefinitionReader::field),
                                 list(projection.get("references"), reference -> new ReferenceMapping(text(reference, "relation"), name(reference.get("attribute")))))))));
+    }
+    private static FieldMapping field(JsonNode node) {
+        if (node.has("attribute")) return new FieldMapping(text(node, "field"), name(node.get("attribute")));
+        var child = node.get("childProperty");
+        return new FieldMapping(text(node, "field"), new ChildProperty(name(child.get("element")),
+                name(child.get("discriminatorAttribute")), text(child, "discriminatorValue"), name(child.get("valueAttribute"))));
     }
     private static ExpandedName name(JsonNode name) { return new ExpandedName(text(name, "namespaceUri"), text(name, "localName")); }
     private static String text(JsonNode node, String field) { return node.get(field).asString(); }

@@ -351,11 +351,104 @@
                                 "namespaceUri",
                                 "localName"
                               ]
+                            },
+                            "childProperty": {
+                              "type": "object",
+                              "additionalProperties": false,
+                              "properties": {
+                                "element": {
+                                  "type": "object",
+                                  "additionalProperties": false,
+                                  "properties": {
+                                    "namespaceUri": {
+                                      "type": "string",
+                                      "maxLength": 2048
+                                    },
+                                    "localName": {
+                                      "type": "string",
+                                      "minLength": 1,
+                                      "maxLength": 128,
+                                      "pattern": "^[A-Z_a-zÀ-ÖØ-öø-˿Ͱ-ͽͿ-῿‌-‍⁰-↏Ⰰ-⿯、-퟿豈-﷏ﷰ-�𐀀-󯿿][A-Z_a-zÀ-ÖØ-öø-˿Ͱ-ͽͿ-῿‌-‍⁰-↏Ⰰ-⿯、-퟿豈-﷏ﷰ-�𐀀-󯿿\\-.0-9·̀-ͯ‿-⁀]*$(?![\\s\\S])"
+                                    }
+                                  },
+                                  "required": [
+                                    "namespaceUri",
+                                    "localName"
+                                  ]
+                                },
+                                "discriminatorAttribute": {
+                                  "type": "object",
+                                  "additionalProperties": false,
+                                  "properties": {
+                                    "namespaceUri": {
+                                      "type": "string",
+                                      "maxLength": 2048
+                                    },
+                                    "localName": {
+                                      "type": "string",
+                                      "minLength": 1,
+                                      "maxLength": 128,
+                                      "pattern": "^[A-Z_a-zÀ-ÖØ-öø-˿Ͱ-ͽͿ-῿‌-‍⁰-↏Ⰰ-⿯、-퟿豈-﷏ﷰ-�𐀀-󯿿][A-Z_a-zÀ-ÖØ-öø-˿Ͱ-ͽͿ-῿‌-‍⁰-↏Ⰰ-⿯、-퟿豈-﷏ﷰ-�𐀀-󯿿\\-.0-9·̀-ͯ‿-⁀]*$(?![\\s\\S])"
+                                    }
+                                  },
+                                  "required": [
+                                    "namespaceUri",
+                                    "localName"
+                                  ]
+                                },
+                                "discriminatorValue": {
+                                  "type": "string",
+                                  "maxLength": 1048576
+                                },
+                                "valueAttribute": {
+                                  "type": "object",
+                                  "additionalProperties": false,
+                                  "properties": {
+                                    "namespaceUri": {
+                                      "type": "string",
+                                      "maxLength": 2048
+                                    },
+                                    "localName": {
+                                      "type": "string",
+                                      "minLength": 1,
+                                      "maxLength": 128,
+                                      "pattern": "^[A-Z_a-zÀ-ÖØ-öø-˿Ͱ-ͽͿ-῿‌-‍⁰-↏Ⰰ-⿯、-퟿豈-﷏ﷰ-�𐀀-󯿿][A-Z_a-zÀ-ÖØ-öø-˿Ͱ-ͽͿ-῿‌-‍⁰-↏Ⰰ-⿯、-퟿豈-﷏ﷰ-�𐀀-󯿿\\-.0-9·̀-ͯ‿-⁀]*$(?![\\s\\S])"
+                                    }
+                                  },
+                                  "required": [
+                                    "namespaceUri",
+                                    "localName"
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "element",
+                                "discriminatorAttribute",
+                                "discriminatorValue",
+                                "valueAttribute"
+                              ]
                             }
                           },
                           "required": [
-                            "field",
-                            "attribute"
+                            "field"
+                          ],
+                          "oneOf": [
+                            {
+                              "required": [
+                                "attribute"
+                              ],
+                              "properties": {
+                                "attribute": {}
+                              }
+                            },
+                            {
+                              "required": [
+                                "childProperty"
+                              ],
+                              "properties": {
+                                "childProperty": {}
+                              }
+                            }
                           ]
                         },
                         "minItems": 0

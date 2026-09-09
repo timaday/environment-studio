@@ -27,12 +27,19 @@ The projection has `kind` (`incomplete` or `ready-to-publish`), `model`,
 `logicalDigest`, `bindingDigests`, `mechanisms` and `diagnostics`. `model` follows
 native v2 property names and enum spelling, with all arbitrary-precision integers
 as canonical decimal strings. Binding digests are keyed by exact declared binding
-ID; mechanism names are the closed current registry and versions are canonical
+ID; mechanism names are the closed dependency vocabulary and versions are canonical
 positive decimal strings of at most 1024 digits. The response schema represents
 readable historical versions; only the current supported version set may publish.
 Diagnostics retain the existing safe phase/code/pointer/message shape. Historical
 reads and exact retries decode the stored typed projection; they never recompile
 it under a later compiler or derive a new readiness outcome.
+
+The base four dependency names remain required. `xml-child-property-v1` is present
+only when at least one binding declares that locator. Historical response shapes
+allow positive versions of this known name; current publication still checks the
+exact server-derived vector and supported versions. Existing direct snapshot bytes
+and publication digests remain unchanged. A saved incomplete child draft stays
+incomplete after server qualification until an explicit new save/recompile.
 
 `GET /api/v2/definitions`, current GET and `/revisions/{revision}` follow the
 v1 ownership, ordering, errors and immutable history semantics. The list envelope

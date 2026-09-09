@@ -53,6 +53,25 @@ public final class PackageAdmission {
             return new Result.Accepted(decodedExecution,decodedPayload,counts,payloadDigest,programDigest,execution,payload);
         }catch(PackageJson.Refusal refused){return new Result.Rejected(refused.code);}
     }
+    /** Internal definition-pin check, additional to mechanical inspection; never export authority. */
+    public Result readPinned(studio.environment.core.definitionv2.NativeCompilationResult.ReadyToPublish definition,
+            String bindingId, byte[] executionJson, byte[] payloadJson) {
+        if (definition == null || !studio.environment.core.definitionv2.NativeMechanisms.eligible(definition.checked()))
+            return new Result.Rejected("UNSUPPORTED_MECHANISM");
+        var binding = definition.checked().definition().bindings().stream().filter(b -> b.id().equals(bindingId)).findFirst();
+        if (binding.isEmpty()) return new Result.Rejected("UNKNOWN_BINDING");
+        var result = read(executionJson, payloadJson);
+        if (!(result instanceof Result.Accepted accepted)) return result;
+        var pins = accepted.execution().binding();
+        if (!pins.id().equals(bindingId) || !pins.logicalDigest().equals(definition.checked().logicalDigest())
+                || !pins.bindingDigest().equals(definition.checked().bindingDigests().get(bindingId)))
+            return new Result.Rejected("DEFINITION_BINDING_MISMATCH");
+        var required = new TreeMap<String, String>();
+        studio.environment.core.definitionv2.NativeMechanisms.required(binding.orElseThrow()).forEach((key, version) -> required.put(key, version.toString()));
+        required.put("structural-target-v1", "1"); required.put("plan-validation-v1", "1");
+        if (!required.equals(accepted.execution().versions().mechanisms())) return new Result.Rejected("MECHANISM_MISMATCH");
+        return accepted;
+    }
     JsonNode manifest(byte[] json) {
         var tree=PackageJson.parse(json,PackageJson.SMALL,8192);if(!manifestSchema.validate(tree).isEmpty())fail("SCHEMA_VIOLATION");return tree;
     }

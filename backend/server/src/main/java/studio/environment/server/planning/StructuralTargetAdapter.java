@@ -18,6 +18,7 @@ import studio.environment.core.planning.TargetCompilationResult;
 import studio.environment.core.planning.TargetIntent;
 import studio.environment.core.planning.TargetIntentCompiler;
 import studio.environment.server.projection.DocumentSource;
+import studio.environment.server.projection.FieldLocatorResolver;
 import studio.environment.server.projection.GraphProjectionAdapter;
 import studio.environment.server.projection.ProjectionResult;
 import studio.environment.server.xml.LosslessXmlAdapter;
@@ -214,7 +215,10 @@ public final class StructuralTargetAdapter {
             var placement = placements.get(ref); XmlAssembly.Fragment fragment;
             if (ref instanceof TargetIntent.Ref.Fresh fresh) {
                 var document = parsed(xml.project(PlanningXml.create(projections.get(placement.projectionId()), target.get(ref), references(ref))));
-                fragment = new XmlAssembly.Fragment(document, List.of(new XmlAssembly.Symbol.Created(fresh)));
+                var symbols=new ArrayList<XmlAssembly.Symbol>();
+                symbols.add(new XmlAssembly.Symbol.Created(fresh));
+                for(int i=1;i<document.elements().size();i++)symbols.add(new XmlAssembly.Symbol.CreatedChild(fresh,i));
+                fragment = new XmlAssembly.Fragment(document, symbols);
                 var nested = new XmlAssembly.Edits();
                 for (var child : placements.values()) if (child.parent() instanceof TargetPlacement.Parent.Created parent && parent.entity().equals(ref)) nested.add(XmlAssembly.Edit.insert(fragment.document().elements().getFirst(), fragment(child.entity(), path)));
                 fragment = assembly.apply(fragment, nested.values());
@@ -230,13 +234,13 @@ public final class StructuralTargetAdapter {
             path.remove(ref); return fragment;
         }
         private List<XmlAssembly.Edit> edits(XmlAssembly.Fragment source, String document, TargetIntent.Ref.Existing movedRoot, Set<TargetIntent.Ref> path) {
-            var edits = new XmlAssembly.Edits(); Map<XmlAssembly.Symbol, XmlDocument.ElementRef> elements = new HashMap<>();
+            var edits = new XmlAssembly.Edits(); var locator=new FieldLocatorResolver(source.document()); Map<XmlAssembly.Symbol, XmlDocument.ElementRef> elements = new HashMap<>();
             for (var element : source.document().elements()) elements.put(source.symbols().get(element.index()), element);
             for (var entity : expected.entities()) if (entity.reference() instanceof TargetIntent.Ref.Existing old) {
                 var origin = original.get(old).origin();
                 if (!origin.documentId().equals(document) || !java.util.Objects.equals(containingMove(document, element(old)), movedRoot)) continue;
                 var selected = elements.get(new XmlAssembly.Symbol.Original(document, origin.elementIndex())); if (selected == null) fail("ELEMENT_PROVENANCE_MISMATCH");
-                List<XmlEdit> replacements = new ArrayList<>(); scalarEdits(entity, selected, replacements); replacements.forEach(e -> edits.add(XmlAssembly.Edit.simple(e)));
+                List<XmlEdit> replacements = new ArrayList<>(); scalarEdits(entity, selected, locator, replacements); replacements.forEach(e -> edits.add(XmlAssembly.Edit.simple(e)));
             }
             Set<TargetIntent.Ref.Existing> removals = new HashSet<>(expected.removed()); if (movedRoot == null) removals.addAll(moves);
             List<TargetIntent.Ref.Existing> localRemovals = removals.stream().filter(r -> elements.containsKey(new XmlAssembly.Symbol.Original(original.get(r).origin().documentId(), original.get(r).origin().elementIndex()))).toList();
@@ -257,11 +261,18 @@ public final class StructuralTargetAdapter {
             for (var edge : expected.edges()) if (edge.source().equals(ref)) values.put(edge.relation(), target.get(edge.target()).identity().identity());
             return values;
         }
-        private void scalarEdits(ExpectedTarget.Entity entity, XmlDocument.ElementRef selected, List<XmlEdit> edits) {
+        private void scalarEdits(ExpectedTarget.Entity entity, XmlDocument.ElementRef selected, FieldLocatorResolver locator, List<XmlEdit> edits) {
             var old = (TargetIntent.Ref.Existing)entity.reference(); var before = original.get(old); var projection = projections.get(before.origin().projectionId());
             for (var mapping : projection.fields()) {
                 String previous = before.fields().get(mapping.field()), replacement = entity.fields().get(mapping.field());
-                if (!java.util.Objects.equals(previous, replacement)) replace(edits, selected, mapping.attribute(), previous, replacement);
+                if (!java.util.Objects.equals(previous, replacement)) {
+                    var found=locator.resolve(selected,mapping.locator());
+                    if(found instanceof FieldLocatorResolver.Refused refused)fail(refused.code());
+                    if(!(found instanceof FieldLocatorResolver.Located) || previous==null || replacement==null)fail("ATTRIBUTE_PRESENCE_UNSUPPORTED");
+                    var attribute=((FieldLocatorResolver.Located)found).attribute();
+                    if(!attribute.value().equals(previous))fail("STALE_SOURCE");
+                    edits.add(new XmlEdit.ReplaceAttribute(attribute,previous,replacement));
+                }
             }
             var referenceValues = references(old);
             for (var mapping : projection.references()) {

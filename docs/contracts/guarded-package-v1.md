@@ -339,3 +339,11 @@ Current packages require compiler mechanism `native-compiler-v2=2`, matching the
 The strict manifest schema and package admission refuse mechanism revision 1;
 reinspection and a new reviewed/exported artifact are required. Historical workspace
 readability does not authorize execution of an old package.
+
+For [child-property bindings](child-property-v1.md), the closed manifest adds
+`xml-child-property-v1=1` to that selected binding's required dependencies. Direct
+bindings omit it even when another binding in the same definition requires it.
+Definition-pinned package dependency admission refuses missing, extra or wrong
+versions. Mechanical package parsing alone cannot establish these definition
+dependencies, publication eligibility, complete target validation or client
+qualification; those remain separate server-owned export requirements.

@@ -6,10 +6,9 @@ semantics. There is no inferred conversion from version 1. A maintainer supplies
 the missing declarations. Schemas describe generic tools; actual application
 definitions remain external runtime inputs.
 
-The authorized [child-property extension](child-property-v1.md) defines the next
-closed mapping form and additive dependency/digest rules. It is an implementation
-contract, not current mechanism availability; the direct-only behavior below
-remains the current registered capability until that complete slice is qualified.
+The [child-property extension](child-property-v1.md) adds a closed field locator
+and per-binding dependency rules. Its selection, collision and creation rules
+apply alongside the existing direct-attribute behavior below.
 
 ## Logical and runtime contracts
 
@@ -89,9 +88,11 @@ documents. This version does not merge several occurrences into one entity.
 Instances of a type may repeat at any selected path. Creation selects an explicit
 projection ID and parent context; multiple choices never imply first-match reuse.
 
-Each field mapping is `{field, attribute}` where `attribute` is an expanded name.
-It selects exactly that attribute on the entity element. Every declared readable
-field must have one mapping, with no duplicate/unknown fields or attribute
+Each field mapping is either `{field, attribute}` or the mutually exclusive
+`{field, childProperty}` form in [child-property-v1](child-property-v1.md).
+The direct form selects exactly the expanded-name attribute on the entity element;
+the child form selects a value attribute on one discriminated direct child.
+Every declared readable field must have one mapping, with no duplicate/unknown fields or attribute
 collisions. Required absence, unclassified/unknown sensitivity, duplicate actual
 identity or ambiguous selection prevents a complete observation/target.
 Non-readable required inputs still require an explicit target value; they cannot
@@ -161,8 +162,10 @@ declared semantics are internally consistent and supported by the registered
 mechanism versions; it does not mean a database/client or actual application has
 been qualified. Workspace publication is an explicit immutable revision action;
 plans cannot supply their own compiler or capability result.
-The current trusted registry pins `native-compiler-v2=2`, `xml-path-v1=1`,
-`xml-span-v1=1` and `generic-graph-v1=1`. Registry values are integers (`I2;` for the compiler and `I1;` for the other
+The trusted base dependencies pin `native-compiler-v2=2`, `xml-path-v1=1`,
+`xml-span-v1=1` and `generic-graph-v1=1`. A binding declaring child fields also
+requires `xml-child-property-v1=1`; an unchanged direct binding keeps only the
+base vector. The checked definition records their union. Registry values are integers (`I2;` for the compiler and `I1;` for the other
 mechanisms in digest framing), not strings. The first two define this format and its direct
 child/attribute projections; xml-span-v1 is the qualified D03a mechanism;
 generic-graph-v1 provides the declared graph/count checks. Uploaded content cannot
@@ -227,7 +230,7 @@ Native definition ID/revision and binding ID are metadata, excluded from digests
 For a binding, sort documents/projections by ID, field mappings by field and
 reference mappings by relation; preserve path order. Remove only binding `id`.
 Hash UTF-8 `ES-BINDING-2`, zero byte, then the framed object with properties
-`logicalDigest`, `mechanisms` (the registry object above) and `binding` (normalized
+`logicalDigest`, `mechanisms` (that binding's exact required vector above) and `binding` (normalized
 binding). Digest output is lowercase hexadecimal. Semantic IDs inside the model,
 document IDs and projection IDs remain included because they name plan subjects.
 

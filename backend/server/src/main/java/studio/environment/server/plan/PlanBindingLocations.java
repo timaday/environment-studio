@@ -43,20 +43,25 @@ final class PlanBindingLocations {
         for(var source:content.sources().stream().sorted(Comparator.comparing(PlanPorts.Source::documentId)).toList()) {
             var parsed=new LosslessXmlAdapter().project(source.xml());
             if(!(parsed instanceof XmlResult.Accepted accepted) || !accepted.document().digest().equals(source.digest()))throw refused();
-            var xml=accepted.document();var declaration=documents.get(source.documentId());if(declaration==null)throw refused();
+            var xml=accepted.document();var locator=new FieldLocatorResolver(xml);var declaration=documents.get(source.documentId());if(declaration==null)throw refused();
             var projections=new HashMap<String,NativeDefinition.Projection>();declaration.entities().forEach(p->projections.put(p.id(),p));
+            if(locator.validate(declaration).isPresent())throw refused();
+            var occurrences=new TreeMap<Integer,Occurrence>();
             var entities=byDocument.get(source.documentId());if(entities==null)continue;
             for(var entry:entities.entrySet()) {
                 int index=entry.getKey();if(index<0 || index>=xml.elements().size())throw refused();
                 var entity=entry.getValue();var element=xml.elements().get(index);var projection=projections.get(entity.origin().projectionId());
                 if(projection==null || !entity.origin().sourceDigest().equals(source.digest()))throw refused();
                 var attributes=new HashMap<XmlDocument.ExpandedName,XmlDocument.AttributeRef>();element.attributes().forEach(a->attributes.put(a.name(),a));
-                var occurrences=new TreeMap<Integer,Occurrence>();var own=reference(snapshot,content,entity.key());
+                var own=reference(snapshot,content,entity.key());
                 for(var mapping:projection.fields()) {
-                    var attribute=attributes.get(name(mapping.attribute()));String value=entity.fields().get(mapping.field());
+                    var located=locator.resolve(element,mapping.locator());
+                    if(located instanceof FieldLocatorResolver.Refused)throw refused();
+                    var attribute=located instanceof FieldLocatorResolver.Located found?found.attribute():null;
+                    String value=entity.fields().get(mapping.field());
                     if(attribute==null){if(value!=null)throw refused();continue;}
                     if(!attribute.value().equals(value))throw refused();
-                    add(occurrences,source,projection.id(),element,attribute,own,mapping.field(),"field",mapping.field());
+                    add(occurrences,source,projection.id(),xml.elements().get(attribute.elementIndex()),attribute,own,mapping.field(),"field",mapping.field());
                 }
                 for(var mapping:projection.references()) {
                     var attribute=attributes.get(name(mapping.attribute()));var linked=edges.getOrDefault(entity.key(),Map.of()).get(mapping.relation());
@@ -65,8 +70,8 @@ final class PlanBindingLocations {
                     var targetType=types.get(linked.type());if(targetType==null)throw refused();
                     add(occurrences,source,projection.id(),element,attribute,reference(snapshot,content,linked),targetType.identity().field(),"reference",mapping.relation());
                 }
-                occurrences.values().forEach(consumer);
             }
+            occurrences.values().forEach(consumer);
         }
     }
     private static void add(Map<Integer,Occurrence> occurrences,PlanPorts.Source source,String projectionId,XmlDocument.ElementRef element,

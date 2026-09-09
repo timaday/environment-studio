@@ -41,7 +41,7 @@ the advertised contract. Q publication to GitHub is not authorized.
 
 | Work | Dependency and acceptance |
 | --- | --- |
-| QF-0001/0002 child-property fields and mechanism compatibility | Implement together under [child-property-v1](../contracts/child-property-v1.md): closed shape/compiler, shared source locator, projection/creation/moves/views, exact target validation, historical replay and independent old-binding digest goldens. Register only after the complete slice is qualified. |
+| QF-0001/0002 child-property fields and mechanism compatibility | [Reviewed mapping slice integrated](../evidence/qf12-child-property.md): closed declarations, shared source locators, projection/creation/moves/views, target reprojection, whole/partial reuse, historical replay and per-binding compatibility. Java754, independent guard controls and exact candidate OCI smoke pass. Combined capacity, native clients and complete hosted export remain separate open gates. |
 | QF-0003/0004 computed groups and co-occurrence | Tim approved [authoritative recomputation with physical-only v3 profiles](../product/derived-graph-decision.md), PUBLIC text inputs and shared graph limits. Write closed v3 contracts next; no derived runtime exists yet. |
 
 The lead owns shared contracts and compatibility. Independent fixed-candidate

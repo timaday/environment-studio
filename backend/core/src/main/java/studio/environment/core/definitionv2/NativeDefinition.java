@@ -44,8 +44,19 @@ public record NativeDefinition(String id, BigInteger revision, Logical logical, 
     public record Projection(String id, String type, List<ExpandedName> path, List<FieldMapping> fields, List<ReferenceMapping> references) {
         public Projection { Objects.requireNonNull(id); Objects.requireNonNull(type); path = List.copyOf(path); fields = List.copyOf(fields); references = List.copyOf(references); }
     }
-    public record FieldMapping(String field, ExpandedName attribute) {
-        public FieldMapping { Objects.requireNonNull(field); Objects.requireNonNull(attribute); }
+    public sealed interface FieldLocator permits DirectAttribute, ChildProperty { }
+    public record DirectAttribute(ExpandedName attribute) implements FieldLocator {
+        public DirectAttribute { Objects.requireNonNull(attribute); }
+    }
+    public record ChildProperty(ExpandedName element, ExpandedName discriminatorAttribute,
+            String discriminatorValue, ExpandedName valueAttribute) implements FieldLocator {
+        public ChildProperty { Objects.requireNonNull(element); Objects.requireNonNull(discriminatorAttribute);
+            Objects.requireNonNull(discriminatorValue); Objects.requireNonNull(valueAttribute); }
+        @Override public String toString() { return "ChildProperty[redacted]"; }
+    }
+    public record FieldMapping(String field, FieldLocator locator) {
+        public FieldMapping { Objects.requireNonNull(field); Objects.requireNonNull(locator); }
+        public FieldMapping(String field, ExpandedName attribute) { this(field, new DirectAttribute(attribute)); }
     }
     public record ReferenceMapping(String relation, ExpandedName attribute) {
         public ReferenceMapping { Objects.requireNonNull(relation); Objects.requireNonNull(attribute); }

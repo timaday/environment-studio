@@ -93,7 +93,12 @@ Insertions occur at the parent's end in explicit command order. Multiple
 insertions at one location use the qualified grouped insertion mechanism.
 
 Create only the declared element name and attributes from explicit field and
-reference decisions. Assign `ns0`, `ns1`, ... to required nonempty, non-XML
+reference decisions, plus grouped property children declared under
+[child-property-v1](child-property-v1.md). Scalar edits use existing located value
+attributes and cannot create absent properties. Generated property children have
+separate nonentity provenance; declaring them as canonical entities while creation
+is enabled is incomplete until that combination has an explicit creation strategy.
+Assign `ns0`, `ns1`, ... to required nonempty, non-XML
 namespace URIs in unsigned UTF-8 lexical order. The XML namespace uses `xml`;
 unnamespaced elements explicitly reset the default namespace. Declare every
 required binding on the created element. Emit mapped attributes in expanded-name

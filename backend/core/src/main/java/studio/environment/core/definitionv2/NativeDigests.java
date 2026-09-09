@@ -17,16 +17,14 @@ import static studio.environment.core.definitionv2.NativeDefinition.*;
 
 /** Frozen ES-LOGICAL-2 / ES-BINDING-2 framing; no parser serialization enters a digest. */
 final class NativeDigests {
-    static final Map<String, BigInteger> MECHANISMS = Map.of("native-compiler-v2", BigInteger.TWO,
-            "xml-path-v1", BigInteger.ONE, "xml-span-v1", BigInteger.ONE, "generic-graph-v1", BigInteger.ONE);
     private NativeDigests() { }
     static NativeCompilationResult.Checked checked(NativeDefinition definition) {
         String logical = hash("ES-LOGICAL-2", logical(definition.logical()));
         Map<String, String> bindings = new LinkedHashMap<>();
         definition.bindings().stream().sorted(Comparator.comparing(Binding::id)).forEach(binding ->
                 bindings.put(binding.id(), hash("ES-BINDING-2", object("logicalDigest", logical,
-                        "mechanisms", MECHANISMS, "binding", binding(binding)))));
-        return new NativeCompilationResult.Checked(definition, logical, bindings, MECHANISMS);
+                        "mechanisms", NativeMechanisms.required(binding), "binding", binding(binding)))));
+        return new NativeCompilationResult.Checked(definition, logical, bindings, NativeMechanisms.required(definition));
     }
     private static Map<String, Object> logical(Logical logical) {
         return object("entityTypes", sorted(logical.entityTypes(), EntityType::id, type -> object("id", type.id(),
@@ -47,8 +45,16 @@ final class NativeDigests {
                 "documents", sorted(binding.documents(), Document::id, document -> object("id", document.id(), "key", document.key(),
                         "entities", sorted(document.entities(), Projection::id, projection -> object("id", projection.id(), "type", projection.type(),
                                 "path", projection.path().stream().map(NativeDigests::name).toList(),
-                                "fields", sorted(projection.fields(), FieldMapping::field, mapping -> object("field", mapping.field(), "attribute", name(mapping.attribute()))),
+                                "fields", sorted(projection.fields(), FieldMapping::field, NativeDigests::field),
                                 "references", sorted(projection.references(), ReferenceMapping::relation, mapping -> object("relation", mapping.relation(), "attribute", name(mapping.attribute()))))))));
+    }
+    private static Map<String, Object> field(FieldMapping mapping) {
+        return switch (mapping.locator()) {
+            case DirectAttribute direct -> object("field", mapping.field(), "attribute", name(direct.attribute()));
+            case ChildProperty child -> object("field", mapping.field(), "childProperty", object(
+                    "element", name(child.element()), "discriminatorAttribute", name(child.discriminatorAttribute()),
+                    "discriminatorValue", child.discriminatorValue(), "valueAttribute", name(child.valueAttribute())));
+        };
     }
     private static Map<String, Object> name(ExpandedName name) { return object("namespaceUri", name.namespaceUri(), "localName", name.localName()); }
     private static String token(Enum<?> value) { return value.name().toLowerCase(Locale.ROOT).replace('_', '-'); }

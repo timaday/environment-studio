@@ -5,6 +5,12 @@ Version 2 extends the [profile contract](definitions-and-profiles.md) for
 structure, never donor values or physical database/XML locations. Runtime inputs
 and eligible immutable revisions remain in the private owned workspace.
 
+Direct attributes and [child-property locators](child-property-v1.md) share logical
+profile compatibility. Capture copies neither physical selector declarations nor
+donor field values. Whole/partial reuse still needs explicit fresh or retained
+target decisions, and the destination binding must support its declared creation,
+placement and final reprojection operations.
+
 ## Closed portable structure
 
 The JSON/YAML shape retains v1 profile properties, replacing `schemaVersion` with

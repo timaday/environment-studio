@@ -66,7 +66,7 @@ public final class NativeWorkspace {
     }
     public static void eligibleDefinition(NativeRevision.Definition definition) {
         if(!definition.ready()) throw WorkspaceRejection.publication("DEFINITION_INCOMPLETE");
-        if(!definition.checked().mechanisms().equals(Map.of("native-compiler-v2",BigInteger.TWO,"xml-path-v1",BigInteger.ONE,"xml-span-v1",BigInteger.ONE,"generic-graph-v1",BigInteger.ONE)))
+        if(!studio.environment.core.definitionv2.NativeMechanisms.eligible(definition.checked()))
             throw WorkspaceRejection.publication("UNSUPPORTED_MECHANISM");
     }
     public static void validatePolicies(NativeRevision.Definition definition,List<NativeCommand.Policy> policies) {

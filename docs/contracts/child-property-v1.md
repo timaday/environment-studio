@@ -1,8 +1,10 @@
 # Discriminated direct-child fields — QF-0001/0002
 
-Status: **implementation contract; mechanism not yet registered or qualified**.
+Status: **implemented and registered for the documented native mapping paths**.
+See [QF-0001/0002 evidence](../evidence/qf12-child-property.md) for actual checks
+and remaining client, hosted-export and combined-capacity qualification.
 This additive native-v2 extension is authorized by the amended 9 September task.
-Current rejection is a capability gap, not a defect in the advertised direct
+The original rejection was a capability gap, not a defect in the advertised direct
 attribute contract. Apply [native v2](native-definition-v2.md),
 [projection](graph-projection.md), [structural targets](structural-target.md) and
 [lossless XML](lossless-xml.md). No derived graph semantics are introduced here.
@@ -99,6 +101,14 @@ names using the existing unsigned UTF-8 namespace ordering and reserved `xml`
 handling. Unnamespaced generated elements explicitly reset the default namespace.
 Escape namespace, discriminator and value text with the qualified XML writer.
 
+When a property child's exact path is also a canonical entity projection in the
+same document, declared `create-entity` is incomplete with
+`CHILD_ENTITY_CREATION_UNSUPPORTED`. The property generator cannot invent that
+entity's fresh slot or fill its independent required fields. An explicit separate
+nested create would add a second sibling, not complete the generated child.
+Read/scalar bindings without creation may still qualify when ownership is disjoint;
+a coordinated generation strategy would require a separate qualified operation.
+
 Conflicting generated attributes, selector interference or additional projected
 entities caused by generated children refuse through static checks where
 decidable and complete target reprojection otherwise. Compilation applies the
@@ -161,13 +171,21 @@ selected binding and source pins. Export package versions include the selected
 binding dependencies plus its existing qualified structural/validation mechanisms;
 extend the closed manifest with only the optional child dependency and preserve
 direct-only package encoding. Missing, extra or wrong required versions refuse.
+The internal definition-pinned package admission entry compares the exact selected
+binding ID/digest, logical digest and dependency vector with the server-compiled
+definition. Schema-only package inspection has no definition and cannot infer a
+missing child dependency from XML or an opaque digest; it remains mechanical
+inspection, never export authority. The hosting export flow must supply its pinned
+definition to this check in addition to all existing validation/publication gates.
 
 ## Implementation and acceptance record
 
 The lead owns this contract, schemas, shared locator/domain shape and integration.
 Base: `924c25ed256ffd316203ad62f31d1d0e60df0a31`; reviewed Q snapshot `dbb457a`
 differs only by later evidence/handoff documents. QF-0001 is a confirmed capability
-gap; QF-0002 is its dependent compatibility work. Neither is runtime-qualified yet.
+gap; QF-0002 is its dependent compatibility work. Both are implemented as one
+additive mapping slice; database/client and complete hosted export qualification
+remain separate.
 
 Require meaningful failing behavior tests before implementation, independent
 expected XML and digest goldens, then focused and integrated gates. Cover both

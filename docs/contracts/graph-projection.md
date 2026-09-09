@@ -24,7 +24,12 @@ No truncated document or partial inventory becomes a successful projection.
 ## Projection and graph checks
 
 Match each expanded-name path from the root through direct children. Resolve
-field/reference attributes by expanded name, preserving decoded text exactly.
+field locators with the shared [direct/child resolver](child-property-v1.md),
+preserving decoded text exactly. References retain direct attributes. Located
+child values retain their actual attribute span separately from the entity origin.
+Validate document-wide physical ownership and discriminator protection before
+accepting the graph; missing or multiple child matches follow the explicit
+requiredness/cardinality rules. Final target projection repeats the same checks.
 Unmapped elements and attributes remain uninterpreted and untouched. A physical
 element may belong to only one projection, including projections of the same
 logical type. All selected instances across all documents participate in checks.

@@ -66,6 +66,8 @@ public final class NativeDefinitionCompiler {
     private record Located(Projection projection, int documentIndex, String path) { }
     private static void binding(Binding binding, String path, Map<String, EntityType> types,
             Map<String, Relation> relations, List<Operation> operations, List<DefinitionDiagnostic> diagnostics) {
+        if (!NativeMechanisms.qualified(NativeMechanisms.required(binding)))
+            incomplete("MECHANISM_UNQUALIFIED", path, "A declared mechanism requires complete server qualification before publication.", diagnostics);
         if (binding.engine() == Engine.POSTGRESQL && binding.storage() != Storage.TEXT || binding.engine() == Engine.ORACLE && binding.storage() != Storage.CLOB)
             error("ENGINE_STORAGE_MISMATCH", path + "/storage", "Select the storage kind paired with the declared engine.", diagnostics);
         if (binding.keyColumn().equals(binding.xmlColumn())) error("COLUMN_COLLISION", path + "/xmlColumn", "Declare distinct key and XML columns.", diagnostics);
@@ -79,6 +81,7 @@ public final class NativeDefinitionCompiler {
             if (!NativeLexicalRules.validKey(binding.keyType(), document.key()))
                 error("INVALID_DOCUMENT_KEY", documentPath + "/key", "Supply an exact key matching the declared key type and bounds.", diagnostics);
             if (!keys.add(document.key())) error("DUPLICATE_DOCUMENT_KEY", documentPath + "/key", "Use one unique typed key per document in this binding.", diagnostics);
+            NativeChildMappings.document(document, operations.contains(Operation.CREATE_ENTITY), documentPath, diagnostics);
             Set<List<ExpandedName>> paths = new HashSet<>();
             for (int j = 0; j < document.entities().size(); j++) {
                 Projection projection = document.entities().get(j);
@@ -128,9 +131,11 @@ public final class NativeDefinitionCompiler {
             String mappingPath = path + "/fields/" + i;
             if (!mappedFields.add(mapping.field())) error("DUPLICATE_FIELD_MAPPING", mappingPath + "/field", "Map each field once within its entity projection.", diagnostics);
             if (type != null && !fields.containsKey(mapping.field())) error("UNKNOWN_FIELD", mappingPath + "/field", "Reference a field declared by the projection entity type.", diagnostics);
-            attribute(mapping.attribute(), attributes, mappingPath + "/attribute", diagnostics);
-            Field field = fields.get(mapping.field());
-            if (field != null && field.required()) requiredAttributes.add(mapping.attribute());
+            if (mapping.locator() instanceof DirectAttribute direct) {
+                attribute(direct.attribute(), attributes, mappingPath + "/attribute", diagnostics);
+                Field field = fields.get(mapping.field());
+                if (field != null && field.required()) requiredAttributes.add(direct.attribute());
+            }
         }
         for (Field field : fields.values()) if (field.readable() && !mappedFields.contains(field.id()))
             incomplete("FIELD_MAPPING_MISSING", path + "/fields", "Map every declared readable field before publication.", diagnostics);
@@ -147,16 +152,18 @@ public final class NativeDefinitionCompiler {
             if (relation != null && relation.kind() == RelationKind.REFERENCE && relation.fromType().equals(projection.type())
                     && relation.minimum().signum() > 0) requiredAttributes.add(mapping.attribute());
         }
-        xmlAttributeBudget(projection, requiredAttributes, create, path, diagnostics);
+        var childNamespaces = NativeChildMappings.projection(projection, fields, create, path, diagnostics);
+        xmlAttributeBudget(projection, requiredAttributes, childNamespaces, create, path, diagnostics);
         for (Relation relation : relations.values()) if (relation.kind() == RelationKind.REFERENCE && relation.fromType().equals(projection.type())
                 && !mappedReferences.contains(relation.id()))
             incomplete("REFERENCE_MAPPING_MISSING", path + "/references", "Map every logical reference relation on each source projection.", diagnostics);
     }
-    private static void xmlAttributeBudget(Projection projection, Set<ExpandedName> requiredAttributes,
+    private static void xmlAttributeBudget(Projection projection, Set<ExpandedName> requiredAttributes, Set<String> childNamespaces,
             boolean create, String path, List<DefinitionDiagnostic> diagnostics) {
         // Namespace declarations count as attributes in xml-span-v1. Observed non-root
         // elements can inherit them; self-contained creation fragments and document roots cannot.
         Set<String> declarations = new HashSet<>();
+        if (create) declarations.addAll(childNamespaces);
         if (create || projection.path().size() == 1) {
             String elementNamespace = projection.path().getLast().namespaceUri();
             if (create || !elementNamespace.isEmpty()) declarations.add(elementNamespace);

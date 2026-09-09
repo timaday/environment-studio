@@ -17,6 +17,7 @@ import static studio.environment.server.planning.PlanningXml.fail;
 final class XmlAssembly {
     sealed interface Symbol {
         record Original(String document, int index) implements Symbol { @Override public String toString() { return "OriginalPosition[redacted]"; } }
+        record CreatedChild(TargetIntent.Ref.Fresh entity,int index) implements Symbol { @Override public String toString() { return "CreatedChildPosition[redacted]"; } }
         record Created(TargetIntent.Ref.Fresh entity) implements Symbol { @Override public String toString() { return "CreatedPosition[redacted]"; } }
     }
     record Fragment(XmlDocument document, List<Symbol> symbols) {

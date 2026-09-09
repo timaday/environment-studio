@@ -36,6 +36,34 @@ test("unknown type semantics and missing requiredness cannot be silently accepte
 });
 
 const nativeV2 = ajv.compile(read("../schemas/definition-v2.schema.json"));
+test("child field declarations and historical inspection use the same closed mutually exclusive forms", () => {
+  const inspection = ajv.compile(read("../schemas/definition-inspection-v2.schema.json"));
+  const candidate = read("../fixtures/native-v2/definition.json");
+  const mapping = candidate.bindings[0].documents[0].entities[0].fields[1];
+  delete mapping.attribute;
+  mapping.childProperty = {
+    element: { namespaceUri: "urn:mock:properties", localName: "entry" },
+    discriminatorAttribute: { namespaceUri: "urn:mock:keys", localName: "key" },
+    discriminatorValue: "é𐀀\t",
+    valueAttribute: { namespaceUri: "", localName: "value" },
+  };
+  for (const validate of [nativeV2, inspection]) {
+    const input = validate === inspection
+      ? JSON.parse(JSON.stringify(candidate, (key, value) => typeof value === "number" ? String(value) : value))
+      : structuredClone(candidate);
+    assert.equal(validate(input), true, JSON.stringify(validate.errors));
+    for (const mutate of [
+      m => { m.attribute = { namespaceUri: "", localName: "tone" }; },
+      m => { delete m.childProperty; },
+      m => { m.childProperty.descendants = true; },
+      m => { delete m.childProperty.discriminatorValue; },
+      m => { m.childProperty.valueAttribute.prefix = "p"; },
+    ]) {
+      const bad = structuredClone(input); mutate(bad.bindings[0].documents[0].entities[0].fields[1]);
+      assert.equal(validate(bad), false);
+    }
+  }
+});
 test("invented native v2 bindings have a closed shape with distinct engine storage declarations", () => {
   const candidate = read("../fixtures/native-v2/definition.json");
   assert.equal(nativeV2(candidate), true, JSON.stringify(nativeV2.errors));
@@ -93,6 +121,15 @@ test("native profile v2 rejects duplicate required inputs, wrong versions and in
 });
 
 const Ajv2020 = require("ajv/dist/2020");
+test("workspace history admits the optional child dependency without accepting uploaded authority", () => {
+  const validate = new Ajv2020({ allErrors: true, strict: true }).compile(read("../docs/contracts/openapi-workspace-v2.json").components.schemas.Mechanisms);
+  const base = { "native-compiler-v2": "2", "xml-path-v1": "1", "xml-span-v1": "1", "generic-graph-v1": "1" };
+  assert.equal(validate(base), true);
+  assert.equal(validate({ ...base, "xml-child-property-v1": "1" }), true, JSON.stringify(validate.errors));
+  assert.equal(validate({ ...base, "xml-child-property-v1": "2" }), true);
+  assert.equal(validate({ ...base, "xml-child-property-v1": "0" }), false);
+  assert.equal(validate({ ...base, "xml-child-property-v2": "1" }), false);
+});
 test("workspace historical mechanism versions remain readable without granting new publication", () => {
   const schema = read("../docs/contracts/openapi-workspace-v2.json").components.schemas.Mechanisms;
   const validate = new Ajv2020({ allErrors: true, strict: true }).compile(schema);
