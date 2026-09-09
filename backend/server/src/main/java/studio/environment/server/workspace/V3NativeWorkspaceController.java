@@ -50,6 +50,42 @@ public final class V3NativeWorkspaceController {
     private void read(String id,Optional<String> revision,HttpServletRequest request,HttpServletResponse response)throws IOException {
         start(request,response,false,(lease,body)->view(runtime.v3Store().read(lease.owner(),id,revision,false)));
     }
+    @PutMapping(value="/api/v3/profiles/{objectId}",consumes=MediaType.APPLICATION_JSON_VALUE)
+    public void saveProfile(@PathVariable("objectId") String id,HttpServletRequest request,HttpServletResponse response)throws IOException {
+        start(request,response,true,(lease,body)->{
+            var command=new V3ProfileRequestReader().read(id,body);verify(lease);body.close();
+            var result=runtime.v3ProfileService(WorkspaceCommit.authenticated(sessions,lease)).saveProfile(lease.owner(),command);
+            verify(lease);return profileView(result);
+        });
+    }
+    @GetMapping("/api/v3/profiles")
+    public void profiles(HttpServletRequest request,HttpServletResponse response)throws IOException {
+        start(request,response,false,(lease,body)->{
+            var root=V3NativeSnapshotCodec.JSON.createObjectNode();var array=root.putArray("profiles");
+            for(var revision:runtime.v3Store().list(lease.owner(),true)){
+                verify(lease);var profile=(V3NativeRevision.Profile)revision.content();var item=array.addObject();
+                item.put("objectId",revision.objectId());item.put("workspaceRevision",revision.workspaceRevision());
+                item.put("nativeId",profile.nativeId());item.put("nativeRevision",profile.nativeRevision());
+                item.put("sourceDigest",revision.sourceDigest());item.put("state",revision.state());
+                item.put("contentDigest",profile.checked().contentDigest());item.set("definition",V3NativeSnapshotCodec.JSON.valueToTree(profile.definition()));
+            }return root;
+        });
+    }
+    @GetMapping("/api/v3/profiles/{objectId}")
+    public void profile(@PathVariable("objectId") String id,HttpServletRequest request,HttpServletResponse response)throws IOException {readProfile(id,Optional.empty(),request,response);}
+    @GetMapping("/api/v3/profiles/{objectId}/revisions/{revision}")
+    public void profileRevision(@PathVariable("objectId") String id,@PathVariable("revision") String revision,HttpServletRequest request,HttpServletResponse response)throws IOException {readProfile(id,Optional.of(revision),request,response);}
+    private void readProfile(String id,Optional<String> revision,HttpServletRequest request,HttpServletResponse response)throws IOException {
+        start(request,response,false,(lease,body)->profileView(runtime.v3Store().read(lease.owner(),id,revision,true)));
+    }
+    private ObjectNode profileView(V3NativeRevision revision){
+        var profile=(V3NativeRevision.Profile)revision.content();var root=V3NativeSnapshotCodec.JSON.createObjectNode();
+        root.put("objectId",revision.objectId());root.put("workspaceRevision",revision.workspaceRevision());root.put("sourceDigest",revision.sourceDigest());
+        root.put("format",revision.format().name());root.put("source",revision.source());root.put("compilerVersion",revision.compilerVersion());root.put("schemaVersion",revision.schemaVersion());root.put("state",revision.state());
+        root.set("definition",V3NativeSnapshotCodec.JSON.valueToTree(profile.definition()));var projection=root.putObject("projection");
+        projection.put("kind","structurally-valid");projection.set("model",codec.model(revision));projection.put("contentDigest",profile.checked().contentDigest());projection.putArray("diagnostics");
+        revision.publication().ifPresent(p->{var publication=root.putObject("publication");publication.put("digest",p.digest());publication.put("sourceRevision",p.sourceRevision());});return root;
+    }
     @FunctionalInterface private interface Action {JsonNode run(SessionLedger.Lease lease,V3WorkspaceBody body);}
     private void verify(SessionLedger.Lease lease){sessions.guard(lease,()->true).orElseThrow(()->new WorkspaceRefusal(WorkspaceRefusal.Code.FORBIDDEN));}
     private void start(HttpServletRequest request,HttpServletResponse response,boolean hasBody,Action action)throws IOException {

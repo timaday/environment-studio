@@ -469,16 +469,19 @@ test("binding values and full location pages use closed distinct states and boun
 const workspaceV3 = read("../docs/contracts/openapi-workspace-v3.json");
 const workspaceV3Defs = JSON.parse(JSON.stringify(workspaceV3.components.schemas)
   .replaceAll("#/components/schemas/", "#/$defs/")
-  .replaceAll("../../schemas/definition-inspection-v3.schema.json", "https://environment.studio/schemas/definition-inspection-v3"));
+  .replaceAll("../../schemas/definition-inspection-v3.schema.json", "https://environment.studio/schemas/definition-inspection-v3")
+  .replaceAll("../../schemas/profile-inspection-v3.schema.json", "https://environment.studio/schemas/profile-inspection-v3"));
 // UUID syntax is constrained by the schema's explicit pattern.
 const workspaceV3Ajv = new Ajv({ allErrors: true, strict: true, formats: { uuid: true } })
-  .addSchema(read("../schemas/definition-inspection-v3.schema.json"));
+  .addSchema(read("../schemas/definition-inspection-v3.schema.json"))
+  .addSchema(read("../schemas/profile-inspection-v3.schema.json"));
 const workspaceV3Shape = (name) => workspaceV3Ajv.compile({ $defs: workspaceV3Defs, $ref: `#/$defs/${name}` });
 const workspaceV3Mechanisms = { "native-compiler-v3": "1", "xml-path-v1": "1", "xml-span-v1": "1", "generic-graph-v1": "1", "derived-graph-v1": "1" };
-test("v3 workspace exposes only four closed draft/history operations", () => {
-  assert.deepEqual(Object.keys(workspaceV3.paths).sort(), ["/api/v3/definitions", "/api/v3/definitions/{objectId}", "/api/v3/definitions/{objectId}/revisions/{revision}"]);
+test("v3 workspace exposes only eight closed draft/history operations", () => {
+  assert.deepEqual(Object.keys(workspaceV3.paths).sort(), ["/api/v3/definitions", "/api/v3/definitions/{objectId}", "/api/v3/definitions/{objectId}/revisions/{revision}", "/api/v3/profiles", "/api/v3/profiles/{objectId}", "/api/v3/profiles/{objectId}/revisions/{revision}"]);
   assert.deepEqual(Object.entries(workspaceV3.paths).flatMap(([path, item]) => Object.keys(item).filter(key => key !== "parameters").map(method => `${method} ${path}`)).sort(), [
-    "get /api/v3/definitions", "get /api/v3/definitions/{objectId}", "get /api/v3/definitions/{objectId}/revisions/{revision}", "put /api/v3/definitions/{objectId}",
+    "get /api/v3/definitions", "get /api/v3/definitions/{objectId}", "get /api/v3/definitions/{objectId}/revisions/{revision}",
+    "get /api/v3/profiles", "get /api/v3/profiles/{objectId}", "get /api/v3/profiles/{objectId}/revisions/{revision}", "put /api/v3/definitions/{objectId}", "put /api/v3/profiles/{objectId}",
   ]);
   for (const item of Object.values(workspaceV3.paths)) for (const method of ["get", "put"]) if (item[method]) {
     for (const status of ["403", "413", "429", "503"]) assert.ok(item[method].responses[status]);
@@ -519,4 +522,39 @@ test("v3 workspace metadata is bounded and excludes source or publication author
   assert.equal(validate({ definitions: [item], canPublish: true }), false);
   assert.equal(validate({ definitions: [{ ...item, source: "invented" }] }), false);
   assert.equal(validate({ definitions: [{ ...item, compilationKind: "ready-to-publish" }] }), false);
+});
+
+
+test("v3 profile drafts require an exact closed definition reference", () => {
+  const validate = workspaceV3Shape("SaveProfile");
+  const command = { expectedRevision: "0", requestId: "00000000-0000-4000-8000-000000000041", format: "JSON", source: "invented", definition: { objectId: "00000000-0000-4000-8000-000000000042", workspaceRevision: "2" } };
+  assert.equal(validate(command), true, JSON.stringify(validate.errors));
+  for (const key of ["values", "model", "publication", "owner"]) assert.equal(validate({ ...command, [key]: "invented" }), false);
+  for (const definition of [{ ...command.definition, workspaceRevision: "0" }, { ...command.definition, owner: "invented" }, { objectId: command.definition.objectId }]) assert.equal(validate({ ...command, definition }), false);
+});
+test("v3 profile projections describe physical structure without publication eligibility", () => {
+  const validate = workspaceV3Shape("ProfileProjection");
+  const projection = { kind: "structurally-valid", model: decimalInspection(read("../fixtures/native-v3/profile.json")), contentDigest: "a".repeat(64), diagnostics: [] };
+  assert.equal(validate(projection), true, JSON.stringify(validate.errors));
+  for (const kind of ["ready-to-publish", "historical-ready", "incomplete"]) assert.equal(validate({ ...projection, kind }), false);
+  assert.equal(validate({ ...projection, model: { ...projection.model, schemaVersion: "2" } }), false);
+  assert.equal(validate({ ...projection, contributors: [] }), false);
+});
+test("v3 profile history preserves publication presence and excludes document policy", () => {
+  const validate = workspaceV3Shape("ProfileRevision");
+  const value = { objectId: "00000000-0000-4000-8000-000000000043", workspaceRevision: "1", sourceDigest: "b".repeat(64), format: "YAML", source: "invented", compilerVersion: "profile-compiler-v3", schemaVersion: "3", state: "draft", definition: { objectId: "00000000-0000-4000-8000-000000000042", workspaceRevision: "2" }, projection: { kind: "structurally-valid", model: decimalInspection(read("../fixtures/native-v3/profile.json")), contentDigest: "a".repeat(64), diagnostics: [] } };
+  assert.equal(validate(value), true, JSON.stringify(validate.errors));
+  const publication = { digest: "c".repeat(64), sourceRevision: "1" };
+  assert.equal(validate({ ...value, workspaceRevision: "2", state: "published", publication }), true);
+  assert.equal(validate({ ...value, publication }), false);
+  assert.equal(validate({ ...value, state: "published" }), false);
+  assert.equal(validate({ ...value, state: "published", publication: { ...publication, exportPolicies: [] } }), false);
+});
+test("v3 profile lists are bounded metadata without source or authority", () => {
+  const validate = workspaceV3Shape("ProfileList");
+  const item = { objectId: "00000000-0000-4000-8000-000000000043", workspaceRevision: "1", nativeId: "invented", nativeRevision: "1", sourceDigest: "b".repeat(64), state: "draft", contentDigest: "a".repeat(64), definition: { objectId: "00000000-0000-4000-8000-000000000042", workspaceRevision: "2" } };
+  assert.equal(validate({ profiles: Array.from({ length: 100 }, () => ({ ...item })) }), true);
+  assert.equal(validate({ profiles: Array.from({ length: 101 }, () => ({ ...item })) }), false);
+  assert.equal(validate({ profiles: [{ ...item, source: "invented" }] }), false);
+  assert.equal(validate({ profiles: [item], canPublish: true }), false);
 });

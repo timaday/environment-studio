@@ -1,20 +1,22 @@
-# Hosted v3 definition drafts and historical reads
+# Hosted v3 workspace transfer and definition history
 
 Implemented and [independently reviewed](../evidence/qf34-workspace-http-v3.md).
 These routes expose exact v3 source
 compilation and immutable history through the [schema3 workspace](workspace-storage-v3.md).
-They do not enable definition publication, profile mutation, plan observation or
-export. Those operations remain required subsequent MVP work. V1/v2 URLs retain
+The [implemented profile extension](workspace-profile-http-v3.md) adds four
+draft/history routes under the same transfer and ownership rules. New publication,
+plan observation and export remain required subsequent MVP work. V1/v2 URLs retain
 their meanings and never accept a v3 source.
 
 ## Closed routes and authority
 
-Add only PUT `/api/v3/definitions/{objectId}`, GET `/api/v3/definitions`, GET
+The definition routes are PUT `/api/v3/definitions/{objectId}`, GET `/api/v3/definitions`, GET
 `/api/v3/definitions/{objectId}` and GET
 `/api/v3/definitions/{objectId}/revisions/{revision}`. Require hosted mode, a
 configured fully audited schema3 private workspace and the existing authenticated
 session, approved Host/Origin and CSRF rules. Schema2 is not upgraded by a request
-and returns safe503. No v3 profile or publication route is admitted by this slice.
+and returns safe503. Only the separately contracted profile draft/history routes extend this set;
+no v3 publication route is admitted.
 Demo mutations and unlisted hosted methods/routes remain denied.
 
 PUT accepts exactly the existing neutral draft wrapper fields: expectedRevision,
@@ -38,7 +40,8 @@ owned mutations conflict and wrong-version reads return404.
 ## Bounded owned HTTP work and transfer
 
 Admit at most four simultaneous v3 workspace operations across this process,
-including body reads, storage/compilation, encoding and transfer. Refuse excess
+shared by definition and profile routes, including body reads, storage/compilation,
+encoding and transfer. Refuse excess
 capacity429 without a payload job queue. Each immediately started async worker
 retains its slot until its owned input, encoding and output resources close.
 Use one async cycle with one registered completion owner; callback races cannot

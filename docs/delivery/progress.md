@@ -43,8 +43,11 @@ combined Java1024 and frontend40/schema36 pass. The
 [owned profile draft command](../evidence/qf34-profile-drafts-v3.md) now persists
 exact physical-only source against an immutable historical definition reference;
 independent capacity/expansion/continuity controls and combined Java1053 pass.
-Profile HTTP, new publication and plan integration remain next; v3 operational
-availability stays disabled.
+The [profile HTTP draft/history routes](../evidence/qf34-profile-http-v3.md) now
+pass independent reference/history/large-integer controls and combined Java1072,
+frontend40/schema40. They share the original four-operation transfer registry and
+authenticated commit. New publication and plan integration remain next; v3
+operational availability stays disabled.
 No Q feedback GitHub publication is authorized. Existing MVP scope and completed
 work remain in place.
 

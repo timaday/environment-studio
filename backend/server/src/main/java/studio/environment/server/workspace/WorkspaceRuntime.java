@@ -33,6 +33,7 @@ public final class WorkspaceRuntime {
     V3WorkspaceOperations v3Operations(){return v3Operations;}
     V3NativeStore v3Store(){return new V3NativeSqliteStore(store.orElseThrow(()->new WorkspaceRefusal(WorkspaceRefusal.Code.UNAVAILABLE)));}
     V3NativeWorkspace v3Service(WorkspaceCommit commit){return new V3NativeWorkspace(new V3NativeSqliteStore(store.orElseThrow(()->new WorkspaceRefusal(WorkspaceRefusal.Code.UNAVAILABLE)).withCommit(commit)),new V3NativeWorkspaceCompiler());}
+    V3ProfileWorkspace v3ProfileService(WorkspaceCommit commit){return new V3ProfileWorkspace(new V3NativeSqliteStore(store.orElseThrow(()->new WorkspaceRefusal(WorkspaceRefusal.Code.UNAVAILABLE)).withCommit(commit)),new V3ProfileWorkspaceCompiler());}
     public void cleanupV3(studio.environment.core.session.SessionLedger.Lease lease){v3Operations.invalidate(lease);}
     DraftWorkspace service(WorkspaceCommit commit) {
         return new DraftWorkspace(store.orElseThrow(() -> new WorkspaceRefusal(WorkspaceRefusal.Code.UNAVAILABLE)).withCommit(commit),

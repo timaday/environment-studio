@@ -4,8 +4,9 @@ Status: internal validation, capture, import and composition are implemented for
 [native v3](native-definition-v3.md); see [profile evidence](../evidence/qf34-profile-v3.md).
 Separate historical persistence is [implemented](native-workspace-v3.md).
 The [owned profile draft command](../evidence/qf34-profile-drafts-v3.md) is also
-implemented. Publication, profile HTTP and hosted composition remain subsequent
-work. [Profile v2](profile-v2.md) and its historical bytes remain unchanged.
+implemented. [Profile HTTP drafts/history](workspace-profile-http-v3.md) are also
+implemented. Publication and hosted composition remain subsequent work.
+[Profile v2](profile-v2.md) and its historical bytes remain unchanged.
 
 ## Closed portable shape and digest
 

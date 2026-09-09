@@ -1,9 +1,9 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "Environment Studio v3 definition draft workspace",
+    "title": "Environment Studio v3 definition and profile draft workspace",
     "version": "0.3.0",
-    "description": "Closed v3 definition draft/history routes, requiring a configured schema3 private hosted workspace. No publication, profile mutation or plan admission. See workspace-http-v3.md for ownership, exact history and live session commit authority."
+    "description": "Closed v3 definition/profile draft and historical routes requiring a configured schema3 private hosted workspace. No new publication or plan admission. See workspace-http-v3.md and workspace-profile-http-v3.md for original session authority and bounded shared ownership."
   },
   "paths": {
     "/api/v3/definitions": {
@@ -197,6 +197,225 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/DefinitionRevision"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/WorkspaceError400"
+          },
+          "401": {
+            "$ref": "#/components/responses/WorkspaceError401"
+          },
+          "403": {
+            "$ref": "#/components/responses/WorkspaceError403"
+          },
+          "404": {
+            "$ref": "#/components/responses/WorkspaceError404"
+          },
+          "503": {
+            "$ref": "#/components/responses/WorkspaceError503"
+          },
+          "413": {
+            "$ref": "#/components/responses/WorkspaceError413"
+          },
+          "429": {
+            "$ref": "#/components/responses/WorkspaceError429"
+          }
+        }
+      }
+    },
+    "/api/v3/profiles": {
+      "get": {
+        "operationId": "listV3Profiles",
+        "summary": "List owned current profile metadata",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Owned immutable result; Cache-Control no-store",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProfileList"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/WorkspaceError400"
+          },
+          "401": {
+            "$ref": "#/components/responses/WorkspaceError401"
+          },
+          "403": {
+            "$ref": "#/components/responses/WorkspaceError403"
+          },
+          "404": {
+            "$ref": "#/components/responses/WorkspaceError404"
+          },
+          "503": {
+            "$ref": "#/components/responses/WorkspaceError503"
+          },
+          "413": {
+            "$ref": "#/components/responses/WorkspaceError413"
+          },
+          "429": {
+            "$ref": "#/components/responses/WorkspaceError429"
+          }
+        }
+      }
+    },
+    "/api/v3/profiles/{objectId}": {
+      "parameters": [
+        {
+          "name": "objectId",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "$ref": "#/components/schemas/Uuid"
+          }
+        }
+      ],
+      "get": {
+        "operationId": "getV3Profile",
+        "summary": "Read current immutable profile revision",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Owned immutable result; Cache-Control no-store",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProfileRevision"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/WorkspaceError400"
+          },
+          "401": {
+            "$ref": "#/components/responses/WorkspaceError401"
+          },
+          "403": {
+            "$ref": "#/components/responses/WorkspaceError403"
+          },
+          "404": {
+            "$ref": "#/components/responses/WorkspaceError404"
+          },
+          "503": {
+            "$ref": "#/components/responses/WorkspaceError503"
+          },
+          "413": {
+            "$ref": "#/components/responses/WorkspaceError413"
+          },
+          "429": {
+            "$ref": "#/components/responses/WorkspaceError429"
+          }
+        }
+      },
+      "put": {
+        "operationId": "saveV3Profile",
+        "summary": "Compile and save an owned native v3 draft",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Owned immutable result; Cache-Control no-store",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProfileRevision"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/WorkspaceError400"
+          },
+          "401": {
+            "$ref": "#/components/responses/WorkspaceError401"
+          },
+          "403": {
+            "$ref": "#/components/responses/WorkspaceError403"
+          },
+          "404": {
+            "$ref": "#/components/responses/WorkspaceError404"
+          },
+          "409": {
+            "$ref": "#/components/responses/WorkspaceError409"
+          },
+          "422": {
+            "$ref": "#/components/responses/WorkspaceError422"
+          },
+          "429": {
+            "$ref": "#/components/responses/WorkspaceError429"
+          },
+          "503": {
+            "$ref": "#/components/responses/WorkspaceError503"
+          },
+          "413": {
+            "$ref": "#/components/responses/WorkspaceError413"
+          }
+        },
+        "description": "Requires current hosted session CSRF header, approved Host/Origin and bounded strict UTF-8 JSON decoding. Exact successful replay precedes current revision or compiler checks.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SaveProfile"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v3/profiles/{objectId}/revisions/{revision}": {
+      "parameters": [
+        {
+          "name": "objectId",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "$ref": "#/components/schemas/Uuid"
+          }
+        },
+        {
+          "name": "revision",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "$ref": "#/components/schemas/Revision"
+          }
+        }
+      ],
+      "get": {
+        "operationId": "getV3ProfileRevision",
+        "summary": "Read an immutable historical revision without recompilation",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Owned immutable result; Cache-Control no-store",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProfileRevision"
                 }
               }
             }
@@ -731,6 +950,270 @@
           },
           "message": {
             "type": "string"
+          }
+        }
+      },
+      "DefinitionReference": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "objectId",
+          "workspaceRevision"
+        ],
+        "properties": {
+          "objectId": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "workspaceRevision": {
+            "$ref": "#/components/schemas/Revision"
+          }
+        }
+      },
+      "SaveProfile": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "expectedRevision",
+          "requestId",
+          "format",
+          "source",
+          "definition"
+        ],
+        "properties": {
+          "expectedRevision": {
+            "$ref": "#/components/schemas/ExpectedRevision"
+          },
+          "requestId": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "format": {
+            "type": "string",
+            "enum": [
+              "JSON",
+              "YAML"
+            ]
+          },
+          "source": {
+            "type": "string",
+            "description": "Exact source; at most 1 MiB strict UTF-8, original numeric notation preserved."
+          },
+          "definition": {
+            "$ref": "#/components/schemas/DefinitionReference"
+          }
+        }
+      },
+      "ProfileProjection": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "kind",
+          "model",
+          "contentDigest",
+          "diagnostics"
+        ],
+        "properties": {
+          "kind": {
+            "const": "structurally-valid"
+          },
+          "model": {
+            "$ref": "../../schemas/profile-inspection-v3.schema.json"
+          },
+          "contentDigest": {
+            "$ref": "#/components/schemas/Digest"
+          },
+          "diagnostics": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Diagnostic"
+            },
+            "maxItems": 0
+          }
+        }
+      },
+      "ProfilePublication": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "digest",
+          "sourceRevision"
+        ],
+        "properties": {
+          "digest": {
+            "$ref": "#/components/schemas/Digest"
+          },
+          "sourceRevision": {
+            "$ref": "#/components/schemas/Revision"
+          }
+        }
+      },
+      "ProfileRevision": {
+        "oneOf": [
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "objectId",
+              "workspaceRevision",
+              "sourceDigest",
+              "format",
+              "source",
+              "schemaVersion",
+              "compilerVersion",
+              "projection",
+              "definition",
+              "state"
+            ],
+            "properties": {
+              "objectId": {
+                "$ref": "#/components/schemas/Uuid"
+              },
+              "workspaceRevision": {
+                "$ref": "#/components/schemas/Revision"
+              },
+              "sourceDigest": {
+                "$ref": "#/components/schemas/Digest"
+              },
+              "format": {
+                "type": "string",
+                "enum": [
+                  "JSON",
+                  "YAML"
+                ]
+              },
+              "source": {
+                "type": "string",
+                "description": "Exact source; at most 1 MiB strict UTF-8, original numeric notation preserved."
+              },
+              "schemaVersion": {
+                "const": "3"
+              },
+              "compilerVersion": {
+                "const": "profile-compiler-v3"
+              },
+              "projection": {
+                "$ref": "#/components/schemas/ProfileProjection"
+              },
+              "definition": {
+                "$ref": "#/components/schemas/DefinitionReference"
+              },
+              "state": {
+                "const": "draft"
+              }
+            }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "objectId",
+              "workspaceRevision",
+              "sourceDigest",
+              "format",
+              "source",
+              "schemaVersion",
+              "compilerVersion",
+              "projection",
+              "definition",
+              "state",
+              "publication"
+            ],
+            "properties": {
+              "objectId": {
+                "$ref": "#/components/schemas/Uuid"
+              },
+              "workspaceRevision": {
+                "$ref": "#/components/schemas/Revision"
+              },
+              "sourceDigest": {
+                "$ref": "#/components/schemas/Digest"
+              },
+              "format": {
+                "type": "string",
+                "enum": [
+                  "JSON",
+                  "YAML"
+                ]
+              },
+              "source": {
+                "type": "string",
+                "description": "Exact source; at most 1 MiB strict UTF-8, original numeric notation preserved."
+              },
+              "schemaVersion": {
+                "const": "3"
+              },
+              "compilerVersion": {
+                "const": "profile-compiler-v3"
+              },
+              "projection": {
+                "$ref": "#/components/schemas/ProfileProjection"
+              },
+              "definition": {
+                "$ref": "#/components/schemas/DefinitionReference"
+              },
+              "state": {
+                "const": "published"
+              },
+              "publication": {
+                "$ref": "#/components/schemas/ProfilePublication"
+              }
+            }
+          }
+        ]
+      },
+      "ProfileList": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "profiles"
+        ],
+        "properties": {
+          "profiles": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "objectId",
+                "workspaceRevision",
+                "nativeId",
+                "nativeRevision",
+                "sourceDigest",
+                "state",
+                "contentDigest",
+                "definition"
+              ],
+              "properties": {
+                "objectId": {
+                  "$ref": "#/components/schemas/Uuid"
+                },
+                "workspaceRevision": {
+                  "$ref": "#/components/schemas/Revision"
+                },
+                "nativeId": {
+                  "$ref": "#/components/schemas/DeclaredId"
+                },
+                "nativeRevision": {
+                  "$ref": "#/components/schemas/Revision"
+                },
+                "sourceDigest": {
+                  "$ref": "#/components/schemas/Digest"
+                },
+                "state": {
+                  "type": "string",
+                  "enum": [
+                    "draft",
+                    "published"
+                  ]
+                },
+                "contentDigest": {
+                  "$ref": "#/components/schemas/Digest"
+                },
+                "definition": {
+                  "$ref": "#/components/schemas/DefinitionReference"
+                }
+              }
+            },
+            "maxItems": 100
           }
         }
       }
