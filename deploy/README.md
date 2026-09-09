@@ -112,6 +112,21 @@ service and invoke the same image with the sole argument
 upgrade preserves v1 history/replays and starts no web or IdP service. Already
 upgraded, corrupt and unknown stores refuse; there is no automatic migration.
 
+Schema3 is an explicit storage extension for the internal v3 draft service. The
+old commands keep their defaults. To create a fresh schema3 store, use the sole
+argument `--initialize-workspace-v3=/workspace`. To upgrade schema2, stop the
+service, back up the complete private workspace externally, and use the sole
+argument `--upgrade-workspace-v3=/workspace`. Schema1 must first use its existing
+explicit upgrade to2. The v3 upgrade preserves v1/v2 snapshots and replay records;
+it neither recompiles history nor enables v3 publication or HTTP routes. See
+[schema3 storage](../docs/contracts/workspace-storage-v3.md).
+
+Current startup accepts fully audited schema2 or3. Older schema2-only images
+refuse3. Rollback after upgrade requires the previous image **and** its matching
+pre-upgrade workspace backup, restored with the service stopped. There is no
+downgrade or lossless merge of revisions saved after the upgrade. Keep backups
+outside this checkout, build context and CI artifacts.
+
 Configure `STUDIO_WORKSPACE_DIRECTORY=/workspace` in hosted mode to enable owned
 v1 and native v2 definition/profile routes. Without it, authentication works but workspace routes are unavailable.
 Definition publication additionally requires the private
@@ -130,7 +145,8 @@ executable directory is required for native library extraction. The OCI workspac
 smoke initializes a fresh tool-owned volume, checks mode/ownership, and verifies
 that a refused second initialization preserves its exact database bytes. It also
 checks the explicit schema-1 upgrade and unchanged bytes on repeated/invalid CLI
-invocation. These local mock checks do not qualify an actual platform volume.
+invocation, then explicit schema2-to3 upgrade and fresh schema3 initialization.
+These local mock checks do not qualify an actual platform volume.
 
 Restart expires raw
 observations and secrets and requires fresh inspection. Horizontal scaling,

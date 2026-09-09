@@ -1,6 +1,8 @@
 # Derived graph v1 — complete recomputation and proof
 
-Status: planned mechanism, not registered as available. Implements the
+Status: [reviewed internal mechanism](../evidence/qf34-derived-engine.md), with
+[actual XML and final-target integration](../evidence/qf34-derived-target.md),
+not registered as available. Implements the
 [approved decision](../product/derived-graph-decision.md) for
 [native v3](native-definition-v3.md). Physical graph validation, physical identity
 uniqueness and XML fidelity retain their existing contracts.

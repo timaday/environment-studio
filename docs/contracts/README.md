@@ -25,7 +25,8 @@
 | Hosted session implementation boundary | [hosted-session.md](hosted-session.md) |
 | Runtime definition drafts and revisions | [definition-workspace.md](definition-workspace.md) |
 | Native publication and owned profiles | [native-workspace-v2.md](native-workspace-v2.md) |
-| Separate v3 historical revisions; storage/HTTP pending | [native-workspace-v3.md](native-workspace-v3.md) |
+| Separate v3 historical revisions | [native-workspace-v3.md](native-workspace-v3.md) |
+| Explicit schema3 storage and v3 definition drafts | [workspace-storage-v3.md](workspace-storage-v3.md) |
 | HTTP | [api.md](api.md), [openapi.yaml](openapi.yaml) |
 | Deployment | [../../deploy/README.md](../../deploy/README.md) |
 

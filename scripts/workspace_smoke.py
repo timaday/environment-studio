@@ -30,10 +30,10 @@ def main(image):
         first = run(initialize)
         assert not first.stdout and not first.stderr, "Initializer emitted unexpected output"
 
-        def inspect():
+        def inspect(directory="/workspace"):
             result = run([*protected, "--entrypoint", "sh", image, "-ec",
-                          "stat -c '%a:%u:%g' /workspace /workspace/studio-workspace.db "
-                          "&& sha256sum /workspace/studio-workspace.db"])
+                          f"stat -c '%a:%u:%g' {directory} {directory}/studio-workspace.db "
+                          f"&& sha256sum {directory}/studio-workspace.db"])
             lines = result.stdout.splitlines()
             assert lines[:2] == ["700:10001:10001", "600:10001:10001"], "Unsafe workspace ownership/mode"
             assert len(lines) == 3, "Unexpected workspace inspection output"
@@ -75,6 +75,37 @@ def main(image):
         assert extra.returncode != 0, "Offline upgrade accepted web arguments"
         assert inspect() == upgraded, "Invalid upgrade arguments changed storage"
         print("Schema 2 initializer and explicit offline legacy upgrade/refusal checks passed")
+        upgrade_v3 = [*protected, image, "--upgrade-workspace-v3=/workspace"]
+        result = run(upgrade_v3)
+        assert not result.stdout and not result.stderr, "Offline v3 upgrade emitted unexpected output"
+        upgraded_v3 = inspect()
+        database = subprocess.run(read_database, capture_output=True, timeout=30)
+        assert database.returncode == 0, "Upgraded mock database readback failed"
+        assert int.from_bytes(database.stdout[60:64], "big") == 3, "Upgrade did not create schema 3"
+        with sqlite3.connect(":memory:") as current:
+            current.deserialize(database.stdout)
+            tables = {row[0] for row in current.execute("SELECT name FROM sqlite_schema WHERE type='table'")}
+            assert tables == {"catalog", "revisions", "replays", "artifact_types", "native_revisions",
+                              "native_replays", "v3_artifact_types", "v3_native_revisions", "v3_native_replays"}
+        for command in (upgrade_v3, upgrade, initialize,
+                        [*protected, image, "--initialize-workspace-v3=/workspace"],
+                        [*upgrade_v3, "--server.port=0"]):
+            assert run(command, expected=None).returncode != 0, "Invalid schema3 administration accepted"
+            assert inspect() == upgraded_v3, "Refused schema3 administration changed storage"
+
+        run([*protected, "--entrypoint", "sh", image, "-ec", "mkdir -m 0700 /workspace/fresh-v3"])
+        initialize_v3 = [*protected, image, "--initialize-workspace-v3=/workspace/fresh-v3"]
+        result = run(initialize_v3)
+        assert not result.stdout and not result.stderr, "V3 initializer emitted unexpected output"
+        database = subprocess.run([*protected, "--entrypoint", "sh", image, "-ec",
+                                   "cat /workspace/fresh-v3/studio-workspace.db"],
+                                  capture_output=True, timeout=30)
+        assert database.returncode == 0, "Fresh v3 mock database readback failed"
+        assert int.from_bytes(database.stdout[60:64], "big") == 3, "V3 initializer used another schema"
+        fresh_v3 = inspect("/workspace/fresh-v3")
+        assert run(initialize_v3, expected=None).returncode != 0, "V3 initializer overwrote storage"
+        assert inspect("/workspace/fresh-v3") == fresh_v3, "Refused v3 initialization changed storage"
+        print("Explicit schema3 upgrade, fresh initialization and unchanged refusal checks passed")
     finally:
         # This unique volume is created and owned solely by this smoke invocation.
         # A timed-out docker client can leave its container running; stop that exact one.

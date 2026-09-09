@@ -2,7 +2,11 @@
 
 Status: contract for the [approved derived direction](../product/derived-graph-decision.md).
 Java declaration compilation is an [internal unqualified entry point](../evidence/qf34-v3-compilation.md).
-V3 publication, derived computation and plan support remain unimplemented.
+The [derived engine](../evidence/qf34-derived-engine.md),
+[observed XML](../evidence/qf34-derived-projection.md),
+[final targets](../evidence/qf34-derived-target.md) and
+[physical-only profiles](../evidence/qf34-profile-v3.md) are reviewed internal
+mechanisms. V3 publication and hosted plan support remain unimplemented.
 A schema-valid document has no publication or execution authority.
 This version is explicit opt-in; [v2](native-definition-v2.md) keeps its original
 meaning, mechanisms, digest domains and historical codecs.

@@ -22,7 +22,18 @@ public final class SqliteDraftStore implements DraftStore {
     private final WorkspaceCommit commit;
     private final SnapshotCodec codec = new SnapshotCodec();
 
-    public SqliteDraftStore(Path directory) { this(directory,2); }
+    public SqliteDraftStore(Path directory) { this(directory, registeredVersion(directory)); }
+    int storageVersion() { return storageVersion; }
+    private static int registeredVersion(Path directory) {
+        var paths = new PrivateWorkspacePath(directory); paths.validateFiles(true);
+        try (var connection = connect(paths); var statement = connection.createStatement();
+                var rows = statement.executeQuery("PRAGMA user_version")) {
+            if (!rows.next()) throw unavailable();
+            int version = rows.getInt(1);
+            if (rows.next() || version != 2 && version != 3) throw unavailable();
+            return version;
+        } catch (SQLException failure) { throw unavailable(); }
+    }
     private SqliteDraftStore(Path directory,int storageVersion) {
         this.storageVersion=storageVersion;
         this.commit=Connection::commit;
@@ -40,7 +51,12 @@ public final class SqliteDraftStore implements DraftStore {
     SqliteDraftStore withCommit(WorkspaceCommit commit) { return new SqliteDraftStore(this, commit); }
     void commit(Connection connection) throws SQLException { commit.commit(connection); }
 
-    private String legacyFilter(String alias) { return storageVersion==1?"":" WHERE NOT EXISTS(SELECT 1 FROM artifact_types a WHERE a.object_id="+alias+".object_id)"; }
+    private String legacyPredicate(String alias) {
+        String result = "NOT EXISTS(SELECT 1 FROM artifact_types a WHERE a.object_id=" + alias + ".object_id)";
+        if (storageVersion == 3) result += " AND NOT EXISTS(SELECT 1 FROM v3_artifact_types v WHERE v.object_id=" + alias + ".object_id)";
+        return result;
+    }
+    private String legacyFilter(String alias) { return storageVersion == 1 ? "" : " WHERE " + legacyPredicate(alias); }
     void validate(Connection connection) throws SQLException {
             verifySchema(connection);
             try (var statement = connection.createStatement(); var rows = statement.executeQuery("PRAGMA integrity_check")) {
@@ -72,7 +88,8 @@ public final class SqliteDraftStore implements DraftStore {
             try (var statement = connection.createStatement(); var rows = statement.executeQuery("SELECT c.current_revision,COUNT(r.revision),MAX(r.revision),MIN(r.revision) FROM catalog c LEFT JOIN revisions r USING(object_id)" + legacyFilter("c") + " GROUP BY c.object_id")) {
                 while (rows.next()) if (rows.getInt(1) != rows.getInt(2) || rows.getInt(1) != rows.getInt(3) || rows.getInt(4) != 1) throw unavailable();
             }
-            if(storageVersion==2)NativeSqliteStore.validate(connection);
+            if(storageVersion>=2)NativeSqliteStore.validate(connection);
+            if(storageVersion==3)V3NativeSqliteStore.validate(connection);
     }
 
     public static void initialize(Path directory) {
@@ -87,6 +104,36 @@ public final class SqliteDraftStore implements DraftStore {
                 statement.execute("PRAGMA user_version=2");
             }
             connection.commit();
+        } catch (SQLException failure) { throw unavailable(); }
+        new SqliteDraftStore(directory);
+    }
+
+    public static void initializeV3(Path directory) {
+        var paths = new PrivateWorkspacePath(directory); paths.createDatabaseFile();
+        try (var connection = connect(paths)) {
+            connection.setAutoCommit(false);
+            try (var statement = connection.createStatement()) {
+                for (String sql : DDL) statement.execute(sql);
+                for (String sql : NativeSqliteStore.DDL) statement.execute(sql);
+                for (String sql : V3NativeSqliteStore.DDL) statement.execute(sql);
+                statement.execute("PRAGMA application_id=1163084875");
+                statement.execute("PRAGMA user_version=3");
+            }
+            verifySchema(connection,3); NativeSqliteStore.validate(connection); V3NativeSqliteStore.validate(connection);
+            paths.validateFiles(true); connection.commit(); paths.validateFiles(true);
+        } catch (SQLException failure) { throw unavailable(); }
+        new SqliteDraftStore(directory);
+    }
+    public static void upgradeV3(Path directory) {
+        var previous = new SqliteDraftStore(directory,2);
+        try (var connection = previous.open()) {
+            connection.setAutoCommit(false); previous.validate(connection);
+            try (var statement = connection.createStatement()) {
+                for (String sql : V3NativeSqliteStore.DDL) statement.execute(sql);
+                statement.execute("PRAGMA user_version=3");
+            }
+            verifySchema(connection,3); NativeSqliteStore.validate(connection); V3NativeSqliteStore.validate(connection);
+            previous.paths.validateFiles(true); connection.commit(); previous.paths.validateFiles(true);
         } catch (SQLException failure) { throw unavailable(); }
         new SqliteDraftStore(directory);
     }
@@ -149,7 +196,8 @@ public final class SqliteDraftStore implements DraftStore {
             try (var rows = statement.executeQuery("SELECT sql FROM sqlite_schema WHERE sql IS NOT NULL")) {
                 while (rows.next()) actual.add(rows.getString(1));
             }
-            var expected=new HashSet<>(DDL);if(storageVersion==2)expected.addAll(NativeSqliteStore.DDL);
+            var expected=new HashSet<>(DDL);if(storageVersion>=2)expected.addAll(NativeSqliteStore.DDL);
+            if(storageVersion==3)expected.addAll(V3NativeSqliteStore.DDL);
             if (!actual.equals(expected)) throw unavailable();
         }
     }
@@ -182,7 +230,10 @@ public final class SqliteDraftStore implements DraftStore {
             try (var rows = query.executeQuery()) {
                 if (!rows.next()) return Optional.empty();
                 if (!owner.issuer().equals(rows.getString(1)) || !owner.subject().equals(rows.getString(2))) throw refusal(WorkspaceRefusal.Code.NOT_FOUND);
-                if(storageVersion==2)try(var kind=connection.prepareStatement("SELECT kind FROM artifact_types WHERE object_id=?")) {
+                if(storageVersion>=2)try(var kind=connection.prepareStatement("SELECT kind FROM artifact_types WHERE object_id=?")) {
+                    kind.setString(1,id);try(var kinds=kind.executeQuery()) {if(kinds.next())throw refusal(WorkspaceRefusal.Code.CONFLICT);}
+                }
+                if(storageVersion==3)try(var kind=connection.prepareStatement("SELECT kind FROM v3_artifact_types WHERE object_id=?")) {
                     kind.setString(1,id);try(var kinds=kind.executeQuery()) {if(kinds.next())throw refusal(WorkspaceRefusal.Code.CONFLICT);}
                 }
                 return Optional.of(new Catalog(rows.getString(3), rows.getInt(4)));
@@ -266,7 +317,7 @@ public final class SqliteDraftStore implements DraftStore {
         return WorkspaceDigests.fields(issuer, subject, id, Integer.toString(revision), format, WorkspaceDigests.sha256(source), WorkspaceDigests.sha256(projection), digest, compiler, schema);
     }
     @Override public List<Summary> list(Owner owner) {
-        try (var connection = open(); var query = connection.prepareStatement("SELECT object_id,current_revision FROM catalog WHERE issuer=? AND subject=? AND NOT EXISTS(SELECT 1 FROM artifact_types a WHERE a.object_id=catalog.object_id) ORDER BY object_id")) {
+        try (var connection = open(); var query = connection.prepareStatement("SELECT object_id,current_revision FROM catalog WHERE issuer=? AND subject=? AND "+legacyPredicate("catalog")+" ORDER BY object_id")) {
             query.setString(1, owner.issuer()); query.setString(2, owner.subject());
             var summaries = new ArrayList<Summary>();
             try (var rows = query.executeQuery()) {

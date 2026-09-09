@@ -32,7 +32,11 @@ reviewed: actual XML capture, bounded portable bytes and whole/partial compositi
 through fresh final materialization pass full Java912 and independent controls.
 [Separate v3 history](../evidence/qf34-history-v3.md) is also reviewed after fixing
 a legal binding-ID collision in numeric checks; the combined Java943 build passes.
-Schema3 persistence and hosted integration remain next; v3 availability stays disabled.
+[Schema3 persistence and definition drafts](../evidence/qf34-workspace-v3.md) are
+also reviewed: exact history, shared quotas, owner/kind isolation and real failed
+upgrade rollback pass. Combined Java970 passes before three added reviewer tests.
+V3 profile mutation, publication and hosted integration remain next; v3
+availability stays disabled.
 No Q feedback GitHub publication is authorized. Existing MVP scope and completed
 work remain in place.
 

@@ -49,8 +49,12 @@ gates. Frontend40/schema32 and full Java894 pass, plus the
 [exact artifact/browser refresh](../evidence/derived-target-artifacts.md).
 [Separate v3 history](../evidence/qf34-history-v3.md) is now reviewed; its numeric
 checks preserve legal binding IDs and old snapshots. Combined Java943 passes.
-Explicit schema3 persistence is next; physical-only reuse/history remain internal
-ports, with no v3 hosted enablement.
+[Explicit schema3 persistence and definition drafts](../evidence/qf34-workspace-v3.md)
+are now reviewed. Combined Java970 and independent actual rollback/replay controls
+pass; three reviewer tests are subsequently integrated. Old initialization/upgrade
+commands keep their defaults; new v3 commands are explicit offline operations.
+V3 definition draft/history HTTP is next, followed by remaining profile mutation,
+publication and plan integration; there is no v3 runtime enablement.
 The review environment's supervisor failures remain separately scoped and unresolved
 individually; local Java21.0.12 socket/child-start controls and supervisor168 pass.
 

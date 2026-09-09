@@ -29,9 +29,20 @@ final class V3NativeSnapshotCodec {
     }
     byte[] encode(V3NativeRevision revision) {
         try {
+            return encodeForStorage(revision);
+        } catch (RuntimeException invalid) { throw unavailable(); }
+    }
+    byte[] encodeForStorage(V3NativeRevision revision) {
+        try {
+            if (StrictUtf8.encode(revision.source()).length > 1_048_576)
+                throw new WorkspaceRefusal(WorkspaceRefusal.Code.TOO_LARGE);
             byte[] bytes = raw(revision);
+            if (bytes.length > 2_097_152) throw new WorkspaceRefusal(WorkspaceRefusal.Code.TOO_LARGE);
             decode(bytes);
             return bytes;
+        } catch (WorkspaceRefusal refusal) {
+            if (refusal.code() == WorkspaceRefusal.Code.TOO_LARGE) throw refusal;
+            throw unavailable();
         } catch (RuntimeException invalid) { throw unavailable(); }
     }
     private byte[] raw(V3NativeRevision revision) {
