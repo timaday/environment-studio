@@ -82,6 +82,11 @@ Combined Java1253 includes the native launch owner and independent tests.
 The [shared versioned workspace adapter](../evidence/qf34-shared-workspace.md)
 passes independent selected-pin/authority-loss review and combined Java1260.
 Versioned APIs, runtime composition and combined proof resources stay open.
+The [native maps sampler](../evidence/d07c3-privacy-maps.md) passes independent
+review: complete bounded streams, original controls, opaque labels, once-only
+receiver ownership and persistent launch cleanup uncertainty. Four new independent
+families pass alongside the existing native launch/JNI cases. Combined Java1275
+passes; production JNI, mapped bytes/loader closure and client admission stay open.
 No Q feedback GitHub publication is authorized. Existing MVP scope and completed
 work remain in place.
 

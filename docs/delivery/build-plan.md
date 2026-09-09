@@ -73,8 +73,12 @@ passes independent review and combined Java1224.
 [native launch owner](../evidence/d07c3-privacy-native-launch.md) now pass
 independent review and combined Java1253. The
 [shared versioned workspace adapter](../evidence/qf34-shared-workspace.md) now
-passes independent review and combined Java1260. Versioned views/APIs, runtime composition
-and combined retained-proof resources remain required before admission.
+passes independent review and combined Java1260. Versioned views/APIs, runtime
+composition and combined retained-proof resources remain required. The
+[native maps sampler](../evidence/d07c3-privacy-maps.md) now passes independent
+complete-stream, shared-retry and descriptor-reuse review. Combined Java1275
+passes; production JNI, mapped byte identity, loader closure and native client
+qualification remain open.
 
 The lead owns shared contracts and compatibility. Independent fixed-candidate
 review, actual RED/GREEN, targeted guard mutations and integrated verification

@@ -209,3 +209,30 @@ es_launch_cleanup es_launch_close(es_launch *p,uint64_t left){
  es_launch_cleanup r=p->closing==ES_LAUNCH_CLOSE_SETTLED&&!p->inconclusive?ES_LAUNCH_CLOSED_COMPLETE:ES_LAUNCH_CLOSED_INCONCLUSIVE;
  pthread_mutex_unlock(&p->mutex);return r;
 }
+
+static es_launch_result maps_result(es_maps_result result){
+ switch(result){
+ case ES_MAPS_OK:return ES_LAUNCH_OK;case ES_MAPS_INVALID:return ES_LAUNCH_INVALID;
+ case ES_MAPS_PLATFORM:return ES_LAUNCH_PLATFORM;case ES_MAPS_RESOURCE:return ES_LAUNCH_RESOURCE;
+ case ES_MAPS_IDENTITY:return ES_LAUNCH_IDENTITY;case ES_MAPS_FORMAT:return ES_LAUNCH_PROTOCOL;
+ case ES_MAPS_DEADLINE:return ES_LAUNCH_DEADLINE;case ES_MAPS_CANCELLED:return ES_LAUNCH_CANCELLED;
+ case ES_MAPS_CLEANUP:return ES_LAUNCH_CLEANUP;default:return ES_LAUNCH_IO;
+ }
+}
+es_launch_result es_launch_maps(es_launch *p,es_maps_snapshot *out){
+ if(!out)return ES_LAUNCH_INVALID;
+ if(p&&overlaps(p,sizeof(*p),out,sizeof(*out)))return ES_LAUNCH_INVALID;
+ wipe(out,sizeof(*out));if(!valid(p))return ES_LAUNCH_INVALID;
+ pthread_mutex_lock(&p->mutex);++p->users;
+ es_launch_result result=guard(p);
+ if(result)return leave(p,result);
+ if(!p->receiver_bound||!pthread_equal(p->receiver,pthread_self())||p->maps_entered
+    ||p->phase!=ES_LAUNCH_PHASE_CORRELATED||p->root_active||p->disarm_active)return leave(p,ES_LAUNCH_PROTOCOL);
+ p->maps_entered=1;p->root_active=1;pthread_mutex_unlock(&p->mutex);
+ result=maps_result(es_maps_sample(&p->connection.peer,out));
+ pthread_mutex_lock(&p->mutex);p->root_active=0;
+ if(result==ES_LAUNCH_CLEANUP)p->inconclusive=1;
+ if(!result)result=guard(p);
+ if(result)wipe(out,sizeof(*out));
+ return leave(p,result);
+}

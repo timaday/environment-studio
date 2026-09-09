@@ -1150,3 +1150,9 @@ Actual test-only JNI uses existing PrivacyLaunchOwner with fixed FORK and exactl
 Adverse schedules and faults: partial eventfd/listener open; entropy failure; completed failed-arm disarm exception and early failure refusal; no hook/POSIX_SPAWN; wrong-thread/duplicate calls; early foreign peer; mismatched root; deadline/cancel at all waits and after a returning primitive; close while capture/register/disarm/correlate active; late completed work cannot restore success; shortened concurrent close wait; exact-number eventfd reuse while stale cancel/status/close run; signal reference held across teardown request; uncertain connection/root/listener close still attempts other owners; partial-open borrowed parent survives; second owner cannot be affected. Close-out tests join/reap every owned mock thread/process and preserve stuck-scheduling tests as injected schedules rather than actual ProcessBuilder stall proof. Compile targeted mutations and count actual assertion failures, not setup errors.
 
 All existing namespace, kernel pin, frame, close-once, output wiping and original-clock preconditions remain. No memory/maps reader, hash context, image/ELF call, loader/quiescence proof, exec-generation attestation, script/client execution, full fork/exec graph, crypto budget reset, token registry, library installation, parent self suppression, credentials, registry/readiness or production JNI method is introduced. Future memory inspection must close every held mem fd conclusively before CHALLENGE; dumpable0 does not revoke it. Two sampled identities/byte sequences remain non-atomic. The next identity stage must extend this same owner, not introduce a parallel coordinator.
+
+## Bounded maps sampling extension
+
+The next private receiver-owned prerequisite is specified in
+[privacy-maps-v1](privacy-maps-v1.md). It extends the existing launch owner
+without granting image, loader, privacy or client admission.

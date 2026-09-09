@@ -1,6 +1,7 @@
 #ifndef ES_PRIVACY_LAUNCH_H
 #define ES_PRIVACY_LAUNCH_H
 #include "privacy-root.h"
+#include "privacy-maps.h"
 #include <pthread.h>
 typedef enum { ES_LAUNCH_OK=0,ES_LAUNCH_ROOT_CORRELATED=1,ES_LAUNCH_INVALID=2,
  ES_LAUNCH_PLATFORM=3,ES_LAUNCH_RESOURCE=4,ES_LAUNCH_IDENTITY=5,ES_LAUNCH_PROTOCOL=6,
@@ -19,7 +20,7 @@ typedef struct es_launch {
  es_launch_phase phase;es_launch_result failure;es_launch_close_state closing;
  unsigned inconclusive,cancelled,users,signals,root_active,disarm_active;
  unsigned launcher_bound,receiver_bound,arm_entered,arm_done,capture_entered,capture_done;
- unsigned register_entered,register_done,disarm_entered,disarm_done,correlate_entered;
+ unsigned register_entered,register_done,disarm_entered,disarm_done,correlate_entered,maps_entered;
  pthread_t launcher,receiver;
  int cancel_fd;uint64_t startup_deadline,operation_deadline,cleanup_deadline;
  uint8_t launch_id[16];
@@ -35,6 +36,7 @@ es_launch_result es_launch_capture(es_launch *);
 es_launch_result es_launch_register(es_launch *,uint64_t);
 es_launch_result es_launch_disarm(es_launch *);
 es_launch_result es_launch_correlate(es_launch *);
+es_launch_result es_launch_maps(es_launch *,es_maps_snapshot *);
 es_launch_result es_launch_status_read(es_launch *,es_launch_status *);
 es_launch_result es_launch_cancel(es_launch *);
 es_launch_cleanup es_launch_close(es_launch *,uint64_t);

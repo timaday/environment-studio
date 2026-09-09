@@ -37,6 +37,9 @@ unqualified. Both reviewed slices pass combined Java1253.
 The [shared versioned workspace adapter](docs/evidence/qf34-shared-workspace.md)
 now preserves selected publication pins and fresh qualification; combined Java1260
 passes. Runtime registration remains unfinished.
+The [native maps sampler](docs/evidence/d07c3-privacy-maps.md) now retains complete
+bounded mapping evidence under the launch owner. Equal samples do not establish
+mapped byte identity; production JNI and client admission remain unqualified.
 Complete Oracle CLOB/PostgreSQL text observation, value-free profile composition
 and cross-document structural target materialization are implemented as reviewed
 internal mechanisms. The hosted plan service joins these mechanisms with session
