@@ -18,8 +18,8 @@ The previous push-review blocker is historical: the remote now matches the check
 
 ## Current 9 September continuation
 
-Latest exact-source OCI/browser artifact: `1bda69993ff1257b063d08a357fd2b260d8be385`. The
-[artifact refresh](../evidence/d06b4-artifacts.md) records Java623,
+Latest exact-source OCI/browser artifact: `c4a324636d4aeaa20012349e68cce7eb2b025f8b`. The
+[artifact refresh](../evidence/d06b4-artifacts.md) records Java683,
 frontend34/schema24, protected container/workspace smoke and four exact-source
 hosted browser cases. Observed destination and summary transfer authority are
 reviewed and integrated. Native fork capture was independently reviewed and integrated from the fixed
@@ -345,7 +345,9 @@ distinct guard mutants are killed. The earlier14-file candidate in
 `/home/tim/.tmp/es-plan-transfer-20260909`, base212fb2f, is superseded: independent
 review reproduced a lost cleanup notification despite its full670 pass. Preserve
 both records and never restore its two-lock notification path. Exact-source
-OCI/browser refresh and whole-process capacity qualification follow.
+OCI/browser refresh passed at exactc4a3246; whole-process capacity qualification
+continues in `/home/tim/.tmp/es-hosted-heap-20260909`. That lab starts from the
+exact extracted artifact; no hosted-heap pass is claimed yet.
 
 The full retained current/changed-target byte workload is independently reviewed
 in [heap evidence](../evidence/d06b5-heap-investigation.md). Its frozen external lab

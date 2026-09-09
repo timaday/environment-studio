@@ -4,11 +4,11 @@ Updated: 9 September 2026. See [starter evidence](../evidence/starter-verificati
 and [D01a integration](../evidence/d01a-integration.md) for actual commands and
 results; the table below reports capability, not test count.
 
-Latest exact-source OCI/browser artifact is `1bda69993ff1257b063d08a357fd2b260d8be385`.
-Reviewed observed identity and live summary publication are integrated; the
-[exact-source artifact refresh](../evidence/d06b4-artifacts.md) passed Java623,
+Latest exact-source OCI/browser artifact is `c4a324636d4aeaa20012349e68cce7eb2b025f8b`.
+Reviewed observed context and response/session recovery are integrated; the
+[exact-source artifact refresh](../evidence/d06b4-artifacts.md) passed Java683,
 frontend34/schema24, four hosted browser cases and protected container/workspace
-smoke. Native fork capture is now integrated as a private prerequisite; maximum heap/transfer/recovery,
+smoke. Native fork/listener primitives remain private prerequisites; whole-process heap/transfer qualification,
 remaining operator workflow and external publication/deployment remain unfinished.
 
 Work resumed from verified local and remote `8125e57127b1583664d368b97b82d08ec103fe5d`.
@@ -233,5 +233,6 @@ independently reviewed and integrated. Actual unread/logout, deadline and
 disconnect sockets recover shared capacity; confirmed cleanup permits fresh
 same-owner login without restoring the retired plan. Review reproduced and fixed
 a concurrent cleanup-notification gap. Corrected Java683, independent25 focused
-checks and twelve distinct killed guard mutants support this slice. Exact-source
-OCI/browser refresh and whole hosted-process capacity remain pending.
+checks and twelve distinct killed guard mutants support this slice. The exact
+c4a3246 OCI build, protected/workspace smoke and four HTTPS/OIDC browser cases
+also pass. Whole hosted-process capacity qualification remains active.

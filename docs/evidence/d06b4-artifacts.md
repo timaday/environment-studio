@@ -1,5 +1,55 @@
 # D06b4 — image and hosted browser refresh
 
+## Response recovery refresh at c4a3246
+
+Exact source: `c4a324636d4aeaa20012349e68cce7eb2b025f8b`, including the reviewed
+response/session recovery correction and native fork/listener prerequisites.
+Separate fresh `git archive` trees supplied the OCI and hosted browser checks.
+
+`docker build --progress plain --build-arg
+SOURCE_REVISION=c4a324636d4aeaa20012349e68cce7eb2b025f8b
+-t environment-studio:c4a3246-review-20260909 .` passed Java683
+(core167/parser7/server387/supervisor122), supervisor assembly/checksums and hostile
+launch checks. The unchanged frontend layer was cached; fresh host checks using
+Node24.20.0 passed frontend34/schema24, TypeScript and production build.
+An earlier invocation had a mistyped source-label argument and was stopped before
+acceptance. It is not an artifact result. The final inspected source label equals
+the exact commit above.
+
+Docker-inspected image ID:
+`sha256:64176f7b650f23e25d2bf1759e450f8305984edc788350e75c626c7ec20f0b75`.
+Extracted app.jar SHA-256:
+`5fca94d00704caf57814c9ee8bf2d3a01491381121b1484d65a8bfd0b546dddf`.
+`bash scripts/container_smoke.sh environment-studio:c4a3246-review-20260909`
+passed protected startup/static UI/health/demo refusal and private workspace
+initialization, permissions, schema2 and explicit offline legacy-upgrade checks.
+Logs: `/home/tim/.tmp/es-c4a3246-oci-build-20260909.log` and
+`/home/tim/.tmp/es-c4a3246-container-smoke-20260909.log`.
+
+The separate supervisor artifact is
+`/home/tim/.tmp/es-c4a3246-supervisor-artifacts-20260909/environment-studio-guarded-0.1.0-SNAPSHOT.zip`.
+ZIP SHA-256: `2c0205111b0800bdda0e2e9cfa54cc2f6724b24603f6fad16ec97a173e8f5404`.
+The runtime registry remains empty; the included prerequisites do not qualify
+native authentication, effective crash privacy or execution.
+
+Fresh reactor `test-compile dependency:build-classpath`, `npm ci`, frontend checks,
+tests/build and the actual local HTTPS/OIDC browser harness passed. Runner:
+`python3 /home/tim/.tmp/es-run-browser-c4a3246-20260909.py c4a3246 all`.
+All four desktop1440x1000/narrow390x844 maintainer/operator cases passed in7.0s,
+including keyboard/accessibility and credential/log/storage canary controls.
+Observation remains an independently invented mock port. TLS/workspace and browser
+outputs stayed in RAM, without trace/video capture. Owned harness cleanup was
+COMPLETE, without force kill or an inconclusive marker.
+Log: `/home/tim/.tmp/es-d08a-browser-c4a3246-20260909.log`.
+
+Actual blocked-output HTTP evidence is in
+[response recovery](d06b7-response-recovery.md). These functional browser and
+startup checks do not establish maximum whole-process heap, TLS backpressure,
+the full operator workflow, native-client qualification or external deployment.
+The 1 GiB deployment allocation remains inadequate for the demonstrated legal
+draft workload. Whole-hosted HTTP scope qualification is continuing separately.
+No new GitHub CI, GHCR publication or HiveForge result is claimed.
+
 ## Observed-context refresh at 1bda699
 
 Exact source: `1bda69993ff1257b063d08a357fd2b260d8be385`, including the reviewed
