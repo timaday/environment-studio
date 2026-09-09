@@ -18,6 +18,13 @@ The previous push-review blocker is historical: the remote now matches the check
 
 ## Current 9 September continuation
 
+The next native prerequisite is reviewed: [D07c3 privacy controls](../evidence/d07c3-privacy-controls.md).
+Exact candidate on `744e981` passed independent full Java526/assembly/launch checks;
+its author-run terminal failure remains recorded. The primitive has no runtime
+wiring or admission authority. Agent work continues on fixed private socket frames
+and bounded connection handshakes under the reviewed ABI. Preserve its assigned
+external worktree; do not enable registry entries from a primitive test pass.
+
 Reviewed authority/policy implementation is committed locally as
 `f4f2add0c6f3b46c00e03a8f0b11102e62163a50`. The two XML findings are committed as
 `40b67ae`, with compiler mechanism 2. Combined

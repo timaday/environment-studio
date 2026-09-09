@@ -128,3 +128,11 @@ Delivery tooling blocker: the authorized branch push was rejected by automatic
 approval review because the session requires approval while its approval setting
 is Never. Local commits and implementation continue; no GitHub upload, PR/CI or
 published-image evidence is claimed for these new slices.
+
+The reviewed [D07c3 suppression primitive](../evidence/d07c3-privacy-controls.md)
+now supplies native dumpability/NO_NEW_PRIVS/TSYNC/reset controls with seven actual
+native/JVM adverse probes and four killed guard mutants. Independent integration
+on `744e981` passed all 526 Java tests and assembly/launch checks. One author's
+unchanged terminal-test failure remains unexplained despite passing follow-ups.
+Private socket framing, executable identity, JNI/launcher wiring and crash-path
+qualification remain active work; this primitive does not admit native execution.
