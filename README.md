@@ -15,7 +15,9 @@ Separate [v3 definition](docs/contracts/workspace-http-v3.md) and
 exact source in an explicitly initialized schema3 workspace.
 [Internal v3 publication commands](docs/evidence/qf34-publication-v3.md) now enforce
 fresh qualification; the current compiler still refuses publication. V3
-publication HTTP and plan integration remain unfinished.
+publication HTTP and plan integration remain unfinished. The
+[internal v3 plan publication lookup](docs/evidence/qf34-plan-workspace-v3.md)
+now rechecks exact current definition/profile history before future plan use.
 The [internal v3 observation path](docs/evidence/qf34-observation-v3.md) now retains
 separate fingerprints and passes actual mock database/TLS and derived-projection
 checks; hosted v3 availability remains disabled.

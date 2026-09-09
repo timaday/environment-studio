@@ -52,8 +52,14 @@ The actual compiler continues to refuse publication. The
 [internal v3 observation adapter](../evidence/qf34-observation-v3.md) now passes
 independent review, combined Java1126 and actual verified-TLS observation/derived
 projection on both owned mock database engines. Empty derived identities refuse;
-cleanup uncertainty remains explicit. Publication HTTP and plan integration remain
-next; v3 operational availability stays disabled.
+cleanup uncertainty remains explicit. The
+[internal v3 plan publication lookup](../evidence/qf34-plan-workspace-v3.md)
+now passes independent review and combined Java1151, including the native script
+prerequisite. [Actual both-engine derived workflows](../evidence/qf34-database-workflow-v3.md)
+pass exact merge/proof, physical-only capture and whole/partial reuse controls;
+independent review corrected a composition-oracle gap before the final rerun.
+Publication HTTP and shared hosted plan integration remain next; v3 operational
+availability stays disabled.
 No Q feedback GitHub publication is authorized. Existing MVP scope and completed
 work remain in place.
 

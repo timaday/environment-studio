@@ -51,8 +51,13 @@ reference, exact-revision and owner controls pass.
 independent review and combined Java1115; the actual compiler still refuses
 publication. [Internal v3 observation](../evidence/qf34-observation-v3.md) now passes
 independent review, combined Java1126 and actual mock Oracle/PostgreSQL TLS and
-derived-projection controls. Publication HTTP and plan integration remain the next
-v3 boundaries before operational qualification.
+derived-projection controls. The
+[current v3 plan publication lookup](../evidence/qf34-plan-workspace-v3.md) now
+passes independent review and combined Java1151. The separate
+[actual both-engine workflow extension](../evidence/qf34-database-workflow-v3.md)
+passes complete target/proof, physical-only capture and whole/partial reuse
+checks after correcting an independently found test-oracle gap. Publication HTTP
+and the shared hosted lifecycle remain next before operational qualification.
 
 The lead owns shared contracts and compatibility. Independent fixed-candidate
 review, actual RED/GREEN, targeted guard mutations and integrated verification
