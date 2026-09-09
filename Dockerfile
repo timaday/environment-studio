@@ -35,6 +35,7 @@ RUN apt-get update -qq && apt-get install -y --no-install-recommends \
 COPY backend/ ./backend/
 COPY schemas/ ./schemas/
 COPY fixtures/native-v2/ ./fixtures/native-v2/
+COPY fixtures/native-v3/ ./fixtures/native-v3/
 COPY fixtures/profile-v2/ ./fixtures/profile-v2/
 COPY fixtures/db-observation/ ./fixtures/db-observation/
 COPY fixtures/structural-target/ ./fixtures/structural-target/

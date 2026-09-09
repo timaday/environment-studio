@@ -155,6 +155,8 @@ review of this record. Approval covers authoritative recomputation, physical-onl
 v3 profiles, PUBLIC text inputs, the eligibility/absence rules and shared graph
 limits above. It does not qualify runtime behavior or authorize Q publication.
 The [closed v3 contracts and schemas](../evidence/qf34-v3-contracts.md) are now
-reviewed; Java implementation and integration qualification remain next.
+reviewed. [Internal Java declaration compilation](../evidence/qf34-v3-compilation.md)
+is implemented without availability; computed runtime and integration
+qualification remain next.
 QF-0001/0002 is integrated as the preceding bounded slice. Independent MVP work
 and its remaining qualification gates continue.

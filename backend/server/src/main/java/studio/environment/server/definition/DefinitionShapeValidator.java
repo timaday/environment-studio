@@ -14,12 +14,13 @@ import studio.environment.core.definition.DefinitionDiagnostic;
 final class DefinitionShapeValidator {
     private final JsonNode schemaTree;
     private final Schema schema;
-    enum Version { V1, V2 }
+    enum Version { V1, V2, V3 }
     DefinitionShapeValidator() { this(Version.V1); }
     DefinitionShapeValidator(Version version) {
         String resource = switch (version) {
             case V1 -> "/schemas/definition.schema.json";
             case V2 -> "/schemas/definition-v2.schema.json";
+            case V3 -> "/schemas/definition-v3.schema.json";
         };
         try (InputStream source = DefinitionShapeValidator.class.getResourceAsStream(resource)) {
             if (source == null) throw new IllegalStateException("The packaged definition schema is unavailable.");

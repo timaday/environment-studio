@@ -13,7 +13,7 @@ import studio.environment.core.definition.DefinitionDraft.ValueType;
 import studio.environment.core.definitionv2.NativeDefinition;
 import static studio.environment.core.definitionv2.NativeDefinition.*;
 
-/** No default/coercion: invoked only for a tree accepted by the packaged closed v2 schema. */
+/** Reads frozen physical declarations after version-specific closed shape validation, without default/coercion. */
 final class NativeDefinitionReader {
     private NativeDefinitionReader() { }
     static NativeDefinition read(JsonNode root) {

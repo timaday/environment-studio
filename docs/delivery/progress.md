@@ -16,16 +16,21 @@ export qualification remain open. Tim approved the separate
 [derived semantics](../product/derived-graph-decision.md) for QF-0003/0004. The
 [reviewed v3 contracts](../evidence/qf34-v3-contracts.md) now define separate
 computed results, full provenance, shared bounds and physical-only profiles;
-32 schema checks and independent digest controls pass. Java v3 compilation and
-recomputation are next, with availability disabled until integration qualifies
-the required paths. No Q feedback GitHub publication is authorized. Existing MVP
-scope and completed work remain in place.
+32 schema checks and independent digest controls pass. The
+[reviewed internal Java v3 compiler](../evidence/qf34-v3-compilation.md) now rejects
+invalid declarations and produces matching v3 digests; every valid result remains
+incomplete. Full Java781 passes. The separate derived engine and its complete
+contributor/target/profile integrations are next; v3 availability remains disabled.
+No Q feedback GitHub publication is authorized. Existing MVP scope and completed
+work remain in place.
 
-Current retained child-candidate image:
-`sha256:cad649ef4cc03f1b54d3b7ffa6304a64dcf2acf126fed74d06b6e99dcc0de20f`.
-Its explicit candidate source manifest and supervisor ZIP identity are recorded
-in the QF evidence. It is local only; the earlier c4a3246 image below remains the
-latest candidate with hosted HTTPS/OIDC browser evidence.
+Current retained internal v3 compiler image:
+`sha256:2379b3001e2afe9592eeed4f7c15056309d7989732bcacc7da672714680218ca`.
+Its exact build passes Java781, frontend34/schema32 and protected container smoke;
+the candidate manifest and supervisor ZIP identity are recorded in the compiler
+evidence. It is local only; the earlier c4a3246 image below remains the latest
+candidate with hosted HTTPS/OIDC browser evidence. The preceding child-candidate
+image remains recorded in QF-0001/0002 evidence.
 
 The [hosted heap evidence](../evidence/d06b8-hosted-heap.md) now includes reviewed
 complete source-byte, dense-field and full-graph workloads, plus four simultaneous

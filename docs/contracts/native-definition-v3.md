@@ -1,8 +1,9 @@
 # Native definition v3 — authoritative derived declarations
 
 Status: contract for the [approved derived direction](../product/derived-graph-decision.md).
-Runtime v3 compilation, publication and plan support are unimplemented and
-unqualified. A schema-valid document has no publication or execution authority.
+Java declaration compilation is an [internal unqualified entry point](../evidence/qf34-v3-compilation.md).
+V3 publication, derived computation and plan support remain unimplemented.
+A schema-valid document has no publication or execution authority.
 This version is explicit opt-in; [v2](native-definition-v2.md) keeps its original
 meaning, mechanisms, digest domains and historical codecs.
 
