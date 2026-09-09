@@ -25,6 +25,22 @@ No fallback to another launch mechanism is allowed. Missing/unsupported settings
 or fork/ENOMEM failure refuse. Measure fork memory overhead with the actual
 maximum standalone workload; a property string alone is not execution evidence.
 
+The first Java-owned process must be pinned before exec, without looking up its
+returned numeric PID. After JVM self-suppression, arm the fixed native library on
+one dedicated platform launcher thread. Its qualified atfork child hook sends one
+preprepared record on a private unnamed socketpair. Kernel SO_PASSPIDFD supplies
+the message sender's process pin; a pre-fork socket's SO_PEERPIDFD instead identifies
+the creating JVM and cannot establish child ownership. Registration correlates the
+live captured pin with the exact Process returned by that same launch. Java's
+isAlive/start-time metadata and a caller PID alone are insufficient.
+
+The hook never waits for an acknowledgement: ProcessBuilder.start itself waits
+for the exec-failure channel to close. A native owner may receive the capture
+before Java returns solely to support bounded cancellation/cleanup. No unreturned,
+failed or uncertain Java start grants admission. Fixed async-signal-safe hooks,
+thread binding, descriptor lifetime and failure handling follow the private ABI;
+this capture grants no executable, ancestry or crash-privacy admission.
+
 The library provides a narrow private JNI boundary for self suppression and an
 owned Unix-domain control listener. Use native descriptors owned by that boundary;
 do not reflect into JDK file-descriptor fields or introduce a public native command

@@ -221,26 +221,103 @@ ABORT may terminate any child wait, but never converts a failure into success.
 
 ## State machine and deadlines
 
+### Initial Java fork ownership
+
+Java PID/start-time/isAlive metadata is consistency evidence, never the root pin.
+The qualified fixed JNI library registers its atfork handlers once, cannot unload
+until invocation teardown, and uses a private pre-exec capture separate from the
+constructor wire. `armFork(launch)` runs after self-suppression on one dedicated
+Java platform launcher thread, immediately before its one ProcessBuilder.start.
+Reject virtual threads, another thread's registration, rearming, nesting, stale
+generations and another ProcessBuilder start inside that window. Serialize all
+supervisor arm/start/register/finally-disarm windows; no unrelated process launch
+may share an armed thread. Qualify the actual installed JDK FORK path and handler
+ordering; a property or source tag alone does not prove callbacks ran.
+
+Native code creates one fresh unnamed AF_UNIX SOCK_SEQPACKET pair with CLOEXEC and
+NONBLOCK, enables and verifies SO_PASSPIDFD and SO_PASSCRED on the receiving end,
+and prepares exactly 24 immutable bytes: ASCII `ESFORK01` followed by this launch's
+16-byte random identifier. No pathname, PID, credential, Java object or caller
+buffer enters the record. Capture scratch and descriptors count toward the existing
+per-launch bounds. No filesystem/abstract endpoint or public inherited descriptor
+is introduced. Missing kernel support refuses without numeric pidfd_open fallback.
+
+The child hook accesses preallocated initial-exec TLS and already bound immutable
+data. It sends the whole record once with MSG_DONTWAIT|MSG_NOSIGNAL, then closes
+both inherited capture descriptors and returns to JDK exec preparation. A short,
+interrupted, blocked or failed send, or uncertain close, exits125 immediately,
+with no retry, output or parent acknowledgement. No allocation, locks, JNI/Java,
+formatting, hashing, stdio, lazy binding or dynamic TLS resolution occurs in the
+hook. Qualify the generated instructions and exact libc call closure, including
+compiler-inserted helpers and signal behavior, for the installed runtime.
+
+An atfork parent handler closes its sending copy once after the fork attempt;
+its receiving copy remains under the native coordinator. The launcher thread's
+finally path disarms any remaining generation-bound TLS on every return/throw.
+Cancellation cannot close/reuse a descriptor while an armed handler may still use
+its number. If the fork window has not demonstrably ended, retain its bounded
+quarantine and report cleanup uncertainty. Hook or finally close uncertainty is
+sticky; never retry a number that could have been reused. The child closes its
+own inherited copies; parent cleanup cannot close a child's descriptor for it.
+
+The native owner receives one exact record with MSG_CMSG_CLOEXEC, requiring exactly
+one kernel SCM_PIDFD and one SCM_CREDENTIALS with exact sizes, and no other ancillary
+data. Reject truncation, unknown/duplicate records, trailing packets, non-EOF after
+all sending owners should be closed, wrong launch identifier and malformed sender
+identity. Close every received descriptor on refusal, including truncated ancillary
+delivery, without accepting SCM_RIGHTS. The existing constructor wire still rejects
+all ancillary data. Check the pin's CLOEXEC, live fdinfo PID, UID/GID and process-start
+identity under the same bounded procfs rules as socket peer checks.
+
+The coordinator may capture the sender pin before Java start returns for cancellation
+and cleanup only. `registerRoot` requires the exact Process returned by the same
+armed thread/window, its positive PID and this still-live kernel pin. It performs
+no numeric acquisition. Match an initial constructor's independent live socket pin
+to that root's PID and start identity; retain both pins while comparing. Neither a
+dead/recycled root nor an inherited socket's creator credentials can satisfy this.
+Failure, no hook, missing/extra receipt, unreturned start or mismatch refuses; process
+and descriptor cleanup still must be established. A captured pin may support owned
+termination after cancellation, but never makes uncertain process cleanup COMPLETE.
+
+The original startup and cleanup clocks bound arming, fork capture, registration
+and disarming; no hook/capture creates another allowance. This protocol's production
+qualification includes failed/stalled fork or exec, missing hook/kernel feature,
+same-UID interference, wrong/migrating thread, duplicate ancillary/records, descriptor
+exhaustion/reuse, cancellation, expiry, concurrent cleanup and JVM shutdown. The
+external feasibility probe does not establish those gates.
+
+The ownership mechanism uses the kernel message sender captured by
+[Linux SCM_PIDFD](https://github.com/torvalds/linux/blob/v6.8/include/net/scm.h).
+The [pinned JDK fork path](https://github.com/openjdk/jdk21u/blob/jdk-21.0.12%2B8/src/java.base/unix/native/libjava/ProcessImpl_md.c)
+explains why the hook cannot await post-start acknowledgement. Qualify actual
+binaries and [pre-exec async-signal safety](https://pubs.opengroup.org/onlinepubs/9799919799/functions/fork.html)
+before enabling an installed runtime.
+
+### Coordinator transitions
+
 One native coordinator owns these transitions and all descriptor operations:
 
 1. `CREATED`: listener exists, launch deadline fixed, no process admitted.
-2. `ROOT_REGISTERED`: capture live kernel identity from the exact Java-owned
-   process handle's PID. Registration may follow a pending connection, but no
+2. `FORK_CAPTURE_ARMED`: bind the private pre-exec channel to the dedicated launcher
+   thread. Capture the kernel sender pin without admission; await the matching Java
+   start result within the original launch deadline.
+3. `ROOT_REGISTERED`: correlate that still-live pin with the exact returned
+   Java-owned Process. A constructor connection may already be pending, but no
    connection is processed before registration. A failed Java start closes the
-   launch; an unreturned/uncertain process handle cannot report clean admission.
-3. `PREPARE`: accept a permitted peer, read one PREPARE, verify identity/graph,
+   launch; an unreturned/uncertain Process cannot report clean admission.
+4. `PREPARE`: accept a permitted peer, read one PREPARE, verify identity/graph,
    assign its ordinal, send one CHALLENGE.
-4. `ESTABLISHING`: child receives CHALLENGE, establishes/checks suppression, then
+5. `ESTABLISHING`: child receives CHALLENGE, establishes/checks suppression, then
    sends one ESTABLISHED. Parent validates the complete tuple and proof fields.
-5. `ACK_SENT`: send one ACK; require child EOF with no extra bytes and successful
+6. `ACK_SENT`: send one ACK; require child EOF with no extra bytes and successful
    local connection closure. Only then commit that graph-node admission.
-6. `AWAIT_NEXT`: allow only a compiled next branch/exec, including admitted
+7. `AWAIT_NEXT`: allow only a compiled next branch/exec, including admitted
    concurrent interpreter pipeline nodes. Repeat fresh PREPARE for every exec.
-7. `FINAL_ADMITTED`: all mandatory nodes are admitted and the required final
+8. `FINAL_ADMITTED`: all mandatory nodes are admitted and the required final
    process is alive. Publish one immutable admission event to the owning Java
    lifecycle. A receipt count alone cannot reach this state.
-8. `FAILED` or `CLOSING`: terminal, no new admission, trigger owned cleanup.
-9. `CLOSED_COMPLETE` or `CLOSED_INCONCLUSIVE`: sticky descriptor/endpoint result.
+9. `FAILED` or `CLOSING`: terminal, no new admission, trigger owned cleanup.
+10. `CLOSED_COMPLETE` or `CLOSED_INCONCLUSIVE`: sticky descriptor/endpoint result.
 
 Compute the startup deadline once when creating the launch: the earlier of its
 surrounding operation deadline and CLOCK_MONOTONIC now + 10 seconds. JNI/native
@@ -277,7 +354,9 @@ commands, library locations or new trust policy.
 ```java
 static native SelfResult establishSelf(int compiledMechanism);
 static native OpenResult openLaunch(int compiledChain, long operationRemainingNanos);
+static native ForkResult armFork(long launch);
 static native RootResult registerRoot(long launch, long ownedPid);
+static native DisarmResult disarmFork(long launch);
 static native Event nextEvent(long launch);
 static native Status status(long launch);
 static native void cancel(long launch);
@@ -285,7 +364,9 @@ static native CloseResult closeLaunch(long launch, long cleanupRemainingNanos);
 ```
 
 `SelfResult` is ESTABLISHED or a fixed Failure. `OpenResult` is a valid nonzero
-opaque launch token and bounded socket path, or Failure. `RootResult` is REGISTERED
+opaque launch token and bounded socket path, or Failure. `ForkResult` is ARMED or
+Failure. `DisarmResult` is DISARMED or Failure; disarming grants no root admission
+and cannot erase an earlier failure. `RootResult` is REGISTERED
 or Failure. `Event` is FINAL_ADMITTED with a native-owned final identity token,
 FAILED with Failure, or CLOSED. `Status` is STARTING, ADMITTED, FAILED or CLOSED.
 `CloseResult` is COMPLETE or INCONCLUSIVE. Failure is one of PLATFORM,
@@ -304,8 +385,10 @@ close; repeated calls can only shorten it. A nonpositive remaining budget starts
 immediate best-effort descriptor shutdown and cannot report unconfirmed cleanup
 as COMPLETE. No caller can renew the owning lifecycle's clock.
 
-One dedicated Java coordinator calls `nextEvent`; concurrent callers refuse.
-`cancel` and `closeLaunch` are the only cross-thread operations and wake native
+One dedicated Java platform coordinator calls `nextEvent`; concurrent callers refuse.
+The dedicated launcher alone calls arm/register/disarm for its bound window; it
+cannot consume coordinator events. `cancel` and `closeLaunch` are the cross-thread
+control operations and wake native
 polling via the owned eventfd. `status` reads a latched immutable state and never
 consumes a frame. FINAL_ADMITTED is emitted once; the same coordinator continues
 monitoring for failure/cleanup so post-admission faults reach the owning lifecycle.

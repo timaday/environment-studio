@@ -282,3 +282,9 @@ Java590/frontend34/schema23 in the pinned OCI build, protected/workspace smoke,
 separate supervisor export and four exact-source hosted HTTPS/OIDC mock browser
 cases with confirmed cleanup. Image and ZIP identities are recorded there. It
 excludes later native-peer/observed-context work and grants no release authority.
+
+The independently reviewed [root ownership contract](../evidence/d07c3-root-anchor.md)
+uses private pre-exec kernel sender capture while retaining the fixed JDK FORK
+mechanism. External credential-free feasibility passed; production hook/descriptor
+lifetime, listener/coordinator/JNI and privacy qualification remain active work.
+Java timestamp/PID metadata and a pre-fork socket's creator pin cannot substitute.
