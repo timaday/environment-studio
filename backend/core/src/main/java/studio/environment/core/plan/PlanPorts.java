@@ -17,6 +17,9 @@ public final class PlanPorts {
     public interface Authority { <T> Optional<T> guard(SessionLedger.Lease lease, Supplier<T> transition); }
     public interface Workspace {
         PublishedDefinition definition(Owner owner, NativeCommand.Reference reference);
+        default PublishedDefinition definitionV3(Owner owner, NativeCommand.Reference reference) {
+            throw new PlanRefusal(PlanRefusal.Code.UNSUPPORTED_DEFINITION);
+        }
         PublishedProfile profile(Owner owner, NativeCommand.Reference reference, PublishedDefinition definition);
     }
     public record PublishedDefinition(NativeCommand.Reference reference, String publicationDigest,
@@ -68,7 +71,15 @@ public final class PlanPorts {
     }
     public interface ContentAdapter {
         ContentResult project(PublishedDefinition definition, String binding, ObservationResult.Observation observation);
+        default ContentResult project(PublishedDefinition definition, String binding, ObservationResult.Observation observation, ObservationPort.Cancellation cancellation) {
+            if(definition.model() instanceof PlanDefinition.V3) return new ContentResult.Rejected(List.of("UNSUPPORTED_DEFINITION"));
+            return project(definition,binding,observation);
+        }
         ContentResult materialize(PublishedDefinition definition, String binding, Content current, Draft draft);
+        default V3PlanContent.Result materializeV3(PublishedDefinition definition, studio.environment.core.derived.DerivedInput.Pin expectedCurrent,
+                Content current, studio.environment.core.derived.DerivedInput.Pin expectedTarget, Draft draft, ObservationPort.Cancellation cancellation) {
+            return new V3PlanContent.Result.Refused("UNSUPPORTED_DEFINITION");
+        }
         Capture capture(PublishedDefinition definition, String binding, Content current, ProfileCapture.Command command);
         default DocumentView compare(HostedPlanService.ViewSnapshot snapshot,boolean target,String documentId,ViewMode mode) {
             throw new PlanRefusal(PlanRefusal.Code.DISCLOSURE_REQUIRED);

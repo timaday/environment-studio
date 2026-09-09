@@ -13,6 +13,12 @@ public record PlanObservedDestination(String engine,Map<String,String> identity,
     PlanObservedDestination validity(boolean valid) { return new PlanObservedDestination(engine,identity,observationFingerprint,valid); }
 
     static PlanObservedDestination from(Observation observation,PlanPorts.Destination destination) {
+        return from(observation,destination,"jdbc-observation-v2");
+    }
+    static PlanObservedDestination from(Observation observation,PlanPorts.Destination destination,PlanDefinition model) {
+        return from(observation,destination,model instanceof PlanDefinition.V3?"jdbc-observation-v3":"jdbc-observation-v2");
+    }
+    private static PlanObservedDestination from(Observation observation,PlanPorts.Destination destination,String adapterVersion) {
         String engine=destination.engine().name().toLowerCase(Locale.ROOT);
         var evidence=observation.evidence();
         require(engine.equals(evidence.get("engine")) && "complete".equals(evidence.get("cleanup")));
@@ -23,7 +29,7 @@ public record PlanObservedDestination(String engine,Map<String,String> identity,
         require(identity.equals(physical(engine,object(endpoint.get("expectedPhysicalIdentity")))));
         var metadata=object(evidence.get("metadata"));
         require(metadata.keySet().equals(Set.of("adapterVersion","operationPolicyVersion","visibility","readOnlyOperation","snapshot")));
-        require("jdbc-observation-v2".equals(metadata.get("adapterVersion"))
+        require(adapterVersion.equals(metadata.get("adapterVersion"))
                 && (engine+"-read-operation-v1").equals(metadata.get("operationPolicyVersion"))
                 && "complete".equals(metadata.get("visibility")) && "verified".equals(metadata.get("readOnlyOperation"))
                 && (engine.equals("postgresql")?"repeatable-read-read-only":"read-only").equals(metadata.get("snapshot")));

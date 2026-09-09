@@ -58,17 +58,19 @@ now passes independent review and combined Java1151, including the native script
 prerequisite. [Actual both-engine derived workflows](../evidence/qf34-database-workflow-v3.md)
 pass exact merge/proof, physical-only capture and whole/partial reuse controls;
 independent review corrected a composition-oracle gap before the final rerun.
-Publication HTTP and shared hosted plan integration remain next; v3 operational
+Publication HTTP and remaining hosted plan integration stay open; v3 operational
 availability stays disabled. The
 [versioned plan model and shared physical composition](../evidence/qf34-plan-model.md)
 now pass independent review and combined Java1157. Actual both-engine workflows
 use the production composition merge with complete source/proof controls.
 The [complete v3 content adapter](../evidence/qf34-plan-content.md) now retains
 original/typed/final proofs and passes independent review, full Java1187 and eight
-compiled guard mutations. Shared lifecycle, versioned APIs and combined retained-
-proof resource qualification remain required before admission; a v3 model still
-refuses existing v2 creation. Isolated shared lifecycle work is in progress and
-is not wired into runtime composition.
+compiled guard mutations. The [shared internal lifecycle](../evidence/qf34-shared-lifecycle.md)
+now passes full Java1203 and corrected independent review. V3 inspection retains
+current only until actual target materialization; unresolved summary blockers
+stay readable. Versioned creation, observation, physical commands and pages share
+existing ownership/capacity. Comparison and capture remain separate candidates;
+versioned APIs, runtime composition and combined proof resources stay open.
 No Q feedback GitHub publication is authorized. Existing MVP scope and completed
 work remain in place.
 

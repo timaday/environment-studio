@@ -6,6 +6,10 @@ import studio.environment.core.graph.*;
 import studio.environment.core.observation.ObservationResult;
 import studio.environment.core.plan.PlanPorts.*;
 import studio.environment.core.plan.PlanRefusal;
+import studio.environment.core.plan.PlanDefinition;
+import studio.environment.core.plan.V3PlanContent;
+import studio.environment.core.derived.DerivedInput;
+import studio.environment.core.observation.ObservationPort.Cancellation;
 import studio.environment.core.planning.*;
 import studio.environment.core.profile.ProfileCapture;
 import studio.environment.server.planning.*;
@@ -17,6 +21,21 @@ public final class PlanContentAdapter implements ContentAdapter {
     private final GraphProjectionAdapter projection = new GraphProjectionAdapter();
     private final StructuralTargetAdapter targets = new StructuralTargetAdapter();
     private final ProfileBytesAdapter profiles = new ProfileBytesAdapter();
+    private final V3PlanContent v3 = new V3PlanContentAdapter();
+    @Override public ContentResult project(PublishedDefinition definition,String binding,ObservationResult.Observation observation,Cancellation cancellation) {
+        if(definition.model() instanceof PlanDefinition.V2) return project(definition,binding,observation);
+        var result=v3.project((PlanDefinition.V3)definition.model(),binding,observation,cancellation);
+        return switch(result) {
+            case V3PlanContent.Result.Complete complete -> new ContentResult.Complete(complete.content());
+            case V3PlanContent.Result.Refused refused -> rejected(refused.code());
+            case V3PlanContent.Result.Incomplete ignored -> rejected("PROJECTION_INCOMPLETE");
+        };
+    }
+    @Override public V3PlanContent.Result materializeV3(PublishedDefinition definition,DerivedInput.Pin expectedCurrent,Content current,
+            DerivedInput.Pin expectedTarget,Draft draft,Cancellation cancellation) {
+        if(!(definition.model() instanceof PlanDefinition.V3 model)) return new V3PlanContent.Result.Refused("UNSUPPORTED_DEFINITION");
+        return v3.materialize(model,expectedCurrent,current,expectedTarget,draft,cancellation);
+    }
     @Override public ContentResult project(PublishedDefinition definition,String binding,ObservationResult.Observation observation) {
         var result=projection.project(definition.compiled(),binding,observation.documents().stream().map(document->new DocumentSource(document.documentId(),document.xml())).toList());
         if(!(result instanceof ProjectionResult.Accepted accepted)) return rejected("PROJECTION_REFUSED");
