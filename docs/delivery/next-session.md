@@ -18,6 +18,15 @@ The previous push-review blocker is historical: the remote now matches the check
 
 ## Current 9 September continuation
 
+The amended Q instruction supersedes earlier Q wording. Read
+[child-property-v1](../contracts/child-property-v1.md) before QF-0001/0002 code:
+closed child mappings, source-bound shared locator, full creation/move integration
+and per-binding mechanism dependencies must qualify together. Tim explicitly
+approved [the QF-0003/0004 direction](../product/derived-graph-decision.md):
+authoritative recomputation, physical-only v3 profiles, PUBLIC text and shared
+graph caps. No derived runtime exists; closed v3 contracts precede that work.
+No Q feedback may be uploaded to GitHub without publication authorization.
+
 The [private native connection candidate](../evidence/d07c3-privacy-connection.md)
 is independently reviewed and integrated after the Java launch owner. Preserve
 its final nine-file author manifest and eight unchanged source/test files.

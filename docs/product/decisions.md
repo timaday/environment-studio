@@ -19,6 +19,8 @@
 | Use GitHub issues for the Q-to-Codex handoff | Later user direction | Q prepares a generic issue; Tim reviews/authorizes publication and triages it; explicit Codex task produces a linked PR; labels alone do not launch agents |
 | Single container, one replica initially | Engineering proposal | One Java process serves React; session memory cannot be shared across replicas |
 | Runtime demo until DB/auth/writer qualification | Starter safety boundary | Image boot is useful, but does not enable unimplemented operations |
+| Discriminated direct-child fields with additive mechanism dependencies | Amended user instruction, 2026-09-09 | Implement QF-0001/0002 together under the [extension contract](../contracts/child-property-v1.md); preserve unaffected binding digests where independently proven; qualification pending |
+| Derived entities and co-occurrence authority/profile semantics | [Tim's approved direction, 2026-09-09](derived-graph-decision.md) | Authoritative recomputation with physical-only v3 profiles, PUBLIC text inputs and explicit shared graph limits; closed contracts and runtime qualification remain required |
 
 Historical inputs: Environment_Studio_Full_Specification.docx;
 Environment_Studio_Mathematical_Modelling_Research.docx;

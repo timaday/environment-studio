@@ -32,6 +32,22 @@ Apply it to independent ready slices, keep shared contracts with one owner, and
 measure integration/rework before revising these estimates. It does not remove
 the critical path or private application qualification.
 
+## Amended Q findings — 9 September continuation
+
+These extend the full completion plan; they do not replace the remaining hosted,
+native-client, resource, operator or deployment work. Q's original wording is
+superseded by the amended task. Current direct-only rejection is consistent with
+the advertised contract. Q publication to GitHub is not authorized.
+
+| Work | Dependency and acceptance |
+| --- | --- |
+| QF-0001/0002 child-property fields and mechanism compatibility | Implement together under [child-property-v1](../contracts/child-property-v1.md): closed shape/compiler, shared source locator, projection/creation/moves/views, exact target validation, historical replay and independent old-binding digest goldens. Register only after the complete slice is qualified. |
+| QF-0003/0004 computed groups and co-occurrence | Tim approved [authoritative recomputation with physical-only v3 profiles](../product/derived-graph-decision.md), PUBLIC text inputs and shared graph limits. Write closed v3 contracts next; no derived runtime exists yet. |
+
+The lead owns shared contracts and compatibility. Independent fixed-candidate
+review, actual RED/GREEN, targeted guard mutations and integrated verification
+remain required. Private models and original Q inputs stay outside the repository.
+
 ## Daily checkpoints
 
 **Tuesday:** confirm D01's generic compiler contracts and an independent mock

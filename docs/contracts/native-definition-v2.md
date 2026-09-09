@@ -6,6 +6,11 @@ semantics. There is no inferred conversion from version 1. A maintainer supplies
 the missing declarations. Schemas describe generic tools; actual application
 definitions remain external runtime inputs.
 
+The authorized [child-property extension](child-property-v1.md) defines the next
+closed mapping form and additive dependency/digest rules. It is an implementation
+contract, not current mechanism availability; the direct-only behavior below
+remains the current registered capability until that complete slice is qualified.
+
 ## Logical and runtime contracts
 
 A version 2 document has closed properties `schemaVersion: "2"`, `id`, positive

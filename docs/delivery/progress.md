@@ -4,6 +4,13 @@ Updated: 9 September 2026. See [starter evidence](../evidence/starter-verificati
 and [D01a integration](../evidence/d01a-integration.md) for actual commands and
 results; the table below reports capability, not test count.
 
+Amended Q work is active under [child-property-v1](../contracts/child-property-v1.md).
+QF-0001/0002 are one authorized capability extension; contracts and compatibility
+design are reviewed, runtime changes pending. Tim approved the separate
+[derived semantics](../product/derived-graph-decision.md) for QF-0003/0004; closed
+v3 contracts and implementation remain next. No Q feedback GitHub publication is
+authorized. Existing MVP scope and completed work remain in place.
+
 The [private native connection owner](../evidence/d07c3-privacy-connection.md)
 is independently reviewed and passes the latest 713-case Java integration plus
 three additional actual native refusal/cleanup controls. Accepted-socket transfer
