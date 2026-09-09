@@ -18,6 +18,9 @@ import studio.environment.server.projection.*;
 
 /** Qualified adapters supply exact sources; independent projection establishes graph/provenance each time. */
 public final class PlanContentAdapter implements ContentAdapter {
+    @Override public void verifyV3(studio.environment.core.plan.HostedPlanService.ViewSnapshot snapshot,boolean target,Cancellation cancellation) {
+        V3PlanReadContent.verify(snapshot,target,cancellation);
+    }
     private final GraphProjectionAdapter projection = new GraphProjectionAdapter();
     private final StructuralTargetAdapter targets = new StructuralTargetAdapter();
     private final ProfileBytesAdapter profiles = new ProfileBytesAdapter();

@@ -29,6 +29,11 @@ composition, profiles and validation remain in progress. The
 original/target proofs and rejects results invalidated by reinspection.
 [Shared v3 profile capture](docs/evidence/qf34-shared-capture.md) now returns bounded
 physical-only schema3 source from freshly verified original observation.
+[Shared v3 profile reuse](docs/evidence/qf34-shared-composition.md) now verifies
+whole/partial reuse and complete target proofs under the original plan owner.
+The [native launch owner](docs/evidence/d07c3-privacy-native-launch.md) joins
+root capture and its first connection; production JNI and client admission remain
+unqualified. Both reviewed slices pass combined Java1253.
 Complete Oracle CLOB/PostgreSQL text observation, value-free profile composition
 and cross-document structural target materialization are implemented as reviewed
 internal mechanisms. The hosted plan service joins these mechanisms with session

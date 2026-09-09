@@ -68,7 +68,10 @@ and corrected independent review: current-only v3 inspection, separately proven
 targets, physical commands/pages and readable unresolved summaries. Comparison
 now passes [corrected independent review](../evidence/qf34-shared-comparison.md)
 and full Java1217. [Shared profile capture](../evidence/qf34-shared-capture.md)
-passes independent review and combined Java1224. Versioned views/APIs, runtime composition
+passes independent review and combined Java1224.
+[Shared profile reuse](../evidence/qf34-shared-composition.md) and the
+[native launch owner](../evidence/d07c3-privacy-native-launch.md) now pass
+independent review and combined Java1253. Versioned views/APIs, runtime composition
 and combined retained-proof resources remain required before admission.
 
 The lead owns shared contracts and compatibility. Independent fixed-candidate

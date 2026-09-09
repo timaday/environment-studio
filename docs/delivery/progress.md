@@ -75,6 +75,10 @@ same-revision failed-inspection race; original cancellation and final context
 checks now refuse its late result. [Shared v3 profile capture](../evidence/qf34-shared-capture.md)
 now passes independent mapping/invalidation review and combined Java1224. It
 captures verified original physical shape, with schema3 bytes and no target values.
+[Shared v3 profile reuse](../evidence/qf34-shared-composition.md) now passes
+corrected compatibility and independent provenance review: whole/partial preview,
+Fresh/Existing reuse and original cancellation through target materialization.
+Combined Java1253 includes the native launch owner and independent tests.
 Versioned APIs, runtime composition and combined proof resources stay open.
 No Q feedback GitHub publication is authorized. Existing MVP scope and completed
 work remain in place.
@@ -151,6 +155,10 @@ The [structural ELF64 prerequisite](../evidence/d07c3-privacy-elf.md) now passes
 independent review, full Java1171 and fourteen compiled guard mutations. It
 checks bounded file metadata between two original-budget measurements. Mapped
 bytes, dynamic/loader closure and runtime admission remain separate requirements.
+The [native launch owner](../evidence/d07c3-privacy-native-launch.md) now composes
+root capture and the first PREPARE connection under original controls. Independent
+saturation/late-cleanup/reuse checks and combined Java1253 pass. Production JNI,
+complete image/loader/memory closure and client admission remain unfinished.
 
 Earlier exact-source OCI/browser artifact was `c4a324636d4aeaa20012349e68cce7eb2b025f8b`.
 Reviewed observed context and response/session recovery are integrated; the

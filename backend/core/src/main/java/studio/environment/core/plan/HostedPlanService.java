@@ -565,8 +565,8 @@ public final class HostedPlanService {
             if(utf8(result.source())>MIB)throw new PlanRefusal(RESOURCE_LIMIT);verify();return new CapturedProfile(result,snap.definition().reference());
         }
         public CompositionPreview preview(NativeCommand.Reference reference,List<String> roots) {
-            var work=guarded(lease,()->{check();inspected(pinned);if(pinned.active!=null || pinned.rendering)throw new PlanRefusal(PLAN_BUSY);if(pinned.target==null)throw new PlanRefusal(INCOMPLETE_TARGET);return new CompositionSnapshot(pinned,revision,generation,pinned.target,pinned.draft,true);});
-            var profile=workspace.profile(lease.owner(),reference,work.plan.definition);
+            var work=guarded(lease,()->{check();inspected(pinned);if(pinned.active!=null || pinned.rendering)throw new PlanRefusal(PLAN_BUSY);if(pinned.target==null)throw new PlanRefusal(INCOMPLETE_TARGET);return new CompositionSnapshot(pinned,revision,generation,pinned.target,pinned.draft,true,HostedPlanService.snapshot(pinned),cancellation);});
+            var profile=profile(lease.owner(),work,reference);
             var result=HostedPlanService.preview(work,profile,roots);verify();return result;
         }
         @Override public void close() {synchronized(lock){if(closed)return;closed=true;cancellation.cancel();if(!executing)release();}}
@@ -593,6 +593,7 @@ public final class HostedPlanService {
         private final String planId;
         private final LeaseState state;
         private boolean used,closed,executing,released;
+        private final ObservationPort.Cancellation cancellation=new ObservationPort.Cancellation();
         private CommandAdmission(SessionLedger.Lease lease,String planId,LeaseState state) { this.lease=lease; this.planId=planId; this.state=state; }
         public boolean live() { return authority.guard(lease,()-> { synchronized(lock) { return !closed; } }).orElse(false); }
         public Ack execute(PlanCommand command) {
@@ -602,7 +603,7 @@ public final class HostedPlanService {
         }
         @Override public void close() {
             synchronized(lock) {
-                if(closed) return; closed=true;
+                if(closed) return; closed=true;cancellation.cancel();
                 if(!executing) release();
             }
         }
@@ -671,6 +672,7 @@ public final class HostedPlanService {
         }
     }
     public static String compositionPreviewDigest(CompositionPreview preview) {
+        if(preview.v3().isPresent()) return NativeWorkspaceDigests.hash("ES-PLAN-COMPOSITION-PREVIEW-3",previewInputs(preview));
         return NativeWorkspaceDigests.hash("ES-PLAN-COMPOSITION-PREVIEW-1",Map.of("planId",preview.planId(),"revision",preview.revision(),
                 "observationFingerprint",preview.observationFingerprint(),"profile",NativeWorkspaceDigests.reference(preview.profile()),
                 "publicationDigest",preview.publicationDigest(),"selectedRoots",preview.roots(),"rootsDigest",preview.rootsDigest(),"closureDigest",preview.closureDigest()));
@@ -680,7 +682,7 @@ public final class HostedPlanService {
         var snapshot=compositionSnapshot(lease,admission.planId,mutation.expectedRevision(),admission);
         Ack acknowledgement;
         try {
-            var profile=workspace.profile(lease.owner(),composition.profile(),snapshot.plan.definition);
+            var profile=profile(lease.owner(),snapshot,composition.profile());
             var preview=preview(snapshot,profile,composition.selectedRoots());
             if(!compositionPreviewDigest(preview).equals(composition.previewDigest())) throw new PlanRefusal(STALE_PREVIEW);
             var targetKeys=new HashMap<studio.environment.core.planning.TargetIntent.Ref,studio.environment.core.graph.ObservedGraph.Key>();
@@ -693,7 +695,7 @@ public final class HostedPlanService {
                     yield new ProfileComposer.Decision.UseExisting(existing.slotId(),key);
                 }
             }).toList();
-            var result=new ProfileComposer().compose(snapshot.plan.definition.compiled(),profile.checked(),preview.dependencies(),new GraphValidationResult.Accepted(snapshot.target.graph()),decisions);
+            var result=compose(snapshot,profile,preview,decisions);
             ProfileComposer.Draft proposal;
             if(result instanceof ProfileComposer.CompositionResult.Prepared prepared) proposal=prepared.draft();
             else if(result instanceof ProfileComposer.CompositionResult.NeedsResolution unresolved) proposal=unresolved.draft();
@@ -740,8 +742,9 @@ public final class HostedPlanService {
     }
     private record Applied(Ack ack,boolean changed) { }
     private record Render(Plan plan,String revision,long generation,Content current,Draft draft,ObservationPort.Cancellation cancellation,String observationFingerprint) { }
-    private static Render rendering(Plan plan,String revision) {
-        plan.workCancellation=new ObservationPort.Cancellation();
+    private static Render rendering(Plan plan,String revision) {return rendering(plan,revision,new ObservationPort.Cancellation());}
+    private static Render rendering(Plan plan,String revision,ObservationPort.Cancellation cancellation) {
+        plan.workCancellation=cancellation;
         return new Render(plan,revision,plan.generation,plan.current,plan.draft,plan.workCancellation,plan.observationFingerprint);
     }
     public record Materialization(boolean complete,List<String> diagnostics,State state) {
@@ -770,7 +773,7 @@ public final class HostedPlanService {
             if(materializationScratch && !ownsScratch(admission)) throw new PlanRefusal(CAPACITY);
             // A single full old/new target scratch reservation exists before calling any XML adapter.
             materializationScratch=true; plan.rendering=true;
-            return rendering(plan,revision);
+            return plan.definition.model() instanceof PlanDefinition.V3 && admission instanceof CommandAdmission command?rendering(plan,revision,command.cancellation):rendering(plan,revision);
         });
         ContentResult result;
         Materialization.State targetState=Materialization.State.REFUSED;
@@ -869,11 +872,18 @@ public final class HostedPlanService {
 
     public record CompositionPreview(String planId,String revision,String observationFingerprint,
             NativeCommand.Reference profile,String publicationDigest,List<String> roots,String rootsDigest,
-            String closureDigest,ProfileComposer.Preview dependencies) {
-        public CompositionPreview { roots=List.copyOf(roots); }
+            String closureDigest,ProfileComposer.Preview dependencies,Optional<V3ProfileComposer.Preview> v3) {
+        public CompositionPreview(String planId,String revision,String observationFingerprint,NativeCommand.Reference profile,
+                String publicationDigest,List<String> roots,String rootsDigest,String closureDigest,ProfileComposer.Preview dependencies) {
+            this(planId,revision,observationFingerprint,profile,publicationDigest,roots,rootsDigest,closureDigest,dependencies,Optional.empty());
+        }
+        public CompositionPreview {
+            roots=List.copyOf(roots);Objects.requireNonNull(v3);
+            if(v3.isPresent() && !v3.orElseThrow().physical().equals(dependencies)) throw new PlanRefusal(INVALID_REQUEST);
+        }
         @Override public String toString() { return "CompositionPreview[redacted]"; }
     }
-    private record CompositionSnapshot(Plan plan,String revision,long generation,Content target,Draft draft,boolean borrowedScratch) { }
+    private record CompositionSnapshot(Plan plan,String revision,long generation,Content target,Draft draft,boolean borrowedScratch,ViewSnapshot view,ObservationPort.Cancellation cancellation) { }
     private CompositionSnapshot compositionSnapshot(SessionLedger.Lease lease,String planId,String revision) { return compositionSnapshot(lease,planId,revision,null); }
     private CompositionSnapshot compositionSnapshot(SessionLedger.Lease lease,String planId,String revision,CommandAdmission admission) {
         return guarded(lease,()-> {
@@ -882,32 +892,57 @@ public final class HostedPlanService {
             if(plan.active!=null || plan.rendering) throw new PlanRefusal(PLAN_BUSY);
             if(plan.target==null) throw new PlanRefusal(INCOMPLETE_TARGET);
             if(materializationScratch && (admission==null || commandScratch!=admission || admission.closed)) throw new PlanRefusal(CAPACITY);
-            materializationScratch=true; plan.rendering=true;
-            return new CompositionSnapshot(plan,revision,plan.generation,plan.target,plan.draft,admission!=null);
+            materializationScratch=true; plan.rendering=true;plan.workCancellation=admission!=null && plan.definition.model() instanceof PlanDefinition.V3?admission.cancellation:new ObservationPort.Cancellation();
+            return new CompositionSnapshot(plan,revision,plan.generation,plan.target,plan.draft,admission!=null,snapshot(plan),plan.workCancellation);
         });
     }
     private void endComposition(CompositionSnapshot snapshot) {
-        synchronized(lock) { if(!snapshot.borrowedScratch) materializationScratch=false; snapshot.plan.rendering=false; clearRetired(snapshot.plan); }
+        synchronized(lock) { if(!snapshot.borrowedScratch) materializationScratch=false; snapshot.plan.rendering=false;snapshot.plan.workCancellation=null; clearRetired(snapshot.plan); }
+    }
+    private PublishedProfile profile(Owner owner,CompositionSnapshot snapshot,NativeCommand.Reference reference) {
+        if(snapshot.cancellation.cancelled()) throw new PlanRefusal(CONFLICT);
+        PublishedProfile result;
+        if(snapshot.plan.definition.model() instanceof PlanDefinition.V3) {
+            content.verifyV3(snapshot.view,true,snapshot.cancellation);
+            result=workspace.profileV3(owner,reference,snapshot.plan.definition);
+        } else result=workspace.profile(owner,reference,snapshot.plan.definition);
+        if(snapshot.cancellation.cancelled()) throw new PlanRefusal(CONFLICT);
+        if(result==null || !reference.equals(result.reference())) throw new PlanRefusal(PROFILE_REFUSED);
+        return result;
+    }
+    private static ProfileComposer.CompositionResult compose(CompositionSnapshot snapshot,PublishedProfile profile,CompositionPreview preview,List<ProfileComposer.Decision> decisions) {
+        if(snapshot.cancellation.cancelled()) throw new PlanRefusal(CONFLICT);
+        return switch(snapshot.plan.definition.model()) {
+            case PlanDefinition.V3 model -> new V3ProfileComposer().compose(model.checked(),profile.checked(),preview.v3().orElseThrow(()->new PlanRefusal(STALE_PREVIEW)),snapshot.target.graph(),decisions);
+            case PlanDefinition.V2 model -> new ProfileComposer().compose(model.ready(),profile.checked(),preview.dependencies(),new GraphValidationResult.Accepted(snapshot.target.graph()),decisions);
+        };
     }
     private static CompositionPreview preview(CompositionSnapshot snapshot,PublishedProfile profile,List<String> roots) {
         if(roots.size()>20_000 || new HashSet<>(roots).size()!=roots.size()) throw new PlanRefusal(INVALID_REQUEST);
         var selected=roots.isEmpty()?profile.checked().profile().entities().stream().map(Profile.Entity::id).sorted().toList():roots.stream().sorted().toList();
-        var result=new ProfileComposer().preview(snapshot.plan.definition.compiled(),profile.checked(),new HashSet<>(selected));
-        if(!(result instanceof ProfileComposer.PreviewResult.Proposed proposed)) throw new PlanRefusal(PROFILE_REFUSED);
-        var dependencies=proposed.preview();
+        ProfileComposer.Preview dependencies;Optional<V3ProfileComposer.Preview> versioned=Optional.empty();
+        if(snapshot.plan.definition.model() instanceof PlanDefinition.V3 model) {
+            var result=new V3ProfileComposer().preview(model.checked(),profile.checked(),new HashSet<>(selected));
+            if(!(result instanceof V3ProfileComposer.PreviewResult.Proposed proposed)) throw new PlanRefusal(PROFILE_REFUSED);
+            versioned=Optional.of(proposed.preview());dependencies=proposed.preview().physical();
+        } else {
+            var result=new ProfileComposer().preview(snapshot.plan.definition.compiled(),profile.checked(),new HashSet<>(selected));
+            if(!(result instanceof ProfileComposer.PreviewResult.Proposed proposed)) throw new PlanRefusal(PROFILE_REFUSED);
+            dependencies=proposed.preview();
+        }
         var closure=Map.of("included",dependencies.included().stream().map(Profile.Entity::id).toList(),
                 "relations",dependencies.relations().stream().map(relation->Map.of("type",relation.type(),"from",relation.from(),"to",relation.to())).toList());
         return new CompositionPreview(snapshot.plan.id,snapshot.revision,snapshot.plan.observationFingerprint,
                 profile.reference(),profile.publicationDigest(),selected,NativeWorkspaceDigests.hash("ES-PLAN-ROOTS-1",selected),
-                NativeWorkspaceDigests.hash("ES-PLAN-CLOSURE-1",closure),dependencies);
+                NativeWorkspaceDigests.hash("ES-PLAN-CLOSURE-1",closure),dependencies,versioned);
     }
     private static void compositionCurrent(CompositionSnapshot snapshot) {
-        if(snapshot.plan.retired || !snapshot.plan.inspectionValid || snapshot.plan.generation!=snapshot.generation || !snapshot.plan.revision.toString().equals(snapshot.revision)) throw new PlanRefusal(CONFLICT);
+        if(snapshot.cancellation.cancelled() || snapshot.plan.retired || !snapshot.plan.inspectionValid || snapshot.plan.generation!=snapshot.generation || !snapshot.plan.revision.toString().equals(snapshot.revision)) throw new PlanRefusal(CONFLICT);
     }
     public CompositionPreview previewProfile(SessionLedger.Lease lease,String planId,String revision,NativeCommand.Reference reference,List<String> roots) {
         var snapshot=compositionSnapshot(lease,planId,revision);
         try {
-            var profile=workspace.profile(lease.owner(),reference,snapshot.plan.definition);
+            var profile=profile(lease.owner(),snapshot,reference);
             var preview=preview(snapshot,profile,roots);
             return guarded(lease,()-> { compositionCurrent(snapshot); return preview; });
         } finally { endComposition(snapshot); }
@@ -921,9 +956,10 @@ public final class HostedPlanService {
         detail.put("dependencies",dependencies.dependencies().stream().map(item->Map.of("slot",item.slot(),"causedBy",item.causedBy(),"relation",item.relation(),"reason",item.reason().name())).toList());
         detail.put("relations",dependencies.relations().stream().map(item->Map.of("type",item.type(),"from",item.from(),"to",item.to())).toList());
         detail.put("conflicts",dependencies.conflicts().stream().map(item->Map.of("code",item.code(),"slot",item.slot(),"relation",item.relation())).toList());
-        return Map.of("planId",preview.planId(),"revision",preview.revision(),"profile",NativeWorkspaceDigests.reference(preview.profile()),
+        var legacy=Map.of("planId",preview.planId(),"revision",preview.revision(),"profile",NativeWorkspaceDigests.reference(preview.profile()),
                 "publicationDigest",preview.publicationDigest(),"observationFingerprint",preview.observationFingerprint(),"roots",preview.roots(),
                 "rootsDigest",preview.rootsDigest(),"closureDigest",preview.closureDigest(),"dependencies",detail);
+        return preview.v3().isEmpty()?legacy:Map.of("schemaVersion","3","physical",legacy,"affectedDerivations",preview.v3().orElseThrow().affectedDerivations());
     }
     public Ack composeProfile(SessionLedger.Lease lease,String planId,Mutation mutation,CompositionPreview preview,List<ProfileComposer.Decision> decisions) {
         guarded(lease,()->ownedState(lease,planId));
@@ -939,10 +975,10 @@ public final class HostedPlanService {
         var snapshot=compositionSnapshot(lease,planId,mutation.expectedRevision());
         Ack acknowledgement;
         try {
-            var profile=workspace.profile(lease.owner(),preview.profile(),snapshot.plan.definition);
+            var profile=profile(lease.owner(),snapshot,preview.profile());
             var fresh=preview(snapshot,profile,preview.roots());
             if(!fresh.equals(preview)) throw new PlanRefusal(STALE_PREVIEW);
-            var result=new ProfileComposer().compose(snapshot.plan.definition.compiled(),profile.checked(),fresh.dependencies(),new GraphValidationResult.Accepted(snapshot.target.graph()),decisions);
+            var result=compose(snapshot,profile,fresh,decisions);
             ProfileComposer.Draft proposal;
             if(result instanceof ProfileComposer.CompositionResult.Prepared prepared) proposal=prepared.draft();
             else if(result instanceof ProfileComposer.CompositionResult.NeedsResolution unresolved) proposal=unresolved.draft();
@@ -954,7 +990,9 @@ public final class HostedPlanService {
                 var replay=replay(state,mutation.requestId(),identity); if(replay.isPresent()) return replay.get();
                 if(!plan.profiles.contains(profile.publicationDigest()) && plan.profiles.size()>=100) throw new PlanRefusal(CAPACITY);
                 if(enteredBytes-plan.enteredBytes+values>64*MIB) throw new PlanRefusal(RESOURCE_LIMIT);
+                var handles=PlanHandles.draft(plan.handles,draft);
                 enteredBytes+=values-plan.enteredBytes; plan.enteredBytes=values;
+                plan.handles.clear(); plan.handles.putAll(handles);
                 plan.profiles.add(profile.publicationDigest()); plan.draft=draft; plan.revision=plan.revision.add(BigInteger.ONE); plan.generation++;
                 dropTarget(plan); plan.diagnostics=List.of("TARGET_NOT_MATERIALIZED");
                 var ack=plan.ack(); state.replay.put(mutation.requestId(),new Replay(identity,ack)); return ack;

@@ -21,6 +21,9 @@ public final class PlanPorts {
             throw new PlanRefusal(PlanRefusal.Code.UNSUPPORTED_DEFINITION);
         }
         PublishedProfile profile(Owner owner, NativeCommand.Reference reference, PublishedDefinition definition);
+        default PublishedProfile profileV3(Owner owner, NativeCommand.Reference reference, PublishedDefinition definition) {
+            throw new PlanRefusal(PlanRefusal.Code.UNSUPPORTED_DEFINITION);
+        }
     }
     public record PublishedDefinition(NativeCommand.Reference reference, String publicationDigest,
             PlanDefinition model, List<NativeCommand.Policy> policies) {
@@ -70,6 +73,9 @@ public final class PlanPorts {
         record Rejected(List<String> codes) implements ContentResult { public Rejected { codes = List.copyOf(codes); } }
     }
     public interface ContentAdapter {
+        default void verifyV3(HostedPlanService.ViewSnapshot snapshot, boolean target, ObservationPort.Cancellation cancellation) {
+            throw new PlanRefusal(PlanRefusal.Code.UNSUPPORTED_DEFINITION);
+        }
         ContentResult project(PublishedDefinition definition, String binding, ObservationResult.Observation observation);
         default ContentResult project(PublishedDefinition definition, String binding, ObservationResult.Observation observation, ObservationPort.Cancellation cancellation) {
             if(definition.model() instanceof PlanDefinition.V3) return new ContentResult.Rejected(List.of("UNSUPPORTED_DEFINITION"));

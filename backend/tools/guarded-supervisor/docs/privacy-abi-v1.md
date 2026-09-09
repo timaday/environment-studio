@@ -1034,3 +1034,119 @@ Then qualify the exact FORK/JDK/native client/loader closure and credential-free
 crashes/diagnostics. No authenticated native database probe is authorized by this
 ABI document. Existing external transport tests establish feasibility only; their
 JDK-internal descriptor bridge and ancestry-only receipt do not implement this ABI.
+
+## Native single-root launch owner prerequisite
+
+This section specifies the next private production C ownership layer, tested with test-only JNI through the existing PrivacyLaunchOwner.CapturePort. It does not implement the production PrivacyBridge, its token registry, trusted installation/self admission, a child guard constructor, CHALLENGE, FINAL_ADMITTED or runtime availability. Width1 is this prerequisite's implementation boundary, not a reduction of the advertised product support matrix. No wider compiled graph is accepted as width1.
+
+### Exact C surface
+
+All names below are private to the standalone tool. `es_launch` has a complete definition in privacy-launch.h so a native caller can allocate stable zero-initialized storage. It is never a Java address, descriptor or public token. Its members are implementation-private even when visible to the C compiler. The type is not copied, moved, reinitialized or destroyed while any admitted call, launcher window, pending cleanup or external thread may refer to it.
+
+```c
+typedef enum {
+ ES_LAUNCH_OK=0, ES_LAUNCH_ROOT_CORRELATED=1,
+ ES_LAUNCH_INVALID=2, ES_LAUNCH_PLATFORM=3, ES_LAUNCH_RESOURCE=4,
+ ES_LAUNCH_IDENTITY=5, ES_LAUNCH_PROTOCOL=6, ES_LAUNCH_DEADLINE=7,
+ ES_LAUNCH_CANCELLED=8, ES_LAUNCH_IO=9, ES_LAUNCH_CLEANUP=10
+} es_launch_result;
+
+typedef enum {
+ ES_LAUNCH_PHASE_OPEN=0, ES_LAUNCH_PHASE_ARMED=1,
+ ES_LAUNCH_PHASE_CAPTURED=2, ES_LAUNCH_PHASE_REGISTERED=3,
+ ES_LAUNCH_PHASE_CORRELATED=4, ES_LAUNCH_PHASE_FAILED=5
+} es_launch_phase;
+
+typedef enum {
+ ES_LAUNCH_CLOSE_NONE=0, ES_LAUNCH_CLOSE_REQUESTED=1,
+ ES_LAUNCH_CLOSE_SETTLING=2, ES_LAUNCH_CLOSE_SETTLED=3
+} es_launch_close_state;
+
+typedef enum {
+ ES_LAUNCH_CLOSED_COMPLETE=0, ES_LAUNCH_CLOSED_INCONCLUSIVE=1,
+ ES_LAUNCH_CLOSE_INVALID=2
+} es_launch_cleanup;
+
+typedef struct {
+ es_launch_phase phase;
+ es_launch_result failure; /* OK or first operational refusal */
+ es_launch_close_state close_state;
+ unsigned disarm_completed; /* 0 or 1; never root or privacy admission */
+ unsigned calls_quiescent; /* 0 or 1; snapshot only, not a free authorization */
+ unsigned cleanup_inconclusive; /* sticky 0 or 1, may precede SETTLED */
+} es_launch_status;
+
+typedef struct es_launch es_launch;
+
+es_launch_result es_launch_open(es_launch *owner,
+ int borrowed_parent_fd, const char *admitted_parent_path,
+ uint64_t operation_remaining_ns,
+ char out_path[ES_LISTENER_PATH_BYTES]);
+es_launch_result es_launch_arm(es_launch *owner);
+es_launch_result es_launch_capture(es_launch *owner);
+es_launch_result es_launch_register(es_launch *owner, uint64_t exact_returned_pid);
+es_launch_result es_launch_disarm(es_launch *owner);
+es_launch_result es_launch_correlate(es_launch *owner);
+es_launch_result es_launch_status_read(es_launch *owner, es_launch_status *out);
+es_launch_result es_launch_cancel(es_launch *owner);
+es_launch_cleanup es_launch_close(es_launch *owner,
+ uint64_t original_cleanup_remaining_ns);
+```
+
+OK means only that the named open/arm/capture/register/disarm/cancel operation completed its own prerequisite. Only correlate may return ROOT_CORRELATED. No function returns an identity, C pointer, raw descriptor or admission token. `out_path` is the native-created bounded private endpoint solely for constructing the fixed child environment; it is not a peer-selected path.
+
+### Initialization, arguments and failure mapping
+
+Fresh means never used, all-zero stable storage with no concurrent caller. open is exclusive and must finish before publication to launcher/receiver/control threads. No other call may race initial mutex/condition initialization. Validate non-null owner/path/output, nonnegative parent fd, owner/output/path memory non-overlap and strictly positive bounded duration before allocation or output mutation. Paths and output are caller-owned valid C memory of the documented bounds; no API purports to validate arbitrary pointers. An invalid/fresh precheck leaves owner and borrowed parent untouched; zero a distinct safe output buffer on refusal. If output aliases owner or input, refuse without writing through it. Bound path reads to ES_LISTENER_PATH_BYTES; the existing listener performs strict Unicode/path correlation and parent checks.
+
+After native synchronization is initialized, mark the owner initialized before any eventfd, entropy or listener allocation. Every later open failure produces an initialized FAILED owner requiring close; all subsequent path outputs are zero. Do not report a leaked or uncertain partial open as a never-created object. An initialization failure must unwind initialized synchronization without live users and leave no owned descriptor; otherwise retain an initialized failed owner. Parent directory remains borrowed throughout, including close; it must retain the listener's admitted pathname/identity/mode and exclusive namespace preconditions. UID/mode0700 alone does not prove exclusion of hostile same-UID mutation.
+
+open creates one EFD_NONBLOCK|EFD_CLOEXEC cancellation eventfd, generates a private16-byte launch ID using bounded native entropy, and opens the existing listener width1. No caller-supplied eventfd/launch ID or fallback entropy. Copy the admitted parent pathname into bounded owner storage; do not retain a caller string pointer. Pass the same immutable eventfd and startup deadline to every child owner. The native owner adds no alternative socket/process parser or numeric pidfd lookup.
+
+operation_remaining_ns must be1..180,000,000,000 inclusive. Native monotonic arithmetic must be checked for overflow. At open entry compute the original operation deadline once, and startup deadline=min(operation deadline, now+10,000,000,000). Open allocation, arm, capture/register/disarm, pending peer, all waits and matching consume this same original startup deadline. A remaining duration is not a raw Java System.nanoTime absolute timestamp. No re-entry or signal renews it. This root-only slice never uses leftover operation time to extend root startup or accept another exec.
+
+Safe mapping: unsupported platform/kernel/lock-free prerequisites→PLATFORM; listener capacity or bounded allocation/entropy exhaustion→RESOURCE; dead/mismatched root or peer→IDENTITY; frame/order/second-receiver faults→PROTOCOL except invalid/null API arguments→INVALID; original expiry→DEADLINE; latched cancellation→CANCELLED; remaining syscall failures→IO; owned close uncertainty→CLEANUP. Preserve the first operational refusal in status.failure, independent of cleanup uncertainty. A CLEANUP result/tombstone takes precedence when reporting uncertain teardown, without rewriting that original failure. Disarm's ended-window exception below remains separate. No errno text, PID, path other than successful out_path, native output or source value appears in results.
+
+### Thread ownership and publication
+
+There is one launcher, bound by the first admitted arm call, and one receiver, bound by the first admitted capture call. Both are dedicated platform threads in the Java test bridge. A receiver may call capture before arm: it binds its identity then waits for completed arm publication against the original startup/cancel/close conditions. A second capture call or a different receiver does not consume a second capture. The launcher never consumes frames; receiver never calls register or disarm. correlate must run on the bound receiver after its successful capture; it waits for completed register and disarm publication if they have not finished.
+
+All shared bookkeeping, initialized/phase/failure/close flags, bound thread identities, active-call claims and descriptor-reference counts are protected by one private state mutex (or an equivalently documented atomic scheme). The existing root's disarm atomic fields remain its own internal contract; do not access its receiver-owned non-atomic state concurrently. All native waits release the state mutex. Never hold it across blocking root/listener/connection operations, entropy calls, JNI/Java calls or waiting for another active call. Publication after a primitive returns occurs under the mutex and wakes waiters. No condition wakeup is itself success: recheck stage, failure, cancellation and original clock.
+
+arm claims exclusive root mutation, calls es_root_arm on the launcher, and publishes its completed immutable result before receiver can call capture. Only successful completed arm admits es_root_capture. A failed arm wakes the receiver with refusal, not a capture retry. Record whether a root arm actually initialized and whether its same-launcher disarm obligation remains; do not infer success from zero-initialized state.
+
+capture claims the single root receiver operation after successful arm, calls es_root_capture without the state mutex, and publishes completion. register runs on the launcher; it boundedly waits for capture to complete, then claims the root mutation slot and calls es_root_register(exact_returned_pid) on that same launcher. The PID must come from PrivacyLaunchOwner's exact returned Process; C correlation alone cannot establish that Java provenance. A failed start does not call register. Duplicate register refuses and cannot mutate an admitted registration.
+
+disarm always runs on the launcher finally path. It is allowed after cancellation/close/failure and may overlap capture only as es_root permits. It must not overlap an unfinished arm or register from another thread; wrong thread always refuses. Only es_root_disarm determines ended-window success. Its documented completed failed-arm positive-generation exception may return OK, but never clears owner.failure or permits capture/register/correlate retry. An early uninitialized/global-busy failure, wrong generation or duplicate disarm has no invented successful fallback. Failed/unreturned disarm keeps launch-window/cleanup uncertainty sticky. Record disarm completion with safe publication before correlation or final root close.
+
+capture/register/correlate/close never concurrently operate on root. Apart from the expressly allowed disarm overlap, each primitive owner has one active call. correlate is admitted only after successful capture, exact registration and successful completed disarm, with no existing failure/cancel/close. It accepts one listener token, opens and reads one connection PREPARE, then calls es_root_match with that same shared-scope connection. Each boundary rechecks owner flags and startup deadline. A success that finishes after cancellation/close/expiry cannot be published as ROOT_CORRELATED. On success retain root, connection and listener ownership and publish CORRELATED once. No CHALLENGE/ACK, new accepts or second correlate occurs; the mock child remains blocked until cancellation/close.
+
+### Cancellation and descriptor references
+
+cancel may run concurrently after open publishes initialized storage. It first latches cancellation under the mutex, then acquires an active signalling reference to the current owned eventfd before dropping the mutex. It performs a nonblocking eventfd write and drops the reference under the mutex. Teardown may not close that eventfd while any such reference exists. No method reads a numeric fd then signals it after releasing the last ownership reference. A write returning EAGAIN means the eventfd is already readable/saturated; it is an adequate wake, not a drained/reset event. Do not consume cancellation to permit later success. Other write failure is latched IO and cannot authorize retry/admission. No unbounded retry on EINTR. The implementation must specify a finite syscall attempt policy and preserve refusal on failure.
+
+Once eventfd teardown has been claimed, later cancel calls only retain the cancellation flag; they never write the closed number. After completed close, cancel/status/repeat-close cannot affect another owner or reused fd. A cancel after CORRELATED changes it to FAILED and retains cleanup ownership. It does not mean root process termination was established.
+
+### Cleanup state and storage lifetime
+
+close may be concurrent with launcher/receiver work and repeated by multiple control callers. The first initialized-owner call latches close requested and cancellation, fixes a cleanup deadline to native now+min(original_cleanup_remaining_ns,10s), and wakes waiters. Zero or >10s remaining is an invalid budget: fix deadline to now, latch permanent inconclusive, still request best-effort teardown. Arithmetic failure likewise cannot extend a deadline. Later calls only shorten the shared deadline; all existing close waiters must notice shortening within bounded polling (<=1ms), not keep a captured older deadline. This budget is already running in the caller, not a fresh allowance for each close.
+
+CLOSE_REQUESTED prevents new work admission except the original required finally-disarm and cleanup/control/status calls. Wait for all active primitive operations and signal references to end and for the launcher window to be conclusively ended. Waiting does not hold a mutex those calls need. Expiry before quiescence returns CLOSED_INCONCLUSIVE and permanently sets cleanup_inconclusive, but does not free storage, close an active fd or claim SETTLED.
+
+One caller or final leaving operation claims CLOSE_SETTLING under the mutex only when all required primitive users have ceased. This cleanup claim itself holds owner lifetime. Other close callers wait only to the currently shortened deadline. Close connection (if initialized), root (if initialized), listener (if initialized) and the owned eventfd independently, even after an earlier failure. Connection must settle its transferred listener token before listener close. Read the current shared cleanup deadline before each subordinate close and recheck it after; a shortening during a synchronous syscall cannot interrupt that syscall, but must prevent a late COMPLETE result. Never re-close a numeric fd whose one attempt may already have released it. Keep all subowner uncertainty/tombstones; borrowed parent remains untouched.
+
+If another active operation outlives close's bounded wait, that original operation's leaving path must request the same one cleanup settlement when it becomes safe. It cannot erase the permanent inconclusive flag or create a second close owner. If a required launcher never returns/disarms, retain requested/inconclusive ownership; no other thread disarms its TLS or frees its state. Best-effort termination of the exact Java-owned Process belongs to PrivacyLaunchOwner and does not prove native TLS cleanup.
+
+CLOSE_SETTLED means every owned cleanup attempt has actually finished, no native primitive/signal reference remains, and each descriptor is confirmed closed or recorded uncertain. If any closure/clock/window outcome is uncertain, return CLOSED_INCONCLUSIVE forever even if late work eventually ends. CLOSED_COMPLETE requires conclusive closure within the shortest admitted cleanup budget and no prior cleanup uncertainty. Original operational refusal does not by itself force cleanup uncertainty: a fully ended failed arm/peer refusal can still clean completely. Preserve first operational failure separately.
+
+No destructor/free/reinitialization API exists in this slice. The enclosing native allocation owner may reclaim storage only after externally joining all threads that could still call it, all calls and cleanup claims have ended, and no armed root/TLS references remain. status.calls_quiescent is merely a snapshot and cannot authorize reclamation. Completed tombstones remain readable for the enclosing owner lifetime; repeat close returns their exact outcome without touching descriptor numbers. Mutex/condition destruction is not performed by close while status/repeat callers can still enter.
+
+status_read is a bounded synchronized copy only. It does not consume a frame, advance state or turn CORRELATED into runtime admission. Invalid/null/overlapping output refuses without altering the owner; zero a distinct safe output. Valid status read can report FAILED and requested/inconclusive after operational refusal. Other invalid operations on an initialized live owner latch INVALID/PROTOCOL as applicable; they cannot reopen its lifetime. Fresh/uninitialized/null-owner calls return INVALID and do not touch synchronization state. Output zero values are never a success substitute; callers must inspect the result.
+
+### Acceptance and explicit exclusions
+
+Actual test-only JNI uses existing PrivacyLaunchOwner with fixed FORK and exactly one invented executable whose constructor sends PREPARE and waits. Exercise receiver-before-arm, capture-before/after Java start result, register waiting for capture, finally-disarm, same-root correlation and preserved stdout/stderr; require no CHALLENGE and no main marker before cancellation/cleanup. It is an ownership prerequisite, not installed JNI or constructor/loader admission.
+
+Adverse schedules and faults: partial eventfd/listener open; entropy failure; completed failed-arm disarm exception and early failure refusal; no hook/POSIX_SPAWN; wrong-thread/duplicate calls; early foreign peer; mismatched root; deadline/cancel at all waits and after a returning primitive; close while capture/register/disarm/correlate active; late completed work cannot restore success; shortened concurrent close wait; exact-number eventfd reuse while stale cancel/status/close run; signal reference held across teardown request; uncertain connection/root/listener close still attempts other owners; partial-open borrowed parent survives; second owner cannot be affected. Close-out tests join/reap every owned mock thread/process and preserve stuck-scheduling tests as injected schedules rather than actual ProcessBuilder stall proof. Compile targeted mutations and count actual assertion failures, not setup errors.
+
+All existing namespace, kernel pin, frame, close-once, output wiping and original-clock preconditions remain. No memory/maps reader, hash context, image/ELF call, loader/quiescence proof, exec-generation attestation, script/client execution, full fork/exec graph, crypto budget reset, token registry, library installation, parent self suppression, credentials, registry/readiness or production JNI method is introduced. Future memory inspection must close every held mem fd conclusively before CHALLENGE; dumpable0 does not revoke it. Two sampled identities/byte sequences remain non-atomic. The next identity stage must extend this same owner, not introduce a parallel coordinator.

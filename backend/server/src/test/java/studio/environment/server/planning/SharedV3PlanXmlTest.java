@@ -20,6 +20,7 @@ class SharedV3PlanXmlTest {
     final NativeCommand.Reference reference=new NativeCommand.Reference("00000000-0000-4000-8000-000000000001","2");
     PlanDefinition.V3 model=new PlanDefinition.V3(definition(false));
     String xml=XML;
+    PublishedProfile profile;
     static SharedV3PlanXmlTest with(studio.environment.core.definitionv3.NativeCompilationResult.Checked definition,String xml){var fixture=new SharedV3PlanXmlTest();fixture.model=new PlanDefinition.V3(definition);fixture.xml=xml;return fixture;}
     static Map<String,Object> evidence(){
         var identity=Map.of("systemIdentifier","731","databaseOid","19","databaseName","invented_db");
@@ -36,7 +37,8 @@ class SharedV3PlanXmlTest {
         var workspace=new Workspace(){
             public PublishedDefinition definition(Owner o,NativeCommand.Reference r){throw new AssertionError("VERSION_MUST_BE_EXPLICIT");}
             public PublishedDefinition definitionV3(Owner o,NativeCommand.Reference r){assertEquals(lease.owner(),o);assertEquals(reference,r);return published;}
-            public PublishedProfile profile(Owner o,NativeCommand.Reference r,PublishedDefinition d){throw new AssertionError("UNEXPECTED_PROFILE");}
+            public PublishedProfile profile(Owner o,NativeCommand.Reference r,PublishedDefinition d){throw new AssertionError("V3_PROFILE_PORT_REQUIRED");}
+            public PublishedProfile profileV3(Owner o,NativeCommand.Reference r,PublishedDefinition d){assertEquals(lease.owner(),o);assertEquals(published,d);assertNotNull(profile);assertEquals(profile.reference(),r);return profile;}
         };
         var observations=new ObservationPort(){
             public ObservationResult observe(Selection s,TransientCredentials c,Cancellation flag){throw new AssertionError("RESERVATION_REQUIRED");}
