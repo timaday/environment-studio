@@ -28,20 +28,36 @@ The local image is `environment-studio:xml-review-20260909`, image ID
 It carries the f4f2add-plus-candidate source label, not a later commit label.
 Remote last observed `8125e57`; no subsequent push/CI/GHCR success is claimed.
 
-Original D08a and D07c2 worktrees remain untouched and hash-verified. D08a work now
-continues in `/home/tim/.tmp/es-d08a-continuation-20260909`, based on f4f2add plus
-only its 21 author files. Its uncertain-save regression reproduced (1 fail, 2 pass).
-No new browser PASS or integration is claimed. The requested enterprise-ux-design
-skill remains unavailable; user location clarification is pending, while backend
-and existing-flow corrections continue.
+Original D08a and D07c2 worktrees remain untouched and hash-verified. D08a work
+continues in `/home/tim/.tmp/es-d08a-continuation-20260909`, now based on `40b67ae`
+plus its assigned overlay. Actual uncertain save/publication/navigation REDs have
+regression fixes. Both desktop and narrow HTTPS/OIDC inspection/comparison flows
+pass with explicit test-only capability enablement and a mock observation port.
+The first 22-file review manifest is
+`/home/tim/.tmp/es-d08a-review1-20260909.sha256`, SHA-256
+`7369f4da54a5d20a57e7cfa41bb6b6de9d9014164f554987769c39ebbeaeed3d`.
+Independent review found further create/reservation recovery, navigation, polling
+and stale-display defects. The browser slice remains unreviewed for integration;
+these corrections and the remaining operator workflow are active. The requested
+enterprise-ux-design skill remains unavailable; location clarification is pending.
+Backend and existing-flow corrections continue.
 
-The active DB author owns fresh pinned disposable PostgreSQL/Oracle containers;
-nonsecret lab paths/IDs are in `/home/tim/.tmp/es-read-policy-dc90674a/state.json`.
-Actual owner/direct/column/active-role write controls, read-only DML denial,
-unchanged inspection and cleanup witnesses have passed; adverse matrix and current
-policy TLS qualification continue, with separate evidence/review still required.
-Do not use old provisioning harnesses or treat the old absent lab as this new lab.
+The fresh pinned disposable PostgreSQL/Oracle lab is owned by this work unit;
+nonsecret paths/IDs are in `/home/tim/.tmp/es-read-policy-dc90674a/state.json`.
+The full compiler-2 write-capable-account/adverse matrix passed. The separately
+reviewed [current-policy TLS addendum](../evidence/d04-read-operation-tls.md) records
+both engine verified-TLS positives and wrong-trust/hostname refusals. Root compiled
+and independently reran both owner TLS controls successfully. The actual negative
+connect cases retain CLEANUP_INCONCLUSIVE rather than inferring release from backend
+absence. Fresh private keys/wallets remain in owned RAM. No runner remains active.
+Do not use old provisioning harnesses or treat the old absent lab as this lab.
 Native DB credential entry remains blocked pending effective crash privacy.
+
+The authorized push after `40b67ae` was rejected before execution:
+`approval required by policy, but AskForApproval is set to Never`. The remote
+remains `8125e57`. Do not retry through another upload path. Local implementation,
+review and commits continue; publication needs an approval-capable session or a
+user-performed push. No new remote CI/GHCR/HiveForge evidence is claimed.
 
 Two prior subagent turns exhausted account quota. The remaining DB author completed
 independent XML review while its lab runner was stopped; it remains active. Preserve

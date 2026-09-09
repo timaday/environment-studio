@@ -18,7 +18,7 @@ results are historical and do not certify the corrected policy. See
 | D01 definitions | Native compilation/readiness aligned to XML capabilities; compiler mechanism 2 with readable historical revisions; owned upload/publication reviewed | Browser publication workflow and external application qualification |
 | D02 security/state | Live workspace commit authority corrected and independently reviewed, including revocation during body reads and inconclusive closure | Browser integration; actual deployment durability/identity external |
 | D03 XML | Final assembled move context corrected and independently reviewed, including edited ancestors and created parents; guarded spans/projection preserved | Hosted orchestration and guarded SQL/client qualification |
-| D04 database reads | Corrected closed read-operation policy integrated and independently reviewed; combined 475 Java checks pass | Actual write-capable account matrix, refreshed TLS/identity/cleanup evidence, browser inspection |
+| D04 database reads | Corrected closed read-operation policy reviewed; actual two-engine write-capable account, snapshot, read-effects, cancellation and verified-TLS matrix passed with independent owner rerun | Native-client privacy/TLS qualification; actual deployment and browser database integration |
 | D05 profiles | Value-free capture, portable whole/partial composition, immutable persistence/publication and hosted views integrated | Browser capture/reuse workflow |
 | D06 planning | Hosted plans, revisions, HTTP lifecycle/commands/views and complete structural targets reviewed | Browser workflow, remaining UX data and full hosted heap/transfer qualification |
 | D07 SQL | Package/transaction mechanisms and separate unqualified supervisor integrated/reviewed; disposable rollback/guard matrices passed | Native runtime/console/TLS/commit qualification and hosted export authority |
@@ -41,10 +41,16 @@ passes 475 Java checks at `f4f2add`. The subsequent reviewed
 [XML corrections](../evidence/xml-final-context-readiness.md) pass the integrated
 509-test Java reactor and Docker build, 7 frontend/22 schema tests, protected
 container smoke and separate supervisor assembly. All three requested review
-findings now have reviewed fixes. Active work: fresh D04 write-capable account
-matrix/adverse/TLS qualification and the remaining hosted workflow/native runtime.
-The D08a uncertainty RED was reproduced in a fresh f4f2add-based continuation tree;
-browser work remains active and unreviewed.
+findings now have reviewed fixes. The reviewed [D04 disposable matrix](../evidence/d04-disposable-read-operation.md)
+and [current-policy TLS addendum](../evidence/d04-read-operation-tls.md) record
+actual write-capable account RED/GREEN, independent unchanged-state and cleanup
+witnesses, read-effect controls and TLS positives/negatives. Independent root
+compilation and TLS owner rerun passed on the compiler-2 integrated code.
+D08a now passes the existing inspection/comparison task on desktop and narrow
+HTTPS/OIDC browser sessions, with a mock observation port. Independent review
+identified mutation-recovery, navigation and stale-display gaps; corrections and
+full workflow/native-runtime work remain active. No D08a integration or real
+browser-to-database qualification is claimed.
 Eleven inspection/composition view routes passed independent review, the combined
 450-test Java Docker build and protected smoke; see
 [view integration](../evidence/d06b3-integration.md).
