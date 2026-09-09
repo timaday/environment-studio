@@ -293,6 +293,103 @@ explains why the hook cannot await post-start acknowledgement. Qualify actual
 binaries and [pre-exec async-signal safety](https://pubs.opengroup.org/onlinepubs/9799919799/functions/fork.html)
 before enabling an installed runtime.
 
+### Native root-correlation prerequisite
+
+Before the complete coordinator/JNI boundary, one private C owner may establish
+only the first root correlation. It owns one existing `es_fork` object in stable,
+fresh zeroed storage and borrows an already prepared `es_connection` only during
+one serialized match. It does not acquire a pin from a numeric PID, duplicate a
+socket, parse procfs independently, send CHALLENGE/ACK, verify image/ancestry or
+admit a runtime. No descriptor or C object crosses production JNI in this slice.
+
+The closed C entry points in `privacy-root.h` are:
+
+```c
+es_root_result es_root_arm(es_root *, int cancel_fd, uint64_t deadline_ns,
+                          const uint8_t launch_id[16]);
+es_root_result es_root_capture(es_root *, es_peer_identity *);
+es_root_result es_root_register(es_root *, uint64_t exact_returned_pid);
+es_root_result es_root_disarm(es_root *);
+es_root_result es_root_match(es_root *, es_connection *, es_peer_identity *);
+es_root_cleanup es_root_close(es_root *, uint64_t cleanup_deadline_ns);
+```
+
+`es_root_result` is closed: `ES_ROOT_OK=0`, `ES_ROOT_CAPTURED=1`,
+`ES_ROOT_REGISTERED=2`, `ES_ROOT_CORRELATED=3`, `ES_ROOT_INVALID=4`,
+`ES_ROOT_PLATFORM=5`, `ES_ROOT_IDENTITY=6`, `ES_ROOT_DEAD=7`,
+`ES_ROOT_PROTOCOL=8`, `ES_ROOT_DEADLINE=9`, `ES_ROOT_CANCELLED=10`,
+`ES_ROOT_IO=11`, `ES_ROOT_CLEANUP=12`. Cleanup has
+`ES_ROOT_CLOSED_COMPLETE=0`, `ES_ROOT_CLOSED_INCONCLUSIVE=1`,
+`ES_ROOT_CLOSE_INVALID=2`. There is no FINAL_ADMITTED result.
+
+Arm/register/disarm belong to the original dedicated platform launcher thread.
+One caller serializes capture, register, match and close, including safe publication
+of completed capture to the registering launcher. Disarm may overlap capture only
+under the existing fork primitive's split ownership: it never reads/mutates the
+receiver's non-atomic state, and completion must be published before match/close.
+Only signalling the borrowed cancellation eventfd may otherwise be concurrent.
+The owner retains the original startup deadline and launch generation; operations
+cannot replace them. The cancellation descriptor remains borrowed and live until
+all owner calls and its final close have completed.
+
+The successful order is arm, CAPTURED, same-launcher register, same-launcher disarm,
+then one first-root match. Capture may precede ProcessBuilder return for cleanup
+evidence only. Register-before-capture, wrong thread, duplicate/stale operations,
+zero/out-of-range or mismatched returned PID refuse. Registration compares the
+still-live retained kernel capture to the positive PID from the exact Process
+created by the reviewed Java launch wrapper; the C parameter by itself cannot
+prove that Java provenance. A test-only bridge must use that actual wrapper for
+FORK controls. It cannot turn a generally callable PID API into root authority.
+No unreturned/failed start can be registered or matched.
+
+Match requires successful registration and completed disarm, and a connection
+that already received exactly one PREPARE. The root owner retains its original
+cancellation descriptor independently of its fork member. Require the borrowed
+connection's listener, peer pin and wire owner to carry that exact cancellation
+descriptor and original startup deadline. A foreign or internally inconsistent
+launch scope refuses with ES_ROOT_INVALID before correlation; root identity alone
+does not establish the connection's operation/deadline authority. Recheck the
+retained root pin and the connection's separately retained live pin before and
+after comparison through
+`es_fork_read` and `es_connection_read`. Require exact PID, start ticks, UID and
+GID equality; unavailable identity, an exited root/peer, unrelated same-UID peer
+or inherited socket creator refuses. Keep both pins owned during comparison.
+This establishes correlation at the checked boundary, not atomic future liveness,
+image, suppression, descendant or repeated-exec identity. The caller keeps the
+connection under its original owner; root match never transfers/duplicates its
+socket or pin and never directly closes or releases its listener capacity. A
+connection read refusal retains that connection's own cleanup semantics.
+
+All refusals on a live root are sticky and cannot be retried into correlation.
+Distinct identity outputs are zeroed on refusal. Null or overlapping output is
+refused before writing into either owner; caller output may not overlap the root
+or borrowed connection storage. Missing hook, cancellation or expiry cannot be
+converted into a later successful registration or match. Disarm may report OK
+solely to establish that its launcher window ended; it preserves any earlier
+refusal and grants no registration/correlation. A same-launcher failed arm may
+also report ended-window OK only when that exact completed `es_fork_arm` call
+created a positive owned generation, returned failure with its armed flag zero,
+and the root owner recorded this fact before publishing to a receiver. The fork
+primitive then never installed that generation in TLS and released its window.
+Fresh/unattempted objects, pre-initialization rejection, unrelated generations,
+wrong-thread and duplicate disarm still refuse. This proof is immutable arm-result
+data, not a later receiver-state inspection; cleanup uncertainty remains sticky.
+Cleanup still attempts each owned release once, even after cancellation/expiry. A still-armed
+window is quarantined until the launcher demonstrably disarms; uncertainty remains
+sticky after later release. Never retry a closed descriptor number or reinitialize
+a closed owner. First close fixes its independent cleanup deadline (at most ten
+seconds remaining); repeats may shorten but never renew it. Root cleanup reports
+only this owner's native resources. Owned-process, borrowed-connection/listener
+and enclosing invocation cleanup remain separate required outcomes.
+
+Required credential-free controls include actual captured/returned/constructor
+root agreement, wrong/unrelated/inherited peer, dead root or peer, missing hook,
+POSIX_SPAWN, order/thread/generation faults, cancellation during capture, late
+return/disarm quarantine, close-once/reused descriptors and unchanged native
+output. Test-only JNI exercises actual Java FORK launch ownership; it does not
+qualify production token registries, library installation, complete coordinator
+or client crash privacy. Those gates remain required before runtime availability.
+
 ### Coordinator transitions
 
 One native coordinator owns these transitions and all descriptor operations:

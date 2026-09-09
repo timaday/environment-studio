@@ -51,6 +51,13 @@ three additional actual native refusal/cleanup controls. Accepted-socket transfe
 retains listener capacity until real receiver close. PREPARE is only a private
 prerequisite; coordinator/JNI/admission and native-client qualification remain open.
 
+The [native root-correlation prerequisite](../evidence/d07c3-privacy-root.md)
+is now independently reviewed and integrated. Review corrected a foreign
+cancellation/deadline scope flaw and strengthened constructor/descriptor-reuse
+witnesses. Combined Java844 and independent native controls pass. The root
+registers the Java-owned child and correlates its first connection; image/ancestry,
+production JNI/coordinator, privacy admission and client qualification remain open.
+
 Latest exact-source OCI/browser artifact is `c4a324636d4aeaa20012349e68cce7eb2b025f8b`.
 Reviewed observed context and response/session recovery are integrated; the
 [exact-source artifact refresh](../evidence/d06b4-artifacts.md) passed Java683,

@@ -42,8 +42,11 @@ results cover exact c4a3246, not newer mechanisms or all combined maxima.
 The [private native connection candidate](../evidence/d07c3-privacy-connection.md)
 is independently reviewed and integrated after the Java launch owner. Preserve
 its final nine-file author manifest and eight unchanged source/test files.
-Latest-base full Java713 and three independent native adverse controls passed;
-production coordinator/JNI, image/root/ancestry checks and admission remain next.
+Its later [root-correlation prerequisite](../evidence/d07c3-privacy-root.md) is now
+integrated after review corrected shared launch controls and strengthened actual
+constructor/descriptor-reuse tests. Combined Java844 passes on the reviewed XML
+adapter plus native root candidate. Preserve its frozen six-file manifest and ABI
+hash. Production coordinator/JNI, image/ancestry checks and admission remain next.
 
 Read-only remote verification now confirms `dbb457ab408d808aced8bb3176e4677277629975`
 following an external push; root did not retry the earlier rejected push. The
