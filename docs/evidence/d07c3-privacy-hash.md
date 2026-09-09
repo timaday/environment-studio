@@ -67,8 +67,9 @@ hashes match the verified archive and root. Log/archive:
 Whole selected-diff provenance/disclosure review, repository integrity, staged
 content guard, Python11 and whitespace checks passed before commit. The guard
 checks known patterns only and does not establish provenance by itself.
-Pinned OpenSSL installation in the actual Docker build remains next verification;
-the [retained9454d9f image](workspace-http-v3-artifacts.md) predates these files.
+The subsequent [exact45d6bec image](native-hash-artifacts.md) installed the pinned
+OpenSSL packages, passed1036 Java tests and protected smoke. Production native
+library installation and loader/resource qualification remain separate work.
 
 External records are under `/home/tim/.tmp`: `es-native-hash-author-evidence-20260909.md`,
 `es-native-hash-independent-review-20260909.md`, the candidate manifest,

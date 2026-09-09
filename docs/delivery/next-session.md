@@ -88,8 +88,10 @@ controls pass. Full image/ancestry admission and production coordinator/JNI rema
 next. The [bounded native file-hash prerequisite](../evidence/d07c3-privacy-hash.md)
 is now reviewed and integrated; combined Java1036 passes with all six hashes exact.
 It remains a prerequisite, not trusted image/loader admission or production wiring.
-Its pinned OpenSSL Docker installation and complete native memory/thread cleanup
-still need qualification; the retained9454d9f image predates hashing.
+The [exact45d6bec image](../evidence/native-hash-artifacts.md) now verifies pinned
+OpenSSL test-stage installation, Java1036 and protected smoke; it predates owned
+profile draft commands. Complete native memory/thread/loader cleanup remains
+unqualified. Trusted file opening is isolated implementation work in progress.
 
 Read-only remote verification now confirms `dbb457ab408d808aced8bb3176e4677277629975`
 following an external push; root did not retry the earlier rejected push. The
