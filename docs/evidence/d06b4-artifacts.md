@@ -1,5 +1,50 @@
 # D06b4 — image and hosted browser refresh
 
+## Observed-context refresh at 1bda699
+
+Exact source: `1bda69993ff1257b063d08a357fd2b260d8be385`, including the reviewed
+observed-destination and live summary-publication correction, retained independent
+transfer regressions, native peer primitive and root-capture contract.
+All builds used a fresh `git archive` of that commit.
+
+`docker buildx build --load --progress=plain --build-arg
+SOURCE_REVISION=1bda69993ff1257b063d08a357fd2b260d8be385
+-t environment-studio:1bda699-review-20260909 .` passed Java623
+(core161/parser7/server365/supervisor90), frontend34/schema24, production UI build,
+supervisor assembly/checksums and hostile launch checks.
+Log: `/home/tim/.tmp/es-1bda699-oci-build-20260909.log`.
+Inspected image ID:
+`sha256:4932ea4452240df0570803e35c98a393fcce48fbc6ef71f2651766a64f1e7c71`.
+Its source label exactly matches the commit above.
+
+`bash scripts/container_smoke.sh environment-studio:1bda699-review-20260909`
+passed protected startup/static UI/health/demo refusal and the included private
+workspace initialization, permissions, schema2 and explicit offline legacy-upgrade
+checks. Log: `/home/tim/.tmp/es-1bda699-container-smoke-20260909.log`.
+
+The separate `supervisor-artifacts` target exported
+`/home/tim/.tmp/es-1bda699-supervisor-artifacts-20260909/environment-studio-guarded-0.1.0-SNAPSHOT.zip`.
+ZIP SHA-256: `9186713530eb5014fef278092d7b4d29daf384aa61fe6049a2333c5822b66176`.
+Its runtime registry remains empty; this artifact does not qualify native
+authentication, crash privacy or execution.
+
+Fresh exact-source reactor `test-compile dependency:build-classpath`, frontend
+`npm ci`/production build and the actual local HTTPS/OIDC browser harness passed.
+Runner: `python3 /home/tim/.tmp/es-run-browser-1bda699-20260909.py 1bda699 all`.
+All four desktop1440x1000/narrow390x844 maintainer/operator cases passed in 6.5s,
+including their keyboard/accessibility, exact credential/log/storage canaries and
+disclosure controls. Observation is an independently invented mock port. Owned
+TLS/workspace/browser outputs stayed in RAM; trace/screenshots/video were disabled.
+Harness cleanup was COMPLETE, with no force kill or inconclusive marker.
+Log: `/home/tim/.tmp/es-d08a-browser-1bda699-20260909.log`.
+
+The 1 GiB Compose allocation remains unqualified for maximum hosted scope. These
+startup and functional checks do not establish heap/blocked-transfer recovery,
+full operator workflow, native-client qualification or external deployment.
+No GitHub CI, GHCR publication or HiveForge result is claimed for this refresh.
+
+## Earlier bindings refresh at 19be08f
+
 Exact tested source: `19be08f57ff0a3b1366d4b660f7f0c6b220ba179`.
 This includes reviewed stable handles, bindings/locations/placeholders, explicit
 raw-coordinate disclosure and the buffered servlet completion correction. The

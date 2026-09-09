@@ -18,13 +18,26 @@ The previous push-review blocker is historical: the remote now matches the check
 
 ## Current 9 September continuation
 
+Latest tested source: `1bda69993ff1257b063d08a357fd2b260d8be385`. The
+[artifact refresh](../evidence/d06b4-artifacts.md) records Java623,
+frontend34/schema24, protected container/workspace smoke and four exact-source
+hosted browser cases. Observed destination and summary transfer authority are
+reviewed and integrated. Native fork capture is isolated at
+`/home/tim/.tmp/es-privacy-fork-ypizpz4x`, base `c4529e4`; do not integrate its
+unfrozen author files. Memory investigation is external at
+`/home/tim/.tmp/es-heap-qualification-20260909`; use uploadable two-document
+unresolved fixtures and actual command-parser results, not the earlier typed-only
+eight-document probe as end-to-end scope evidence. No deployment allocation has
+yet been qualified. This work remains active.
+
 The [buffered request correction](../evidence/buffered-request-completion.md) is
 independently accepted and integrated after `21649ba`. Full combined Java590,
 assembly/hostile-launch checks and the callback-latch mutant passed their expected
 outcomes. Completed-body callbacks no longer discard container-buffered bytes.
 The temporary diagnostic variants are excluded. The older credential failure is
 reproduced and its mechanism fixed; do not reintroduce the latch or retry credentials.
-Current OCI/browser refresh remains due; peer deadline review correction is active.
+The later exact-source refresh above passed; peer deadline/cleanup corrections
+were independently reviewed and integrated as `693ff37`.
 
 [D06b4 bindings](../evidence/d06b4-bindings.md) are corrected, independently reviewed
 and locally integrated after `2035854`. The fixed33 manifest is
@@ -35,8 +48,8 @@ one older credential submission with MALFORMED_BODY; its completed investigation
 `/home/tim/.tmp/es-credential-read-investigation-20260909`, isolated at `4d767fb`.
 Its temporary diagnostic captures only fixed Java call sites and must not be
 merged as production behavior. The later fixed5 full reactor above passed.
-The native peer primitive is assigned separately at base `2035854`; only its five
-explicit C/test/evidence files may be integrated after fixed-source review.
+The native peer primitive's corrected five-file candidate was independently
+reviewed and integrated as `693ff37`; retain its final evidence and ownership rules.
 
 The [D07c3 transport primitive](../evidence/d07c3-privacy-wire.md) is independently
 reviewed and locally integrated after `7c1cb4c`; exact source hashes are in its
@@ -47,8 +60,9 @@ admission follows. Next native work is trusted peer identity and launch coordina
 including the independent dangling-intent correction and 483-test integration.
 The original binding author overlay in `/home/tim/.tmp/es-plan-bindings-20260909`
 (base `78c4860` plus reviewed handles) is superseded by the corrected fixed33
-candidate above. Never merge its older whole overlay. Labels and observed identity
-remain planned; no new frontend design follows from backend route availability.
+candidate above. Never merge its older whole overlay. Labels remain planned;
+observed identity is now implemented. No new frontend design follows from backend
+route availability.
 
 [D07c3 privacy controls](../evidence/d07c3-privacy-controls.md) are reviewed.
 Exact candidate on `744e981` passed independent full Java526/assembly/launch checks;

@@ -4,6 +4,13 @@ Updated: 9 September 2026. See [starter evidence](../evidence/starter-verificati
 and [D01a integration](../evidence/d01a-integration.md) for actual commands and
 results; the table below reports capability, not test count.
 
+Latest verified source is `1bda69993ff1257b063d08a357fd2b260d8be385`.
+Reviewed observed identity and live summary publication are integrated; the
+[exact-source artifact refresh](../evidence/d06b4-artifacts.md) passed Java623,
+frontend34/schema24, four hosted browser cases and protected container/workspace
+smoke. Native fork capture remains isolated work; maximum heap/transfer/recovery,
+remaining operator workflow and external publication/deployment remain unfinished.
+
 Work resumed from verified local and remote `8125e57127b1583664d368b97b82d08ec103fe5d`.
 Both saved D08a/D07c2 worktree manifests still match. The user's 9 September
 correction supersedes D04 account purity: ordinary write-capable accounts must
@@ -158,7 +165,8 @@ leakage through raw spans; the corrected route requires complete-document
 acknowledgement. Focused Java26/schema23 and five guard mutants pass. The corrected
 full reactor reproduced the older credential-body MALFORMED_BODY failure and is
 not green; root is isolating that transport defect before final combined acceptance.
-Labels/observed identity, operator navigation and heap/transfer proof remain open.
+Labels, operator navigation and heap/transfer proof remain open; the later
+observed-identity integration is recorded below.
 The native peer pin contract now requires SO_PEERPIDFD; its bounded native primitive
 is the next independently assigned implementation slice after `2035854`.
 
