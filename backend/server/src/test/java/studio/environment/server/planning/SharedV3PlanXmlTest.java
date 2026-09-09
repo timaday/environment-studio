@@ -18,7 +18,9 @@ class SharedV3PlanXmlTest {
     final SessionLedger ledger=new SessionLedger(Clock.fixed(Instant.parse("2026-09-09T21:00:00Z"),ZoneOffset.UTC),ignored->{});
     final SessionLedger.Lease lease=((SessionLedger.Accepted)ledger.admit("mock-lease",new Owner("https://mock.invalid","operator"))).lease();
     final NativeCommand.Reference reference=new NativeCommand.Reference("00000000-0000-4000-8000-000000000001","2");
-    final PlanDefinition.V3 model=new PlanDefinition.V3(definition(false));
+    PlanDefinition.V3 model=new PlanDefinition.V3(definition(false));
+    String xml=XML;
+    static SharedV3PlanXmlTest with(studio.environment.core.definitionv3.NativeCompilationResult.Checked definition,String xml){var fixture=new SharedV3PlanXmlTest();fixture.model=new PlanDefinition.V3(definition);fixture.xml=xml;return fixture;}
     static Map<String,Object> evidence(){
         var identity=Map.of("systemIdentifier","731","databaseOid","19","databaseName","invented_db");
         return Map.of("engine","postgresql","cleanup","complete",
@@ -26,6 +28,10 @@ class SharedV3PlanXmlTest {
                 "metadata",Map.of("adapterVersion","jdbc-observation-v3","operationPolicyVersion","postgresql-read-operation-v1","visibility","complete","readOnlyOperation","verified","snapshot","repeatable-read-read-only"));
     }
     HostedPlanService service(){
+        return service(new PlanContentAdapter());
+    }
+    HostedPlanService service(ContentAdapter adapter){return service(adapter,System::nanoTime);}
+    HostedPlanService service(ContentAdapter adapter,java.util.function.LongSupplier monotonic){
         var published=new PublishedDefinition(reference,"mock-published",model,List.of());
         var workspace=new Workspace(){
             public PublishedDefinition definition(Owner o,NativeCommand.Reference r){throw new AssertionError("VERSION_MUST_BE_EXPLICIT");}
@@ -36,11 +42,11 @@ class SharedV3PlanXmlTest {
             public ObservationResult observe(Selection s,TransientCredentials c,Cancellation flag){throw new AssertionError("RESERVATION_REQUIRED");}
             public Reservation reserveV3(V3Selection selected){assertEquals(model.checked(),selected.compiled());return new Reservation.Admitted(new Permit(){
                 public ObservationResult observe(TransientCredentials credentials,Cancellation control){credentials.close();return new ObservationResult.Complete(new ObservationResult.Observation(FINGERPRINT,model.logicalDigest(),model.bindingDigests().get("mock-pg"),
-                        List.of(new ObservationResult.Document("sheet",new ObservationResult.Key("int64","1"),XML,XML.getBytes(java.nio.charset.StandardCharsets.UTF_8).length,XML.length(),digest(XML))),evidence()));}
+                        List.of(new ObservationResult.Document("sheet",new ObservationResult.Key("int64","1"),xml,xml.getBytes(java.nio.charset.StandardCharsets.UTF_8).length,xml.length(),digest(xml))),evidence()));}
                 public void close(){}
             });}
         };
-        return new HostedPlanService(ledger::guard,workspace,Map.of("destination",new Destination("destination",studio.environment.core.definitionv2.NativeDefinition.Engine.POSTGRESQL,observations)),new PlanContentAdapter(),System::nanoTime);
+        return new HostedPlanService(ledger::guard,workspace,Map.of("destination",new Destination("destination",studio.environment.core.definitionv2.NativeDefinition.Engine.POSTGRESQL,observations)),adapter,monotonic);
     }
     String inspected(HostedPlanService service){
         var created=service.createV3(lease,UUID.randomUUID().toString(),reference,"mock-pg","destination");

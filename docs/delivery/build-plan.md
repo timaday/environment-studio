@@ -66,7 +66,8 @@ review, full Java1187 and eight compiled guard mutations. The
 [shared internal lifecycle](../evidence/qf34-shared-lifecycle.md) passes full Java1203
 and corrected independent review: current-only v3 inspection, separately proven
 targets, physical commands/pages and readable unresolved summaries. Comparison
-and capture are separate candidates; versioned views/APIs, runtime composition
+now passes [corrected independent review](../evidence/qf34-shared-comparison.md)
+and full Java1217; capture is a separate candidate. Versioned views/APIs, runtime composition
 and combined retained-proof resources remain required before admission.
 
 The lead owns shared contracts and compatibility. Independent fixed-candidate

@@ -75,6 +75,9 @@ public final class PlanContentAdapter implements ContentAdapter {
     @Override public DocumentView compare(studio.environment.core.plan.HostedPlanService.ViewSnapshot snapshot,boolean target,String documentId,ViewMode mode) {
         return PlanDocumentViews.render(snapshot,target,documentId,mode);
     }
+    @Override public DocumentView compare(studio.environment.core.plan.HostedPlanService.ViewSnapshot snapshot,boolean target,String documentId,ViewMode mode,studio.environment.core.observation.ObservationPort.Cancellation cancellation) {
+        return PlanDocumentViews.render(snapshot,target,documentId,mode,cancellation);
+    }
     private static Content content(ProjectionResult.Accepted projection,Map<ObservedGraph.Key,TargetIntent.Ref> provenance) {
         return new Content(projection.projection().documents().stream().map(document->new Source(document.documentId(),document.source(),document.digest())).toList(),projection.graph(),provenance);
     }

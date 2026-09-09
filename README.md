@@ -24,7 +24,9 @@ checks; hosted v3 availability remains disabled.
 The [internal plan content adapter](docs/evidence/qf34-plan-content.md) now retains
 complete original and target proofs. The [shared internal v3 lifecycle](docs/evidence/qf34-shared-lifecycle.md)
 now joins creation, observation, target work and physical commands; runtime
-composition, profiles, comparison and validation remain in progress.
+composition, profiles and validation remain in progress. The
+[shared v3 comparison](docs/evidence/qf34-shared-comparison.md) now verifies complete
+original/target proofs and rejects results invalidated by reinspection.
 Complete Oracle CLOB/PostgreSQL text observation, value-free profile composition
 and cross-document structural target materialization are implemented as reviewed
 internal mechanisms. The hosted plan service joins these mechanisms with session

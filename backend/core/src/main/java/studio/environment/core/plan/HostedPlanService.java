@@ -229,7 +229,7 @@ public final class HostedPlanService {
         var operation=plan.active;
         if(operation!=null && operation.phase==Phase.RESERVED && monotonic.getAsLong()-operation.reservedAt>=RESERVATION_NANOS) {
             operation.phase=Phase.EXPIRED; operation.code="RESERVATION_EXPIRED"; operation.consumed=true;
-            plan.inspectionValid=false; plan.generation++; operation.permit.close(); releaseOperation(operation);
+            plan.inspectionValid=false; plan.generation++; cancelPlanWork(plan); operation.permit.close(); releaseOperation(operation);
         }
     }
     private Operation operation(SessionLedger.Lease lease,String id) {
@@ -383,6 +383,7 @@ public final class HostedPlanService {
     }
     private Status finish(Operation operation,ObservationResult result,ContentResult projected,Map<studio.environment.core.planning.TargetIntent.Ref,String> observedHandles,Optional<PlanObservedDestination> observedContext) {
         var plan=operation.plan;
+        cancelPlanWork(plan);
         operation.cleanup=result.cleanup()==ObservationResult.Cleanup.COMPLETE?Cleanup.COMPLETE:Cleanup.INCONCLUSIVE;
         if(result instanceof ObservationResult.Refused refusal) operation.cleanupHandle=refusal.cleanupHandle().orElse(null);
         boolean cancelled=plan.retired || operation.cancellation.cancelled() || plan.generation!=operation.generation || !plan.revision.toString().equals(operation.revision);
@@ -446,9 +447,13 @@ public final class HostedPlanService {
         }
         return status(lease,operationId);
     }
+    private void cancelPlanWork(Plan plan) {
+        if(plan.workCancellation!=null) plan.workCancellation.cancel();
+        if(viewScratch!=null && viewScratch.pinned==plan) viewScratch.cancellation.cancel();
+    }
     private void cancelOperation(Operation operation) {
         if(operation.plan==null || operation.plan.active!=operation) return;
-        operation.plan.inspectionValid=false; operation.plan.generation++; operation.cancellation.cancel();
+        operation.plan.inspectionValid=false; operation.plan.generation++; cancelPlanWork(operation.plan); operation.cancellation.cancel();
         if(operation.phase==Phase.RESERVED) {
             operation.consumed=true; operation.permit.close(); operation.cleanup=Cleanup.COMPLETE; releaseOperation(operation);
         }
@@ -461,6 +466,7 @@ public final class HostedPlanService {
         synchronized(lock) {
             var state=state(lease); if(state==null) return;
             localWork=state.commandReaders>0 || state.plan!=null && (state.plan.rendering || state.plan.readers>0);
+            if(viewScratch!=null && viewScratch.state==state) viewScratch.cancellation.cancel();
             if(state.plan!=null) {
                 state.plan.retired=true; state.plan.inspectionValid=false;
                 if(state.plan.workCancellation!=null) state.plan.workCancellation.cancel();
@@ -488,8 +494,12 @@ public final class HostedPlanService {
     /** Internal immutable source for bounded view adapters; never an HTTP authority token. */
     public record ViewSnapshot(String revision,PublishedDefinition definition,String binding,Optional<Content> current,
             Optional<Content> target,Draft draft,Map<studio.environment.core.planning.TargetIntent.Ref,PlanCommand.Ref> references,
-            Map<studio.environment.core.planning.TargetIntent.Ref,String> displayHandles) {
-        public ViewSnapshot { references=Map.copyOf(references);displayHandles=Map.copyOf(displayHandles); }
+            Map<studio.environment.core.planning.TargetIntent.Ref,String> displayHandles,Optional<V3PlanPins> v3Pins) {
+        public ViewSnapshot(String revision,PublishedDefinition definition,String binding,Optional<Content> current,Optional<Content> target,Draft draft,
+                Map<studio.environment.core.planning.TargetIntent.Ref,PlanCommand.Ref> references,Map<studio.environment.core.planning.TargetIntent.Ref,String> displayHandles) {
+            this(revision,definition,binding,current,target,draft,references,displayHandles,Optional.empty());
+        }
+        public ViewSnapshot { references=Map.copyOf(references);displayHandles=Map.copyOf(displayHandles);Objects.requireNonNull(v3Pins); }
         @Override public String toString() { return "ViewSnapshot[redacted]"; }
         public Content selected(boolean targetSide) { return (targetSide?target:current).orElseThrow(()->new PlanRefusal(targetSide?INCOMPLETE_TARGET:INSPECTION_REQUIRED)); }
         public String displayHandle(studio.environment.core.planning.TargetIntent.Ref ref) {
@@ -513,6 +523,7 @@ public final class HostedPlanService {
     }
     public final class ViewAdmission implements AutoCloseable {
         private final SessionLedger.Lease lease; private final String planId; private final LeaseState state;
+        private final ObservationPort.Cancellation cancellation=new ObservationPort.Cancellation();
         private boolean used,executing,closed,released; private Plan pinned; private String revision; private long generation; private boolean inspection; private Operation active;
         private ViewAdmission(SessionLedger.Lease lease,String planId,LeaseState state) {this.lease=lease;this.planId=planId;this.state=state;}
         public boolean live() { return authority.guard(lease,()->{synchronized(lock){return !closed;}}).orElse(false); }
@@ -529,7 +540,7 @@ public final class HostedPlanService {
         }
         public void verify() {guarded(lease,()->{check();return true;});}
         private void check() {
-            if(closed || !executing || pinned==null || pinned.retired || pinned.generation!=generation || pinned.inspectionValid!=inspection || pinned.active!=active || !pinned.revision.toString().equals(revision)) throw new PlanRefusal(CONFLICT);
+            if(closed || cancellation.cancelled() || !executing || pinned==null || pinned.retired || pinned.generation!=generation || pinned.inspectionValid!=inspection || pinned.active!=active || !pinned.revision.toString().equals(revision)) throw new PlanRefusal(CONFLICT);
         }
         public ViewSnapshot snapshot() {
             return guarded(lease,()->{
@@ -544,7 +555,7 @@ public final class HostedPlanService {
         public DocumentView document(boolean targetSide,String documentId,ViewMode mode,boolean disclosed) {
             if(!disclosed)throw new PlanRefusal(DISCLOSURE_REQUIRED);
             var snap=snapshot();
-            var result=content.compare(snap,targetSide,documentId,mode);verify();return result;
+            var result=content.compare(snap,targetSide,documentId,mode,cancellation);verify();return result;
         }
         public CapturedProfile capture(studio.environment.core.profile.ProfileCapture.Command command) {
             var snap=snapshot();guarded(lease,()->{check();inspected(pinned);if(pinned.active!=null || pinned.rendering)throw new PlanRefusal(PLAN_BUSY);return true;});
@@ -556,7 +567,7 @@ public final class HostedPlanService {
             var profile=workspace.profile(lease.owner(),reference,work.plan.definition);
             var result=HostedPlanService.preview(work,profile,roots);verify();return result;
         }
-        @Override public void close() {synchronized(lock){if(closed)return;closed=true;if(!executing)release();}}
+        @Override public void close() {synchronized(lock){if(closed)return;closed=true;cancellation.cancel();if(!executing)release();}}
         private void release() {
             if(released)return;released=true;state.commandReaders--;
             if(pinned!=null){pinned.readers--;clearRetired(pinned);}
@@ -796,9 +807,12 @@ public final class HostedPlanService {
         }
     }
     private static studio.environment.core.derived.DerivedInput.Pin v3Pin(Render render,String revision) {
+        return v3Pin(render.plan,render.current,revision);
+    }
+    private static studio.environment.core.derived.DerivedInput.Pin v3Pin(Plan plan,Content current,String revision) {
         var digests=new TreeMap<String,String>();
-        for(var source:render.current.sources()) if(digests.putIfAbsent(source.documentId(),source.digest())!=null) throw new PlanRefusal(PROJECTION_REFUSED);
-        return new studio.environment.core.derived.DerivedInput.Pin(revision,render.plan.definition.model().logicalDigest(),render.plan.binding,render.plan.definition.model().bindingDigests().get(render.plan.binding),digests);
+        for(var source:current.sources()) if(digests.putIfAbsent(source.documentId(),source.digest())!=null) throw new PlanRefusal(PROJECTION_REFUSED);
+        return new studio.environment.core.derived.DerivedInput.Pin(revision,plan.definition.model().logicalDigest(),plan.binding,plan.definition.model().bindingDigests().get(plan.binding),digests);
     }
     private static void requireTargetEvidence(Render render,studio.environment.core.derived.DerivedInput.Pin before,
             studio.environment.core.derived.DerivedInput.Pin next,Content target) {
@@ -843,6 +857,7 @@ public final class HostedPlanService {
             if(!mutation.expectedRevision().equals(plan.revision.toString())) throw new PlanRefusal(CONFLICT);
             var acknowledgement=plan.ack(); plan.retired=true; plan.inspectionValid=false; plan.generation++;
             if(plan.workCancellation!=null) plan.workCancellation.cancel();
+            if(viewScratch!=null && viewScratch.pinned==plan) viewScratch.cancellation.cancel();
             if(plan.active!=null) cancelOperation(plan.active); clearRetired(plan);
             state.replay.put(mutation.requestId(),new Replay(identity,acknowledgement)); return acknowledgement;
         });
@@ -990,25 +1005,30 @@ public final class HostedPlanService {
     private static ViewSnapshot snapshot(Plan plan) {
         var refs=new HashMap<studio.environment.core.planning.TargetIntent.Ref,PlanCommand.Ref>();
         plan.originals.forEach((handle,ref)->refs.put(ref,new PlanCommand.Ref.Existing(handle)));
-        return new ViewSnapshot(plan.revision.toString(),plan.definition,plan.binding,Optional.ofNullable(plan.current),Optional.ofNullable(plan.target),plan.draft,refs,plan.handles);
+        Optional<V3PlanPins> pins=Optional.empty();
+        if(plan.definition.model() instanceof PlanDefinition.V3 && plan.current!=null) {
+            pins=Optional.of(new V3PlanPins(v3Pin(plan,plan.current,plan.observationFingerprint),v3Pin(plan,plan.current,"plan:"+plan.id+":"+plan.revision+":"+plan.generation)));
+        }
+        return new ViewSnapshot(plan.revision.toString(),plan.definition,plan.binding,Optional.ofNullable(plan.current),Optional.ofNullable(plan.target),plan.draft,refs,plan.handles,pins);
     }
     public DocumentView comparison(SessionLedger.Lease lease,String planId,String revision,boolean target,String documentId,ViewMode mode,boolean completeDocumentDisclosure) {
         if(!completeDocumentDisclosure) throw new PlanRefusal(DISCLOSURE_REQUIRED);
-        record ComparisonWork(Plan plan,ViewSnapshot snapshot,long generation) { }
+        record ComparisonWork(Plan plan,ViewSnapshot snapshot,long generation,boolean inspection,Operation active,ObservationPort.Cancellation cancellation) { }
         var work=guarded(lease,()-> {
             var plan=plan(lease,planId); if(!plan.revision.toString().equals(revision)) throw new PlanRefusal(CONFLICT);
             var selected=target?plan.target:plan.current; if(selected==null) throw new PlanRefusal(target?INCOMPLETE_TARGET:INSPECTION_REQUIRED);
             var source=selected.sources().stream().filter(item->item.documentId().equals(documentId)).findFirst().orElseThrow(()->new PlanRefusal(NOT_FOUND));
             if(materializationScratch) throw new PlanRefusal(CAPACITY);
-            materializationScratch=true; plan.readers++; return new ComparisonWork(plan,snapshot(plan),plan.generation);
+            materializationScratch=true; plan.readers++;plan.workCancellation=new ObservationPort.Cancellation();
+            return new ComparisonWork(plan,snapshot(plan),plan.generation,plan.inspectionValid,plan.active,plan.workCancellation);
         });
         try {
-            var display=content.compare(work.snapshot,target,documentId,mode);
+            var display=content.compare(work.snapshot,target,documentId,mode,work.cancellation);
             return guarded(lease,()-> {
-                if(work.plan.retired || !work.plan.revision.toString().equals(revision) || work.plan.generation!=work.generation) throw new PlanRefusal(CONFLICT);
+                if(work.plan.retired || work.cancellation.cancelled() || work.plan.inspectionValid!=work.inspection || work.plan.active!=work.active || !work.plan.revision.toString().equals(revision) || work.plan.generation!=work.generation) throw new PlanRefusal(CONFLICT);
                 return display;
             });
-        } finally { synchronized(lock) { materializationScratch=false; work.plan.readers--; clearRetired(work.plan); } }
+        } finally { synchronized(lock) { materializationScratch=false; work.plan.readers--;work.plan.workCancellation=null;clearRetired(work.plan); } }
     }
     public record Validation(String inputFingerprint,List<studio.environment.core.CheckResult> checks,
             Map<String,studio.environment.core.Outcome> applicationRules,boolean exportAvailable) {

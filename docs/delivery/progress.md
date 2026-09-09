@@ -69,7 +69,10 @@ compiled guard mutations. The [shared internal lifecycle](../evidence/qf34-share
 now passes full Java1203 and corrected independent review. V3 inspection retains
 current only until actual target materialization; unresolved summary blockers
 stay readable. Versioned creation, observation, physical commands and pages share
-existing ownership/capacity. Comparison and capture remain separate candidates;
+existing ownership/capacity. [Shared v3 comparison](../evidence/qf34-shared-comparison.md)
+now passes corrected independent review and full Java1217. Review reproduced a
+same-revision failed-inspection race; original cancellation and final context
+checks now refuse its late result. Capture remains a separate candidate;
 versioned APIs, runtime composition and combined proof resources stay open.
 No Q feedback GitHub publication is authorized. Existing MVP scope and completed
 work remain in place.

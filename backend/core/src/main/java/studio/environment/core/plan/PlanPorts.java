@@ -84,6 +84,10 @@ public final class PlanPorts {
         default DocumentView compare(HostedPlanService.ViewSnapshot snapshot,boolean target,String documentId,ViewMode mode) {
             throw new PlanRefusal(PlanRefusal.Code.DISCLOSURE_REQUIRED);
         }
+        default DocumentView compare(HostedPlanService.ViewSnapshot snapshot,boolean target,String documentId,ViewMode mode,ObservationPort.Cancellation cancellation) {
+            if(snapshot.definition().model() instanceof PlanDefinition.V3) throw new PlanRefusal(PlanRefusal.Code.UNSUPPORTED_DEFINITION);
+            return compare(snapshot,target,documentId,mode);
+        }
     }
     public enum ViewMode { RAW, PLACEHOLDERS, FORMATTED }
     public record DocumentView(String documentId,ViewMode mode,String text,boolean exact,
