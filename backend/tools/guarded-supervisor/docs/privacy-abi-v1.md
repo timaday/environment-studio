@@ -339,6 +339,80 @@ failures and exact descriptor-reuse cleanup controls. Mutation tests must witnes
 real association/evidence guards, not only compilation failures. No actual native
 client, script/loader qualification or production library installation is inferred.
 
+## Private script and interpreter association prerequisite
+
+`es_script_check(peer, retained_script, retained_interpreter, whole_launch_hash,
+expected, out)` composes the existing peer, arguments, file, hash and image
+primitives. Its borrowed owners are stable, distinct and caller-serialized, with
+the same original cancellation descriptor and absolute startup deadline. A
+private immutable compiled `es_script_expected` holds the absolute script path
+and length, exact LF-terminated shebang bytes and length, exact NUL-separated
+argument bytes and length, script argument index, and two32-byte expected SHA-256
+digests. `es_script_identity` contains only measured script and interpreter
+`es_hash_identity` records. This adds no public configuration or runtime entry.
+
+Validate all owner states, descriptor distinctions, original controls and bounded
+pointer spans before acquisition. Input spans must not overlap mutable owners or
+output. Output overlapping any input or owner is invalid and untouched; otherwise
+all refused output is zero. Preserve borrowed owners' existing terminal semantics.
+The caller latches every refusal; no retry or budget reset can admit a launch.
+Closed results are OK, INVALID, PLATFORM, CANCELLED, DEADLINE, IDENTITY, RESOURCE,
+IO and CLEANUP. Peer death, untrusted files and content/association mismatches
+map to IDENTITY; cryptographic failures map to IO. Temporary cleanup uncertainty
+overrides earlier results, including cancellation and identity refusal.
+
+Use the existing128-argument/1024-byte-per-argument/16KiB total argv limits.
+The script path is a nonempty absolute argument of at most1024 bytes, with the
+trusted-file path rules. The exact shebang is at most255 bytes including LF,
+starts `#!/`, and contains no NUL, CR, extra LF or ambiguous whitespace. Its
+interpreter token is absolute and contains no spaces or tabs. This prerequisite
+supports either no option or exactly one space followed by the compiled `-e`
+option. Require interpreter token equality with argv[0], optional `-e` equality
+with argv[1], script index exactly1 or2 respectively, and exact script pathname
+equality at that index. Remaining arguments come from already-admitted typed
+launch inputs and participate in complete byte equality. No env dispatch, stdin,
+`-c`, unknown option, generic command parser or inferred script policy is added.
+
+The literal shebang/argv interpreter token and the independently compiled trusted
+canonical interpreter file may differ, for example `/bin/sh` and `/usr/bin/dash`.
+Both are explicit installation facts. Never discover an alias from peer input,
+follow it as a trust fallback or relax the trusted-file no-symlink policy. Actual
+current interpreter association must still match the retained canonical file.
+
+Check the original live peer and the complete argv through `es_arguments_check`.
+Read the bounded exact shebang from the retained script with offset-preserving
+reads, hash that file and require its compiled digest. Apply `es_image_check` to
+the retained interpreter and compiled interpreter digest. Reopen only the exact
+compiled script pathname through `es_file_open`, hash it and compare complete
+device/inode/size/SHA-256 identity with the retained script. Repeat the complete
+argv check, close the newly owned file once, then check the live original peer
+and controls after cleanup. Each argv call retains its two independent reads.
+Perform every acquired resource's cleanup after any refusal; never retry a
+descriptor number after close uncertainty. Wipe temporary prefix and identities.
+
+A successful call charges five hash occurrences: retained/reopened script and
+the three interpreter image occurrences. All use the original shared512-object,
+2GiB total and512MiB-per-file limits; failed attempts retain consumed charges.
+Prefix scratch is at most256 bytes, never a full script buffer. Hash and argument
+scratch retain their existing bounds. Borrowed file offsets and descriptors stay
+unchanged. Deadlines do not make a stalled filesystem syscall interruptible.
+
+Success proves measured script/current-interpreter association at these checks.
+It does not prove which bytes an interpreter previously consumed or will reopen,
+script safety, loader closure, blocked constructors, exec generation, future
+immutability, privacy or runtime admission. Root/operator mutation exclusions
+remain. Nested script interpretation cannot substitute a different actual image.
+The future compiled chain and coordinator must qualify the complete behavior.
+
+Acceptance uses owned invented scripts and interpreters, exact kernel shebang
+argv and independently measured hashes; no-option/`-e` and Unicode/spaced paths;
+equal-byte different inodes, replacement paths, shifted/extra args, malformed
+headers, wrong digests, scope/alias faults, preserved offsets, actual death and
+cancellation, final cleanup and descriptor reuse.507 prior charges plus five
+succeeds;508 plus five refuses without resetting capacity. Independent mutation
+tests must expose lost script/image association, argv positioning, charging or
+cleanup precedence. Ordinary running-script controls are not constructor proof.
+
 ## Private bounded file hashing prerequisite
 
 The private native file-hash owner may measure one already-owned read-only regular

@@ -119,7 +119,12 @@ and tmpfs controls, plus nine meaningful guard mutants pass. The
 independently reviewed: full Java1100 and thirteen compiled guard mutations pass.
 Its retrospective scaffold RED followed initial implementation; the ordering gap
 and prior setup failures remain explicit. Script/loader closure and production
-native admission remain unfinished.
+native admission remain unfinished. The
+[script/interpreter association prerequisite](../evidence/d07c3-privacy-script.md)
+now passes independent review, full Java1141 and thirteen compiled guard
+mutations. Exact compiled path/shebang/argv and retained file/image identities
+share original limits and cleanup authority. Loader closure and actual consumed
+script evidence, coordinator/JNI and client qualification remain unfinished.
 
 Earlier exact-source OCI/browser artifact was `c4a324636d4aeaa20012349e68cce7eb2b025f8b`.
 Reviewed observed context and response/session recovery are integrated; the

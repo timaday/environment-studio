@@ -73,9 +73,11 @@ remains open. The [trusted-file opening prerequisite](../evidence/d07c3-privacy-
 now passes independent review, full Java1086 and nine actual guard mutants.
 The [executable association prerequisite](../evidence/d07c3-privacy-image.md)
 now passes independent review, full Java1100 and thirteen guard mutants. Its
-retrospective RED ordering gap remains recorded. Complete script/loader identity
-and coordinator/JNI before client
-admission. The exact9454d9f [HTTP artifact](../evidence/workspace-http-v3-artifacts.md)
+retrospective RED ordering gap remains recorded. The
+[script/interpreter association prerequisite](../evidence/d07c3-privacy-script.md)
+now passes independent review, full Java1141 and thirteen guard mutations.
+Complete loader closure, consumed-script evidence and coordinator/JNI before
+client admission. The exact9454d9f [HTTP artifact](../evidence/workspace-http-v3-artifacts.md)
 passes Java1024, frontend40/schema36 and protected smoke; it predates hashing.
 
 ## Daily checkpoints
