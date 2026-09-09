@@ -161,3 +161,10 @@ not green; root is isolating that transport defect before final combined accepta
 Labels/observed identity, operator navigation and heap/transfer proof remain open.
 The native peer pin contract now requires SO_PEERPIDFD; its bounded native primitive
 is the next independently assigned implementation slice after `2035854`.
+
+The [buffered request completion correction](../evidence/buffered-request-completion.md)
+resolves the reproduced premature EOF mechanism behind intermittent valid credential
+MALFORMED_BODY refusals. It is independently reviewed; the full `21649ba`+fixed5
+reactor passes590 tests, assembly and hostile-launch checks. Independent23 focused
+checks include256 actual successful mock HTTP inspections; the old-latch mutant
+reproduces truncation. OCI/browser refresh and the wider MVP work remain active.

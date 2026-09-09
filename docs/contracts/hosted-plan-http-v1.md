@@ -70,6 +70,11 @@ authorized credential submissions consume the attempt and initiate cleanup.
 Create/reserve/cancel share four immediate metadata-body reader slots; exhaustion
 returns 429 before body or worker allocation. A slot remains owned until its
 reader actually returns/closes, including cancellation and disconnect cleanup.
+Servlet readiness/completion callbacks only wake that reader. A completion
+notification must not discard bytes already buffered by the container: establish
+EOF from the actual ServletInputStream completion/read result, under the existing
+deadline, cancellation and byte limits. The single reader owns consumption; do
+not add a credential queue, callback-side parser, replay or automatic retry.
 Credential submissions use their already claimed physical-operation capacity;
 semantic bodies use their separate full scratch admission. No request, reader or
 credential-bearing work enters an executor queue.

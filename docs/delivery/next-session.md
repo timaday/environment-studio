@@ -18,15 +18,23 @@ The previous push-review blocker is historical: the remote now matches the check
 
 ## Current 9 September continuation
 
+The [buffered request correction](../evidence/buffered-request-completion.md) is
+independently accepted and integrated after `21649ba`. Full combined Java590,
+assembly/hostile-launch checks and the callback-latch mutant passed their expected
+outcomes. Completed-body callbacks no longer discard container-buffered bytes.
+The temporary diagnostic variants are excluded. The older credential failure is
+reproduced and its mechanism fixed; do not reintroduce the latch or retry credentials.
+Current OCI/browser refresh remains due; peer deadline review correction is active.
+
 [D06b4 bindings](../evidence/d06b4-bindings.md) are corrected, independently reviewed
 and locally integrated after `2035854`. The fixed33 manifest is
 `/home/tim/.tmp/es-bindings-corrected-candidate-20260909.sha256` (087dff1f…);
 never restore the original unacknowledged coordinate behavior. Focused Java26,
-schema23 and five actual guard mutants pass. Corrected full integration failed
-one older credential submission with MALFORMED_BODY; investigation is active in
+schema23 and five actual guard mutants pass. An earlier corrected full integration failed
+one older credential submission with MALFORMED_BODY; its completed investigation is in
 `/home/tim/.tmp/es-credential-read-investigation-20260909`, isolated at `4d767fb`.
 Its temporary diagnostic captures only fixed Java call sites and must not be
-merged as production behavior. Do not claim the corrected full reactor passed.
+merged as production behavior. The later fixed5 full reactor above passed.
 The native peer primitive is assigned separately at base `2035854`; only its five
 explicit C/test/evidence files may be integrated after fixed-source review.
 

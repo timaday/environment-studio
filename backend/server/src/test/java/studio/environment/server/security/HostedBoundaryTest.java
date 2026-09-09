@@ -125,6 +125,23 @@ class HostedBoundaryTest {
         var response=plan.client.request("POST","/api/v1/plans/"+plan.planId+"/inspections",json.writeValueAsString(Map.of("expectedRevision",revision,"requestId",java.util.UUID.randomUUID().toString(),"discardDraftOnSuccess",true)),true);
         assertEquals(202,response.status());return json.readTree(response.body()).get("operationId").asString();
     }
+    @org.junit.jupiter.api.RepeatedTest(8) void repeatedIndependentMockCredentialBodiesStayExact() throws Exception {
+        var plan=socketPlan("view-maintainer");
+        var json=tools.jackson.databind.json.JsonMapper.builder().build();
+        try {for(int index=0;index<32;index++) {
+            var current=plan.client().get("/api/v1/plans/"+plan.planId());assertEquals(200,current.status());
+            String revision=json.readTree(current.body()).get("revision").asString();
+            String operation=reserve(plan,revision);
+            int connections=studio.environment.server.plan.PlanHttpTestConfiguration.connections.get();
+            studio.environment.server.plan.PlanHttpTestConfiguration.exactCredentials.set(false);
+            var response=plan.client().request("POST","/api/v1/operations/"+operation+"/credentials",mockCredentials(),true);
+            assertEquals(200,response.status(),"A fresh complete mock credential body must be accepted");
+            assertTrue(studio.environment.server.plan.PlanHttpTestConfiguration.exactCredentials.get());
+            assertEquals("succeeded",json.readTree(response.body()).get("phase").asString());
+            assertEquals(connections+1,studio.environment.server.plan.PlanHttpTestConfiguration.connections.get());
+        }
+        } finally {plan.client().request("POST","/api/v1/session/logout","{}",true);}
+    }
     static String mockCredentials() {return "{\"username\":\"MockReader\",\"password\":\"Db-Password-Canary-𐀀\"}";}
     @Test void actualHttpOneToTwoCrossDocumentTargetReplayForeignBodyAndFailedInspection() throws Exception {
         var plan=socketPlan("plan-maintainer");var client=plan.client;var json=tools.jackson.databind.json.JsonMapper.builder().build();

@@ -14,7 +14,7 @@ final class OwnedServletBody extends InputStream implements ReadListener {
     private final long deadline;
     private final int byteLimit;
     private final Object signal=new Object();
-    private boolean closed,finished;
+    private boolean closed;
     private PlanBodyFailure failure;
     private int bytes;
     OwnedServletBody(ServletInputStream input,int byteLimit,long deadline,BooleanSupplier cancelled) {
@@ -49,14 +49,15 @@ final class OwnedServletBody extends InputStream implements ReadListener {
             if(failure!=null) throw failure;
             long remaining=deadline-System.nanoTime();
             if(remaining<=0) throw new PlanBodyFailure(BODY_DEADLINE);
-            if(finished || input.isFinished()) return false;
+            if(input.isFinished()) return false;
             if(input.isReady()) return true;
             try {signal.wait(Math.max(1,Math.min(100,remaining/1_000_000)));}
             catch(InterruptedException interrupted) {Thread.currentThread().interrupt();throw new PlanBodyFailure(MALFORMED_BODY);}
         }
     }
     @Override public void onDataAvailable() { synchronized(signal) { signal.notifyAll(); } }
-    @Override public void onAllDataRead() { synchronized(signal) { finished=true; signal.notifyAll(); } }
+    // A network-completion callback can precede consumption of container-buffered bytes.
+    @Override public void onAllDataRead() { synchronized(signal) { signal.notifyAll(); } }
     @Override public void onError(Throwable ignored) { synchronized(signal) { failure=new PlanBodyFailure(MALFORMED_BODY); signal.notifyAll(); } }
     @Override public void close() { synchronized(signal) { closed=true; signal.notifyAll(); } }
 }
