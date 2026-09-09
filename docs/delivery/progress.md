@@ -136,3 +136,10 @@ on `744e981` passed all 526 Java tests and assembly/launch checks. One author's
 unchanged terminal-test failure remains unexplained despite passing follow-ups.
 Private socket framing, executable identity, JNI/launcher wiring and crash-path
 qualification remain active work; this primitive does not admit native execution.
+
+The reviewed [D06b4 handle prerequisite](../evidence/d06b4-handles.md) preserves
+Fresh identity through edits and failed materialization, allocates before views,
+and retires only removed provenance. Independent review caught and corrected an
+unresolved-draft repair regression. The corrected seven-file candidate passed
+483 integrated core/parser/server tests; binding values, locations and stable
+placeholder rendering are the next active backend slice.

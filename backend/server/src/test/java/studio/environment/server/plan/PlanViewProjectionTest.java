@@ -11,7 +11,8 @@ class PlanViewProjectionTest {
         var current=assertInstanceOf(ContentResult.Complete.class,fixture.adapter.project(definition,"mock-pg",fixture.observation(definition))).content();
         var refs=new HashMap<TargetIntent.Ref,PlanCommand.Ref>();int count=0;
         for(var ref:current.provenance().values())refs.put(ref,new PlanCommand.Ref.Existing(new UUID(0,++count).toString()));
-        return new HostedPlanService.ViewSnapshot("2",definition,"mock-pg",Optional.of(current),Optional.empty(),Draft.empty(),refs);
+        var handles=new HashMap<TargetIntent.Ref,String>();refs.forEach((ref,wire)->handles.put(ref,((PlanCommand.Ref.Existing)wire).handle()));
+        return new HostedPlanService.ViewSnapshot("2",definition,"mock-pg",Optional.of(current),Optional.empty(),Draft.empty(),refs,handles);
     }
     @Test void completeInventoryNeverLabelsAnAbsentTargetUnchanged() throws Exception {
         var result=PlanViewProjection.documents(snapshot());
@@ -37,7 +38,7 @@ class PlanViewProjectionTest {
         var alpha=new TargetIntent.Ref.Existing(new studio.environment.core.graph.ObservedGraph.Key("glyph","alpha"));
         var decision=new TargetIntent.EntityDecision.Retain(alpha,Map.of("tag",new TargetIntent.FieldValue.KeepObserved(),"tone",new TargetIntent.FieldValue.Entered("Masked-Projection-Canary")),Map.of("uses",new TargetIntent.ReferenceValue.KeepObserved()));
         var draft=new Draft(new TargetIntent(List.of(decision),List.of()),List.of());
-        var view=new HostedPlanService.ViewSnapshot("2",definition,base.binding(),base.current(),base.target(),draft,base.references());
+        var view=new HostedPlanService.ViewSnapshot("2",definition,base.binding(),base.current(),base.target(),draft,base.references(),base.displayHandles());
         assertFalse(PlanViewProjection.draft(view,0,100).toString().contains("Masked-Projection-Canary"));
         var item=(Map<?,?>)((List<?>)PlanViewProjection.draft(view,0,100).get("items")).getFirst();
         for(var value:(List<?>)item.get("fields")){var field=(Map<?,?>)value;if(field.get("fieldId").equals("tone")){assertEquals(true,field.get("masked"));assertNull(field.get("value"));assertEquals("entered",field.get("kind"));}}

@@ -18,6 +18,13 @@ The previous push-review blocker is historical: the remote now matches the check
 
 ## Current 9 September continuation
 
+[D06b4 stable handles](../evidence/d06b4-handles.md) are reviewed and integrated,
+including the independent dangling-intent correction and 483-test integration.
+Active root binding/value/location work is in `/home/tim/.tmp/es-plan-bindings-20260909`
+(base `78c4860` plus reviewed handle deltas). Its additional files are unreviewed WIP;
+never merge the whole overlay. Current source contracts describe labels/identity
+as planned; no frontend design or release capability follows from these handles.
+
 The next native prerequisite is reviewed: [D07c3 privacy controls](../evidence/d07c3-privacy-controls.md).
 Exact candidate on `744e981` passed independent full Java526/assembly/launch checks;
 its author-run terminal failure remains recorded. The primitive has no runtime

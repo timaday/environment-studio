@@ -272,7 +272,7 @@ public final class HostedPlanService {
                 closed=true;
                 if(started) { operation.cancellation.cancel(); return; }
                 operation.permit.close();
-                finish(operation,new ObservationResult.Refused(ObservationResult.Code.INVALID_SOURCE,ObservationResult.Cleanup.COMPLETE),new ContentResult.Rejected(List.of("OBSERVATION_REFUSED")));
+                finish(operation,new ObservationResult.Refused(ObservationResult.Code.INVALID_SOURCE,ObservationResult.Cleanup.COMPLETE),new ContentResult.Rejected(List.of("OBSERVATION_REFUSED")),Map.of());
             }
         }
         @Override public String toString() { return "CredentialSubmission[redacted]"; }
@@ -315,19 +315,20 @@ public final class HostedPlanService {
                 catch(RuntimeException refused) { projected=new ContentResult.Rejected(List.of("PROJECTION_REFUSED")); }
             }
         }
+        Map<studio.environment.core.planning.TargetIntent.Ref,String> observedHandles=Map.of();
         if(projected instanceof ContentResult.Complete complete) {
             try {
                 sourceBytes(complete.content());
-                if(complete.content().provenance().values().stream().anyMatch(ref->!(ref instanceof studio.environment.core.planning.TargetIntent.Ref.Existing))) throw new PlanRefusal(PROJECTION_REFUSED);
+                observedHandles=PlanHandles.observed(complete.content());
             }
             catch(RuntimeException limit) { projected=new ContentResult.Rejected(List.of("RESOURCE_LIMIT")); }
         }
-        final ObservationResult result=observed; final ContentResult projection=projected;
-        var installed=authority.guard(lease,()-> { synchronized(lock) { return finish(operation,result,projection); } });
+        final ObservationResult result=observed; final ContentResult projection=projected;final var preparedHandles=observedHandles;
+        var installed=authority.guard(lease,()-> { synchronized(lock) { return finish(operation,result,projection,preparedHandles); } });
         if(installed.isPresent()) return installed.get();
         synchronized(lock) {
             operation.plan.retired=true; operation.cancellation.cancel();
-            finish(operation,result,new ContentResult.Rejected(List.of("SESSION_REQUIRED")));
+            finish(operation,result,new ContentResult.Rejected(List.of("SESSION_REQUIRED")),Map.of());
         }
         throw new PlanRefusal(SESSION_REQUIRED);
     }
@@ -345,7 +346,7 @@ public final class HostedPlanService {
         }
         if(points>maxPoints || bytes>maxBytes) throw new PlanRefusal(INVALID_CREDENTIALS);
     }
-    private Status finish(Operation operation,ObservationResult result,ContentResult projected) {
+    private Status finish(Operation operation,ObservationResult result,ContentResult projected,Map<studio.environment.core.planning.TargetIntent.Ref,String> observedHandles) {
         var plan=operation.plan;
         operation.cleanup=result.cleanup()==ObservationResult.Cleanup.COMPLETE?Cleanup.COMPLETE:Cleanup.INCONCLUSIVE;
         if(result instanceof ObservationResult.Refused refusal) operation.cleanupHandle=refusal.cleanupHandle().orElse(null);
@@ -357,11 +358,8 @@ public final class HostedPlanService {
                 retainedBytes+=replacement-plan.retainedBytes; plan.retainedBytes=replacement;
                 enteredBytes-=plan.enteredBytes; plan.enteredBytes=0;
                 plan.current=accepted.content(); plan.target=accepted.content(); plan.draft=Draft.empty(); plan.profiles.clear();
-                plan.handles.clear(); plan.originals.clear();
-                plan.current.provenance().values().forEach(ref->{
-                    if(!(ref instanceof studio.environment.core.planning.TargetIntent.Ref.Existing original)) throw new PlanRefusal(PROJECTION_REFUSED);
-                    String handle=UUID.randomUUID().toString(); plan.handles.put(ref,handle); plan.originals.put(handle,original);
-                });
+                plan.handles.clear(); plan.handles.putAll(observedHandles); plan.originals.clear();
+                observedHandles.forEach((ref,handle)->plan.originals.put(handle,(studio.environment.core.planning.TargetIntent.Ref.Existing)ref));
                 plan.observationFingerprint=complete.observation().fingerprint(); plan.inspectionValid=true;
                 plan.revision=plan.revision.add(BigInteger.ONE); operation.installed=Optional.of(plan.revision.toString());
                 operation.phase=Phase.SUCCEEDED; operation.code="SUCCEEDED";
@@ -397,6 +395,7 @@ public final class HostedPlanService {
         if(plan==null || !plan.retired || plan.active!=null || plan.rendering || plan.readers>0) return;
         retainedBytes-=plan.retainedBytes; enteredBytes-=plan.enteredBytes;
         plan.retainedBytes=0; plan.enteredBytes=0; plan.current=null; plan.target=null; plan.draft=Draft.empty(); plan.profiles.clear(); plan.observationFingerprint=null;
+        plan.handles.clear(); plan.originals.clear();
         leases.values().forEach(state->{ if(state.plan==plan) state.plan=null; });
     }
     public Status cancel(SessionLedger.Lease lease,String operationId) {
@@ -450,12 +449,19 @@ public final class HostedPlanService {
 
     /** Internal immutable source for bounded view adapters; never an HTTP authority token. */
     public record ViewSnapshot(String revision,PublishedDefinition definition,String binding,Optional<Content> current,
-            Optional<Content> target,Draft draft,Map<studio.environment.core.planning.TargetIntent.Ref,PlanCommand.Ref> references) {
-        public ViewSnapshot { references=Map.copyOf(references); }
+            Optional<Content> target,Draft draft,Map<studio.environment.core.planning.TargetIntent.Ref,PlanCommand.Ref> references,
+            Map<studio.environment.core.planning.TargetIntent.Ref,String> displayHandles) {
+        public ViewSnapshot { references=Map.copyOf(references);displayHandles=Map.copyOf(displayHandles); }
         @Override public String toString() { return "ViewSnapshot[redacted]"; }
         public Content selected(boolean targetSide) { return (targetSide?target:current).orElseThrow(()->new PlanRefusal(targetSide?INCOMPLETE_TARGET:INSPECTION_REQUIRED)); }
+        public String displayHandle(studio.environment.core.planning.TargetIntent.Ref ref) {
+            var handle=displayHandles.get(ref);if(handle==null)throw new PlanRefusal(PROJECTION_REFUSED);return handle;
+        }
         public PlanCommand.Ref reference(studio.environment.core.planning.TargetIntent.Ref ref) {
+            // Incomplete draft intent may still point to a forgotten Fresh entity.
+            // Such intent stays inspectable; only live entities can supply a display token.
             if(ref instanceof studio.environment.core.planning.TargetIntent.Ref.Fresh fresh) return new PlanCommand.Ref.Fresh(fresh.slot(),fresh.type());
+            displayHandle(ref);
             var found=references.get(ref); if(found==null) throw new PlanRefusal(PROJECTION_REFUSED); return found;
         }
     }
@@ -491,7 +497,7 @@ public final class HostedPlanService {
             return guarded(lease,()->{
                 check();var refs=new HashMap<studio.environment.core.planning.TargetIntent.Ref,PlanCommand.Ref>();
                 pinned.originals.forEach((handle,ref)->refs.put(ref,new PlanCommand.Ref.Existing(handle)));
-                return new ViewSnapshot(revision,pinned.definition,pinned.binding,Optional.ofNullable(pinned.current),Optional.ofNullable(pinned.target),pinned.draft,refs);
+                return new ViewSnapshot(revision,pinned.definition,pinned.binding,Optional.ofNullable(pinned.current),Optional.ofNullable(pinned.target),pinned.draft,refs,pinned.handles);
             });
         }
         public studio.environment.core.graph.ObservedGraph.Key observed(String handle) {
@@ -582,7 +588,9 @@ public final class HostedPlanService {
             completeDecisions(plan,draft);
             long values=DraftEncoding.enteredBytes(draft);
             if(enteredBytes-plan.enteredBytes+values>64*MIB) throw new PlanRefusal(RESOURCE_LIMIT);
+            var handles=PlanHandles.draft(plan.handles,draft);
             enteredBytes+=values-plan.enteredBytes; plan.enteredBytes=values;
+            plan.handles.clear(); plan.handles.putAll(handles);
             plan.draft=draft; plan.revision=plan.revision.add(BigInteger.ONE); plan.generation++;
             dropTarget(plan); plan.diagnostics=List.of("TARGET_NOT_MATERIALIZED");
             var ack=plan.ack(); state.replay.put(mutation.requestId(),new Replay(identity,ack)); return new Applied(ack,true);
@@ -648,7 +656,9 @@ public final class HostedPlanService {
                 var replay=replay(state,mutation.requestId(),identity); if(replay.isPresent()) return replay.get();
                 if(!plan.profiles.contains(profile.publicationDigest()) && plan.profiles.size()>=100) throw new PlanRefusal(CAPACITY);
                 if(enteredBytes-plan.enteredBytes+values>64*MIB) throw new PlanRefusal(RESOURCE_LIMIT);
+                var handles=PlanHandles.draft(plan.handles,draft);
                 enteredBytes+=values-plan.enteredBytes; plan.enteredBytes=values;
+                plan.handles.clear(); plan.handles.putAll(handles);
                 plan.profiles.add(profile.publicationDigest()); plan.draft=draft; plan.revision=plan.revision.add(BigInteger.ONE); plan.generation++;
                 dropTarget(plan); plan.diagnostics=List.of("TARGET_NOT_MATERIALIZED");
                 var ack=plan.ack(); state.replay.put(mutation.requestId(),new Replay(identity,ack)); return ack;
@@ -668,7 +678,9 @@ public final class HostedPlanService {
             if(previous.isPresent()) return new Applied(previous.get(),false);
             var plan=plan(lease,planId); current(plan,mutation); inspected(plan);
             if(enteredBytes-plan.enteredBytes+values>64*MIB) throw new PlanRefusal(RESOURCE_LIMIT);
+            var handles=PlanHandles.draft(plan.handles,draft);
             enteredBytes+=values-plan.enteredBytes; plan.enteredBytes=values;
+            plan.handles.clear(); plan.handles.putAll(handles);
             plan.draft=draft; plan.revision=plan.revision.add(BigInteger.ONE); plan.generation++;
             dropTarget(plan); plan.diagnostics=List.of("TARGET_NOT_MATERIALIZED");
             var acknowledgement=plan.ack(); state.replay.put(mutation.requestId(),new Replay(identity,acknowledgement));
@@ -686,7 +698,6 @@ public final class HostedPlanService {
         if(!plan.inspectionValid || plan.current==null) throw new PlanRefusal(INSPECTION_REQUIRED);
     }
     private void dropTarget(Plan plan) {
-        plan.handles.keySet().removeIf(ref->ref instanceof studio.environment.core.planning.TargetIntent.Ref.Fresh);
         if(plan.target!=null) {
             long bytes=sourceBytes(plan.target); plan.retainedBytes-=bytes; retainedBytes-=bytes; plan.target=null;
         }
@@ -901,7 +912,7 @@ public final class HostedPlanService {
     }
     private static String entityHandle(Plan plan,Content content,studio.environment.core.graph.ObservedGraph.Key key) {
         var provenance=content.provenance().get(key); if(provenance==null) throw new PlanRefusal(PROJECTION_REFUSED);
-        return plan.handles.computeIfAbsent(provenance,ignored->UUID.randomUUID().toString());
+        var handle=plan.handles.get(provenance);if(handle==null)throw new PlanRefusal(PROJECTION_REFUSED);return handle;
     }
     public DocumentView comparison(SessionLedger.Lease lease,String planId,String revision,boolean target,String documentId,ViewMode mode,boolean completeDocumentDisclosure) {
         if(!completeDocumentDisclosure) throw new PlanRefusal(DISCLOSURE_REQUIRED);
