@@ -21,17 +21,46 @@ public final class HostedPlanService {
     public record Counts(int documents,int entities,int relations) { }
     public record View(String planId,String revision,NativeCommand.Reference definition,String bindingId,String destinationId,
             Optional<PlanObservedDestination> observedDestination,Counts currentCounts,Counts targetCounts,boolean inspectionValid,boolean targetComplete,boolean exportAvailable,List<String> blockers,Optional<String> activeOperationId) { }
+    public record ComputedCounts(int nodes,int memberships,int cooccurrences) { }
+    public record V3View(View summary,Optional<ComputedCounts> currentComputedCounts,Optional<ComputedCounts> targetComputedCounts) {
+        public V3View { Objects.requireNonNull(summary);Objects.requireNonNull(currentComputedCounts);Objects.requireNonNull(targetComputedCounts); }
+    }
+    public V3View viewV3(SessionLedger.Lease lease,Optional<String> id) {
+        return guarded(lease,()->{
+            var state=state(lease);if(state==null || state.plan==null)throw new PlanRefusal(NOT_FOUND);
+            String selected=id.orElse(state.plan.id);
+            if(state.ownedPlans.get(selected)!=PlanDefinition.Version.V3)throw new PlanRefusal(NOT_FOUND);
+            var plan=plan(lease,selected);
+            return new V3View(view(plan),computedCounts(plan.current,false),computedCounts(plan.target,true));
+        });
+    }
+    public void verifySummaryV3(SessionLedger.Lease lease,V3View snapshot) {
+        if(!viewV3(lease,Optional.of(snapshot.summary().planId())).equals(snapshot))throw new PlanRefusal(CONFLICT);
+    }
+    public void requireOperationOwned(SessionLedger.Lease lease,String id,PlanDefinition.Version expectedVersion) { operationVersion(lease,id,expectedVersion); }
+    private static Optional<ComputedCounts> computedCounts(Content content,boolean target) {
+        if(content==null)return Optional.empty();
+        PlanContentEvidence.V3 proof;
+        if(!target && content.evidence() instanceof PlanContentEvidence.V3Observed observed)proof=observed;
+        else if(target && content.evidence() instanceof PlanContentEvidence.V3Target materialized)proof=materialized;
+        else throw new PlanRefusal(PROJECTION_REFUSED);
+        var graph=proof.derived().graph();
+        return Optional.of(new ComputedCounts(graph.nodes().size(),graph.memberships().size(),graph.cooccurrences().size()));
+    }
     public View view(SessionLedger.Lease lease,Optional<String> id) {
         return guarded(lease,()-> {
             var state=state(lease); if(state==null || state.plan==null) throw new PlanRefusal(NOT_FOUND);
             var plan=plan(lease,id.orElse(state.plan.id));
-            var blockers=new TreeSet<String>(plan.diagnostics); blockers.add("EXPORT_UNAVAILABLE");
-            if(!plan.inspectionValid) blockers.add("INSPECTION_REQUIRED");
-            if(plan.target==null) blockers.add("TARGET_INCOMPLETE");
-            if(blockers.size()>256 || blockers.stream().anyMatch(code->!code.matches("[A-Z][A-Z0-9_]{0,95}"))) throw new PlanRefusal(PROJECTION_REFUSED);
-            return new View(plan.id,plan.revision.toString(),plan.definition.reference(),plan.binding,plan.destination.id(),Optional.ofNullable(plan.observedDestination).map(observed->observed.validity(plan.inspectionValid)),counts(plan.current),counts(plan.target),
-                    plan.inspectionValid,plan.target!=null,false,List.copyOf(blockers),Optional.ofNullable(plan.active).map(operation->operation.id));
+            return view(plan);
         });
+    }
+    private static View view(Plan plan) {
+        var blockers=new TreeSet<String>(plan.diagnostics); blockers.add("EXPORT_UNAVAILABLE");
+        if(!plan.inspectionValid) blockers.add("INSPECTION_REQUIRED");
+        if(plan.target==null) blockers.add("TARGET_INCOMPLETE");
+        if(blockers.size()>256 || blockers.stream().anyMatch(code->!code.matches("[A-Z][A-Z0-9_]{0,95}"))) throw new PlanRefusal(PROJECTION_REFUSED);
+        return new View(plan.id,plan.revision.toString(),plan.definition.reference(),plan.binding,plan.destination.id(),Optional.ofNullable(plan.observedDestination).map(observed->observed.validity(plan.inspectionValid)),counts(plan.current),counts(plan.target),
+                plan.inspectionValid,plan.target!=null,false,List.copyOf(blockers),Optional.ofNullable(plan.active).map(operation->operation.id));
     }
     private static Counts counts(Content content) { return content==null?new Counts(0,0,0):new Counts(content.sources().size(),content.graph().entities().size(),content.graph().edges().size()); }
     /** Verification never holds the session/state locks while the adapter publishes bytes. */

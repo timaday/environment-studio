@@ -88,6 +88,21 @@ notification must not discard bytes already buffered by the container: establish
 EOF from the actual ServletInputStream completion/read result, under the existing
 deadline, cancellation and byte limits. The single reader owns consumption; do
 not add a credential queue, callback-side parser, replay or automatic retry.
+Readiness, error and all-data callbacks must not acquire the application read
+monitor or wait for a Servlet call held by the reader. They publish only safe
+signal/failure state and wake the reader. Body close likewise signals closure
+without waiting for an active Servlet call or closing its underlying stream from
+another thread. Application reads remain serialized; original worker termination
+still precedes admission release. A wakeup is not evidence that a stalled Servlet
+call stopped or a body was physically delivered/cleaned.
+Use volatile/atomic signal state and reader registration with bounded original-clock
+rechecks at most100 milliseconds apart while scheduled. A notification before
+registration must not lose subsequent readiness, error, close or deadline state.
+Preserve exact byte accounting, buffered EOF behavior, original nonrenewing body
+deadline, cancellation and interruption refusal. Callback errors retain only the
+safe body failure code, never the received Throwable. Add controlled held-read/
+held-readiness/close/error tests and rerun actual HTTP controls; a controlled helper
+schedule alone does not prove an actual container deadlock or its removal.
 Credential submissions use their already claimed physical-operation capacity;
 semantic bodies use their separate full scratch admission. No request, reader or
 credential-bearing work enters an executor queue.

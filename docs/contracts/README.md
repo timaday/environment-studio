@@ -33,6 +33,7 @@
 | Shared versioned plan runtime | [plan-runtime-v3.md](plan-runtime-v3.md) |
 | Immutable plan model-version admission | [plan-version-admission.md](plan-version-admission.md) |
 | Legacy plan route version enforcement | [plan-http-version-admission-v1.md](plan-http-version-admission-v1.md) |
+| Small v3 plan metadata | [plan-summary-v3.md](plan-summary-v3.md) |
 | HTTP | [api.md](api.md), [openapi.yaml](openapi.yaml) |
 | Deployment | [../../deploy/README.md](../../deploy/README.md) |
 

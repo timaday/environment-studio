@@ -124,8 +124,19 @@ metadata across replacement. Combined Java1373 (315 core,7 parser,741 server,
 310 supervisor), assembly/hostile launcher pass on the fixed thirteen-file
 candidate over8b5843d,10 September at01:26:09BST. Frontend40/schema42 remain scoped
 to8b5843d; source is unchanged. The retained047d1b0 image predates these changes.
-Next backend work is small v3 summaries and owned transfer, then versioned plan
-HTTP. Actual client/content/review evidence and combined resources remain open.
+The [small v3 summary](../evidence/qf34-plan-summary.md) and
+[body callback correction](../evidence/owned-body-callbacks.md) now pass independent
+reviews and combined Java1393 (319 core,7 parser,757 server,310 supervisor), zero
+failures/errors/skips, assembly/hostile launcher,10 September at01:46:09BST. Fixed
+nine-file manifest7ea0c46b4556675f0aaceaa3a538d10c1aa6870d94f710bad08c5bc8668f07e2
+over688e799 includes both independent reviews' tests. Missing computed evidence
+remains distinct from complete empty graphs; callbacks signal without reader locks.
+A separate controlled session/registry test reproduces mixed-family completion
+notifications exhausting three cleanup attempts while workspace work is held.
+Next backend work is its passive pending-work gate, bounded encoding/owned transfer,
+then versioned plan HTTP. Actual client/content/review evidence and combined resources
+remain open. Frontend40/schema42 are still scoped to8b5843d; retained image047d1b0
+predates these changes.
 No Q feedback GitHub publication is authorized. Existing MVP scope and completed
 work remain in place.
 

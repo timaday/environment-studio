@@ -56,6 +56,9 @@ and [legacy route enforcement](docs/evidence/qf34-plan-version-http.md) now keep
 v3 plans out of v1 APIs before credentials, resource admission or cleanup polling.
 V2 replay and retained operation access survive replacement by a v3 plan.
 Combined Java1373 passes; new v3 plan routes remain required.
+[Small v3 summaries](docs/evidence/qf34-plan-summary.md) now distinguish physical
+and computed totals, and [body callbacks](docs/evidence/owned-body-callbacks.md)
+no longer wait behind the reader monitor. Combined Java1393 passes.
 The exact `047d1b0` [local image](docs/evidence/shared-validation-artifacts.md)
 repeats Java1320 and passes protected startup/workspace smoke; release qualification
 remains open.
