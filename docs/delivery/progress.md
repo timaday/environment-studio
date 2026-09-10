@@ -134,8 +134,13 @@ with fixed non-author review: actual four-owner HTTP/OIDC/SQLite lifetime,
 complete retained proofs/XML/pages and held-validation logout/recovery. Review
 caught incomplete proof assertions and an empty classpath entry; control4 fixes
 both. Publication/observation remain mocks; TLS/artifact/large shapes and
-whole-process resources remain unqualified. Required UX skill location remains
-unresolved; no new React journey or production readiness is claimed.
+whole-process resources remain unqualified. The required UX skill is now included
+at [.agents/skills/enterprise-ux-design/SKILL.md](../../.agents/skills/enterprise-ux-design/SKILL.md),
+with its supporting references and metadata; root `AGENTS.md` requires it for UX work.
+This resolves the repository skill-location blocker. Local skill discovery,
+image-generation/browser capabilities and exact design approvals still need to be
+checked in the implementing agent's environment; no new React journey or production
+readiness is claimed.
 
 Two-IDE continuation: [native handoff and exact ownership](ide2-native-handoff.md).
 Lead is the sole IDE1 application writer; previous writing subagents are stopped.
