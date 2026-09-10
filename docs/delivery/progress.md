@@ -116,28 +116,39 @@ and fetch confirm exact5d724159. Handoff5623067892 follows existing41c8/e338
 assignments; the earlier push-policy blocker is resolved. Actual artifact ownership, fresh database
 readback and combined integration/release gates remain open.
 
-Lead is implementing nonvisual Definitions state in
-`/home/tim/.tmp/es-v3-definitions-journey-20260910`, branch
-`implementation/v3-definitions-journey-20260910`, base e338ec9. User0e2df3e's exact
-UX skill/AGENTS are carried forward. Two generated desktop/narrow first-use
-proposals and their hashes are recorded in that candidate; approval remains
-pending, so no affected layout is implemented. Initial9 hook/162 frontend and59
-schema tests, checks/build passed. Fixed source review identified postcommit403
-replay loss; two additional403/413 transport RED cases now pass after preserving
-exact command identity. Fixed correction review has no new findings; seven
-compiled mutants and final164 frontend/59 schema/check/build pass. The schema3
-harness passes actual HTTPS/OIDC save/readback, historical replay and re-login
-persistence with complete owned cleanup and canary checks. Its source review is
-pending; UI browser persistence, accessibility and fidelity remain unverified.
+Reviewed Definitions candidatebc6dfe8b105ded5cab123e0f38a02c74edb0d21e is on
+`implementation/v3-definitions-journey-20260910` in
+`/home/tim/.tmp/es-v3-definitions-journey-20260910`, based on e338ec9 and separate
+from5d readback. It carries the user's exact UX skill/AGENTS, nonvisual v3
+list/save/replay state and test-only schema3 HTTPS harness. Review identified
+postcommit403 replay loss; the v3 correction preserves ambiguous403/413, and the
+related existing v2 save/publication correction preserves403 WORKSPACE_FORBIDDEN
+using unchanged retry controls. All three fixed source reviews have no remaining
+confirmed finding; reviewers executed no tests. Author166 frontend/59 schema,
+checks/build, eight compiled mutants across the two corrections and G00/11Python
+pass. Four existing desktop/narrow browser journeys pass with real server
+save/publication then injected403 acknowledgement loss; this is not a browser
+revocation race. Actual controller/session/SQLite postcommit403/replay passes;
+actual schema3 HTTPS/OIDC save/history/relogin/canary checks and owned cleanup
+pass. Focused Java reuses explicitly hash-verified39 backend outputs (unchanged
+through e338), not an exact OCI artifact.
+
+The two new desktop/narrow first-use images and hashes remain pending approval;
+no affected v3 rendering, accessibility or fidelity is implemented/qualified.
+[Queue5623546190](https://github.com/timaday/environment-studio/issues/9#issuecomment-5623546190)
+contains the complete exact-candidate handoff. Automatic approval review rejected
+this new branch push; the manual publication request remains pending. Previously
+published41c8/e338/5d remain resolved and must not be requested again.
 
 Current work queues:
 
-- Ready: finish schema3 browser-harness review; implement approved Definitions
-  layouts when their pending approval arrives.
+- Ready: implement the proposed Definitions screen after its existing image
+  approval; continue with dependent profile/plan journeys as their designs and
+  backend qualification allow.
 - Awaiting another owner: remote41c8 then e338/5d verification; IDE2 allocation/
   retained-cleanup tests and assigned credential-free exact-client inventory.
-- Blockers: new Definitions image approval; exact independent/artifact
-  verification before root acceptance.
+- Blockers: new Definitions image approval; bc6d candidate publication under
+  current push policy; exact independent/artifact verification before root acceptance.
 
 IDE2 exclusively owns the preserved native closure WIP. Frozen symbol/version
 WIP3 and vDSO WIP4 have bounded non-author source reviews with no confirmed
