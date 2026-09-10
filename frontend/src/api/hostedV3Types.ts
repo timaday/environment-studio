@@ -4,6 +4,8 @@ import type * as D from "./hostedV3Decoding";
 export type CreatePlan = ReturnType<typeof D.createPlan>;
 export type ReserveInspection = ReturnType<typeof D.reserveInspection>;
 export type Ack = ReturnType<typeof D.ack>;
+export type ReviewRequest = ReturnType<typeof D.reviewRequest>;
+export type ReviewAck = ReturnType<typeof D.reviewAck>;
 export type Operation = ReturnType<typeof D.operation>;
 export type PlanSummary = ReturnType<typeof D.summary>;
 export type Materialization = Omit<ReturnType<typeof D.materialization>, "state" | "complete"> &

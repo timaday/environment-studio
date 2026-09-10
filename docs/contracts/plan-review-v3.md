@@ -118,3 +118,20 @@ Challenge held lookup/proof cancellation, same-revision target loss/recovery,
 reinspection failure, historical replay, cross-family collision and shared256
 exhaustion without partial installation. Existing v2 fingerprints remain unchanged.
 Independent fixed-candidate review and combined required gates remain mandatory.
+
+## Typed browser request and receipt
+
+The typed browser client provides `prepareReview` and `HostedV3Api.review` over
+the existing session-owned transport. Preparation validates all five closed
+fields and returns a detached frozen request without generating a request ID.
+Each call posts that exact request once; uncertain delivery leaves explicit
+same-request replay to the caller. Do not fetch current state or retry implicitly.
+
+Accept only a frozen two-field receipt whose planId matches the requested plan
+and whose revision exactly equals the retained request's expectedRevision,
+including canonical1024-digit revisions. Later displayed edits/retirement do not
+rewrite that historical revision. An operationId or claimed check/export state
+is not part of this receipt. Local malformed input refuses INVALID_REQUEST before
+network work; malformed/mismatched successful replies remain RESPONSE_UNAVAILABLE.
+Session loss/expiry and uncertainty use the existing transport's original owner.
+Receipt delivery does not install client-side review, validation or export authority.

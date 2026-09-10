@@ -43,6 +43,9 @@ function completePage(
 export function prepareCommand(value: T.PlanCommand): T.PlanCommand {
   return request(D.command, value);
 }
+export function prepareReview(value: T.ReviewRequest): T.ReviewRequest {
+  return request(D.reviewRequest, value);
+}
 
 export function assertPreviewCompatible(first: T.PreviewResponse, next: T.PreviewResponse): void {
   if (
@@ -70,6 +73,13 @@ export function assertValidationCompatible(
 /** Fixed V3 routes over the existing session owner; construction enables no UI. */
 export class HostedV3Api {
   constructor(private readonly api: HostedApi) {}
+  async review(planId: string, value: T.ReviewRequest): Promise<T.ReviewAck> {
+    const body = prepareReview(value);
+    const result = D.reviewAck(await this.api.post(`${planPath(planId)}/reviews`, body));
+    samePlan(result.planId, planId);
+    sameRevision(result.revision, body.expectedRevision);
+    return result;
+  }
   async create(value: T.CreatePlan): Promise<T.Ack> {
     return D.ack(await this.api.post("/api/v3/plans", request(D.createPlan, value)));
   }

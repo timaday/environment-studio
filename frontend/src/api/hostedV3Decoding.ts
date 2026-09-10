@@ -690,6 +690,17 @@ export const publicationRef = pPublicationRef;
 export const createPlan = pCreatePlan;
 export const reserveInspection = pReserveInspection;
 export const ack = pAck;
+export const reviewRequest = object(
+  {
+    expectedRevision: pRevision,
+    requestId: pUuid,
+    inputFingerprint: cSha256,
+    destinationId: pId,
+    artifactIntent: literal("protected-self-contained"),
+  },
+  {},
+);
+export const reviewAck = object({ planId: pUuid, revision: pRevision }, {});
 export const operation = pOperation;
 export const summary = pPlanSummary;
 export const materialization = pMaterialization;
