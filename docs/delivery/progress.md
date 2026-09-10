@@ -225,6 +225,12 @@ at present, so subsequent author work must remain pending independent review.
 Computed routes, capture/reuse and validation are next. Current compiler/publication,
 operator UX, native/export/readback, combined capacity and delivery remain incomplete.
 
+The [v3 container contract-input correction](../evidence/v3-container-contract-inputs.md)
+fixes an actual Docker UI-stage failure: the v3 plan OpenAPI file was excluded by
+both context filtering and COPY. Two filename additions restore executed
+frontend40/schema55/check/build inside Docker. Runtime image refresh is next;
+this UI-stage success does not replace full-image or release qualification.
+
 The later independent review's confirmed
 [retained-origin consistency defect](../evidence/derived-retained-origin-fix.md)
 is reproduced, corrected and independently reviewed: one Existing reference cannot

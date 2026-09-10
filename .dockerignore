@@ -22,6 +22,7 @@ docs/contracts/*
 !docs/contracts/openapi-workspace-v2.json
 !docs/contracts/openapi-workspace-v3.json
 !docs/contracts/openapi-plans-v1.json
+!docs/contracts/openapi-plans-v3.json
 !docs/contracts/openapi.yaml
 
 # Independently generated public certificate only; its private key was never saved.

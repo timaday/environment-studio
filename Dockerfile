@@ -12,7 +12,7 @@ COPY frontend/ ./
 COPY fixtures/ /build/fixtures/
 COPY schemas/ /build/schemas/
 COPY scripts/schema.test.mjs /build/scripts/schema.test.mjs
-COPY docs/contracts/openapi-workspace-v2.json docs/contracts/openapi-workspace-v3.json docs/contracts/openapi-plans-v1.json docs/contracts/openapi.yaml /build/docs/contracts/
+COPY docs/contracts/openapi-workspace-v2.json docs/contracts/openapi-workspace-v3.json docs/contracts/openapi-plans-v1.json docs/contracts/openapi-plans-v3.json docs/contracts/openapi.yaml /build/docs/contracts/
 RUN npm run check && npm test && npm run build
 
 FROM ui AS browser-check
