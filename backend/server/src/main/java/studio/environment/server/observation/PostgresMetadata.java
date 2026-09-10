@@ -32,7 +32,10 @@ final class PostgresMetadata {
             String expected = column.getFirst().equals(binding.keyColumn()) && binding.keyType() == KeyType.INT64 ? "int8" : "text";
             if (!column.get(1).equals(expected) || !column.get(2).equals("pg_catalog") || (column.getFirst().equals(binding.keyColumn()) && !column.get(3).equals("true")) || !column.get(4).isEmpty() || !column.get(5).isEmpty() || !column.get(6).equals("b") || !column.get(7).equals("-1")) throw new ObservationFailure(Code.STORAGE_UNSUPPORTED);
         }
-        if (!"1".equals(sql.scalar(ReadQuery.PG_UNIQUE_KEY, oid, binding.keyColumn()))) throw new ObservationFailure(Code.STORAGE_UNSUPPORTED);
+        String uniqueKeys = sql.scalar(ReadQuery.PG_UNIQUE_KEY, oid, binding.keyColumn());
+        if (uniqueKeys == null || !uniqueKeys.matches("[1-9][0-9]{0,18}")
+                || new java.math.BigInteger(uniqueKeys).compareTo(java.math.BigInteger.valueOf(Long.MAX_VALUE)) > 0)
+            throw new ObservationFailure(Code.STORAGE_UNSUPPORTED);
         return new Verified(Map.of("systemIdentifier", id.get(0), "databaseOid", id.get(1), "databaseName", id.get(2)), "18.6", "UTF8");
     }
 

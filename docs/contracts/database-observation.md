@@ -54,6 +54,9 @@ Initially require an ordinary local base table with no inheritance/partitioning,
 views, synonyms, foreign/external table, enabled DML triggers or unqualified
 storage behavior. Verify exact built-in key type (`text` or int64 as declared)
 and XML storage (`text` or `CLOB`), nullability and a qualified unique key.
+For PostgreSQL, one or more fully qualified immediate primary/unique constraints
+on the same declared single key establish uniqueness. Redundant qualifying
+constraints do not invalidate it; zero qualifying constraints still refuses.
 PostgreSQL keys use `text` or `bigint`; Oracle keys use `VARCHAR2` with sufficient
 declared character capacity or `NUMBER(19,0)` respectively. Enforce the native
 text/code-point and signed-int64 value bounds while reading; numeric column
