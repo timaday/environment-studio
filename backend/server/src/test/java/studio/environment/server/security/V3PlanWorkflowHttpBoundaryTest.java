@@ -173,18 +173,18 @@ class V3PlanWorkflowHttpBoundaryTest {
                     new studio.environment.core.workspace.NativeCommand.Policy("mock-pg","tail",denied?"deny":"protected-self-contained")));
             try {
                 var client=login(subject);String plan=create(client);inspect(client,plan);
-                ok(client.request("POST","/api/v3/plans/"+plan+"/materializations",revision("2"),true));
-                var before=ok(client.request("POST","/api/v3/plans/"+plan+"/validations",revision("2"),true));
+                ok(sequentialRequest(client,"POST","/api/v3/plans/"+plan+"/materializations",revision("2"),true));
+                var before=ok(sequentialRequest(client,"POST","/api/v3/plans/"+plan+"/validations",revision("2"),true));
                 assertEquals("UNKNOWN",checkOutcome(before,"REVIEW"));
                 String request=JSON.writeValueAsString(Map.of("expectedRevision","2","requestId",UUID.randomUUID().toString(),
                         "inputFingerprint",before.get("inputFingerprint").asString(),"destinationId","mock-destination","artifactIntent","protected-self-contained"));
-                var ack=ok(client.request("POST","/api/v3/plans/"+plan+"/reviews",request,true));
+                var ack=ok(sequentialRequest(client,"POST","/api/v3/plans/"+plan+"/reviews",request,true));
                 assertEquals(2,ack.size());assertEquals(plan,ack.get("planId").asString());assertEquals("2",ack.get("revision").asString());
-                var after=ok(client.request("POST","/api/v3/plans/"+plan+"/validations",revision("2"),true));
+                var after=ok(sequentialRequest(client,"POST","/api/v3/plans/"+plan+"/validations",revision("2"),true));
                 assertEquals(before.get("inputFingerprint"),after.get("inputFingerprint"));assertEquals("PASS",checkOutcome(after,"REVIEW"));
                 assertEquals(denied?"FAIL":"PASS",checkOutcome(after,"CONTENT_POLICY"));assertEquals("UNKNOWN",checkOutcome(after,"CLIENT_CAPABILITY"));assertFalse(after.get("exportAvailable").asBoolean());
-                ok(client.request("POST","/api/v3/plans/"+plan+"/commands",JSON.writeValueAsString(Map.of("expectedRevision","2","requestId",UUID.randomUUID().toString(),"kind","discard")),true));
-                assertEquals(ack,ok(client.request("POST","/api/v3/plans/"+plan+"/reviews",request,true)));
+                ok(sequentialRequest(client,"POST","/api/v3/plans/"+plan+"/commands",JSON.writeValueAsString(Map.of("expectedRevision","2","requestId",UUID.randomUUID().toString(),"kind","discard")),true));
+                assertEquals(ack,ok(sequentialRequest(client,"POST","/api/v3/plans/"+plan+"/reviews",request,true)));
                 early(client.get("/api/v3/plans/current"),404,"NOT_FOUND");
             } finally {V3WorkflowHttpTestConfiguration.reviewPolicies.remove(subject);}
         }
