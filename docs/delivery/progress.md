@@ -54,7 +54,12 @@ full runs remain evidence; publication does not clear them.
 
 Reviewer5622081282 independently passes39's listing/history held-record cases
 and retained-record timeout with attempted logout and both failures preserved.
-G00 passes; corrected full Maven is running before the assigned remaining gates.
+Reviewer5622213985 subsequently passes corrected full Maven:1,698 tests
+(335core/7parser/1013server/343supervisor), zero failures/errors/skips,7m35s,
+plus G00 and fresh136frontend/59schema G02. JDK binary/module hashes stayed fixed.
+Reviewer5622285265 completes that assignment with G08 blocked by BUILD-QA-001:
+five exact Ubuntu build-package pins are unavailable. Image/startup/workspace/
+OCI-supervisor checks did not run; root integration still waits for G08.
 Runtime audit distinguishes875 full Java21.0.10 from later profile/JNI and39
 checks on21.0.12; the same JDK path is not an immutable runtime. Remote WSL2 amd64
 reports4CPUs/about7,910MiB RAM; actual cgroup limits are unknown.
@@ -66,6 +71,21 @@ classes/configuration. Historical resource attribution remains incomplete.
 Preserve those behavior results with this limit; no concrete competing load
 justifies a repeat. External report: es-profile-settlement-classpath-attribution-audit-20260910.md.
 
+Next combined candidate41c8c3e1d575225d43c1780874a65b82f4121ffd, base39a9009,
+is on `implementation/v3-definition-save-client-20260910` in the separate
+`/home/tim/.tmp/es-definition-save-20260910` worktree. Commit15682ef adds typed
+definition draft save with detached exact-source/destination replay; fixed review,
+145frontend/59schema/check/build and seven compiled guard mutations pass.
+Commit41c8c3e changes only five Docker build pins to versions confirmed in exact-base
+APT metadata and official archives. Both slices have fixed non-author source
+reviews without blocking findings; G00/11Python pass. No JSX/backend/native
+implementation or availability change. The build correction has no install/G08
+GREEN yet. Issue9 handoff5622377278 prepares exact-delta review and G00/G02/G08
+without repeating unrelated completed probes. Its push was rejected by automatic
+approval policy (approval required, AskForApproval=Never); user publication of
+this new branch is pending. Neither the reviewed client nor pin refresh is accepted
+root integration or release-qualified.
+
 IDE2 exclusively owns the preserved native closure WIP. Frozen symbol/version
 WIP3 and vDSO WIP4 have bounded non-author source reviews with no confirmed
 finding; reviewers executed no tests. The lead's reviewed [stopped-smaps contract](../evidence/native-smaps-contract.md)
@@ -75,7 +95,13 @@ resources/lifetime and installed-runtime qualification remain open. Frozen WIP6
 smaps and WIP7 file-layout supplements now have non-author source reviews with no
 confirmed finding. Author135focused WIP6 and56focused WIP7 checks pass on their
 respective bytes; reviewers executed no tests. WIP7 changes only four test files.
-Overlap/script/lifetime/resources and installed-runtime acceptance remain open. Two writers
+WIP8's three-test-file overlap supplement passes author60tests/104fixture modes
+and fixed source review; isolated controls and composed alias/bias mutation stay
+distinct. The requested explicit script-only/current-interpreter association is
+settled by reviewed lead contract1ae04ca and returned as an exact one-file patch
+with pre/post hashes. Existing narrow script guarantee, original budgets and
+mandatory missing-stage refusal remain. Script implementation, full lifetime/
+resources and installed-runtime acceptance remain open. Two writers
 remain: lead application/integration and IDE2 native; all subagents and the remote
 reviewer are read-only. A [small hosted v3 control](../evidence/v3-hosted-capacity-prerequisite.md)
 now passes with fixed non-author source review: four retained owners, complete
