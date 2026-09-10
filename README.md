@@ -82,9 +82,11 @@ edits with distinct binding states. [Document comparison and complete locations]
 now pass independent review, full Java1549 and frontend40/schema55, including
 exact multi-document XML and explicit disclosure. Computed HTTP views are next;
 actual compiler publication remains incomplete.
-The exact `047d1b0` [local image](docs/evidence/shared-validation-artifacts.md)
-repeats Java1320 and passes protected startup/workspace smoke; release qualification
-remains open.
+The exact `8ad1e6a` [local image](docs/evidence/v3-plan-artifacts.md)
+passes Java1549 and protected startup/workspace smoke. A separate
+[computed HTTP candidate](docs/evidence/v3-plan-computed-candidate.md) passes
+Java1565/frontend40/schema57 and awaits independent review; it is not integrated.
+Release qualification remains open.
 Complete Oracle CLOB/PostgreSQL text observation, value-free profile composition
 and cross-document structural target materialization are implemented as reviewed
 internal mechanisms. The hosted plan service joins these mechanisms with session

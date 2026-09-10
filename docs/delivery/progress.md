@@ -228,8 +228,20 @@ operator UX, native/export/readback, combined capacity and delivery remain incom
 The [v3 container contract-input correction](../evidence/v3-container-contract-inputs.md)
 fixes an actual Docker UI-stage failure: the v3 plan OpenAPI file was excluded by
 both context filtering and COPY. Two filename additions restore executed
-frontend40/schema55/check/build inside Docker. Runtime image refresh is next;
-this UI-stage success does not replace full-image or release qualification.
+frontend40/schema55/check/build inside Docker. The
+[8ad1e6a runtime image](../evidence/v3-plan-artifacts.md) now repeats Java1549 and
+passes protected startup, private workspace/schema3 and separate supervisor
+checksum checks. Its digest/source identity is recorded; release remains blocked.
+
+The [computed HTTP candidate](../evidence/v3-plan-computed-candidate.md) is isolated
+and awaiting independent review, which is blocked by agent account usage limits.
+Fixed14 manifestcdd9993aeda87f3a4393267131b8129a39738760481b0471fc652fdc442069de
+on8ad1e6a passes full Java1565 (324/7/924/310), assembly/hostile launcher,
+frontend40/schema57/check/build, five caught/restored guard mutations and actual
+HTTP/Unicode/large-selector/child-location controls. Its separate review image
+repeats Java1565/frontend40/schema57 and passes protected startup/workspace smoke. This author candidate is not
+on the branch or in its runtime image; do not count it as independently reviewed.
+Resume with fixed review before integration, then capture/reuse and validation.
 
 The later independent review's confirmed
 [retained-origin consistency defect](../evidence/derived-retained-origin-fix.md)
