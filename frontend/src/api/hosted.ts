@@ -1,3 +1,36 @@
+// Closed early-refusal codes from the hosted v3 plan HTTP contract.
+const v3ControllerCodes = new Set([
+  "BODY_DEADLINE",
+  "BODY_TOO_LARGE",
+  "CANCELLED",
+  "CAPACITY",
+  "CLEANUP_INCONCLUSIVE",
+  "CONFLICT",
+  "CREDENTIALS_ALREADY_CONSUMED",
+  "DESTINATION_DENIED",
+  "DISCLOSURE_REQUIRED",
+  "EXPORT_UNAVAILABLE",
+  "INCOMPLETE_TARGET",
+  "INSPECTION_REQUIRED",
+  "INVALID_CREDENTIALS",
+  "INVALID_DESTINATION",
+  "INVALID_REQUEST",
+  "MALFORMED_BODY",
+  "NOT_FOUND",
+  "OBSERVATION_REFUSED",
+  "PLAN_BUSY",
+  "PLAN_INTERNAL_REFUSAL",
+  "PLAN_SERVICES_UNAVAILABLE",
+  "PROFILE_REFUSED",
+  "PROJECTION_REFUSED",
+  "PUBLICATION_REQUIRED",
+  "RESERVATION_EXPIRED",
+  "RESOURCE_LIMIT",
+  "SESSION_REQUIRED",
+  "STALE_PREVIEW",
+  "UNSUPPORTED_DEFINITION",
+]);
+
 export type Capabilities = {
   mode: "demo" | "hosted";
   definitionWorkspaceEnabled: boolean;
@@ -194,10 +227,21 @@ export class HostedApi {
     }
   }
   credentials(id: string, username: string, password: string): Promise<Operation> {
+    return this.submitCredentials("/api/v1/operations", id, username, password);
+  }
+  credentialsV3(id: string, username: string, password: string): Promise<Operation> {
+    return this.submitCredentials("/api/v3/operations", id, username, password);
+  }
+  private submitCredentials(
+    path: "/api/v1/operations" | "/api/v3/operations",
+    id: string,
+    username: string,
+    password: string,
+  ): Promise<Operation> {
     if (this.submitted.has(id))
       return Promise.reject(new ApiFailure(409, "CREDENTIALS_ALREADY_SENT"));
     this.submitted.add(id);
-    return this.post(`/api/v1/operations/${encodeURIComponent(id)}/credentials`, {
+    return this.post(`${path}/${encodeURIComponent(id)}/credentials`, {
       username,
       password,
     });
@@ -251,6 +295,27 @@ export class HostedApi {
       if (response.ok && method !== "GET" && this.authority) {
         this.idleAt = Math.max(this.idleAt, started + this.authority.idleTimeoutSeconds * 1000);
         this.armExpiry();
+      }
+      // V3 controllers may refuse before owning a body/output transfer. Only their
+      // closed, explicitly empty error response carries authority in this header.
+      const earlyCode = response.headers.get("X-Environment-Studio-Code");
+      if (
+        !response.ok &&
+        /^\/api\/v3\/(?:plans|operations)(?:\/|$)/.test(path) &&
+        response.headers.get("Content-Length") === "0" &&
+        earlyCode !== null &&
+        v3ControllerCodes.has(earlyCode)
+      ) {
+        let text: string;
+        try {
+          text = await response.text();
+        } catch {
+          live();
+          throw new ApiFailure(response.status, "RESPONSE_UNAVAILABLE");
+        }
+        live();
+        if (text !== "") throw new ApiFailure(response.status, "RESPONSE_UNAVAILABLE");
+        throw new ApiFailure(response.status, earlyCode);
       }
       if (response.status === 204) return undefined as T;
       let value: unknown;

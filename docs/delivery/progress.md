@@ -8,8 +8,10 @@ Two-IDE continuation: [native handoff and exact ownership](ide2-native-handoff.m
 Lead is the sole IDE1 application writer; previous writing subagents are stopped.
 IDE2 receives the frozen21-file JNI candidate in its separate worktree from
 `d7c484425a3dcc88e26525a7e5041f41c83d056d`, with one confirmed late-open deadline P2
-to fix before acceptance. IDE2 owns the next full Maven build window; IDE1 continues
-the preserved typed-v3 browser client with frontend checks. First two-hour checkpoint
+to fix before acceptance. IDE2 has returned fixed commit `f5025cc5afbdca2df70fa142be77f02aac4221ef`
+with author full1617 passing; non-author correction review is pending. Its source
+is frozen and the full Maven window is released. IDE1 has integrated the reviewed
+typed-v3 browser client and continues application work. First two-hour checkpoint
 is14:49BST,10 September. Native full1596 and independent79 checks pass on their
 recorded bases; neither establishes integrated or release qualification.
 
@@ -25,7 +27,10 @@ all three corrections. [Capture/reuse and paged validation APIs](../evidence/v3-
 are now integrated after fixed independent review; full Java1599 and
 frontend40/schema58 pass. Real HTTP tests cover whole/partial reuse, exact
 multi-record one-to-two changes and large-page refusal/recovery using explicit
-test publication/observation ports. The typed v3 browser client is in progress.
+test publication/observation ports. The [typed v3 browser client](../evidence/v3-browser-client.md)
+now passes fixed non-author review, frontend65/schema58 and build, including six
+compiled guard mutations. Profile workspace client support and React integration
+remain; no new operator journey is claimed.
 Operator UX, native/export/readback and release qualification
 remain required.
 

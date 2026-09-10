@@ -116,3 +116,110 @@ describe("hosted request authority", () => {
     await expect(api.post("/api/v1/plans", {})).rejects.toMatchObject({ code: "SESSION_REQUIRED" });
   });
 });
+
+it("preserves contracted no-body v3 refusal codes as definitive failures", async () => {
+  const transport = vi
+    .fn()
+    .mockResolvedValueOnce(sessionResponse())
+    .mockResolvedValueOnce(
+      new Response(null, {
+        status: 429,
+        headers: { "Content-Length": "0", "X-Environment-Studio-Code": "CAPACITY" },
+      }),
+    );
+  const api = new HostedApi(transport);
+  await api.session();
+  await expect(api.post("/api/v3/plans", {})).rejects.toMatchObject({
+    status: 429,
+    code: "CAPACITY",
+  });
+  api.clear();
+});
+
+it("only accepts closed refusal headers on the contracted family and empty framing", async () => {
+  const scenarios = [
+    { path: "/api/v3/plans", length: "0", code: "UNKNOWN_MOCK_CODE", body: null },
+    { path: "/api/v3/plans", length: "0", code: "CAPACITY<script>", body: null },
+    { path: "/api/v1/plans", length: "0", code: "CAPACITY", body: null },
+    { path: "/api/v3/plans", length: undefined, code: "CAPACITY", body: null },
+    { path: "/api/v3/plans", length: "0, 0", code: "CAPACITY", body: null },
+    { path: "/api/v3/plans", length: "0", code: "CAPACITY", body: '{"code":"CONFLICT"}' },
+  ];
+  for (const scenario of scenarios) {
+    const headers: Record<string, string> = { "X-Environment-Studio-Code": scenario.code };
+    if (scenario.length !== undefined) headers["Content-Length"] = scenario.length;
+    const transport = vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(sessionResponse())
+      .mockResolvedValueOnce(new Response(scenario.body, { status: 429, headers }));
+    const api = new HostedApi(transport);
+    await api.session();
+    try {
+      await expect(api.post(scenario.path, {})).rejects.toMatchObject({
+        status: 429,
+        code: "RESPONSE_UNAVAILABLE",
+      });
+      expect(transport).toHaveBeenCalledTimes(2);
+    } finally {
+      api.clear();
+    }
+  }
+});
+
+it("retains normal JSON errors and rejects incomplete success despite a refusal header", async () => {
+  const transport = vi
+    .fn<typeof fetch>()
+    .mockResolvedValueOnce(sessionResponse())
+    .mockResolvedValueOnce(
+      new Response('{"code":"CONFLICT"}', {
+        status: 409,
+        headers: { "X-Environment-Studio-Code": "UNKNOWN_MOCK_CODE" },
+      }),
+    )
+    .mockResolvedValueOnce(
+      new Response(null, {
+        status: 200,
+        headers: { "Content-Length": "0", "X-Environment-Studio-Code": "CAPACITY" },
+      }),
+    );
+  const api = new HostedApi(transport);
+  await api.session();
+  try {
+    await expect(api.post("/api/v3/plans", {})).rejects.toMatchObject({
+      status: 409,
+      code: "CONFLICT",
+    });
+    await expect(api.get("/api/v3/plans/current")).rejects.toMatchObject({
+      status: 200,
+      code: "RESPONSE_UNAVAILABLE",
+    });
+  } finally {
+    api.clear();
+  }
+});
+
+it("cannot deliver a late empty-body refusal after the original session was cleared", async () => {
+  let finish!: (body: string) => void;
+  const response = new Response(null, {
+    status: 429,
+    headers: { "Content-Length": "0", "X-Environment-Studio-Code": "CAPACITY" },
+  });
+  vi.spyOn(response, "text").mockReturnValueOnce(
+    new Promise<string>((resolve) => {
+      finish = resolve;
+    }),
+  );
+  const transport = vi
+    .fn<typeof fetch>()
+    .mockResolvedValueOnce(sessionResponse())
+    .mockResolvedValueOnce(response);
+  const api = new HostedApi(transport);
+  await api.session();
+  const pending = api.post("/api/v3/plans", {});
+  await Promise.resolve();
+  await Promise.resolve();
+  api.clear();
+  finish("");
+  await expect(pending).rejects.toMatchObject({ code: "SESSION_REQUIRED" });
+  expect(transport.mock.calls[1][1]?.signal?.aborted).toBe(true);
+});
