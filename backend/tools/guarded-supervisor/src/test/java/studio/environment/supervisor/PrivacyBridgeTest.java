@@ -34,7 +34,7 @@ class PrivacyBridgeTest {
         assertEquals(0,PrivacyConnectionTest.run(List.of("/usr/bin/env","LANG=C.UTF-8","LC_ALL=C.UTF-8",Path.of(System.getProperty("java.home"),"bin","java").toString(),"-Djdk.lang.Process.launchMechanism=FORK","-XX:ErrorFile=/dev/null","-XX:-CreateCoredumpOnCrash","-XX:-HeapDumpOnOutOfMemoryError","-cp",classes,PrivacyBridgeProbe.class.getName(),(mode.equals("empty")?production:fixture).toString(),mode,child.toString(),production.toString())),mode);
         // Actual subprocess exit releases invocation-owned base FD; successful
         // launch modes must have removed their own endpoints before that exit.
-        if(!mode.equals("disarm-fault")&&!mode.equals("expired-publication")&&!mode.equals("startup-expired-publication"))try(var entries=Files.list(parent)){assertEquals(0,entries.count(),"launch namespace leaked");}
+        if(!mode.equals("disarm-fault")&&!mode.equals("expired-publication")&&!mode.equals("startup-expired-publication")&&!mode.equals("expired-refusal-allocation"))try(var entries=Files.list(parent)){assertEquals(0,entries.count(),"launch namespace leaked");}
     }
     @Test void malformedLinkageCannotLeavePartiallyRegisteredMethods() throws Exception {
         Path scratch=Files.createDirectory(directory.resolve("linkage"));
@@ -65,20 +65,24 @@ class PrivacyBridgeTest {
     @Test void originalStartupAndOperationClocksIncludeRegistryWork() throws Exception {mode("clocks");}
     @Test void resultConstructionCannotPublishAfterOriginalDeadline() throws Exception {
         mode("unexpired-publication");
-        for(String expired:List.of("expired-publication","startup-expired-publication")){
-            try {
-                mode(expired);
-                // Expired cleanup cannot prove namespace removal. Observe the
-                // retained endpoint only after its JVM has actually terminated.
-                try(var entries=Files.list(parent)){
-                    var remaining=entries.toList();assertEquals(1,remaining.size(),"inconclusive namespace retained");
-                    assertTrue(Files.exists(remaining.getFirst().resolve("control.sock")));
-                }
-            } finally {
-                // External fixture teardown never upgrades native INCONCLUSIVE.
-                try(var entries=Files.list(parent)){
-                    for(Path entry:entries.toList()){Files.deleteIfExists(entry.resolve("control.sock"));Files.delete(entry);}
-                }
+        for(String expired:List.of("expired-publication","startup-expired-publication"))expiredMode(expired);
+    }
+    @Test void refusalConstructionFailurePreservesExpiredOwnershipAndExactException() throws Exception {
+        expiredMode("expired-refusal-allocation");
+    }
+    static void expiredMode(String expired) throws Exception {
+        try {
+            mode(expired);
+            // Expired cleanup cannot prove namespace removal. Observe the
+            // retained endpoint only after its JVM has actually terminated.
+            try(var entries=Files.list(parent)){
+                var remaining=entries.toList();assertEquals(1,remaining.size(),"inconclusive namespace retained");
+                assertTrue(Files.exists(remaining.getFirst().resolve("control.sock")));
+            }
+        } finally {
+            // External fixture teardown never upgrades native INCONCLUSIVE.
+            try(var entries=Files.list(parent)){
+                for(Path entry:entries.toList()){Files.deleteIfExists(entry.resolve("control.sock"));Files.delete(entry);}
             }
         }
     }

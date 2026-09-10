@@ -19,6 +19,7 @@ public final class PrivacyBridgeProbe {
     static native void delayRecord();
     static native int clocks(long token);
     static native void allocationFault(int mode);
+    static native void refusalAllocationFault(Throwable failure);
     static native long heldToken();
     static native void releaseAllocation();
     static native int unpublishedOutcome(long token);
@@ -49,10 +50,17 @@ public final class PrivacyBridgeProbe {
         complete(open);
     }
     static void delayedOpen(long allowance,long holdMillis,boolean expired)throws Exception{
+        delayedOpen(allowance,holdMillis,expired,false);
+    }
+    static void delayedOpen(long allowance,long holdMillis,boolean expired,boolean failRefusal)throws Exception{
         var result=new java.util.concurrent.atomic.AtomicReference<PrivacyBridge.OpenResult>();
+        var thrown=new java.util.concurrent.atomic.AtomicReference<Throwable>();
+        var injected=new OutOfMemoryError("invented refusal allocation");
         Thread caller=Thread.ofPlatform().start(()->{
-            allocationFault(3);
-            result.set(PrivacyBridge.openLaunch(1,allowance));
+            try {
+                if(failRefusal)refusalAllocationFault(injected);else allocationFault(3);
+                result.set(PrivacyBridge.openLaunch(1,allowance));
+            } catch(Throwable failure){thrown.set(failure);}
         });
         long token=heldToken();
         try {
@@ -61,8 +69,10 @@ public final class PrivacyBridgeProbe {
             Thread.sleep(holdMillis);
         } finally {releaseAllocation();caller.join(3000);}
         check(!caller.isAlive(),"PUBLICATION_JOIN");
+        if(failRefusal)check(thrown.get()==injected&&result.get()==null,"EXACT_REFUSAL_EXCEPTION");
+        else check(thrown.get()==null,"NO_UNEXPECTED_EXCEPTION");
         if(expired){
-            check(result.get().equals(new PrivacyBridge.OpenFailed(PrivacyBridge.Failure.DEADLINE)),"EXPIRED_OPEN_REFUSED");
+            if(!failRefusal)check(new PrivacyBridge.OpenFailed(PrivacyBridge.Failure.DEADLINE).equals(result.get()),"EXPIRED_OPEN_REFUSED");
             check(unpublishedOutcome(token)==0,"EXPIRED_OWNER_SETTLED_INCONCLUSIVE");
             for(int i=0;i<2;i++){
                 check(PrivacyBridge.status(token)==PrivacyBridge.Status.FAILED,"NEVER_PUBLISHED");
@@ -101,6 +111,7 @@ public final class PrivacyBridgeProbe {
             case "expired-publication" -> delayedOpen(100_000_000L,250,true);
             case "unexpired-publication" -> delayedOpen(3_000_000_000L,250,false);
             case "startup-expired-publication" -> delayedOpen(12_000_000_000L,10_250,true);
+            case "expired-refusal-allocation" -> delayedOpen(100_000_000L,250,true,true);
             case "arm-allocation" -> {var open=opened();var delegate=new PrivacyLaunchCoordinator(open);var port=new PrivacyLaunchOwner.CapturePort(){
                 public PrivacyBridge.ForkResult arm(){allocationFault(2);return delegate.arm();}
                 public PrivacyLaunchOwner.Step register(long pid){return delegate.register(pid);}

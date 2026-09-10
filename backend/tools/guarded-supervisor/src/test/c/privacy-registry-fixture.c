@@ -46,18 +46,39 @@ JNIEXPORT jint JNICALL Java_studio_environment_supervisor_PrivacyBridgeProbe_met
 static __thread const struct JNINativeInterface_ *original_jni;
 static struct JNINativeInterface_ fault_jni;
 static __thread int allocation_fault,expire_root;
+static __thread jobject refusal_throwable;
+static int refusal_expected,refusal_injected;
 static int allocation_held,allocation_released;
 static uint64_t held_startup,held_operation;
 static int held_descriptors[4];
 static jobject faulty_object(JNIEnv *e,jclass type,jmethodID constructor,...){
+ int fail_refusal=0;
  if(allocation_fault){int mode=allocation_fault;allocation_fault=0;*e=original_jni;
-  if(mode==3){pthread_mutex_lock(&fixture_lock);allocation_held=1;pthread_cond_broadcast(&fixture_changed);while(!allocation_released)pthread_cond_wait(&fixture_changed,&fixture_lock);pthread_mutex_unlock(&fixture_lock);}
+  if(mode==3||mode==4){pthread_mutex_lock(&fixture_lock);allocation_held=1;pthread_cond_broadcast(&fixture_changed);while(!allocation_released)pthread_cond_wait(&fixture_changed,&fixture_lock);pthread_mutex_unlock(&fixture_lock);fail_refusal=mode==4;}
+  else if(mode==5){
+   /* Fail only the refusal construction, after the production publication gate
+      latched expiry. The reference must still protect the unpublished owner. */
+   jclass refused=(*e)->FindClass(e,"studio/environment/supervisor/PrivacyBridge$OpenFailed");
+   int exact=refused&&(*e)->IsSameObject(e,type,refused);if(refused)(*e)->DeleteLocalRef(e,refused);
+   pthread_mutex_lock(&invocation.mutex);es_registry_entry *p=&entries[invocation.issued-1];
+   exact=exact&&p->refs==1&&!p->published&&!p->retired&&p->failure==ES_BRIDGE_DEADLINE;
+   pthread_mutex_unlock(&invocation.mutex);
+   if(exact&&refusal_throwable&&(*e)->Throw(e,refusal_throwable)==JNI_OK)refusal_injected=1;
+   if(refusal_throwable)(*e)->DeleteGlobalRef(e,refusal_throwable);
+   refusal_throwable=NULL;return NULL;
+  }
   else{jclass oom=(*e)->FindClass(e,"java/lang/OutOfMemoryError");if(oom){(*e)->ThrowNew(e,oom,"invented allocation fault");(*e)->DeleteLocalRef(e,oom);}return NULL;}
  }
- va_list args;va_start(args,constructor);jobject result=original_jni->NewObjectV(e,type,constructor,args);va_end(args);return result;
+ va_list args;va_start(args,constructor);jobject result=original_jni->NewObjectV(e,type,constructor,args);va_end(args);
+ if(fail_refusal){allocation_fault=5;*e=&fault_jni;}
+ return result;
 }
 JNIEXPORT void JNICALL Java_studio_environment_supervisor_PrivacyBridgeProbe_allocationFault(JNIEnv *e,jclass c,jint mode){
  (void)c;original_jni=*e;fault_jni=**e;fault_jni.NewObject=faulty_object;allocation_fault=mode;expire_root=mode==2;*e=&fault_jni;
+}
+JNIEXPORT void JNICALL Java_studio_environment_supervisor_PrivacyBridgeProbe_refusalAllocationFault(JNIEnv *e,jclass c,jthrowable throwable){
+ refusal_expected=1;refusal_throwable=(*e)->NewGlobalRef(e,throwable);
+ if(refusal_throwable)Java_studio_environment_supervisor_PrivacyBridgeProbe_allocationFault(e,c,4);
 }
 es_root_result __real_es_root_arm(es_root *,int,uint64_t,const uint8_t *);
 es_root_result __wrap_es_root_arm(es_root *p,int cancel,uint64_t deadline,const uint8_t *id){if(expire_root){expire_root=0;deadline=es_registry_now()-1;}return __real_es_root_arm(p,cancel,deadline,id);}
@@ -76,7 +97,7 @@ JNIEXPORT void JNICALL Java_studio_environment_supervisor_PrivacyBridgeProbe_rel
 JNIEXPORT jint JNICALL Java_studio_environment_supervisor_PrivacyBridgeProbe_unpublishedOutcome(JNIEnv *e,jclass c,jlong token){
  (void)e;(void)c;unsigned number=(unsigned)((uint64_t)token&511U);if(!number||number>LIMIT)return 1;
  pthread_mutex_lock(&invocation.mutex);es_registry_entry *p=&entries[number-1];
- int bad=p->token!=(uint64_t)token||p->published||!p->retired||!p->settled||p->refs||p->complete||!p->uncertain
+ int bad=(refusal_expected&&!refusal_injected)||p->token!=(uint64_t)token||p->published||!p->retired||!p->settled||p->refs||p->complete||!p->uncertain
   ||p->failure!=ES_BRIDGE_DEADLINE||p->finally_owed||p->event_active
   ||p->owner.closing!=ES_LAUNCH_CLOSE_SETTLED||!p->owner.inconclusive
   ||p->owner.startup_deadline!=held_startup||p->owner.operation_deadline!=held_operation
