@@ -14,7 +14,7 @@ corrections. All slices and the fixed combined source have non-author source
 reviews; no blocking integration finding remains. Combined focused351 Java
 (70core/1parser/236server/44supervisor),136 frontend/59 schema/check/build and
 G00/11Python pass. This candidate is not accepted into root or release-qualified;
-remote independent correction probes and combined full Maven/OCI remain pending.
+combined full Maven/OCI remain pending. Remote correction probes are verified below.
 Root application source remains at30446e2 while these candidates await verification.
 
 Remote baseline30446's full Maven gate failed six sequential HTTP assertions
@@ -25,8 +25,10 @@ ordinary sequential tests; all four immediate held-body429 controls remain intac
 A further six-call integration reconciliation covers the new review method.
 Actual controlled RED/GREEN and a compiled guard mutation pass their intended
 oracles. This concrete defect does not prove every original failure's cause or
-clear the failed full gate. JNI-QA-001 and OBS-QA-001/002 remain accepted corrections
-awaiting independent verification on the combined tree.
+clear the failed full gate. Reviewer5621996861 independently verified JNI-QA-001,
+OBS-QA-001/002 and TEST-QA-001 on875 within its native/JDBC-double/HTTP probe scopes.
+G00/11Python and G02 (136frontend/59schema/check/build) pass remotely; actual
+database, installed-client and complete native qualification remain open.
 
 The user published the combined branch; remote refs and fetch confirm875a257.
 Reviewer5621531344 confirmed clean checkouts on Ubuntu24.04/WSL2 amd64,
@@ -50,18 +52,40 @@ Existing independent correction probes continue without unnecessary repetition;
 no local duplicate full/G08 run or accepted integration. Both earlier failed
 full runs remain evidence; publication does not clear them.
 
+Reviewer5622081282 independently passes39's listing/history held-record cases
+and retained-record timeout with attempted logout and both failures preserved.
+G00 passes; corrected full Maven is running before the assigned remaining gates.
+Runtime audit distinguishes875 full Java21.0.10 from later profile/JNI and39
+checks on21.0.12; the same JDK path is not an immutable runtime. Remote WSL2 amd64
+reports4CPUs/about7,910MiB RAM; actual cgroup limits are unknown.
+
+A later read-only audit found an empty classpath entry in local external profile
+controls, inventoried against Python's cwd instead of Java's backend/server cwd.
+Explicit class hashes still match; today's effective cwd has no competing root
+classes/configuration. Historical resource attribution remains incomplete.
+Preserve those behavior results with this limit; no concrete competing load
+justifies a repeat. External report: es-profile-settlement-classpath-attribution-audit-20260910.md.
+
 IDE2 exclusively owns the preserved native closure WIP. Frozen symbol/version
 WIP3 and vDSO WIP4 have bounded non-author source reviews with no confirmed
 finding; reviewers executed no tests. The lead's reviewed [stopped-smaps contract](../evidence/native-smaps-contract.md)
 is integrated as41effa6 and returned as an exact one-file patch with pre/post
 hashes, unblocking the actual omitted-kernel-role RED. Complete closure,
-resources/lifetime and installed-runtime qualification remain open. Two writers
+resources/lifetime and installed-runtime qualification remain open. Frozen WIP6
+smaps and WIP7 file-layout supplements now have non-author source reviews with no
+confirmed finding. Author135focused WIP6 and56focused WIP7 checks pass on their
+respective bytes; reviewers executed no tests. WIP7 changes only four test files.
+Overlap/script/lifetime/resources and installed-runtime acceptance remain open. Two writers
 remain: lead application/integration and IDE2 native; all subagents and the remote
 reviewer are read-only. A [small hosted v3 control](../evidence/v3-hosted-capacity-prerequisite.md)
 now passes with fixed non-author source review: four retained owners, complete
 current/target proofs and64-rule paging, held-view logout and same-owner recovery.
-Publication/observation ports are explicit mocks; large shapes, HTTP transfers
-and whole-process resource qualification remain open. Required UX skill location remains
+The [small HTTP control](../evidence/v3-http-capacity-prerequisite.md) now passes
+with fixed non-author review: actual four-owner HTTP/OIDC/SQLite lifetime,
+complete retained proofs/XML/pages and held-validation logout/recovery. Review
+caught incomplete proof assertions and an empty classpath entry; control4 fixes
+both. Publication/observation remain mocks; TLS/artifact/large shapes and
+whole-process resources remain unqualified. Required UX skill location remains
 unresolved; no new React journey or production readiness is claimed.
 
 Two-IDE continuation: [native handoff and exact ownership](ide2-native-handoff.md).
