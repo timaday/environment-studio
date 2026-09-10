@@ -4,6 +4,35 @@ Updated: 10 September 2026. See [starter evidence](../evidence/starter-verificat
 and [D01a integration](../evidence/d01a-integration.md) for actual commands and
 results; the table below reports capability, not test count.
 
+Latest lead checkpoint: the reviewed Definitions upload candidate is
+`8d87311c5f4405e2616c25db107de284e9dc1b6f`, base bc6dfe8, on
+`implementation/definitions-upload-design-20260910`. Its isolated worktree is
+`/home/tim/.tmp/es-definitions-upload-design-20260910`. Actual JSON/YAML upload,
+exact save/replay and acknowledged inspection pass 184 frontend/59 schema tests, checks and build;
+actual v3 desktop/narrow and four legacy browser journeys pass at documented
+source boundaries. Both independent UI findings have reproduced RED/GREEN and
+fixed source acceptance. [Queue handoff5624883396](https://github.com/timaday/environment-studio/issues/9#issuecomment-5624883396)
+awaits branch publication; this is not accepted root application integration.
+Corrected upload designs are approved; rendered exceptions remain pending.
+
+The next lead worktree `/home/tim/.tmp/es-v3-plan-inspection-20260910`, branch
+`implementation/v3-plan-inspection-journey-20260910`, starts at exact 8d87311.
+Its bounded journey/desktop+narrow images are prepared; new Plans design approval
+is pending before rendering. Existing backend routes/typed clients are reused;
+no production publication/inspection/export qualification is inferred.
+
+IDE2 retains native ownership. Fixed WIP16/WIP17 test-only supplements have
+non-author hash/source/evidence review with no confirmed finding and no reviewer
+execution; production is unchanged from WIP15. Their 98-test/182-mode and 25-test/37-mode
+runs are separate author scopes. Held cleanup uncertainty and the unattributed
+944-byte OTHER accounting observation remain open. No installed admission follows.
+
+- Ready after approval: implement the bounded v3 resume/document journey.
+- Awaiting another owner: UI branch publication; remote 41c8/e338/5d/bc6d checks;
+  IDE2 native source/dependency examples. No newer remote result after 5623788071.
+- Blockers: new Plans and bounded Definitions rendering approvals; required combined
+  integration/OCI, native/client/resource qualification and release rehearsal.
+
 The [shared remote review queue](https://github.com/timaday/environment-studio/issues/9)
 is active. The separate [combined correction candidate](../evidence/combined-corrections-20260910.md)
 is `875a257d659d3139a2c180cc587531ddcd095c96` on
