@@ -9,7 +9,6 @@
 #include <time.h>
 #include <unistd.h>
 #define LIMIT 256U
-#define NS10 10000000000ULL
 struct es_registry_entry {
  es_launch owner;
  unsigned refs,published,retired,finally_owed,arm_called,arm_done,arm_no_window,disarm_called,coordinator_bound,event_entered,event_active;
@@ -78,7 +77,11 @@ es_registry_ref es_registry_open(int ordinal,int64_t left,uint64_t entered,char 
  unsigned index=invocation.issued++;invocation.live++;es_registry_entry *p=&entries[index];p->refs=1;p->failure=ES_BRIDGE_NONE;p->token=((uint64_t)(index+1)<<9)|(index+1);
  ref.entry=p;ref.token=p->token;int parent=invocation.parent;const char *path=invocation.mechanism->parent_path;pthread_mutex_unlock(&invocation.mutex);
  ref.failure=mapped(es_launch_open_started(&p->owner,parent,path,(uint64_t)left,entered,out));
- if(ref.failure!=ES_BRIDGE_NONE){pthread_mutex_lock(&invocation.mutex);latch(p,ref.failure);pthread_mutex_unlock(&invocation.mutex);(void)es_registry_close(&ref,left>(int64_t)NS10?(int64_t)NS10:left);}
+ if(ref.failure!=ES_BRIDGE_NONE){
+  pthread_mutex_lock(&invocation.mutex);latch(p,ref.failure);pthread_mutex_unlock(&invocation.mutex);
+  /* Native construction consumed the original allowance before JNI has a result. */
+  es_registry_unpublished(&ref);
+ }
  return ref;
 }
 es_registry_ref es_registry_acquire(int64_t token){
