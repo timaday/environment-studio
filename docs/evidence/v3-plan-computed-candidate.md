@@ -1,8 +1,7 @@
-# Computed HTTP candidate — independently reviewed, integration pending
+# Computed HTTP views — reviewed integration
 
-The five computed collection/contributor routes are implemented and locally tested
-in an isolated candidate. They are **not integrated into the branch**. The next
-step is integration after the three priority continuation corrections. Review was
+The five computed collection/contributor routes are implemented and integrated
+after the three priority continuation corrections. Review was
 previously blocked by reviewer account limits. The new continuation obtained a
 fixed independent review; no replacement model or credential was used to bypass a
 denial. Passing author tests alone was not treated as independent review.
@@ -134,12 +133,39 @@ correction: preserve it when merging the computed transport changes. Integrated
 verification remains required. No new runtime, operator or resource qualification
 is implied by this review.
 
-## Resume
+## Integrated source and verification
 
-Integrate the fixed fourteen files after the priority corrections, review the
-merged transport and run combined gates. Preserve explicit test-only publication
-witnesses and current compiler refusal. Capture/reuse and validation HTTP follow;
+Base `7de634f16bbad0e7b88f73b6f52b80515bf69912`; fourteen-file manifest
+`d5d40ad195ce05f105999f12dcb7ffdbcb3d45f3b33358440e94eff5824031f2`.
+Thirteen files exactly match the original fixed review. The merged transport
+differs only by the reviewed workspace refusal import/mapping; removing those
+five lines reproduces the original computed transport exactly. Independent
+integration review verified this and1,010 unchanged base files, preserving all
+three P2 corrections. Review SHA256
+`2c450c225ab969fb540ef32926ca57a7cc53a400c40d690a2920520b4ac2aa2f`.
+
+Full `mvn -B -ntp -f backend/pom.xml verify` in an isolated exact-source archive
+passes1,579 tests:330 core,7 parser,927 server,315 supervisor; zero failures/errors/
+skips, assembly and hostile launcher,10 September2026 at11:28:50BST.
+All fourteen hashes match the checkout and archive after verification. Full log
+`es-computed-integrated-full1-20260910.log` SHA256
+`642cd0570496f259da5d49bb3e7064543b184e7eab01e9522d2a86e46a5e7a6b`.
+Frontend40/schema57, checking and build pass on the integrated source with the
+unchanged dependency lockfile installed during the immediately preceding P2 gate.
+No implementation rework followed fixed review; merging preserved the known
+workspace correction. These results are not proof for an older OCI image.
+Frontend log SHA256
+`4c4d2b3cd67e85482cfe8c88503ef5aefe7d4016bee3903795e3b4cf0f23cf97`.
+The integration/gate/evidence interval was approximately11 minutes and also
+included independent preparation of the following contracts. G00 staged-content/
+provenance review, Python11, repository integrity and diff checks pass. No speed-up
+or engineering velocity is inferred from that elapsed interval.
+
+## Next
+
+Preserve explicit test-only publication witnesses and current compiler refusal.
+Capture/reuse and paged validation HTTP follow;
 operator UX, native execution/readback, combined resources, exact remote CI,
 GHCR and actual HiveForge remain incomplete. The current branch image excludes
-these isolated computed routes. No private model, live credential, actual user
+these newly integrated computed routes. No private model, live credential, actual user
 configuration or runtime AI was introduced.

@@ -21,7 +21,7 @@ final class V3PlanTransport {
         this.service=Objects.requireNonNull(service);this.sessions=Objects.requireNonNull(sessions);this.clock=Objects.requireNonNull(clock);
     }
     private enum BodyMode {
-        NONE(0,0),SMALL(16_384,10_000_000_000L),SEMANTIC(134_217_728,30_000_000_000L);
+        NONE(0,0),SMALL(16_384,10_000_000_000L),COMPUTED_SELECTOR(16_777_216,30_000_000_000L),SEMANTIC(134_217_728,30_000_000_000L);
         final int bytes;final long nanos;
         BodyMode(int bytes,long nanos){this.bytes=bytes;this.nanos=nanos;}
     }
@@ -71,6 +71,18 @@ final class V3PlanTransport {
         V3PlanReply materialize(OwnedServletBody body){
             var request=request(PlanViewRequest.Route.MATERIALIZATION,body);
             return new V3PlanReply.Materialized(planId,request.revision(),admission.materialize());
+        }
+        V3PlanReply computed(V3PlanComputedReader.Route route,OwnedServletBody body){
+            var request=new V3PlanComputedReader().read(route,body);
+            admission.pin(request.revision());pinned=true;
+            var result=switch(route){
+                case NODES -> V3PlanComputedViews.nodes(admission,request.target(),request.offset(),request.limit());
+                case MEMBERSHIPS -> V3PlanComputedViews.memberships(admission,request.target(),request.offset(),request.limit());
+                case COOCCURRENCES -> V3PlanComputedViews.cooccurrences(admission,request.target(),request.offset(),request.limit());
+                case RULES -> V3PlanComputedViews.rules(admission,request.target(),request.offset(),request.limit());
+                case CONTRIBUTORS -> V3PlanComputedViews.contributors(admission,request.target(),request.selector().orElseThrow(),request.offset(),request.limit(),true);
+            };
+            return new V3PlanReply.Physical(planId,V3PlanComputedEncoding.page(result,this::verify));
         }
         V3PlanReply physical(PhysicalRoute route,OwnedServletBody body){
             var request=request(route.request,body);
@@ -129,6 +141,12 @@ final class V3PlanTransport {
         var scope=new ViewScope(lease,planId,admission);
         start(lease,request,response,operation,200,BodyMode.SMALL,admission,()->!admission.live(),
                 body->scope.physical(route,body.orElseThrow()),Optional.of(scope));
+    }
+    void computedBody(SessionLedger.Lease lease,String planId,HttpServletRequest request,HttpServletResponse response,
+            V3PlanTransfers.Operation operation,HostedPlanService.ViewAdmission admission,V3PlanComputedReader.Route route){
+        var scope=new ViewScope(lease,planId,admission);
+        start(lease,request,response,operation,200,route==V3PlanComputedReader.Route.CONTRIBUTORS?BodyMode.COMPUTED_SELECTOR:BodyMode.SMALL,
+                admission,()->!admission.live(),body->scope.computed(route,body.orElseThrow()),Optional.of(scope));
     }
     private void check(SessionLedger.Lease lease,V3PlanTransfers.Operation operation){
         if(!service.live(lease))throw new PlanRefusal(PlanRefusal.Code.SESSION_REQUIRED);

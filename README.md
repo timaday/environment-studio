@@ -80,12 +80,13 @@ now pass independent HTTP review, full Java1539 and frontend40/schema53. Returne
 coordinates/references drive creation, removal and reference-preserving identity
 edits with distinct binding states. [Document comparison and complete locations](docs/evidence/v3-plan-document-views.md)
 now pass independent review, full Java1549 and frontend40/schema55, including
-exact multi-document XML and explicit disclosure. Computed HTTP views are next;
+exact multi-document XML and explicit disclosure. The five computed HTTP views
+now pass independent review and combined Java1579/frontend40/schema57;
 actual compiler publication remains incomplete.
 The exact `8ad1e6a` [local image](docs/evidence/v3-plan-artifacts.md)
 passes Java1549 and protected startup/workspace smoke. A separate
-[computed HTTP candidate](docs/evidence/v3-plan-computed-candidate.md) passes
-Java1565/frontend40/schema57 and now passes independent review; it is not integrated.
+[computed HTTP integration](docs/evidence/v3-plan-computed-candidate.md) preserves
+the reviewed exact keys, complete contributors and original transfer ownership.
 The [three priority corrections](docs/evidence/continuation-p2-corrections.md)
 pass independent review, full Java1563 and frontend40/schema55 verification.
 Release qualification remains open.

@@ -634,9 +634,9 @@ test("v3 small replies preserve common v1 revision and optional-field wire contr
   assert.equal(operation({ ...status, installedRevision: null }), false);
   assert.equal(operation({ ...status, cleanup: "complete-anyway" }), false);
 });
-test("v3 exposes exactly eighteen authenticated routes and documents early empty controller refusals", () => {
+test("v3 exposes exactly twenty-three authenticated routes and documents early empty controller refusals", () => {
   const paths = ["/api/v3/plans", "/api/v3/plans/current", "/api/v3/plans/{planId}", "/api/v3/plans/{planId}/inspections",
-    "/api/v3/operations/{operationId}/credentials", "/api/v3/operations/{operationId}", "/api/v3/operations/{operationId}/cancel", "/api/v3/plans/{planId}/commands", "/api/v3/plans/{planId}/materializations", "/api/v3/plans/{planId}/views/documents", "/api/v3/plans/{planId}/views/entities", "/api/v3/plans/{planId}/views/relations", "/api/v3/plans/{planId}/views/draft", "/api/v3/plans/{planId}/views/containment", "/api/v3/plans/{planId}/views/placements", "/api/v3/plans/{planId}/views/bindings", "/api/v3/plans/{planId}/views/document", "/api/v3/plans/{planId}/views/binding-locations"];
+    "/api/v3/operations/{operationId}/credentials", "/api/v3/operations/{operationId}", "/api/v3/operations/{operationId}/cancel", "/api/v3/plans/{planId}/commands", "/api/v3/plans/{planId}/materializations", "/api/v3/plans/{planId}/views/documents", "/api/v3/plans/{planId}/views/entities", "/api/v3/plans/{planId}/views/relations", "/api/v3/plans/{planId}/views/draft", "/api/v3/plans/{planId}/views/containment", "/api/v3/plans/{planId}/views/placements", "/api/v3/plans/{planId}/views/bindings", "/api/v3/plans/{planId}/views/document", "/api/v3/plans/{planId}/views/binding-locations", "/api/v3/plans/{planId}/views/computed/nodes", "/api/v3/plans/{planId}/views/computed/memberships", "/api/v3/plans/{planId}/views/computed/cooccurrences", "/api/v3/plans/{planId}/views/computed/rules", "/api/v3/plans/{planId}/views/computed/contributors"];
   assert.deepEqual(Object.keys(planV3Api.paths).sort(), paths.sort());
   for (const item of Object.values(planV3Api.paths)) for (const [method, route] of Object.entries(item)) {
     assert.deepEqual(route.security, [{ sessionCookie: [] }]);
@@ -840,4 +840,53 @@ test("document disclosure remains mandatory across modes and beyond-end location
   const page = validate("bindingLocationsResponse");
   assert.equal(page({ revision: "2", total: 0, offset: 2147483647, nextOffset: null, items: [] }), true);
   assert.equal(page({ revision: "2", total: 0, offset: 2147483647, nextOffset: null, items: [], completeDocumentDisclosure: true }), false);
+});
+
+test("v3 computed routes use closed distinct pages and exact cardinality strings", () => {
+  const schema = read("../schemas/plan-computed-view-v3.schema.json");
+  const factory = new Ajv2020({ allErrors: true, strict: true }).addSchema(read("../schemas/plan-command-v1.schema.json")).addSchema(schema);
+  const validate = name => factory.compile({ $ref: `${schema.$id}#/$defs/${name}` });
+  const paths = read("../docs/contracts/openapi-plans-v3.json").paths;
+  const aggregate = readFileSync(new URL("../docs/contracts/openapi.yaml", import.meta.url), "utf8");
+  for (const route of ["nodes", "memberships", "cooccurrences", "rules", "contributors"]) {
+    const path = `/api/v3/plans/{planId}/views/computed/${route}`;
+    assert.deepEqual(Object.keys(paths[path]), ["post"]); assert.ok(aggregate.includes(`  ${path}:`));
+    assert.equal(paths[path].post.responses["200"].content["application/json"].schema.$ref, `../../schemas/plan-computed-view-v3.schema.json#/$defs/${route}Response`);
+    const page = validate(`${route}Response`), empty = { revision: "2", total: 0, offset: 2147483647, nextOffset: null, items: [] };
+    assert.equal(page(empty), true); assert.equal(page({ ...empty, exportAvailable: true }), false);
+    assert.equal(page({ ...empty, total: "0" }), false); assert.equal(page({ ...empty, offset: 2147483648 }), false);
+  }
+  const rule = validate("rule"), sample = { kind: "ENTITY_COUNT", declaration: "tone-count", source: null, actual: "2", minimum: "0", maximum: "999999999999999999999999999999999", outcome: "FAIL" };
+  assert.equal(rule(sample), true);
+  for (const bad of [2, "02", "-1", "2\n"]) assert.equal(rule({ ...sample, actual: bad }), false);
+  assert.equal(rule({ ...sample, outcome: "UNKNOWN" }), false);
+  assert.equal(rule({ ...sample, complete: true }), false);
+});
+
+test("computed exact selectors require consent and preserve complete child and duplicate roles", () => {
+  const schema = read("../schemas/plan-computed-view-v3.schema.json");
+  const factory = new Ajv2020({ allErrors: true, strict: true }).addSchema(read("../schemas/plan-command-v1.schema.json")).addSchema(schema);
+  const validate = name => factory.compile({ $ref: `${schema.$id}#/$defs/${name}` });
+  const key = { computedType: "tones", derivation: "by-tone", value: " \ue000𐀀é " };
+  const physical = { kind: "existing", handle: "00000000-0000-4000-8000-000000000091" };
+  const contributors = validate("contributorsRequest");
+  for (const selector of [{ kind: "node", key }, { kind: "membership", relation: "has-tone", physical, computed: key }, { kind: "cooccurrence", relation: "pair", source: key, target: key }]) {
+    const request = { revision: "2", side: "current", offset: 2147483647, limit: 100, selector, completeDocumentDisclosure: true };
+    assert.equal(contributors(request), true, JSON.stringify(contributors.errors));
+    for (const consent of [false, null, 1, "true"]) assert.equal(contributors({ ...request, completeDocumentDisclosure: consent }), false);
+    const { completeDocumentDisclosure, ...missing } = request; assert.equal(contributors(missing), false);
+    assert.equal(contributors({ ...request, selector: { ...selector, digest: "f".repeat(64) } }), false);
+  }
+  const keyCheck = validate("key");
+  assert.equal(keyCheck({ ...key, value: "x".repeat(1048576) }), true);
+  assert.equal(keyCheck({ ...key, value: "x".repeat(1048577) }), false);
+  for (const value of ["", "\u0000", "\ud800", "\udc00", "\uffff"]) assert.equal(keyCheck({ ...key, value }), false);
+  const pin = { documentId: "sheet", sourceDigest: "a".repeat(64), elementIndex: "2", name: { namespaceUri: "urn:props", localName: "value" }, qualifiedName: "p:value", decodedValue: "alpha", valueStart: 41, valueEnd: 46, quote: "'" };
+  const role = { field: "tone", location: { value: pin, selector: { parentElementIndex: "1", element: { namespaceUri: "urn:props", localName: "entry" }, discriminator: { ...pin, name: { namespaceUri: "urn:props", localName: "key" }, qualifiedName: "p:key", decodedValue: "tone", valueStart: 28, valueEnd: 32 } } } };
+  const row = { physical, origin: { documentId: "sheet", projectionId: "items", sourceDigest: "a".repeat(64), elementIndex: "1", ancestry: ["0"] }, roles: [role, role] };
+  const contributor = validate("contributor"); assert.equal(contributor(row), true, JSON.stringify(contributor.errors));
+  assert.equal(contributor({ ...row, roles: [] }), false); assert.equal(contributor({ ...row, roles: [role, role, role] }), false);
+  assert.equal(contributor({ ...row, physical: key }), false);
+  assert.equal(contributor({ ...row, roles: [{ ...role, proof: {} }] }), false);
+  assert.equal(contributor({ ...row, roles: [{ ...role, location: { value: { ...pin, valueEnd: 1048577 }, selector: null } }] }), false);
 });

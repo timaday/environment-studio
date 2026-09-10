@@ -280,6 +280,21 @@ paths:
   /api/v3/plans/{planId}/views/binding-locations:
     $ref: './openapi-plans-v3.json#/paths/~1api~1v3~1plans~1{planId}~1views~1binding-locations'
 
+  /api/v3/plans/{planId}/views/computed/nodes:
+    $ref: './openapi-plans-v3.json#/paths/~1api~1v3~1plans~1{planId}~1views~1computed~1nodes'
+
+  /api/v3/plans/{planId}/views/computed/memberships:
+    $ref: './openapi-plans-v3.json#/paths/~1api~1v3~1plans~1{planId}~1views~1computed~1memberships'
+
+  /api/v3/plans/{planId}/views/computed/cooccurrences:
+    $ref: './openapi-plans-v3.json#/paths/~1api~1v3~1plans~1{planId}~1views~1computed~1cooccurrences'
+
+  /api/v3/plans/{planId}/views/computed/rules:
+    $ref: './openapi-plans-v3.json#/paths/~1api~1v3~1plans~1{planId}~1views~1computed~1rules'
+
+  /api/v3/plans/{planId}/views/computed/contributors:
+    $ref: './openapi-plans-v3.json#/paths/~1api~1v3~1plans~1{planId}~1views~1computed~1contributors'
+
 components:
   parameters:
     ObjectId:
