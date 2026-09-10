@@ -97,9 +97,10 @@ and [legacy HTTP enforcement](../evidence/qf34-plan-version-http.md) now pass fi
 independent reviews and combined Java1373. [Small v3 summaries](../evidence/qf34-plan-summary.md)
 and [body callbacks](../evidence/owned-body-callbacks.md) now pass combined Java1393.
 [Cleanup and transfer helpers](../evidence/owned-plan-transfer-foundation.md) now
-pass fixed independent review and combined Java1427. Next backend work is the
-shared-capacity v3 registry, owned small replies and versioned plan routes; export
-remains unavailable.
+pass fixed independent review and combined Java1427. The
+[v3 registry and closed replies](../evidence/v3-plan-transfer-registry.md) now pass
+fixed independent review and combined Java1448. Next backend work is the owned
+transport and versioned plan routes; export remains unavailable.
 
 The lead owns shared contracts and compatibility. Independent fixed-candidate
 review, actual RED/GREEN, targeted guard mutations and integrated verification

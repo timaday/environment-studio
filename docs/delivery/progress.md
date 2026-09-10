@@ -140,8 +140,16 @@ dd9f942ea9dbbad4a53d25bee537524e36cdb7398b8be343719c10adc28afcf2 over473a344 pas
 full Java1427 (324 core,7 parser,786 server,310 supervisor), zero failures/errors/
 skips, assembly/hostile launcher,10 September at02:05:48BST. All eight independent
 added cases are integrated. No route or readiness flag is enabled by these helpers.
-Next backend work is the shared-capacity v3 transfer registry, owned small replies
-and seven versioned creation/inspection/status routes. Actual client/content/review
+The [v3 registry and closed replies](../evidence/v3-plan-transfer-registry.md) now
+pass fixed independent review and full Java1448 (324 core,7 parser,807 server,310
+supervisor), zero failures/errors/skips, assembly/hostile launcher,10 September
+at02:23:10BST. Fixed10 manifest
+e5516c7e40e6456c3f0681417017623967a53ea10cbb43d9155dd82c3f25e200 overb2a5ba1
+includes all five independent new cases. An initial synthetic-session mutation
+survivor is covered by an added still-live-original-session control; both original
+and later results remain recorded. No v3 route or readiness flag is enabled here.
+Next backend work is the owned small-response transport and seven versioned
+creation/inspection/status routes. Actual client/content/review
 evidence and combined resources remain open. Frontend40/schema42 are still scoped
 to8b5843d; retained image047d1b0 predates these changes.
 No Q feedback GitHub publication is authorized. Existing MVP scope and completed

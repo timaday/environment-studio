@@ -18,6 +18,8 @@ import studio.environment.server.workspace.*;
 @Component
 public final class PlanRuntime {
     private final Optional<HostedPlanService> service;
+    private final V3PlanTransfers transfers=new V3PlanTransfers();
+    V3PlanTransfers transfers(){return transfers;}
     private final List<PlanDestinations.Display> destinations;
     private final BiPredicate<Owner,String> allowed;
     @Autowired
@@ -43,8 +45,13 @@ public final class PlanRuntime {
         if(!allowed.test(lease.owner(),command.destinationId())) throw new DestinationDenied();
         return service().create(lease,command.requestId(),command.definition(),command.bindingId(),command.destinationId());
     }
-    public void cleanup(SessionLedger.Lease lease) { service.ifPresent(value->value.invalidate(lease)); }
-    public boolean awaitingCleanupWork(SessionLedger.Lease lease) { return service.map(value->value.awaitingCleanupWork(lease)).orElse(false); }
+    public void cleanup(SessionLedger.Lease lease) {
+        boolean incomplete=false;
+        try {service.ifPresent(value->value.invalidate(lease));}catch(RuntimeException refusal){incomplete=true;}
+        try {transfers.invalidate(lease);}catch(RuntimeException refusal){incomplete=true;}
+        if(incomplete)throw new PlanRefusal(PlanRefusal.Code.CLEANUP_INCONCLUSIVE);
+    }
+    public boolean awaitingCleanupWork(SessionLedger.Lease lease) { return service.map(value->value.awaitingCleanupWork(lease)).orElse(false) || transfers.awaitingWork(lease); }
     static final class Unavailable extends RuntimeException { Unavailable(){super("PLAN_SERVICES_UNAVAILABLE",null,false,false);} }
     static final class DestinationDenied extends RuntimeException { DestinationDenied(){super("DESTINATION_DENIED",null,false,false);} }
 }

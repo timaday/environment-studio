@@ -35,6 +35,7 @@
 | Legacy plan route version enforcement | [plan-http-version-admission-v1.md](plan-http-version-admission-v1.md) |
 | Small v3 plan metadata | [plan-summary-v3.md](plan-summary-v3.md) |
 | Encoding authority and completion settlement | [plan-encoding-authority.md](plan-encoding-authority.md), [plan-transfer-completion.md](plan-transfer-completion.md) |
+| Bounded v3 transfer records and closed replies | [plan-transfers-v3.md](plan-transfers-v3.md), [plan-replies-v3.md](plan-replies-v3.md) |
 | HTTP | [api.md](api.md), [openapi.yaml](openapi.yaml) |
 | Deployment | [../../deploy/README.md](../../deploy/README.md) |
 
