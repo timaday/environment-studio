@@ -4,6 +4,13 @@ Updated: 10 September 2026. See [starter evidence](../evidence/starter-verificat
 and [D01a integration](../evidence/d01a-integration.md) for actual commands and
 results; the table below reports capability, not test count.
 
+The [nonvisual capture-to-draft candidate](../evidence/v3-profile-capture-state.md)
+loads complete physical mappings and separates value-free capture from exact
+draft save/replay. Independent review found retained mappings after terminal
+session failure; actual RED/GREEN and fixed review now accept the correction.
+Author221frontend/59schema/check/build pass. No new rendering or actual browser
+capture/save is claimed; session lifecycle integration remains required.
+
 The [Plans resume/inspection candidate](../evidence/v3-plan-inspection-ui.md)
 adds explicit v3 current lookup and consent-controlled Raw/Formatted Current/Target
 reads. Fixed non-author review accepted the reproduced clear-selection correction.
@@ -29,8 +36,8 @@ v2 journeys pass at their recorded source boundaries. Corrected upload designs
 are approved; concrete residual rendering exceptions await approval. This is
 implemented/reviewed candidate work, not accepted root integration or release.
 
-- Ready: Plans candidate handoff; nonvisual profile capture-to-draft state and
-  its actual owned-workspace test prerequisite, followed by approved rendering.
+- Ready: capture-state candidate handoff; reuse existing workflow fixtures for
+  the actual owned-workspace browser prerequisite, followed by approved rendering.
 - Awaiting another owner: remote41c8/e338/5d/bc6d verification; IDE2 native closure.
 - Blockers: rendered-exception approval, required combined integration/OCI and
   actual native/client/resource qualification before release availability.
