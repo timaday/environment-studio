@@ -197,9 +197,12 @@ class V3PlanHttpBoundaryTest {
 
     @Test void actualWrongOriginAndUnimplementedRoutesStayDenied() throws Exception {
         var client = login("mock-v3-closed-"+UUID.randomUUID()); String plan = create(client);
-        for (String suffix : List.of("profile-captures", "validations", "export")) {
-            assertEquals(403, client.request("POST", "/api/v3/plans/"+plan+"/"+suffix, "{}", true).status());
+        for (String suffix : List.of("profile-captures", "profile-previews", "validations")) {
+            var refused=client.request("POST", "/api/v3/plans/"+plan+"/"+suffix, "{}", true);
+            assertEquals(400,refused.status());
+            assertEquals("MALFORMED_BODY",JSON.readTree(refused.body()).get("code").asString());
         }
+        assertEquals(403,client.request("POST", "/api/v3/plans/"+plan+"/export", "{}", true).status());
         try (var socket = new java.net.Socket(java.net.InetAddress.getLoopbackAddress(), port)) {
             socket.setSoTimeout(3000);
             String request = "POST /api/v3/plans HTTP/1.1\r\nHost: localhost\r\nOrigin: http://foreign.invalid\r\nContent-Type: application/json\r\nContent-Length: 2\r\nConnection: close\r\n\r\n{}";

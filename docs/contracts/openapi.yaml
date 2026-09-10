@@ -295,6 +295,15 @@ paths:
   /api/v3/plans/{planId}/views/computed/contributors:
     $ref: './openapi-plans-v3.json#/paths/~1api~1v3~1plans~1{planId}~1views~1computed~1contributors'
 
+  /api/v3/plans/{planId}/profile-captures:
+    $ref: "./openapi-plans-v3.json#/paths/~1api~1v3~1plans~1{planId}~1profile-captures"
+
+  /api/v3/plans/{planId}/profile-previews:
+    $ref: "./openapi-plans-v3.json#/paths/~1api~1v3~1plans~1{planId}~1profile-previews"
+
+  /api/v3/plans/{planId}/validations:
+    $ref: "./openapi-plans-v3.json#/paths/~1api~1v3~1plans~1{planId}~1validations"
+
 components:
   parameters:
     ObjectId:

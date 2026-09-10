@@ -93,6 +93,11 @@ Release qualification remains open.
 The [definition capability correction](docs/evidence/definition-capability-projection.md)
 now preserves declared operations in v2/v3 save/current/history models, with
 independent source and snapshot compatibility checks.
+The [v3 profile workflow and paged validation](docs/evidence/v3-plan-workflow.md)
+now pass independent review, full Java1599 and frontend40/schema58. Actual HTTP
+cases exercise whole/partial reuse, a multi-record one-to-two change and complete
+validation paging with explicit test publication/observation ports. Browser and
+production qualification remain required.
 The [production JNI ownership contract](docs/evidence/privacy-jni-ownership-contract.md)
 now passes independent review; bridge implementation and complete native admission
 remain required.

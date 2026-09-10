@@ -117,7 +117,9 @@ independent review, full Java1549 and frontend40/schema55. The
 [three priority corrections](../evidence/continuation-p2-corrections.md) pass
 combined Java1563. The [computed HTTP integration](../evidence/v3-plan-computed-candidate.md)
 now passes independent Java50/schema57 review and combined Java1579/frontend40/schema57,
-preserving all three corrections. Capture/reuse and paged validation are next. The committed
+preserving all three corrections. [Capture/reuse and paged validation](../evidence/v3-plan-workflow.md)
+now pass fixed independent review and full Java1599/frontend40/schema58. The typed
+v3 browser client is the next application slice. The committed
 [c3b891a image](../evidence/v3-plan-artifacts.md) passes its own Java1579/frontend40/schema57
 build and protected smoke. The [production JNI ownership contract](../evidence/privacy-jni-ownership-contract.md)
 passes independent review and is ready for implementation. Export remains unavailable.

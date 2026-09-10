@@ -2008,6 +2008,279 @@
           }
         }
       }
+    },
+    "/api/v3/plans/{planId}/profile-captures": {
+      "post": {
+        "operationId": "capturePlanProfileV3",
+        "summary": "Capture verified original physical-only schema3 profile",
+        "description": "See hosted-plan-workflow-v3.md. Original V3 owner, full view admission and the shared semantic transfer precede input; original authority and full proofs remain checked through owned output (128 MiB, original 30 seconds). The closed capture body permits 64 MiB under the original 30-second clock and requires a complete physical mapping of the original observation, at most 20000 entries, with explicit value-free slot IDs and labels. Capture returns physical-only schema 3 JSON source, at most 1 MiB UTF8, with its exact definition reference. Capture does not save or publish a profile; use the existing workspace draft/history APIs explicitly.",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "planId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Uuid"
+            }
+          },
+          {
+            "name": "X-CSRF-TOKEN",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "../../schemas/plan-workflow-v3.schema.json#/$defs/captureRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Owned complete result or explicit computed-rule page; no export authority",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "../../schemas/plan-workflow-v3.schema.json#/$defs/captureResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error500"
+          }
+        }
+      }
+    },
+    "/api/v3/plans/{planId}/profile-previews": {
+      "post": {
+        "operationId": "previewPlanProfileV3",
+        "summary": "Inspect full qualified v3 profile closure and affected derivations",
+        "description": "See hosted-plan-workflow-v3.md. Original V3 owner, full view admission and the shared semantic transfer precede input; original authority and full proofs remain checked through owned output (128 MiB, original 30 seconds). The closed preview body permits 64 MiB under the original 30-second clock. Whole or selected physical roots yield complete freshly qualified versioned dependencies and pins, plus all affected derivations. Page sections are included, dependencies, relations or conflicts; offset 0..50000 and limit 1..100. All pages share the complete preview digest and pins. Apply explicit conflict, value and placement choices through the existing compose-profile command; donor values are never imported.",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "planId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Uuid"
+            }
+          },
+          {
+            "name": "X-CSRF-TOKEN",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "../../schemas/plan-workflow-v3.schema.json#/$defs/previewRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Owned complete result or explicit computed-rule page; no export authority",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "../../schemas/plan-workflow-v3.schema.json#/$defs/previewResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error500"
+          }
+        }
+      }
+    },
+    "/api/v3/plans/{planId}/validations": {
+      "post": {
+        "operationId": "validatePlanV3",
+        "summary": "Evaluate complete v3 validation and inspect fingerprint-bound rule pages",
+        "description": "See hosted-plan-workflow-v3.md. Original V3 owner, full view admission and the shared semantic transfer precede input; original authority and full proofs remain checked through owned output (128 MiB, original 30 seconds). The closed validation body permits 16 KiB under the original 10-second clock. A revision-only request returns complete checks, physical rules, target completeness and nullable computed-rule count without the full computed-rule array. Computed-rule page requests require the exact validation inputFingerprint, offset 0..2147483647 and limit 1..100. Fingerprint mismatch refuses CONFLICT; missing target refuses INCOMPLETE_TARGET. An oversized page refuses RESOURCE_LIMIT; request fewer rows at the same offset and fingerprint. Counts remain complete and cardinalities are exact decimal strings. Export remains unavailable.",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "planId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Uuid"
+            }
+          },
+          {
+            "name": "X-CSRF-TOKEN",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "../../schemas/plan-workflow-v3.schema.json#/$defs/validationRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Owned complete result or explicit computed-rule page; no export authority",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "../../schemas/plan-workflow-v3.schema.json#/$defs/validationResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error500"
+          }
+        }
+      }
     }
   },
   "components": {

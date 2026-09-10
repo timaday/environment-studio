@@ -12,6 +12,10 @@
     <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-test</artifactId><scope>test</scope></dependency>
     <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-oauth2-client</artifactId></dependency>
     <dependency><groupId>org.springframework.security</groupId><artifactId>spring-security-test</artifactId><scope>test</scope></dependency>
+    <!-- Networknt 3.0.7's Unicode ECMA-262 engine for canonical wire-schema tests only. -->
+    <dependency><groupId>org.graalvm.js</groupId><artifactId>js-language</artifactId><version>25.0.1</version><scope>test</scope></dependency>
+    <dependency><groupId>org.graalvm.truffle</groupId><artifactId>truffle-runtime</artifactId><version>25.0.1</version><scope>test</scope></dependency>
+    <dependency><groupId>org.graalvm.sdk</groupId><artifactId>graal-sdk</artifactId><version>25.0.1</version><scope>test</scope></dependency>
     <dependency>
       <groupId>com.networknt</groupId><artifactId>json-schema-validator</artifactId><version>3.0.7</version>
       <exclusions>

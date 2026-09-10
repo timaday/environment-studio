@@ -12,7 +12,11 @@ actual RED/GREEN and targeted guard mutations pass. Combined Java1563 (330core,
 The exact source was verified in an isolated archive after concurrent checkout
 build artifacts caused two recorded failures. Computed HTTP integration now also
 passes its fixed reviews and combined Java1579/frontend40/schema57, preserving
-all three corrections. Next are capture/reuse and paged validation APIs.
+all three corrections. [Capture/reuse and paged validation APIs](../evidence/v3-plan-workflow.md)
+are now integrated after fixed independent review; full Java1599 and
+frontend40/schema58 pass. Real HTTP tests cover whole/partial reuse, exact
+multi-record one-to-two changes and large-page refusal/recovery using explicit
+test publication/observation ports. The typed v3 browser client is in progress.
 Operator UX, native/export/readback and release qualification
 remain required.
 
@@ -28,7 +32,9 @@ its separate supervisor ZIP and member checksums pass. This is local development
 proof; all eleven release capability gates remain NOT_RUN. The
 [production JNI ownership contract](../evidence/privacy-jni-ownership-contract.md)
 passes independent fixed review, with explicit no-window evidence, finite native
-retention and separate launch/JVM cleanup. Its implementation is still pending.
+retention and separate launch/JVM cleanup. Its implementation candidate is frozen
+for independent review and transfer to the second IDE; it is not integrated or
+release-qualified.
 
 The reviewed [QF-0001/0002 mapping extension](../evidence/qf12-child-property.md)
 is now integrated under [child-property-v1](../contracts/child-property-v1.md).
