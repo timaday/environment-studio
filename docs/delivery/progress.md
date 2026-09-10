@@ -21,8 +21,22 @@ unfetchable test assignment is used. V3 review/content-policy candidate
 `32499697b263c63e22ad928fb9616928e9645938` is now locally implemented and source-reviewed:
 one proof-invalidation P2 was reproduced/corrected and independently verified;
 99 focused Java checks and ten compiled guard mutations pass. It remains
-unpublished/unintegrated, with full Maven/OCI verification pending. Lead continues
-its typed browser API client; two writers and remote read-only review remain.
+unpublished/unintegrated, with full Maven/OCI verification pending. Its
+typed review browser client is frozen as
+`6e3acf6ec2fbc60256feb13ada90ec053dccad9f` on the combined client/server review base:
+136 frontend/59 schema/check/build and seven compiled guard mutations pass;
+non-author source review found no confirmed defect. It is not root-integrated.
+IDE2's frozen26-file symbol/version WIP3 has a bounded non-author source review
+with no confirmed finding; remaining closure work stays exclusively with IDE2.
+Two writers and remote read-only review remain.
+
+The remote full Maven gate on exact30446e2 failed six server HTTP assertions
+with429 after core330/parser7 passed and server947 executed; supervisor was skipped.
+This is an actual gate failure under investigation, not superseded by the earlier
+local1619 PASS. The existing remote reviewer is isolating response receipt versus
+actual semantic-record settlement. Source analysis supports a sequential-test
+barrier hypothesis but does not prove all six causes. No lifetime guard is weakened,
+no duplicate full test campaign or G08 run started, and root owns any correction.
 
 Two-IDE continuation: [native handoff and exact ownership](ide2-native-handoff.md).
 Lead is the sole IDE1 application writer; previous writing subagents are stopped.
