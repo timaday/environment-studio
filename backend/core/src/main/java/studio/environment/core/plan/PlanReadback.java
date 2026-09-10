@@ -30,9 +30,15 @@ public final class PlanReadback {
         public Expected {
             try {
                 require((modelVersion == 2 || modelVersion == 3) && sha(logicalDigest) && sha(bindingDigest) && destination != null);
+                require(documents != null && !documents.isEmpty() && documents.size() <= 128);
+                var snapshot = new ArrayList<Document>(128);
+                for (var document : documents) {
+                    require(snapshot.size() < 128);
+                    snapshot.add(document);
+                }
+                documents = List.copyOf(snapshot);
                 inventory(documents,()->false);
-                documents = List.copyOf(documents);
-            } catch (Invalid invalid) { throw expectation(); }
+            } catch (Invalid | NullPointerException | ConcurrentModificationException invalid) { throw expectation(); }
         }
         @Override public String toString() { return "ReadbackExpected[redacted]"; }
     }

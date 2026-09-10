@@ -1,5 +1,26 @@
 # Handoff and capability status
 
+Latest isolated readback correction: READBACK-QA-001 from remote candidate5d72415
+is accepted and assigned only to the lead. The bounded detached snapshot is now
+validated before a definite comparison; actual coordinated
+mutation RED/GREEN and affected core353 pass. See
+[correction evidence](../evidence/readback-snapshot-correction.md). Fixed non-author review found no confirmed defect and three compiled faults were
+detected after an 18-test control. Corrected-candidate publication and remote
+verification remain pending.
+This branch starts at exact5d; it contains no later frontend or native candidate.
+
+- Ready: publish the concrete corrected candidate; continue profile-capture prerequisites
+  on the separate de0ce25 application stack.
+- Awaiting another owner: remote bc6d Definitions review/browser18443/18444;
+  native IDE2 OTHER944 attribution; publication of completed UI candidates.
+- Blockers: pending Definitions rendering approvals and exact combined/release
+  qualification. Supplied original Midnight references are accessible externally.
+
+Remote41c8 report5625450682 verifies BUILD-QA-001 and its exact OCI/Maven1698,
+G02 145/59 and smoke/artifacts. Remotee338 report5625529048 passes G02 153/59
+and its assigned publication-client probes without a new confirmed finding.
+These exact-candidate results do not establish combined-root or release readiness.
+
 Updated: 10 September 2026. See [starter evidence](../evidence/starter-verification.md)
 and [D01a integration](../evidence/d01a-integration.md) for actual commands and
 results; the table below reports capability, not test count.

@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.*;
+import java.util.concurrent.*;
 import studio.environment.core.observation.ObservationPort.Cancellation;
 import studio.environment.core.observation.ObservationResult;
 import studio.environment.core.observation.ObservationResult.*;
@@ -141,6 +142,79 @@ class PlanReadbackTest {
         assertThrows(IllegalArgumentException.class,()->new PlanReadback.Expected(3,"a".repeat(64),"b".repeat(64),null,docs()));
         assertThrows(IllegalArgumentException.class,()->new PlanReadback.Expected(3,"a".repeat(64),"b".repeat(64),destination(),null));
         assertThrows(IllegalArgumentException.class,()->new PlanReadback.Destination("oracle","mock","invented.invalid",1521,"db","tls","v1",destination().physicalIdentity()));
+    }
+
+    @Test void concurrentCallerReplacementCannotInstallAnUnvalidatedSnapshot() throws Exception {
+        var originals=docs();
+        var changed=doc("mock-a","1","<independently-invented-change/>");
+        var malformed=new Document(changed.documentId(),changed.key(),changed.xml(),
+                changed.utf8Bytes(),changed.characters(),originals.getFirst().sourceDigest());
+        var backing=new ArrayList<>(originals);
+        var reachedSecond=new CountDownLatch(1);
+        var replaced=new CountDownLatch(1);
+        // Observe scheduling only: each get returns the ordinary backing-list entry.
+        var caller=new AbstractList<Document>() {
+            public int size() { return backing.size(); }
+            public Document get(int index) {
+                if(index==1) {
+                    reachedSecond.countDown();
+                    try { assertTrue(replaced.await(5,TimeUnit.SECONDS),"caller mutation timed out"); }
+                    catch(InterruptedException interrupted) { Thread.currentThread().interrupt();throw new AssertionError(interrupted); }
+                }
+                return backing.get(index);
+            }
+        };
+        try(var executor=Executors.newSingleThreadExecutor()) {
+            var mutation=executor.submit(()->{
+                try { assertTrue(reachedSecond.await(5,TimeUnit.SECONDS),"second entry was not read"); }
+                catch(InterruptedException interrupted) { Thread.currentThread().interrupt();throw new AssertionError(interrupted); }
+                backing.set(0,malformed);
+                replaced.countDown();
+            });
+            try {
+                var target=new PlanReadback.Expected(3,"a".repeat(64),"b".repeat(64),destination(),caller);
+                mutation.get(5,TimeUnit.SECONDS);
+                assertEquals(originals,target.documents(),"retain the validated original snapshot");
+                assertEquals(MATCHES,PlanReadback.compare(target,observation(originals,evidence()),()->false));
+                assertEquals(DIFFERS,PlanReadback.compare(target,observation(List.of(changed,originals.getLast()),evidence()),()->false));
+            } finally { reachedSecond.countDown();replaced.countDown(); }
+        }
+    }
+
+    @Test void nullEntriesAndDetectedConcurrentStructureChangesHaveOnlySafeDiagnostics() {
+        var withNull=new ArrayList<>(docs());withNull.set(0,null);
+        var changedWhileReading=new AbstractList<Document>() {
+            public int size() { return 2; }
+            public Document get(int index) { throw new ConcurrentModificationException("invented caller detail"); }
+        };
+        for(var input:List.of(withNull,changedWhileReading)) {
+            var error=assertThrows(IllegalArgumentException.class,()->new PlanReadback.Expected(
+                    3,"a".repeat(64),"b".repeat(64),destination(),input));
+            assertEquals("INVALID_READBACK_EXPECTATION",error.getMessage());
+            assertNull(error.getCause());
+        }
+    }
+
+    @Test void snapshotCopyRemainsBoundedWhenCallerInventoryGrows() {
+        var reads=new java.util.concurrent.atomic.AtomicInteger();
+        var growing=new AbstractList<Document>() {
+            public int size() { return 1; }
+            public Document get(int index) { throw new AssertionError("use the bounded inventory stream"); }
+            public Iterator<Document> iterator() {
+                return new Iterator<>() {
+                    public boolean hasNext() { return true; }
+                    public Document next() {
+                        int count=reads.incrementAndGet();
+                        assertTrue(count<=129,"copy must stop at the first excessive entry");
+                        return doc("mock-"+count,""+count,"<invented/>");
+                    }
+                };
+            }
+        };
+        var error=assertThrows(IllegalArgumentException.class,()->new PlanReadback.Expected(
+                3,"a".repeat(64),"b".repeat(64),destination(),growing));
+        assertEquals("INVALID_READBACK_EXPECTATION",error.getMessage());
+        assertEquals(129,reads.get());
     }
 
     @Test void bothModelVersionsAndOracleIdentityUseExactWitnesses() {

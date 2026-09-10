@@ -24,7 +24,11 @@ Document IDs use the native lowercase ID grammar (1–64 ASCII characters).
 Destination text fields are nonempty scalar/control-free strings, at most 256
 code points (host 253); ports are 1–65535, physical identity follows the existing
 closed engine-specific observation shape. Expected inputs are detached and immutable; their toString omits content/identity.
-Malformed expected inputs throw only INVALID_READBACK_EXPECTATION.
+Take a bounded detached document snapshot before validating its entries; validate
+exactly the inventory retained by Expected. Concurrent caller changes must never
+replace an already-validated entry in the retained snapshot. A concurrent structural
+change detected while copying refuses the expectation, without exposing collection
+diagnostics. Malformed expected inputs throw only INVALID_READBACK_EXPECTATION.
 
 One comparison takes Expected, an ObservationResult and the original cancellation predicate.
 Return only Matches, Differs or Unknown: no raw values, keys, difference excerpts
