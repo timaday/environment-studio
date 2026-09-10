@@ -81,10 +81,12 @@ APT metadata and official archives. Both slices have fixed non-author source
 reviews without blocking findings; G00/11Python pass. No JSX/backend/native
 implementation or availability change. The build correction has no install/G08
 GREEN yet. Issue9 handoff5622377278 prepares exact-delta review and G00/G02/G08
-without repeating unrelated completed probes. Its push was rejected by automatic
-approval policy (approval required, AskForApproval=Never); user publication of
-this new branch is pending. Neither the reviewed client nor pin refresh is accepted
-root integration or release-qualified.
+without repeating unrelated completed probes. The user published this new branch
+after the agent push policy rejection. Lead remote refs/fetch confirm exact41c8c3e,
+tree882d76f91fd566aa13d7bbfa05b7c3f0fc8e19f3. Queue5622484836 activates the existing
+reviewer's assignment, with the full source SHA required for image labels.
+Neither the reviewed client nor pin refresh is accepted root integration or
+release-qualified; corrected package/build/smoke evidence remains pending.
 
 IDE2 exclusively owns the preserved native closure WIP. Frozen symbol/version
 WIP3 and vDSO WIP4 have bounded non-author source reviews with no confirmed
