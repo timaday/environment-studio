@@ -75,7 +75,11 @@ independent HTTP review, full Java1522 and frontend40/schema49 pass.
 [V3 document and entity views](docs/evidence/v3-plan-physical-views.md) now pass
 independent HTTP review, full Java1531 and frontend40/schema51. Returned physical
 references drive identity/value edits; secret masking and original transfer ownership
-are preserved. Structural/binding views are next; actual compiler publication remains incomplete.
+are preserved. [V3 structural and binding views](docs/evidence/v3-plan-structural-views.md)
+now pass independent HTTP review, full Java1539 and frontend40/schema53. Returned
+coordinates/references drive creation, removal and reference-preserving identity
+edits with distinct binding states. Document/location routes are next; actual
+compiler publication remains incomplete.
 The exact `047d1b0` [local image](docs/evidence/shared-validation-artifacts.md)
 repeats Java1320 and passes protected startup/workspace smoke; release qualification
 remains open.

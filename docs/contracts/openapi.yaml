@@ -259,6 +259,21 @@ paths:
   /api/v3/plans/{planId}/views/entities:
     $ref: './openapi-plans-v3.json#/paths/~1api~1v3~1plans~1{planId}~1views~1entities'
 
+  /api/v3/plans/{planId}/views/relations:
+    $ref: './openapi-plans-v3.json#/paths/~1api~1v3~1plans~1{planId}~1views~1relations'
+
+  /api/v3/plans/{planId}/views/draft:
+    $ref: './openapi-plans-v3.json#/paths/~1api~1v3~1plans~1{planId}~1views~1draft'
+
+  /api/v3/plans/{planId}/views/containment:
+    $ref: './openapi-plans-v3.json#/paths/~1api~1v3~1plans~1{planId}~1views~1containment'
+
+  /api/v3/plans/{planId}/views/placements:
+    $ref: './openapi-plans-v3.json#/paths/~1api~1v3~1plans~1{planId}~1views~1placements'
+
+  /api/v3/plans/{planId}/views/bindings:
+    $ref: './openapi-plans-v3.json#/paths/~1api~1v3~1plans~1{planId}~1views~1bindings'
+
 components:
   parameters:
     ObjectId:

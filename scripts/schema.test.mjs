@@ -634,9 +634,9 @@ test("v3 small replies preserve common v1 revision and optional-field wire contr
   assert.equal(operation({ ...status, installedRevision: null }), false);
   assert.equal(operation({ ...status, cleanup: "complete-anyway" }), false);
 });
-test("v3 exposes exactly eleven authenticated routes and documents early empty controller refusals", () => {
+test("v3 exposes exactly sixteen authenticated routes and documents early empty controller refusals", () => {
   const paths = ["/api/v3/plans", "/api/v3/plans/current", "/api/v3/plans/{planId}", "/api/v3/plans/{planId}/inspections",
-    "/api/v3/operations/{operationId}/credentials", "/api/v3/operations/{operationId}", "/api/v3/operations/{operationId}/cancel", "/api/v3/plans/{planId}/commands", "/api/v3/plans/{planId}/materializations", "/api/v3/plans/{planId}/views/documents", "/api/v3/plans/{planId}/views/entities"];
+    "/api/v3/operations/{operationId}/credentials", "/api/v3/operations/{operationId}", "/api/v3/operations/{operationId}/cancel", "/api/v3/plans/{planId}/commands", "/api/v3/plans/{planId}/materializations", "/api/v3/plans/{planId}/views/documents", "/api/v3/plans/{planId}/views/entities", "/api/v3/plans/{planId}/views/relations", "/api/v3/plans/{planId}/views/draft", "/api/v3/plans/{planId}/views/containment", "/api/v3/plans/{planId}/views/placements", "/api/v3/plans/{planId}/views/bindings"];
   assert.deepEqual(Object.keys(planV3Api.paths).sort(), paths.sort());
   for (const item of Object.values(planV3Api.paths)) for (const [method, route] of Object.entries(item)) {
     assert.deepEqual(route.security, [{ sessionCookie: [] }]);
@@ -756,4 +756,45 @@ test("physical view schemas keep unavailable inventory, declared masking and clo
   for (const value of [{ ...body, side: "computed" }, { ...body, offset: 50001 }, { ...body, limit: 101 },
     { ...body, revealSecrets: true }, { ...body, modelVersion: 3 }, { ...body, completeDocumentDisclosure: true }, { ...body, filter: "caller" }])
     assert.equal(request(value), false);
+});
+
+
+test("v3 structural routes retain exact closed physical requests and responses", () => {
+  const v3 = read("../docs/contracts/openapi-plans-v3.json"), v1 = read("../docs/contracts/openapi-plans-v1.json");
+  const aggregate = readFileSync(new URL("../docs/contracts/openapi.yaml", import.meta.url), "utf8");
+  for (const suffix of ["relations", "draft", "containment", "placements", "bindings"]) {
+    const path = `/api/v3/plans/{planId}/views/${suffix}`, route = v3.paths[path];
+    assert.ok(route, path); assert.deepEqual(Object.keys(route), ["post"]);
+    const old = v1.paths[path.replace("/api/v3/", "/api/v1/")].post;
+    assert.deepEqual(route.post.requestBody, old.requestBody);
+    assert.deepEqual(route.post.parameters, old.parameters);
+    assert.deepEqual(route.post.responses["200"], old.responses["200"]);
+    assert.deepEqual(route.post.security, old.security);
+    assert.ok(aggregate.includes(`  ${path}:`));
+  }
+});
+
+test("structural schemas keep binding state and explicit draft intent closed", () => {
+  const schema = read("../schemas/plan-view-v1.schema.json");
+  const validate = name => new Ajv2020({ allErrors: true, strict: true }).addSchema(read("../schemas/plan-command-v1.schema.json")).addSchema(schema).compile({ $ref: `${schema.$id}#/$defs/${name}` });
+  const binding = validate("bindingItem");
+  const item = { fieldId: "tone", token: "[[value:00000000-0000-4000-8000-000000000091:tone]]", current: { state: "value", text: "" }, target: { state: "unresolved" }, change: "unresolved", currentLocations: { state: "complete", total: 3 }, targetLocations: { state: "unavailable", code: "INCOMPLETE_TARGET" } };
+  assert.equal(binding(item), true, JSON.stringify(binding.errors));
+  for (const state of ["masked", "absent", "unresolved", "unavailable"]) {
+    assert.equal(binding({ ...item, current: { state } }), true);
+    assert.equal(binding({ ...item, current: { state, text: "must-not-appear" } }), false);
+  }
+  assert.equal(binding({ ...item, current: { state: "value" } }), false);
+  assert.equal(binding({ ...item, currentLocations: { state: "masked" } }), false);
+  assert.equal(binding({ ...item, targetLocations: { state: "unavailable", code: "UNKNOWN", total: 0 } }), false);
+  const request = validate("bindingsRequest"), ref = { kind: "existing", handle: "00000000-0000-4000-8000-000000000091" };
+  assert.equal(request({ revision: "2", entity: ref, offset: 256, limit: 100 }), true);
+  assert.equal(request({ revision: "2", entity: ref, offset: 257, limit: 100 }), false);
+  assert.equal(request({ revision: "2", entity: ref, offset: 0, limit: 1, reveal: true }), false);
+  const draft = validate("draftItem");
+  const removed = { entity: ref, disposition: "remove", fields: [], references: [], placements: [] };
+  assert.equal(draft(removed), true);
+  assert.equal(draft({ ...removed, fields: [{ fieldId: "tone", kind: "entered", masked: false, value: "caller" }] }), false);
+  assert.equal(draft({ ...removed, entity: { kind: "fresh", slotId: "replacement", typeId: "item" } }), false);
+  assert.equal(draft({ ...removed, disposition: "retain", fields: [{ fieldId: "tone", kind: "unresolved", masked: false, value: "caller" }] }), false);
 });

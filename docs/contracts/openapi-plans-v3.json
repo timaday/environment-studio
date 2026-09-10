@@ -3,7 +3,7 @@
   "info": {
     "title": "Environment Studio hosted v3 plans",
     "version": "0.3.0",
-    "description": "Eleven fixed-v3 routes including semantic commands, explicit materialization, document inventory and physical entity pages. Actual compiler publication remains incomplete; test publication witnesses do not qualify runtime availability. See hosted-plan-http-v3.md, hosted-plan-commands-v3.md, hosted-plan-materialization-v3.md and hosted-plan-physical-views-v3.md for original session authority, shared admission, bounded transfers and early no-body controller refusals. No export or readback endpoint is provided."
+    "description": "Sixteen fixed-v3 routes including semantic commands, explicit materialization, document inventory, physical entities, structural decisions and binding pages. Actual compiler publication remains incomplete; test publication witnesses do not qualify runtime availability. See hosted-plan-http-v3.md, hosted-plan-commands-v3.md, hosted-plan-materialization-v3.md hosted-plan-physical-views-v3.md and hosted-plan-structural-views-v3.md for original session authority, shared admission, bounded transfers and early no-body controller refusals. No export or readback endpoint is provided."
   },
   "paths": {
     "/api/v3/plans": {
@@ -880,6 +880,461 @@
               "application/json": {
                 "schema": {
                   "$ref": "../../schemas/plan-view-v1.schema.json#/$defs/entitiesResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error500"
+          }
+        }
+      }
+    },
+    "/api/v3/plans/{planId}/views/relations": {
+      "post": {
+        "operationId": "v3ListPlanRelations",
+        "summary": "Revision-bound physical relations page",
+        "description": "See hosted-plan-structural-views-v3.md. Original lease, Host/Origin/CSRF and fixed V3 ownership precede full view scratch and single semantic HTTP record admission and body access. Original pinned ViewAdmission executes through full re-verification, rendering, encoding, writes, flush and final verification, including pinned errors. Closed small request: 16 KiB/depth 4/128 tokens/original 10 seconds. Full response: 128 MiB and one original 30-second encoding/output/flush deadline. Exact physical shapes preserve complete totals, stable references and masking. No revision increment, replay ID, computed rows, disclosure override or export authority.",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "planId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Uuid"
+            }
+          },
+          {
+            "name": "X-CSRF-TOKEN",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "../../schemas/plan-view-v1.schema.json#/$defs/entitiesRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Bounded owned revision result; no-store; shape is not export authority",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "../../schemas/plan-view-v1.schema.json#/$defs/relationsResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error500"
+          }
+        }
+      }
+    },
+    "/api/v3/plans/{planId}/views/draft": {
+      "post": {
+        "operationId": "v3ListPlanDraft",
+        "summary": "Revision-bound physical draft page",
+        "description": "See hosted-plan-structural-views-v3.md. Original lease, Host/Origin/CSRF and fixed V3 ownership precede full view scratch and single semantic HTTP record admission and body access. Original pinned ViewAdmission executes through full re-verification, rendering, encoding, writes, flush and final verification, including pinned errors. Closed small request: 16 KiB/depth 4/128 tokens/original 10 seconds. Full response: 128 MiB and one original 30-second encoding/output/flush deadline. Exact physical shapes preserve complete totals, stable references and masking. No revision increment, replay ID, computed rows, disclosure override or export authority.",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "planId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Uuid"
+            }
+          },
+          {
+            "name": "X-CSRF-TOKEN",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "../../schemas/plan-view-v1.schema.json#/$defs/draftRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Bounded owned revision result; no-store; shape is not export authority",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "../../schemas/plan-view-v1.schema.json#/$defs/draftResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error500"
+          }
+        }
+      }
+    },
+    "/api/v3/plans/{planId}/views/containment": {
+      "post": {
+        "operationId": "v3ListPlanContainment",
+        "summary": "Revision-bound physical containment page",
+        "description": "See hosted-plan-structural-views-v3.md. Original lease, Host/Origin/CSRF and fixed V3 ownership precede full view scratch and single semantic HTTP record admission and body access. Original pinned ViewAdmission executes through full re-verification, rendering, encoding, writes, flush and final verification, including pinned errors. Closed small request: 16 KiB/depth 4/128 tokens/original 10 seconds. Full response: 128 MiB and one original 30-second encoding/output/flush deadline. Exact physical shapes preserve complete totals, stable references and masking. No revision increment, replay ID, computed rows, disclosure override or export authority.",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "planId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Uuid"
+            }
+          },
+          {
+            "name": "X-CSRF-TOKEN",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "../../schemas/plan-view-v1.schema.json#/$defs/draftRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Bounded owned revision result; no-store; shape is not export authority",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "../../schemas/plan-view-v1.schema.json#/$defs/containmentResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error500"
+          }
+        }
+      }
+    },
+    "/api/v3/plans/{planId}/views/placements": {
+      "post": {
+        "operationId": "v3ListPlanPlacements",
+        "summary": "Revision-bound physical placements page",
+        "description": "See hosted-plan-structural-views-v3.md. Original lease, Host/Origin/CSRF and fixed V3 ownership precede full view scratch and single semantic HTTP record admission and body access. Original pinned ViewAdmission executes through full re-verification, rendering, encoding, writes, flush and final verification, including pinned errors. Closed small request: 16 KiB/depth 4/128 tokens/original 10 seconds. Full response: 128 MiB and one original 30-second encoding/output/flush deadline. Exact physical shapes preserve complete totals, stable references and masking. No revision increment, replay ID, computed rows, disclosure override or export authority.",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "planId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Uuid"
+            }
+          },
+          {
+            "name": "X-CSRF-TOKEN",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "../../schemas/plan-view-v1.schema.json#/$defs/placementsRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Bounded owned revision result; no-store; shape is not export authority",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "../../schemas/plan-view-v1.schema.json#/$defs/placementsResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error500"
+          }
+        }
+      }
+    },
+    "/api/v3/plans/{planId}/views/bindings": {
+      "post": {
+        "operationId": "v3ListPlanBindings",
+        "summary": "Revision-bound physical bindings page",
+        "description": "See hosted-plan-structural-views-v3.md. Original lease, Host/Origin/CSRF and fixed V3 ownership precede full view scratch and single semantic HTTP record admission and body access. Original pinned ViewAdmission executes through full re-verification, rendering, encoding, writes, flush and final verification, including pinned errors. Closed small request: 16 KiB/depth 4/128 tokens/original 10 seconds. Full response: 128 MiB and one original 30-second encoding/output/flush deadline. Exact physical shapes preserve complete totals, stable references and masking. No revision increment, replay ID, computed rows, disclosure override or export authority.",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "planId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Uuid"
+            }
+          },
+          {
+            "name": "X-CSRF-TOKEN",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "../../schemas/plan-view-v1.schema.json#/$defs/bindingsRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Bounded owned revision result; no-store; shape is not export authority",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "../../schemas/plan-view-v1.schema.json#/$defs/bindingsResponse"
                 }
               }
             }

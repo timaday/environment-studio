@@ -195,8 +195,22 @@ overf9329cd passes full Java1531 (324 core,7 parser,890 server,310 supervisor), 
 failures/errors/skips, assembly/hostile launcher,10 September at03:59:23BST.
 Fresh frontend40/schema51, checking and build pass on the exact OpenAPI candidate.
 UNKNOWN/unreadable definitions remain refused during qualification; no actual HTTP
-masking proof is claimed for those unsupported definitions. Structural/binding
-pages are next. Actual publication/runtime qualification remains incomplete.
+masking proof is claimed for those unsupported definitions. Actual publication/
+runtime qualification remains incomplete.
+
+The [v3 structural/binding routes](../evidence/v3-plan-structural-views.md) now pass
+fixed independent review and actual HTTP/OIDC workflow checks. Explicit unresolved
+repair, reference-preserving identity change, returned-coordinate Fresh creation,
+removal, stable tokens, full occurrence counts and concatenated page equality are
+verified. Field-only edits still require an existing draft selection; an unselected
+entity refuses without implicit defaults. Fixed12 manifest
+6025d4ce1f4fee8ebd96eee62815a9fa0380f2d6210560f3bade928dc785e00f overe6f079a passes
+full Java1539 (324 core,7 parser,898 server,310 supervisor), zero failures/errors/
+skips, assembly/hostile launcher,10 September at04:09:20BST. Fresh frontend40/
+schema53/check/build pass. Current HTTP containment examples cover empty explicit
+decisions; lower-level movement evidence is separate. Document/location routes
+are next, followed by computed views/capture/reuse/validation. No current browser,
+image, runtime or release qualification is implied.
 
 The later independent review's confirmed
 [retained-origin consistency defect](../evidence/derived-retained-origin-fix.md)

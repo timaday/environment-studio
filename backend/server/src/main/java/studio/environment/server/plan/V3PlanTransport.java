@@ -35,7 +35,10 @@ final class V3PlanTransport {
         start(lease,request,response,operation,status,BodyMode.SEMANTIC,resource,cancelled,body->action.apply(body.orElseThrow()),Optional.empty());
     }
     enum PhysicalRoute {
-        DOCUMENTS(PlanViewRequest.Route.DOCUMENTS),ENTITIES(PlanViewRequest.Route.ENTITIES);
+        DOCUMENTS(PlanViewRequest.Route.DOCUMENTS),ENTITIES(PlanViewRequest.Route.ENTITIES),
+        RELATIONS(PlanViewRequest.Route.RELATIONS),DRAFT(PlanViewRequest.Route.DRAFT),
+        CONTAINMENT(PlanViewRequest.Route.CONTAINMENT),PLACEMENTS(PlanViewRequest.Route.PLACEMENTS),
+        BINDINGS(PlanViewRequest.Route.BINDINGS);
         final PlanViewRequest.Route request;
         PhysicalRoute(PlanViewRequest.Route request){this.request=request;}
     }
@@ -74,6 +77,26 @@ final class V3PlanTransport {
                 case ENTITIES -> {
                     var page=(PlanViewRequest.GraphPage)request;
                     yield V3PlanPhysicalViews.entities(admission,page.side()==PlanViewRequest.Side.TARGET,page.offset(),page.limit());
+                }
+                case RELATIONS -> {
+                    var page=(PlanViewRequest.GraphPage)request;
+                    yield V3PlanPhysicalViews.relations(admission,page.side()==PlanViewRequest.Side.TARGET,page.offset(),page.limit());
+                }
+                case DRAFT -> {
+                    var page=(PlanViewRequest.DraftPage)request;
+                    yield V3PlanPhysicalViews.draft(admission,page.offset(),page.limit());
+                }
+                case CONTAINMENT -> {
+                    var page=(PlanViewRequest.DraftPage)request;
+                    yield V3PlanPhysicalViews.containment(admission,page.offset(),page.limit());
+                }
+                case PLACEMENTS -> {
+                    var page=(PlanViewRequest.Placements)request;
+                    yield V3PlanPhysicalViews.placements(admission,page.documentId(),page.projectionId(),page.offset(),page.limit());
+                }
+                case BINDINGS -> {
+                    var page=(PlanViewRequest.Bindings)request;
+                    yield V3PlanPhysicalViews.bindings(admission,page.entity(),page.offset(),page.limit());
                 }
             };
             return new V3PlanReply.Physical(planId,result);

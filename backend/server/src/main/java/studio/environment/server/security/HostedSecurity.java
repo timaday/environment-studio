@@ -85,6 +85,7 @@ public class HostedSecurity {
                 .requestMatchers(HttpMethod.GET, "/api/v3/plans/current", "/api/v3/plans/{planId}", "/api/v3/operations/{operationId}").authenticated()
                 .requestMatchers(HttpMethod.POST, "/api/v3/plans", "/api/v3/plans/{planId}/inspections", "/api/v3/plans/{planId}/commands", "/api/v3/plans/{planId}/materializations",
                         "/api/v3/plans/{planId}/views/documents", "/api/v3/plans/{planId}/views/entities",
+                        "/api/v3/plans/{planId}/views/relations", "/api/v3/plans/{planId}/views/draft", "/api/v3/plans/{planId}/views/containment", "/api/v3/plans/{planId}/views/placements", "/api/v3/plans/{planId}/views/bindings",
                         "/api/v3/operations/{operationId}/credentials", "/api/v3/operations/{operationId}/cancel").authenticated()
                 .requestMatchers(HttpMethod.PUT, "/api/v1/definitions/{objectId}").authenticated()
                 .requestMatchers(HttpMethod.GET, "/api/v1/destinations", "/api/v1/plans/current", "/api/v1/plans/{planId}", "/api/v1/operations/{operationId}").authenticated()
