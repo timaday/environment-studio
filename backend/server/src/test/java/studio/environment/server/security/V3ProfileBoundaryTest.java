@@ -73,7 +73,7 @@ class V3ProfileBoundaryTest {
         assertEquals(yaml, JSON.readTree(client.get(path).body()).get("source").asString());
         assertEquals(first.body(), client.get(path + "/revisions/1").body());
         assertEquals(first.body(), client.request("PUT", path, body, true).body());
-        assertEquals(403, client.request("POST", path + "/publish", "{}", true).status());
+        assertEquals(400, client.request("POST", path + "/publish", "{}", true).status());
         assertEquals(403, client.request("POST", path + "/capture", "{}", true).status());
         assertEquals(400, client.request("PUT", path, body + " {}", true).status());
         var other = login("profile-foreign-" + UUID.randomUUID());

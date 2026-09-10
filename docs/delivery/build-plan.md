@@ -73,8 +73,8 @@ passes independent review and combined Java1224.
 [native launch owner](../evidence/d07c3-privacy-native-launch.md) now pass
 independent review and combined Java1253. The
 [shared versioned workspace adapter](../evidence/qf34-shared-workspace.md) now
-passes independent review and combined Java1260. Versioned views/APIs, runtime
-composition and combined retained-proof resources remain required. The
+passes independent review and combined Java1260. Versioned plan APIs and
+combined retained-proof resources remain required. The
 [native maps sampler](../evidence/d07c3-privacy-maps.md) now passes independent
 complete-stream, shared-retry and descriptor-reuse review. Combined Java1275
 passes; production JNI, mapped byte identity, loader closure and native client
@@ -87,8 +87,13 @@ The [shared controlled v3 views](../evidence/qf34-shared-views.md) pass independ
 physical-origin and contributor-role review. Combined Java1294 with native maps
 passes. [Shared v3 validation](../evidence/qf34-shared-validation.md) now passes
 independent policy/origin review and combined Java1320. It retains UNKNOWN checks,
-fresh publication/full XML verification and a separate v3 identity. Versioned
-publication and plan HTTP are the next backend work; export remains unavailable.
+fresh publication/full XML verification and a separate v3 identity.
+[Publication HTTP](../evidence/qf34-publication-http.md) and
+[shared runtime registration](../evidence/qf34-plan-runtime.md) now pass independent
+review and combined Java1343/frontend40/schema42. Current compilation still refuses
+new publication. Concurrent workspace cleanup and schema2/v2 compatibility are
+verified. Immutable model-version admission and versioned plan HTTP are the next
+backend work; export remains unavailable.
 
 The lead owns shared contracts and compatibility. Independent fixed-candidate
 review, actual RED/GREEN, targeted guard mutations and integrated verification

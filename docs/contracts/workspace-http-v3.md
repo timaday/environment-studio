@@ -4,8 +4,9 @@ Implemented and [independently reviewed](../evidence/qf34-workspace-http-v3.md).
 These routes expose exact v3 source
 compilation and immutable history through the [schema3 workspace](workspace-storage-v3.md).
 The [implemented profile extension](workspace-profile-http-v3.md) adds four
-draft/history routes under the same transfer and ownership rules. New publication,
-plan observation and export remain required subsequent MVP work. V1/v2 URLs retain
+draft/history routes under the same transfer and ownership rules. The
+[publication extension](workspace-publication-http-v3.md) adds two guarded commands;
+current compiler qualification, plan observation and export remain required MVP work. V1/v2 URLs retain
 their meanings and never accept a v3 source.
 
 ## Closed routes and authority
@@ -15,8 +16,8 @@ The definition routes are PUT `/api/v3/definitions/{objectId}`, GET `/api/v3/def
 `/api/v3/definitions/{objectId}/revisions/{revision}`. Require hosted mode, a
 configured fully audited schema3 private workspace and the existing authenticated
 session, approved Host/Origin and CSRF rules. Schema2 is not upgraded by a request
-and returns safe503. Only the separately contracted profile draft/history routes extend this set;
-no v3 publication route is admitted.
+and returns safe503. Only the separately contracted profile draft/history routes
+and two publication POST routes extend this set.
 Demo mutations and unlisted hosted methods/routes remain denied.
 
 PUT accepts exactly the existing neutral draft wrapper fields: expectedRevision,
@@ -54,8 +55,13 @@ undo settlement or trigger a second completion attempt or successful response.
 A workspace-private operation registry participates in the existing SessionCleanup
 composition. Outstanding or uncertain workspace work retains its original lease
 cleanup obligation and capacity; retiring the lease alone is insufficient. Once
-the original worker and completion owner establish cleanup, notify the existing
-resumeCleanupAfterWork path without renewing authority. Retain bounded records
+the original worker and completion owner establish cleanup, remove only that
+settled operation under the registry lock. Notify the existing
+resumeCleanupAfterWork path only after no active or inconclusive workspace
+operation remains for the same original lease, outside the registry lock.
+Intermediate same-lease completions must not consume the session's bounded cleanup
+retry budget. Other leases remain independent; retain the existing retry limit,
+terminal uncertainty and stale-settlement guards. No notification renews authority. Retain bounded records
 only for active or inconclusive owned work; stale callbacks cannot release another
 operation or erase a prior uncertainty.
 

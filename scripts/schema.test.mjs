@@ -477,11 +477,11 @@ const workspaceV3Ajv = new Ajv({ allErrors: true, strict: true, formats: { uuid:
   .addSchema(read("../schemas/profile-inspection-v3.schema.json"));
 const workspaceV3Shape = (name) => workspaceV3Ajv.compile({ $defs: workspaceV3Defs, $ref: `#/$defs/${name}` });
 const workspaceV3Mechanisms = { "native-compiler-v3": "1", "xml-path-v1": "1", "xml-span-v1": "1", "generic-graph-v1": "1", "derived-graph-v1": "1" };
-test("v3 workspace exposes only eight closed draft/history operations", () => {
-  assert.deepEqual(Object.keys(workspaceV3.paths).sort(), ["/api/v3/definitions", "/api/v3/definitions/{objectId}", "/api/v3/definitions/{objectId}/revisions/{revision}", "/api/v3/profiles", "/api/v3/profiles/{objectId}", "/api/v3/profiles/{objectId}/revisions/{revision}"]);
+test("v3 workspace exposes only ten closed draft/history/publication operations", () => {
+  assert.deepEqual(Object.keys(workspaceV3.paths).sort(), ["/api/v3/definitions", "/api/v3/definitions/{objectId}", "/api/v3/definitions/{objectId}/publish", "/api/v3/definitions/{objectId}/revisions/{revision}", "/api/v3/profiles", "/api/v3/profiles/{objectId}", "/api/v3/profiles/{objectId}/publish", "/api/v3/profiles/{objectId}/revisions/{revision}"]);
   assert.deepEqual(Object.entries(workspaceV3.paths).flatMap(([path, item]) => Object.keys(item).filter(key => key !== "parameters").map(method => `${method} ${path}`)).sort(), [
     "get /api/v3/definitions", "get /api/v3/definitions/{objectId}", "get /api/v3/definitions/{objectId}/revisions/{revision}",
-    "get /api/v3/profiles", "get /api/v3/profiles/{objectId}", "get /api/v3/profiles/{objectId}/revisions/{revision}", "put /api/v3/definitions/{objectId}", "put /api/v3/profiles/{objectId}",
+    "get /api/v3/profiles", "get /api/v3/profiles/{objectId}", "get /api/v3/profiles/{objectId}/revisions/{revision}", "post /api/v3/definitions/{objectId}/publish", "post /api/v3/profiles/{objectId}/publish", "put /api/v3/definitions/{objectId}", "put /api/v3/profiles/{objectId}",
   ]);
   for (const item of Object.values(workspaceV3.paths)) for (const method of ["get", "put"]) if (item[method]) {
     for (const status of ["403", "413", "429", "503"]) assert.ok(item[method].responses[status]);
@@ -557,4 +557,35 @@ test("v3 profile lists are bounded metadata without source or authority", () => 
   assert.equal(validate({ profiles: Array.from({ length: 101 }, () => ({ ...item })) }), false);
   assert.equal(validate({ profiles: [{ ...item, source: "invented" }] }), false);
   assert.equal(validate({ profiles: [item], canPublish: true }), false);
+});
+
+test("v3 publication commands are closed and preserve policy duplicates for semantic checking", () => {
+  const profile = { expectedRevision: "1", requestId: "00000000-0000-4000-8000-000000000061" };
+  const policy = { bindingId: "mock-pg", documentId: "sheet", content: "deny" };
+  const definition = { ...profile, exportPolicies: [policy, policy] };
+  const checkDefinition = workspaceV3Shape("PublishDefinition"), checkProfile = workspaceV3Shape("PublishProfile");
+  assert.equal(checkDefinition(definition), true, JSON.stringify(checkDefinition.errors));
+  assert.equal(checkProfile(profile), true, JSON.stringify(checkProfile.errors));
+  assert.equal(checkProfile(definition), false);
+  assert.equal(checkDefinition(profile), false);
+  for (const key of ["model", "source", "format", "owner", "definition", "ready", "computed"]) {
+    assert.equal(checkDefinition({ ...definition, [key]: "invented" }), false);
+    assert.equal(checkProfile({ ...profile, [key]: "invented" }), false);
+  }
+  for (const value of ["01", "1\n", "9".repeat(1025), 1]) assert.equal(checkProfile({ ...profile, expectedRevision: value }), false);
+  assert.equal(checkDefinition({ ...definition, exportPolicies: Array.from({ length: 20000 }, () => policy) }), true);
+  assert.equal(checkDefinition({ ...definition, exportPolicies: Array.from({ length: 20001 }, () => policy) }), false);
+  for (const bad of [{ ...policy, extra: true }, { ...policy, content: "allow" }, { ...policy, documentId: "sheet\n" }])
+    assert.equal(checkDefinition({ ...definition, exportPolicies: [bad] }), false);
+});
+test("v3 publication has exactly two POST routes and historical response shapes with all owned failure statuses", () => {
+  const posts = Object.entries(workspaceV3.paths).filter(([, methods]) => methods.post).map(([path]) => path).sort();
+  assert.deepEqual(posts, ["/api/v3/definitions/{objectId}/publish", "/api/v3/profiles/{objectId}/publish"]);
+  for (const [kind, request, response] of [["definitions", "PublishDefinition", "DefinitionRevision"], ["profiles", "PublishProfile", "ProfileRevision"]]) {
+    const route = workspaceV3.paths[`/api/v3/${kind}/{objectId}/publish`];
+    assert.deepEqual(Object.keys(route).filter((key) => key !== "parameters"), ["post"]);
+    assert.equal(route.post.requestBody.content["application/json"].schema.$ref, `#/components/schemas/${request}`);
+    assert.equal(route.post.responses["200"].content["application/json"].schema.$ref, `#/components/schemas/${response}`);
+    for (const status of ["400", "401", "403", "404", "409", "413", "422", "429", "503"]) assert.ok(route.post.responses[status]);
+  }
 });

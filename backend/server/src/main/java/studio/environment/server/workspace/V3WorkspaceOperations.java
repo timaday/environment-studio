@@ -21,8 +21,13 @@ final class V3WorkspaceOperations implements SessionCleanup {
         private boolean settled,terminalUncertainty;
         Operation(SessionLedger.Lease lease){this.lease=lease;}
         void complete(HostedSessions sessions) {
-            synchronized(V3WorkspaceOperations.this){if(settled||terminalUncertainty)return;settled=true;active.remove(this);}
-            sessions.resumeCleanupAfterWork(lease.id());
+            boolean last;
+            synchronized(V3WorkspaceOperations.this){
+                if(settled||terminalUncertainty)return;
+                settled=true;active.remove(this);
+                last=active.stream().noneMatch(operation->operation.lease.equals(lease));
+            }
+            if(last)sessions.resumeCleanupAfterWork(lease.id());
         }
         void inconclusive(HostedSessions sessions){
             synchronized(V3WorkspaceOperations.this){if(settled||terminalUncertainty)return;terminalUncertainty=true;}

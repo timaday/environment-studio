@@ -29,6 +29,8 @@
 | Separate v3 historical revisions | [native-workspace-v3.md](native-workspace-v3.md) |
 | Explicit schema3 storage and v3 definition drafts | [workspace-storage-v3.md](workspace-storage-v3.md) |
 | V3 definition draft and historical HTTP routes | [workspace-http-v3.md](workspace-http-v3.md), [openapi-workspace-v3.json](openapi-workspace-v3.json) |
+| V3 definition/profile publication HTTP | [workspace-publication-http-v3.md](workspace-publication-http-v3.md) |
+| Shared versioned plan runtime | [plan-runtime-v3.md](plan-runtime-v3.md) |
 | HTTP | [api.md](api.md), [openapi.yaml](openapi.yaml) |
 | Deployment | [../../deploy/README.md](../../deploy/README.md) |
 

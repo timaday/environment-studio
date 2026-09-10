@@ -50,7 +50,7 @@ class V3WorkspaceBoundaryTest {
         var second=client.request("PUT",path,JSON.writeValueAsString(Map.of("expectedRevision","1","requestId",UUID.randomUUID().toString(),"format","JSON","source",source)),true);assertEquals(200,second.status());
         assertEquals(saved.body(),client.get(path+"/revisions/1").body());assertEquals("2",JSON.readTree(client.get(path).body()).get("workspaceRevision").asString());
         assertFalse(JSON.readTree(client.get("/api/v3/definitions").body()).has("canPublish"));
-        assertEquals(403,client.request("POST",path+"/publish","{}",true).status());
+        assertEquals(400,client.request("POST",path+"/publish","{}",true).status());
         assertEquals(400,client.request("PUT","/api/v3/profiles/"+UUID.randomUUID(),body,true).status());
         var other=login("v3-other-"+UUID.randomUUID());assertEquals(404,other.get(path).status());
         assertEquals(204,client.request("POST","/api/v1/session/logout","",true).status());assertEquals(401,client.get(path).status());

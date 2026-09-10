@@ -13,9 +13,10 @@ publication, with explicit maintainer authority and private SQLite storage.
 Separate [v3 definition](docs/contracts/workspace-http-v3.md) and
 [profile draft/history APIs](docs/contracts/workspace-profile-http-v3.md) retain
 exact source in an explicitly initialized schema3 workspace.
-[Internal v3 publication commands](docs/evidence/qf34-publication-v3.md) now enforce
-fresh qualification; the current compiler still refuses publication. V3
-publication HTTP and plan integration remain unfinished. The
+[V3 publication HTTP](docs/evidence/qf34-publication-http.md) now exposes owned
+publication commands with fresh qualification; the current compiler still refuses
+new publication. Concurrent upload cleanup now permits re-login after all owned
+transfers settle. The
 [internal v3 plan publication lookup](docs/evidence/qf34-plan-workspace-v3.md)
 now rechecks exact current definition/profile history before future plan use.
 The [internal v3 observation path](docs/evidence/qf34-observation-v3.md) now retains
@@ -35,7 +36,8 @@ root capture and its first connection; production JNI and client admission remai
 unqualified. Both reviewed slices pass combined Java1253.
 The [shared versioned workspace adapter](docs/evidence/qf34-shared-workspace.md)
 now preserves selected publication pins and fresh qualification; combined Java1260
-passes. Runtime registration remains unfinished.
+passes. The [shared runtime registration](docs/evidence/qf34-plan-runtime.md) now
+uses both actual versioned adapters while preserving schema2 startup and v2 replay.
 The [native maps sampler](docs/evidence/d07c3-privacy-maps.md) now retains complete
 bounded mapping evidence under the launch owner. Equal samples do not establish
 mapped byte identity; production JNI and client admission remain unqualified.
@@ -46,7 +48,8 @@ The [shared v3 views](docs/evidence/qf34-shared-views.md) now present physical
 bindings/locations and computed contributors under the original plan owner,
 with fresh full proof checks. [Shared v3 validation](docs/evidence/qf34-shared-validation.md)
 now rechecks publication and complete XML proofs, preserves UNKNOWN evidence and
-uses a separate v3 fingerprint. Combined Java1320 passes; versioned HTTP and
+uses a separate v3 fingerprint. Combined Java1343 and frontend40/schema42 pass;
+versioned plan HTTP and
 client/content/review qualification remain required before availability.
 The exact `047d1b0` [local image](docs/evidence/shared-validation-artifacts.md)
 repeats Java1320 and passes protected startup/workspace smoke; release qualification

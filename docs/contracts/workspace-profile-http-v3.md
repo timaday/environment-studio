@@ -4,7 +4,9 @@ Implemented with [reviewed local evidence](../evidence/qf34-profile-http-v3.md),
 [workspace HTTP ownership/transfer boundary](workspace-http-v3.md) and
 [owned physical-only profile draft command](profile-v3.md#owned-profile-draft-command).
 Provides PUT `/api/v3/profiles/{objectId}`, GET `/api/v3/profiles`, current GET and
-GET `/api/v3/profiles/{objectId}/revisions/{revision}`. New publication, observation
+GET `/api/v3/profiles/{objectId}/revisions/{revision}`. The separate
+[publication extension](workspace-publication-http-v3.md) adds owned publication
+commands. Current qualification, observation
 capture, composition, plans and export remain separate work. Existing definition
 routes and all v1/v2 source/history meanings are unchanged.
 
@@ -60,7 +62,9 @@ The [OpenAPI extension](openapi-workspace-v3.json) defines the closed shapes.
 Reuse the existing no-store, safe diagnostics, DEBUG redaction and HTTP refusal
 classification. Missing, foreign and wrong-version references share404; immutable
 conflicts409; byte budget413; semantic validation422; operation/revision capacity429;
-schema2/unconfigured store or transport503. New publication routes stay denied.
+schema2/unconfigured store or transport503. Only the separately contracted
+publication POST routes extend these methods; current compiler qualification
+still blocks new actual publication.
 All late-response and uncertain-cleanup rules apply equally to profiles.
 
 ## Acceptance

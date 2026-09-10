@@ -14,7 +14,7 @@ import studio.environment.core.session.SessionLedger;
 import studio.environment.core.workspace.*;
 import studio.environment.server.session.HostedSessions;
 
-/** Draft/history authority only; mutable response encodings never escape the worker. */
+/** Versioned workspace commands/history only; mutable response encodings never escape the worker. */
 @RestController
 @ConditionalOnProperty(name="studio.mode",havingValue="hosted")
 public final class V3NativeWorkspaceController {
@@ -29,6 +29,22 @@ public final class V3NativeWorkspaceController {
             var result=runtime.v3Service(WorkspaceCommit.authenticated(sessions,lease)).saveDefinition(lease.owner(),
                 new NativeCommand.SaveDefinition(command.objectId(),command.expectedRevision(),command.requestId(),command.format(),command.source()));
             verify(lease);return view(result);
+        });
+    }
+    @PostMapping(value="/api/v3/definitions/{objectId}/publish",consumes=MediaType.APPLICATION_JSON_VALUE)
+    public void publishDefinition(@PathVariable("objectId") String id,HttpServletRequest request,HttpServletResponse response)throws IOException {
+        start(request,response,true,(lease,body)->{
+            var command=new V3PublicationRequestReader().definition(id,body);verify(lease);body.close();
+            var result=runtime.v3PublicationService(WorkspaceCommit.authenticated(sessions,lease)).publishDefinition(lease.owner(),command);
+            verify(lease);return view(result);
+        });
+    }
+    @PostMapping(value="/api/v3/profiles/{objectId}/publish",consumes=MediaType.APPLICATION_JSON_VALUE)
+    public void publishProfile(@PathVariable("objectId") String id,HttpServletRequest request,HttpServletResponse response)throws IOException {
+        start(request,response,true,(lease,body)->{
+            var command=new V3PublicationRequestReader().profile(id,body);verify(lease);body.close();
+            var result=runtime.v3PublicationService(WorkspaceCommit.authenticated(sessions,lease)).publishProfile(lease.owner(),command);
+            verify(lease);return profileView(result);
         });
     }
     @GetMapping("/api/v3/definitions")

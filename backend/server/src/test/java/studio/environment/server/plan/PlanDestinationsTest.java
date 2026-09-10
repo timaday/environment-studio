@@ -7,6 +7,7 @@ import studio.environment.core.session.Owner;
 import static org.junit.jupiter.api.Assertions.*;
 
 class PlanDestinationsTest {
+    @org.junit.jupiter.api.io.TempDir Path workspaceDirectory;
     private MockEnvironment configured() {
         String prefix="studio.plans.destinations[0].";
         return new MockEnvironment()
@@ -40,7 +41,10 @@ class PlanDestinationsTest {
         org.mockito.Mockito.when(workspace.enabled()).thenReturn(false);
         assertFalse(new PlanRuntime(configured(),hosted,workspace,provider).inspectionApiConfigured());
         org.mockito.Mockito.when(workspace.enabled()).thenReturn(true);
-        var composed=new PlanRuntime(configured(),hosted,workspace,provider);
+        studio.environment.server.workspace.SqliteDraftStore.initializeV3(workspaceDirectory);
+        var environment=configured().withProperty("studio.workspace.directory",workspaceDirectory.toString());
+        var actualWorkspace=new studio.environment.server.workspace.WorkspaceRuntime(environment,hosted);
+        var composed=new PlanRuntime(environment,hosted,actualWorkspace,provider);
         assertTrue(composed.inspectionApiConfigured());
         assertNotNull(composed.service());
         assertTrue(composed.visible(new Owner("https://mock-issuer.invalid","foreign-owner")).isEmpty());

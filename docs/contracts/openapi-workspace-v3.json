@@ -1,9 +1,9 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "Environment Studio v3 definition and profile draft workspace",
-    "version": "0.3.0",
-    "description": "Closed v3 definition/profile draft and historical routes requiring a configured schema3 private hosted workspace. No new publication or plan admission. See workspace-http-v3.md and workspace-profile-http-v3.md for original session authority and bounded shared ownership."
+    "title": "Environment Studio v3 owned workspace",
+    "version": "0.3.1",
+    "description": "Closed v3 definition/profile draft, publication commands and historical routes requiring a configured schema3 private hosted workspace. Current compiler qualification remains required; new actual publication refuses. See workspace-http-v3.md, workspace-profile-http-v3.md and workspace-publication-http-v3.md for original session authority and bounded shared ownership."
   },
   "paths": {
     "/api/v3/definitions": {
@@ -440,6 +440,148 @@
           },
           "429": {
             "$ref": "#/components/responses/WorkspaceError429"
+          }
+        }
+      }
+    },
+    "/api/v3/definitions/{objectId}/publish": {
+      "parameters": [
+        {
+          "name": "objectId",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "$ref": "#/components/schemas/Uuid"
+          }
+        }
+      ],
+      "post": {
+        "operationId": "publishV3Definition",
+        "summary": "Publish current eligible draft as the next immutable revision",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Owned immutable result; Cache-Control no-store",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DefinitionRevision"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/WorkspaceError400"
+          },
+          "401": {
+            "$ref": "#/components/responses/WorkspaceError401"
+          },
+          "403": {
+            "$ref": "#/components/responses/WorkspaceError403"
+          },
+          "404": {
+            "$ref": "#/components/responses/WorkspaceError404"
+          },
+          "409": {
+            "$ref": "#/components/responses/WorkspaceError409"
+          },
+          "422": {
+            "$ref": "#/components/responses/WorkspaceError422"
+          },
+          "429": {
+            "$ref": "#/components/responses/WorkspaceError429"
+          },
+          "503": {
+            "$ref": "#/components/responses/WorkspaceError503"
+          },
+          "413": {
+            "$ref": "#/components/responses/WorkspaceError413"
+          }
+        },
+        "description": "Requires original live hosted lease, approved Host/Origin, CSRF, schema3 storage, strict closed JSON and existing shared v3 owned transfer. Current maintainer admission applies before replay and before definition append. Actual current compiler remains incomplete; new publication refuses422. Exact successful replay returns historical data without current qualification. See workspace-publication-http-v3.md.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PublishDefinition"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v3/profiles/{objectId}/publish": {
+      "parameters": [
+        {
+          "name": "objectId",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "$ref": "#/components/schemas/Uuid"
+          }
+        }
+      ],
+      "post": {
+        "operationId": "publishV3Profile",
+        "summary": "Publish current eligible draft as the next immutable revision",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Owned immutable result; Cache-Control no-store",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProfileRevision"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/WorkspaceError400"
+          },
+          "401": {
+            "$ref": "#/components/responses/WorkspaceError401"
+          },
+          "403": {
+            "$ref": "#/components/responses/WorkspaceError403"
+          },
+          "404": {
+            "$ref": "#/components/responses/WorkspaceError404"
+          },
+          "409": {
+            "$ref": "#/components/responses/WorkspaceError409"
+          },
+          "422": {
+            "$ref": "#/components/responses/WorkspaceError422"
+          },
+          "429": {
+            "$ref": "#/components/responses/WorkspaceError429"
+          },
+          "503": {
+            "$ref": "#/components/responses/WorkspaceError503"
+          },
+          "413": {
+            "$ref": "#/components/responses/WorkspaceError413"
+          }
+        },
+        "description": "Requires original live hosted lease, approved Host/Origin, CSRF, schema3 storage, strict closed JSON and existing shared v3 owned transfer. Profile-owner admission preserves the existing role distinction. Actual current compiler remains incomplete; new publication refuses422. Exact successful replay returns historical data without current qualification. See workspace-publication-http-v3.md.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PublishProfile"
+              }
+            }
           }
         }
       }
@@ -1214,6 +1356,42 @@
               }
             },
             "maxItems": 100
+          }
+        }
+      },
+      "PublishDefinition": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "expectedRevision",
+          "requestId",
+          "exportPolicies"
+        ],
+        "properties": {
+          "expectedRevision": {
+            "$ref": "#/components/schemas/ExpectedRevision"
+          },
+          "requestId": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "exportPolicies": {
+            "$ref": "#/components/schemas/ExportPolicies"
+          }
+        }
+      },
+      "PublishProfile": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "expectedRevision",
+          "requestId"
+        ],
+        "properties": {
+          "expectedRevision": {
+            "$ref": "#/components/schemas/ExpectedRevision"
+          },
+          "requestId": {
+            "$ref": "#/components/schemas/Uuid"
           }
         }
       }

@@ -58,7 +58,7 @@ now passes independent review and combined Java1151, including the native script
 prerequisite. [Actual both-engine derived workflows](../evidence/qf34-database-workflow-v3.md)
 pass exact merge/proof, physical-only capture and whole/partial reuse controls;
 independent review corrected a composition-oracle gap before the final rerun.
-Publication HTTP and remaining hosted plan integration stay open; v3 operational
+Remaining hosted plan integration stays open; v3 operational
 availability stays disabled. The
 [versioned plan model and shared physical composition](../evidence/qf34-plan-model.md)
 now pass independent review and combined Java1157. Actual both-engine workflows
@@ -81,7 +81,7 @@ Fresh/Existing reuse and original cancellation through target materialization.
 Combined Java1253 includes the native launch owner and independent tests.
 The [shared versioned workspace adapter](../evidence/qf34-shared-workspace.md)
 passes independent selected-pin/authority-loss review and combined Java1260.
-Versioned APIs, runtime composition and combined proof resources stay open.
+Versioned plan APIs and combined proof resources stay open.
 The [native maps sampler](../evidence/d07c3-privacy-maps.md) passes independent
 review: complete bounded streams, original controls, opaque labels, once-only
 receiver ownership and persistent launch cleanup uncertainty. Four new independent
@@ -105,9 +105,20 @@ authority. Missing target remains UNKNOWN; export stays unavailable. Combined
 Java1320 passes, including the reviewed native owner. The same candidate passes
 actual shared inspection/reuse/command/view/validation workflows on both owned
 TLS mock database engines with unchanged state and complete successful cleanup;
-test-only publication witnesses confer no admission. Versioned publication/plan
-HTTP, actual client/content/review evidence and combined resource qualification
-remain open.
+test-only publication witnesses confer no admission.
+The [v3 publication HTTP routes](../evidence/qf34-publication-http.md) now pass
+fixed independent review and actual HTTP/OIDC checks. New publication still
+refuses current incomplete compilation. A reproduced concurrent upload cleanup
+defect is corrected: the final same-lease workspace completion resumes session
+cleanup outside the registry lock, permitting re-login after settled uploads.
+The [shared runtime registration](../evidence/qf34-plan-runtime.md) now selects
+actual v2/v3 workspace adapters, deferring schema3 access to preserve schema2
+startup and v2 replay. Combined Java1343 (297 core,7 parser,729 server,310
+supervisor), assembly/hostile launcher, frontend40/schema42, checking and build
+pass on the fixed twenty-four-file candidate over69752c8,10 September at01:02:27BST.
+The retained047d1b0 image predates this candidate. Next backend work is immutable
+model-version admission followed by versioned plan HTTP. Actual client/content/
+review evidence and combined resource qualification remain open.
 No Q feedback GitHub publication is authorized. Existing MVP scope and completed
 work remain in place.
 

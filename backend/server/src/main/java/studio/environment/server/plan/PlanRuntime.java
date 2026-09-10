@@ -28,7 +28,8 @@ public final class PlanRuntime {
         if(mode!=RuntimeMode.HOSTED || !workspace.enabled() || destinations.isEmpty()) {service=Optional.empty();return;}
         var ports=new LinkedHashMap<String,PlanPorts.Destination>();
         for(var entry:configuration.configured()) {var destination=entry.destination();ports.put(destination.id(),new PlanPorts.Destination(destination.id(),destination.engine(),new JdbcObservation(destination)));}
-        service=Optional.of(new HostedPlanService(sessions.getObject()::guard,new PlanWorkspaceBridge(workspace),ports,new PlanContentAdapter(),System::nanoTime));
+        var publications=new VersionedPlanWorkspace(new PlanWorkspaceBridge(workspace),new V3PlanWorkspaceBridge(workspace));
+        service=Optional.of(new HostedPlanService(sessions.getObject()::guard,publications,ports,new PlanContentAdapter(),System::nanoTime));
     }
     /** Explicit independently invented test composition; never selected by a runtime property. */
     PlanRuntime(HostedPlanService service,List<PlanDestinations.Display> destinations,BiPredicate<Owner,String> allowed) {
