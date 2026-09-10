@@ -3,7 +3,7 @@
   "info": {
     "title": "Environment Studio hosted v3 plans",
     "version": "0.3.0",
-    "description": "Sixteen fixed-v3 routes including semantic commands, explicit materialization, document inventory, physical entities, structural decisions and binding pages. Actual compiler publication remains incomplete; test publication witnesses do not qualify runtime availability. See hosted-plan-http-v3.md, hosted-plan-commands-v3.md, hosted-plan-materialization-v3.md hosted-plan-physical-views-v3.md and hosted-plan-structural-views-v3.md for original session authority, shared admission, bounded transfers and early no-body controller refusals. No export or readback endpoint is provided."
+    "description": "Eighteen fixed-v3 routes including semantic commands, explicit materialization, document inventory, physical entities, structural decisions, binding pages, document comparison and complete locations. Actual compiler publication remains incomplete; test publication witnesses do not qualify runtime availability. See hosted-plan-http-v3.md, hosted-plan-commands-v3.md, hosted-plan-materialization-v3.md hosted-plan-physical-views-v3.md hosted-plan-structural-views-v3.md and hosted-plan-document-views-v3.md for original session authority, shared admission, bounded transfers and early no-body controller refusals. No export or readback endpoint is provided."
   },
   "paths": {
     "/api/v3/plans": {
@@ -1335,6 +1335,188 @@
               "application/json": {
                 "schema": {
                   "$ref": "../../schemas/plan-view-v1.schema.json#/$defs/bindingsResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error500"
+          }
+        }
+      }
+    },
+    "/api/v3/plans/{planId}/views/document": {
+      "post": {
+        "operationId": "v3GetPlanDocument",
+        "summary": "Revision-bound document with explicit complete-document disclosure",
+        "description": "See hosted-plan-document-views-v3.md. Original lease, Host/Origin/CSRF and fixed V3 ownership precede full view scratch and single semantic HTTP record admission and body access. Closed request requires completeDocumentDisclosure=true even for empty locations. Original ViewAdmission remains executing through controlled full comparison/scan, encoding, output and final verification, including pinned errors. Small body: 16 KiB/depth 4/128 tokens/original 10 seconds. Full response: 128 MiB and one original 30-second encoding/output/flush deadline. Raw preserves exact text; Placeholders can leave unmapped concrete content; Formatted is display-only. No revision mutation, replay, computed XML locations or export authority.",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "planId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Uuid"
+            }
+          },
+          {
+            "name": "X-CSRF-TOKEN",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "../../schemas/plan-view-v1.schema.json#/$defs/documentRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Bounded owned revision result; no-store; shape is not export authority",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "../../schemas/plan-view-v1.schema.json#/$defs/documentResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error500"
+          }
+        }
+      }
+    },
+    "/api/v3/plans/{planId}/views/binding-locations": {
+      "post": {
+        "operationId": "v3ListPlanBindingLocations",
+        "summary": "Revision-bound binding-locations with explicit complete-document disclosure",
+        "description": "See hosted-plan-document-views-v3.md. Original lease, Host/Origin/CSRF and fixed V3 ownership precede full view scratch and single semantic HTTP record admission and body access. Closed request requires completeDocumentDisclosure=true even for empty locations. Original ViewAdmission remains executing through controlled full comparison/scan, encoding, output and final verification, including pinned errors. Small body: 16 KiB/depth 4/128 tokens/original 10 seconds. Full response: 128 MiB and one original 30-second encoding/output/flush deadline. Raw preserves exact text; Placeholders can leave unmapped concrete content; Formatted is display-only. No revision mutation, replay, computed XML locations or export authority.",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "planId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Uuid"
+            }
+          },
+          {
+            "name": "X-CSRF-TOKEN",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "../../schemas/plan-view-v1.schema.json#/$defs/bindingLocationsRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Bounded owned revision result; no-store; shape is not export authority",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "../../schemas/plan-view-v1.schema.json#/$defs/bindingLocationsResponse"
                 }
               }
             }

@@ -208,9 +208,22 @@ entity refuses without implicit defaults. Fixed12 manifest
 full Java1539 (324 core,7 parser,898 server,310 supervisor), zero failures/errors/
 skips, assembly/hostile launcher,10 September at04:09:20BST. Fresh frontend40/
 schema53/check/build pass. Current HTTP containment examples cover empty explicit
-decisions; lower-level movement evidence is separate. Document/location routes
-are next, followed by computed views/capture/reuse/validation. No current browser,
+decisions; lower-level movement evidence is separate. No current browser,
 image, runtime or release qualification is implied.
+
+The [document/location HTTP routes](../evidence/v3-plan-document-views.md) now pass
+independent fixed review, actual multi-document XML/child-location workflows and
+full Java1549 (324core/7parser/908server/310supervisor), zero failures/errors/skips,
+assembly/hostile launcher,10 September04:21:33BST. Fixed12 manifest
+74c824b424a27bcbe4d1ce251578be55d607108a6dc57e25ebd96f3bdd4fc644 overf80eb2e preserves
+Raw/Placeholders/Formatted, complete field/reference occurrences and explicit
+full-document disclosure even for empty/beyond-end pages. Fresh target-only spans,
+original/target separation and logout recovery pass; fresh frontend40/schema55/
+check/build also pass. The reviewer saved its complete report before its usage-limit
+error; the report was found and hash-verified. Further agent reviews are unavailable
+at present, so subsequent author work must remain pending independent review.
+Computed routes, capture/reuse and validation are next. Current compiler/publication,
+operator UX, native/export/readback, combined capacity and delivery remain incomplete.
 
 The later independent review's confirmed
 [retained-origin consistency defect](../evidence/derived-retained-origin-fix.md)

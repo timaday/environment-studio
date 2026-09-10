@@ -274,6 +274,12 @@ paths:
   /api/v3/plans/{planId}/views/bindings:
     $ref: './openapi-plans-v3.json#/paths/~1api~1v3~1plans~1{planId}~1views~1bindings'
 
+  /api/v3/plans/{planId}/views/document:
+    $ref: './openapi-plans-v3.json#/paths/~1api~1v3~1plans~1{planId}~1views~1document'
+
+  /api/v3/plans/{planId}/views/binding-locations:
+    $ref: './openapi-plans-v3.json#/paths/~1api~1v3~1plans~1{planId}~1views~1binding-locations'
+
 components:
   parameters:
     ObjectId:

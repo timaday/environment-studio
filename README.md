@@ -78,8 +78,10 @@ references drive identity/value edits; secret masking and original transfer owne
 are preserved. [V3 structural and binding views](docs/evidence/v3-plan-structural-views.md)
 now pass independent HTTP review, full Java1539 and frontend40/schema53. Returned
 coordinates/references drive creation, removal and reference-preserving identity
-edits with distinct binding states. Document/location routes are next; actual
-compiler publication remains incomplete.
+edits with distinct binding states. [Document comparison and complete locations](docs/evidence/v3-plan-document-views.md)
+now pass independent review, full Java1549 and frontend40/schema55, including
+exact multi-document XML and explicit disclosure. Computed HTTP views are next;
+actual compiler publication remains incomplete.
 The exact `047d1b0` [local image](docs/evidence/shared-validation-artifacts.md)
 repeats Java1320 and passes protected startup/workspace smoke; release qualification
 remains open.

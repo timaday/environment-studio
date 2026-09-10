@@ -111,8 +111,10 @@ all response checks. Independent HTTP review, full Java1522 and frontend40/schem
 pass. [V3 document/entity pages](../evidence/v3-plan-physical-views.md) now pass
 independent HTTP review, full Java1531 and frontend40/schema51.
 [V3 structural/binding pages](../evidence/v3-plan-structural-views.md) now pass
-independent HTTP review, full Java1539 and frontend40/schema53. Next backend work
-adds document/location and computed views, then capture/reuse and validation.
+independent HTTP review, full Java1539 and frontend40/schema53.
+[Document comparison and locations](../evidence/v3-plan-document-views.md) now pass
+independent review, full Java1549 and frontend40/schema55. Next backend work adds
+computed HTTP views, then capture/reuse and validation.
 Export remains unavailable.
 
 The lead owns shared contracts and compatibility. Independent fixed-candidate

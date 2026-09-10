@@ -38,7 +38,8 @@ final class V3PlanTransport {
         DOCUMENTS(PlanViewRequest.Route.DOCUMENTS),ENTITIES(PlanViewRequest.Route.ENTITIES),
         RELATIONS(PlanViewRequest.Route.RELATIONS),DRAFT(PlanViewRequest.Route.DRAFT),
         CONTAINMENT(PlanViewRequest.Route.CONTAINMENT),PLACEMENTS(PlanViewRequest.Route.PLACEMENTS),
-        BINDINGS(PlanViewRequest.Route.BINDINGS);
+        BINDINGS(PlanViewRequest.Route.BINDINGS),DOCUMENT(PlanViewRequest.Route.DOCUMENT),
+        BINDING_LOCATIONS(PlanViewRequest.Route.BINDING_LOCATIONS);
         final PlanViewRequest.Route request;
         PhysicalRoute(PlanViewRequest.Route request){this.request=request;}
     }
@@ -74,6 +75,20 @@ final class V3PlanTransport {
             var request=request(route.request,body);
             var result=switch(route){
                 case DOCUMENTS -> V3PlanPhysicalViews.documents(admission);
+                case DOCUMENT -> {
+                    var doc=(PlanViewRequest.Document)request;
+                    var value=admission.document(doc.side()==PlanViewRequest.Side.TARGET,doc.documentId(),
+                            studio.environment.core.plan.PlanPorts.ViewMode.valueOf(doc.mode().name()),doc.disclosed());
+                    yield PlanViewProjection.object("revision",request.revision(),"documentId",value.documentId(),
+                            "side",doc.side().name().toLowerCase(java.util.Locale.ROOT),"mode",doc.mode().name().toLowerCase(java.util.Locale.ROOT),
+                            "text",value.text(),"exact",value.exact(),"redacted",value.redacted(),
+                            "unmappedConcreteMayRemain",value.unmappedConcreteMayRemain(),"omissions",value.omissions());
+                }
+                case BINDING_LOCATIONS -> {
+                    var page=(PlanViewRequest.BindingLocations)request;
+                    yield V3PlanPhysicalViews.locations(admission,page.entity(),page.fieldId(),
+                            page.side()==PlanViewRequest.Side.TARGET,page.offset(),page.limit(),page.disclosed());
+                }
                 case ENTITIES -> {
                     var page=(PlanViewRequest.GraphPage)request;
                     yield V3PlanPhysicalViews.entities(admission,page.side()==PlanViewRequest.Side.TARGET,page.offset(),page.limit());

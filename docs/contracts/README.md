@@ -40,6 +40,7 @@
 | Hosted v3 semantic commands | [hosted-plan-commands-v3.md](hosted-plan-commands-v3.md) |
 | Hosted v3 document inventory and physical entities | [hosted-plan-physical-views-v3.md](hosted-plan-physical-views-v3.md) |
 | Hosted v3 structural decisions and binding pages | [hosted-plan-structural-views-v3.md](hosted-plan-structural-views-v3.md) |
+| Hosted v3 document comparison and locations | [hosted-plan-document-views-v3.md](hosted-plan-document-views-v3.md) |
 | Hosted v3 materialization | [hosted-plan-materialization-v3.md](hosted-plan-materialization-v3.md) |
 | HTTP | [api.md](api.md), [openapi.yaml](openapi.yaml) |
 | Deployment | [../../deploy/README.md](../../deploy/README.md) |
