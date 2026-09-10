@@ -26,7 +26,10 @@ Successful save/read returns the closed object `objectId`, `workspaceRevision`,
 The projection has `kind` (`incomplete` or `ready-to-publish`), `model`,
 `logicalDigest`, `bindingDigests`, `mechanisms` and `diagnostics`. `model` follows
 native v2 property names and enum spelling, with all arbitrary-precision integers
-as canonical decimal strings. Binding digests are keyed by exact declared binding
+as canonical decimal strings. `logical.operationCapabilities` preserves every
+stored declaration in its original order using lowercase schema names; an
+explicitly empty list stays empty. Display conversion cannot alter source,
+stored snapshots, digests or publication eligibility. Binding digests are keyed by exact declared binding
 ID; mechanism names are the closed dependency vocabulary and versions are canonical
 positive decimal strings of at most 1024 digits. The response schema represents
 readable historical versions; only the current supported version set may publish.

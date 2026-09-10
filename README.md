@@ -90,6 +90,9 @@ the reviewed exact keys, complete contributors and original transfer ownership.
 The [three priority corrections](docs/evidence/continuation-p2-corrections.md)
 pass independent review, full Java1563 and frontend40/schema55 verification.
 Release qualification remains open.
+The [definition capability correction](docs/evidence/definition-capability-projection.md)
+now preserves declared operations in v2/v3 save/current/history models, with
+independent source and snapshot compatibility checks.
 The [production JNI ownership contract](docs/evidence/privacy-jni-ownership-contract.md)
 now passes independent review; bridge implementation and complete native admission
 remain required.

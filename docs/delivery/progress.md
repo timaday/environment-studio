@@ -16,6 +16,12 @@ all three corrections. Next are capture/reuse and paged validation APIs.
 Operator UX, native/export/readback and release qualification
 remain required.
 
+Independent review also confirmed and verified the [definition capability
+projection correction](../evidence/definition-capability-projection.md). Both
+versions retain all declared operations in model responses and preserve original
+source/history/snapshot bytes. Focused34 tests, the independent probe and full
+Java1582/frontend40/schema57 verification pass, including distribution checks.
+
 The exact c3b891a [computed-route image](../evidence/v3-plan-artifacts.md) passes a
 fresh Java1579/frontend40/schema57 build and protected container/workspace smoke;
 its separate supervisor ZIP and member checksums pass. This is local development

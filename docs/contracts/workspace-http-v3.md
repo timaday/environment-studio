@@ -106,7 +106,10 @@ compilerVersion is native-compiler-v3 and schemaVersion is3. State preserves dra
 or published history. Projection contains kind, model, logicalDigest,
 bindingDigests, mechanisms and diagnostics. Its model is the closed
 `definition-inspection-v3.schema.json` shape, with canonical decimal integer
-strings. Digest/mechanism maps and diagnostic order/duplicates remain exact. Historical
+strings. `logical.operationCapabilities` preserves every stored declaration in
+its original order, using the schema's lowercase names; an explicitly empty list
+stays empty. Display conversion cannot alter source, stored snapshots, digests or
+publication eligibility. Digest/mechanism maps and diagnostic order/duplicates remain exact. Historical
 diagnostics have phase publication and the safe code shape
 `[A-Z][A-Z0-9_]{0,127}`; request rejection diagnostics retain their broader phases.
 

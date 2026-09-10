@@ -104,7 +104,10 @@ final class V3NativeSnapshotCodec {
         Set<String> enums=Set.of("engine","storage","keyType","valueType","classification","sensitivity","kind");
         if(node.isObject())for(var entry:node.properties()) {
             if(enums.contains(entry.getKey())&&entry.getValue().isString())((ObjectNode)node).put(entry.getKey(),entry.getValue().asString().toLowerCase(Locale.ROOT).replace('_','-'));
-            else if(entry.getKey().equals("operationCapabilities")) {var array=((ObjectNode)node).putArray(entry.getKey());entry.getValue().forEach(v->array.add(v.asString().toLowerCase(Locale.ROOT).replace('_','-')));}
+            else if(entry.getKey().equals("operationCapabilities")) {
+                var original=entry.getValue();var array=((ObjectNode)node).putArray(entry.getKey());
+                original.forEach(v->array.add(v.asString().toLowerCase(Locale.ROOT).replace('_','-')));
+            }
             else lower(entry.getValue());
         } else if(node.isArray())node.forEach(V3NativeSnapshotCodec::lower);
     }
