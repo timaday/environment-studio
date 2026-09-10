@@ -7,6 +7,10 @@ entry or client support restriction. Production bootstrap, packaging, complete
 mapped-image/loader strategy and client wiring remain subsequent integration.
 The production compiled record registry stays empty.
 
+[Direct-root mapped closure](privacy-root-closure-v1.md) extends this same owner
+with a bounded stopped-inspection prerequisite. It adds no JNI signature or
+FinalAdmitted path; complete runtime identity remains required.
+
 ## Exact Java boundary
 
 All types below are nested in the package-private final class
