@@ -550,7 +550,24 @@ it("preserves safe save refusals without retry and rejects late JSON after the o
     [503, "UNAVAILABLE"],
   ] as const) {
     const before = fetcher.mock.calls.length;
-    fetcher.mockResolvedValueOnce(json({ code }, status));
+    fetcher.mockResolvedValueOnce(
+      json(
+        status === 422
+          ? {
+              kind: "rejected",
+              diagnostics: [
+                {
+                  phase: "parse",
+                  code: "INVALID_SOURCE",
+                  pointer: "",
+                  message: "Invented source refusal.",
+                },
+              ],
+            }
+          : { code },
+        status,
+      ),
+    );
     await expect(api.saveDefinition(prepared)).rejects.toMatchObject({ status, code });
     expect(fetcher).toHaveBeenCalledTimes(before + 1);
   }

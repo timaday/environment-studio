@@ -126,7 +126,7 @@ it("keeps exact source and diagnostics after a definite refusal without an uncer
   fetcher.mockResolvedValueOnce(
     new Response(
       JSON.stringify({
-        code: "REJECTED",
+        kind: "rejected",
         diagnostics: [
           {
             phase: "publication",
@@ -386,4 +386,40 @@ it("refuses an oversized file before allocating a reader or starting IO", async 
   } finally {
     read.mockRestore();
   }
+});
+
+it.each([
+  { code: "REJECTED" },
+  { kind: "rejected", diagnostics: [] },
+  {
+    kind: "rejected",
+    diagnostics: [
+      {
+        phase: "parse",
+        code: "INVALID_SOURCE",
+        pointer: "",
+        message: "Invented refusal.",
+        extra: true,
+      },
+    ],
+  },
+  {
+    kind: "rejected",
+    diagnostics: [
+      { phase: "parse", code: "INVALID_SOURCE", pointer: "", message: "Invented refusal." },
+    ],
+    code: "REJECTED",
+  },
+])("retains exact uncertain replay for an unrecognized semantic422 envelope %#", async (body) => {
+  const { result, fetcher } = await setup();
+  fetcher.mockResolvedValueOnce(new Response(JSON.stringify(body), { status: 422 }));
+  await act(() => result.current.save());
+  expect(result.current.pending).toBe(true);
+  act(() => result.current.setSource("must not replace an uncertain command"));
+  expect(result.current.source).toBe(source);
+  const sent = fetcher.mock.calls[2];
+  fetcher.mockRejectedValueOnce(new Error("invented replay response loss"));
+  await act(() => result.current.retry());
+  expect(fetcher.mock.calls[3][0]).toBe(sent[0]);
+  expect(fetcher.mock.calls[3][1]?.body).toBe(sent[1]?.body);
 });

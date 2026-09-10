@@ -147,6 +147,17 @@ compiler Rejected diagnostics returns413 without truncation; larger Incomplete
 history remains subject to snapshot budgets. No source, projection, owner or
 credential canary may appear in logs/errors.
 
+The semantic save422 envelope is exactly `{kind:"rejected",diagnostics:[...]}`;
+it has no top-level code. Diagnostics contain exactly phase, code, pointer and
+message: phases parse/shape/semantic/publication, safe uppercase code1–128
+characters, scalar string pointer/message, and1–256 entries in returned order.
+The browser recognizes this complete envelope only for PUT to an exact v3
+definition/profile object route and surfaces REJECTED with its diagnostics.
+That confirmed pre-commit outcome releases a pending draft command while retaining
+editable exact source. A bare422, code-only REJECTED, malformed/incomplete envelope
+or contradictory fields do not establish this outcome and retain uncertain replay.
+Do not extend recognition to publication/plan routes or possibly committed403/413.
+
 ## Acceptance
 
 Join actual HTTP security/session behavior, v3 compiler, historical codec and

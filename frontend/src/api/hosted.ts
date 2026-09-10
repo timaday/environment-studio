@@ -1,3 +1,5 @@
+import { workspaceRejection } from "./workspaceRejection";
+
 // Closed early-refusal codes from the hosted v3 plan HTTP contract.
 const v3ControllerCodes = new Set([
   "BODY_DEADLINE",
@@ -327,6 +329,17 @@ export class HostedApi {
       }
       live();
       if (!response.ok) {
+        if (
+          response.status === 422 &&
+          method === "PUT" &&
+          /^\/api\/v3\/(?:definitions|profiles)\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}(?![\s\S])/u.test(
+            path,
+          )
+        ) {
+          const diagnostics = workspaceRejection(value);
+          if (diagnostics === null) throw new ApiFailure(422, "RESPONSE_UNAVAILABLE");
+          throw new ApiFailure(422, "REJECTED", diagnostics);
+        }
         const failure = value as { code?: unknown; diagnostics?: Diagnostic[] };
         const code =
           typeof failure.code === "string" && /^[A-Z][A-Z0-9_]{0,95}$/.test(failure.code)
