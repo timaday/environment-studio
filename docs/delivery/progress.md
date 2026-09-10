@@ -5,38 +5,46 @@ and [D01a integration](../evidence/d01a-integration.md) for actual commands and
 results; the table below reports capability, not test count.
 
 The [shared remote review queue](https://github.com/timaday/environment-studio/issues/9)
-is active. Accepted JNI-QA-001 and its confirmed duration-handoff extension are
-corrected in local IDE2 candidate `3a84c2c432aec05d256b0f5e85cfd4636ee789b8`
-(parent01b6485), with author51 focused checks. Closure WIP remains preserved and
-assigned only to IDE2. The lead corrected OBS-QA-001 cancellation publication as
-`2d185bd0a88ae83a5788340d8fde2f9b8c5753bb` and PostgreSQL OBS-QA-002 redundant
-uniqueness as `a6291d2605b87d3730b2166e36f5aa7e03d253d7`; their combined local
-branch passes72 focused Java checks. Oracle redundancy is not a reproduced defect.
-Physical/computed/definition clients are frozen as59fef10/06b0888/954ded6;
-the final stack passes125 frontend/58 schema/check/build. All these candidates
-remain unreviewed and unintegrated. Automatic approval review rejected Git push
-because approval is required while AskForApproval is Never. The user has been
-asked to publish the three branch heads listed in issue9; no alternate upload or
-unfetchable test assignment is used. V3 review/content-policy candidate
-`32499697b263c63e22ad928fb9616928e9645938` is now locally implemented and source-reviewed:
-one proof-invalidation P2 was reproduced/corrected and independently verified;
-99 focused Java checks and ten compiled guard mutations pass. It remains
-unpublished/unintegrated, with full Maven/OCI verification pending. Its
-typed review browser client is frozen as
-`6e3acf6ec2fbc60256feb13ada90ec053dccad9f` on the combined client/server review base:
-136 frontend/59 schema/check/build and seven compiled guard mutations pass;
-non-author source review found no confirmed defect. It is not root-integrated.
-IDE2's frozen26-file symbol/version WIP3 has a bounded non-author source review
-with no confirmed finding; remaining closure work stays exclusively with IDE2.
-Two writers and remote read-only review remain.
+is active. The separate [combined correction candidate](../evidence/combined-corrections-20260910.md)
+is `875a257d659d3139a2c180cc587531ddcd095c96` on
+`review/combined-corrections-20260910`, starting from41effa6. It includes completed
+native deadline, JDBC cancellation/PostgreSQL uniqueness, view/discovery clients,
+review server/browser, compiler-result compatibility and sequential HTTP test
+corrections. All slices and the fixed combined source have non-author source
+reviews; no blocking integration finding remains. Combined focused351 Java
+(70core/1parser/236server/44supervisor),136 frontend/59 schema/check/build and
+G00/11Python pass. This candidate is not accepted into root or release-qualified;
+remote independent correction probes and combined full Maven/OCI remain pending.
+Root application source remains at30446e2 while these candidates await verification.
 
-The remote full Maven gate on exact30446e2 failed six server HTTP assertions
+Remote baseline30446's full Maven gate failed six sequential HTTP assertions
 with429 after core330/parser7 passed and server947 executed; supervisor was skipped.
-This is an actual gate failure under investigation, not superseded by the earlier
-local1619 PASS. The existing remote reviewer is isolating response receipt versus
-actual semantic-record settlement. Source analysis supports a sequential-test
-barrier hypothesis but does not prove all six causes. No lifetime guard is weakened,
-no duplicate full test campaign or G08 run started, and root owns any correction.
+TEST-QA-001 is accepted: controlled real HTTP scheduling reproduces receipt before
+actual worker settlement. The correction waits for actual registry removal in
+ordinary sequential tests; all four immediate held-body429 controls remain intact.
+A further six-call integration reconciliation covers the new review method.
+Actual controlled RED/GREEN and a compiled guard mutation pass their intended
+oracles. This concrete defect does not prove every original failure's cause or
+clear the failed full gate. JNI-QA-001 and OBS-QA-001/002 remain accepted corrections
+awaiting independent verification on the combined tree.
+
+Automatic approval review rejected Git push because approval is required while
+AskForApproval is Never. Read-only remote refs still lack the prepared combined
+and application branches; native remote remains6545a9c. Issue9 comment5621281666
+records the exact combined candidate and prepared checks as NOT FETCHABLE /
+NOT ASSIGNED. The existing publication question remains pending; no alternate
+upload or duplicate baseline campaign is used.
+
+IDE2 exclusively owns the preserved native closure WIP. Frozen symbol/version
+WIP3 and vDSO WIP4 have bounded non-author source reviews with no confirmed
+finding; reviewers executed no tests. The lead's reviewed [stopped-smaps contract](../evidence/native-smaps-contract.md)
+is integrated as41effa6 and returned as an exact one-file patch with pre/post
+hashes, unblocking the actual omitted-kernel-role RED. Complete closure,
+resources/lifetime and installed-runtime qualification remain open. Two writers
+remain: lead application/integration and IDE2 native; all subagents and the remote
+reviewer are read-only. The next application prerequisite is a real v3 combined
+source/derived/target resource control. Required UX skill location remains
+unresolved; no new React journey or production readiness is claimed.
 
 Two-IDE continuation: [native handoff and exact ownership](ide2-native-handoff.md).
 Lead is the sole IDE1 application writer; previous writing subagents are stopped.
