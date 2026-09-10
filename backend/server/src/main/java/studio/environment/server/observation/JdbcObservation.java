@@ -85,9 +85,7 @@ public final class JdbcObservation implements ObservationPort {
         studio.environment.core.definitionv3.NativeCompilationResult result;
         try { result = new studio.environment.core.definitionv3.NativeDefinitionCompiler().compile(checked.definition()); }
         catch (RuntimeException invalid) { throw new ObservationFailure(Code.INVALID_SELECTION); }
-        if (!(result instanceof studio.environment.core.definitionv3.NativeCompilationResult.Incomplete incomplete)
-                || !incomplete.checked().equals(checked)
-                || incomplete.diagnostics().stream().anyMatch(d -> !d.code().equals("MECHANISM_UNQUALIFIED"))) throw new ObservationFailure(Code.INVALID_SELECTION);
+        if (!result.isCompatibleWith(checked)) throw new ObservationFailure(Code.INVALID_SELECTION);
         var binding = checked.definition().bindings().stream().filter(b -> b.id().equals(selection.bindingId())).findFirst().orElseThrow(() -> new ObservationFailure(Code.INVALID_SELECTION));
         return new ReadSelection(binding, checked.logicalDigest(), checked.bindingDigests().get(binding.id()), "3");
     }

@@ -33,10 +33,7 @@ public final class DerivedInputValidator {
     private static Check validate(NativeCompilationResult.Checked definition, Pin expected, DerivedInput input) {
         // Checked is data, not proof that this exact declaration/vector passed the compiler.
         var compiled = new NativeDefinitionCompiler().compile(definition.definition());
-        if (!(compiled instanceof NativeCompilationResult.Incomplete checked)
-                || !checked.checked().equals(definition)
-                || checked.diagnostics().stream().anyMatch(d -> !d.code().equals("MECHANISM_UNQUALIFIED")))
-            fail("INVALID_DEFINITION");
+        if (!compiled.isCompatibleWith(definition)) fail("INVALID_DEFINITION");
         if (!expected.equals(input.pin())) fail("STALE_INPUT");
         Binding binding = definition.definition().bindings().stream().filter(b -> b.id().equals(expected.bindingId())).findFirst().orElse(null);
         if (binding == null || !expected.logicalDigest().equals(definition.logicalDigest())

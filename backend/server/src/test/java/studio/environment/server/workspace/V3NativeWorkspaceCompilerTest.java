@@ -24,6 +24,18 @@ class V3NativeWorkspaceCompilerTest {
         }
     }
 
+    @Test void constructedReadyResultProjectsExactHistoricalDataWithoutQualifyingActualCompiler() throws Exception {
+        String source = Files.readString(Path.of("../../fixtures/native-v3/definition.json"));
+        var actual = assertInstanceOf(NativeCompilationResult.Incomplete.class,
+                new NativeV3DefinitionBytesCompiler().compile(source.getBytes(StandardCharsets.UTF_8), DefinitionBytesCompiler.Format.JSON));
+        var projected = assertDoesNotThrow(() -> V3NativeWorkspaceCompiler.content(new NativeCompilationResult.ReadyToPublish(actual.checked())));
+        assertEquals(actual.checked(), projected.checked());
+        assertTrue(projected.diagnostics().isEmpty());
+        assertTrue(projected.historicalReady());
+        assertThrows(UnsupportedOperationException.class, () -> projected.diagnostics().add(actual.diagnostics().getFirst()));
+        assertFalse(new V3NativeWorkspaceCompiler().definition(command(source, DraftCommand.Format.JSON)).historicalReady());
+    }
+
     private static final class Store implements V3NativeStore {
         int appends;
         public java.util.Optional<V3NativeRevision> replay(studio.environment.core.session.Owner owner, NativeCommand command) {

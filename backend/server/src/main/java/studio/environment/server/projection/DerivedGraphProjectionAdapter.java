@@ -49,8 +49,7 @@ public final class DerivedGraphProjectionAdapter {
             Snapshot supplied, BooleanSupplier cancelled) {
         cancellation(cancelled);
         var recompiled = new NativeDefinitionCompiler().compile(definition.definition());
-        if (!(recompiled instanceof NativeCompilationResult.Incomplete checked) || !checked.checked().equals(definition)
-                || checked.diagnostics().stream().anyMatch(d -> !d.code().equals("MECHANISM_UNQUALIFIED"))) fail("INVALID_DEFINITION");
+        if (!recompiled.isCompatibleWith(definition)) fail("INVALID_DEFINITION");
         if (!expected.revisionToken().equals(supplied.revisionToken()) || !expected.logicalDigest().equals(supplied.logicalDigest())
                 || !expected.bindingId().equals(supplied.bindingId()) || !expected.bindingDigest().equals(supplied.bindingDigest())) fail("STALE_INPUT");
         var binding = definition.definition().bindings().stream().filter(b -> b.id().equals(supplied.bindingId())).findFirst().orElse(null);

@@ -6,7 +6,8 @@ The [derived engine](../evidence/qf34-derived-engine.md),
 [observed XML](../evidence/qf34-derived-projection.md),
 [final targets](../evidence/qf34-derived-target.md) and
 [physical-only profiles](../evidence/qf34-profile-v3.md) are reviewed internal
-mechanisms. V3 publication and hosted plan support remain unimplemented.
+mechanisms. Versioned publication and hosted plan paths have separate internal
+implementation evidence; the actual compiler still blocks new publication.
 A schema-valid document has no publication or execution authority.
 This version is explicit opt-in; [v2](native-definition-v2.md) keeps its original
 meaning, mechanisms, digest domains and historical codecs.
@@ -66,6 +67,34 @@ vocabulary rejects. A missing readable mapping remains physical publication
 incompleteness, whereas an ineligible derivation input is a semantic error.
 Compilation cannot establish actual source presence, matching-child cardinality,
 value validity or runtime resource feasibility without complete observations.
+
+## Closed compilation results and internal compatibility
+
+The internal Java result has three closed variants. Rejected has nonempty ordered
+diagnostics and no checked model. Incomplete has the exact checked model and
+nonempty ordered publication-phase diagnostics. ReadyToPublish has the exact
+checked model and an immutable empty diagnostic list. It describes compiler
+eligibility only; it is not a published revision, runtime observation or export
+authorization. Constructing any result or Checked record supplies data only.
+
+Internal projection, target, profile and observation consumers freshly compile
+the supplied declaration before comparing the complete Checked value, including
+the declaration, logical digest, all binding digests and mechanism vector. That
+comparison accepts ReadyToPublish, or Incomplete with exclusively
+MECHANISM_UNQUALIFIED diagnostics. Rejected, any other publication blocker
+(including mixed diagnostics), or any mismatch refuses. Historical readiness or
+an uploaded Checked/result record cannot replace fresh compilation.
+
+The workspace compiler projects each typed outcome without stripping incomplete
+diagnostics. New publication and fresh plan lookup retain their separate fresh
+compilation, equality, owner and policy checks. Historical storage/replay remains
+readable without becoming current authority.
+
+This result compatibility change does not enable production ReadyToPublish:
+the actual compiler continues to add MECHANISM_UNQUALIFIED to every valid result
+until the required paths have actual qualification evidence. No configuration
+flag, uploaded mechanism list, diagnostic suppression or test witness can enable
+it. Tests constructing ReadyToPublish qualify only the result/consumer boundary.
 
 ## Compatibility bytes and mechanism ownership
 
