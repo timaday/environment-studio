@@ -1,6 +1,75 @@
 # IDE 2 native handoff — 10 September 2026
 
-**Ready for IDE 2 to take the existing JNI candidate.** Lead remains the sole
+## Current continuation assignment
+
+The initial JNI candidate and IDE2 deadline correction `f5025cc5` are integrated
+as lead commit `d26cef09a4f1256cb8fb8922c92db20b0876ede6`: fixed non-author review,
+combined Java1617 and distribution checks pass. Preserve the supplementary
+`7a349d87cb6c5aa424ad1c782a2ab5d42b7f5e65` test candidate and the active coordinator
+allocation tests as separate checkpoints. Their review/gates are separate from
+that1617 result. The historical intake below remains for traceability.
+
+**Next task is assigned after checkpointing the current exception tests:** implement
+the complete [owned direct-root mapped closure prerequisite](../../backend/tools/guarded-supervisor/docs/privacy-root-closure-v1.md)
+through the original production JNI/launch owner. The contract passed fixed
+non-author review; source SHA256
+`0e9ebdb1e388b1cb964b0c19b646c9d71dc5ffb8cee563d42737d84ce2d866fc`.
+Review records use `es-review-native-root-closure-contract-v*-20260910.md` outside
+the checkout. It grants no production identity/client admission.
+
+Keep the existing worktree and branch. Finish or freeze the currently active
+coordinator test slice and record its exact commit/patch before starting closure.
+Carry both test candidates forward. Apply only the lead's forthcoming contract/
+assignment commit onto that checkpoint, then record the resulting exact HEAD and
+contract hash in the existing return artifact before editing closure code. Do not
+reset to d26cef0 or discard native commits to obtain the shared contract.
+
+The earlier19-file ownership remains. Additional allowed files, all relative to
+`backend/tools/guarded-supervisor/`, for this new task are exactly:
+
+- `src/main/c/privacy-closure.c`, `privacy-closure.h`, `privacy-memory.c`,
+  `privacy-memory.h` (new subordinate helpers); existing `privacy-file.c/.h`,
+  `privacy-hash.c/.h`, `privacy-image.c/.h`, `privacy-elf.c/.h`, `privacy-maps.c/.h`,
+  `privacy-peer.c/.h`, `privacy-arguments.c/.h`, `privacy-script.c/.h`.
+- `src/test/c/privacy-closure-fixture.c`, `privacy-closure-child.c`,
+  `privacy-closure-loader.c`, `privacy-closure-guard.c`,
+  `privacy-closure-jni-probe.c` (new invented helpers).
+- `src/test/java/studio/environment/supervisor/PrivacyClosureTest.java`,
+  `PrivacyClosureProbe.java` (new), and existing `PrivacyLaunchImageTest.java`,
+  `PrivacyMapsTest.java`, `PrivacyElfTest.java`, `PrivacyHashTest.java`.
+
+Private helper changes must preserve existing callers/meaning and one shared
+counter/clock/cleanup owner. All files outside these explicit lists stay reserved,
+including independent-review fixtures, Main/bootstrap, terminal/execution engines,
+every build/assembly/CI file, contracts/schemas and delivery/evidence metadata.
+Request a concrete needed shared change before depending on it. No new JNI
+signature, production registry entry, strategy boolean or test admission setter.
+
+First acceptance is actual JNI/FORK correlation followed by an owned complete
+stop/closure attempt. Preserve meaningful RED and independent expected bytes,
+relocations and full coverage. Green must distinguish private executable mutation
+from unchanged file/maps, correct versus altered relocations, special kernel
+coverage and Java/native cleanup, while still returning missing-stage INSTALLATION
+with no challenge/admitted event. Use the contract's adverse examples and exact
+resource limits. Report impossible required evidence promptly without replacing
+it with a partial-success fixture.
+
+The kernel oracle is separate external host evidence, never invented repository
+data. Keep host-derived vDSO images and native test-linked kernel records outside
+the checkout/build context; repository fixtures contain generic constructors and
+invented programs only. Freeze a pre-peer reference and identify its provenance.
+The exact kernel must remain unqualified until its independent release evidence.
+
+New outputs: `/home/tim/.tmp/es-ide2-native-20260910/root-closure/`, with separately
+owned0700 `/tmp` fixture parents and ephemeral ports. No database/container or
+real application input is assigned. Use focused checks while developing. The lead
+owns the next full Maven/OCI window for integrated application/native gates; request
+the full window through the existing return artifact when the closure candidate
+is frozen. Keep all Maven/node outputs separate, no extra writer or coordination
+service. Return an immutable candidate, exact files, RED/GREEN/mutations and
+remaining acceptance checks at the existing return path; do not push or merge.
+
+**Historical intake, now completed.** Lead remains the sole
 application writer in IDE 1. Both previous coding subagents have checkpointed,
 stopped editing and relinquished their assignments. The existing non-author JNI
 reviewer is read-only. There may be at most two writers across both IDEs, one per

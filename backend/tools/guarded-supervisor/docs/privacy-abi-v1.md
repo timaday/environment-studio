@@ -7,6 +7,11 @@ Only the standalone supervisor may use this private ABI. The compiled registry
 remains empty. All examples, fault probes and evidence must be independently
 invented and credential-free until the separate privacy gates pass.
 
+The next owner-integrated inspection stage is specified in
+[direct-root mapped closure](privacy-root-closure-v1.md). Its stopped inspection,
+closed recipes and complete mapping coverage remain internal prerequisites;
+descendant/continuation and installed-runtime admission are still required.
+
 ## Installation and launch prerequisite
 
 The distribution fixes one Linux amd64 guard/JNI library, its absolute trusted
