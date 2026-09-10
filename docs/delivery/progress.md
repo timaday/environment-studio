@@ -17,8 +17,12 @@ the final stack passes125 frontend/58 schema/check/build. All these candidates
 remain unreviewed and unintegrated. Automatic approval review rejected Git push
 because approval is required while AskForApproval is Never. The user has been
 asked to publish the three branch heads listed in issue9; no alternate upload or
-unfetchable test assignment is used. Lead continues the separate owned v3 review/
-content-policy WIP; two writers and remote read-only review remain.
+unfetchable test assignment is used. V3 review/content-policy candidate
+`32499697b263c63e22ad928fb9616928e9645938` is now locally implemented and source-reviewed:
+one proof-invalidation P2 was reproduced/corrected and independently verified;
+99 focused Java checks and ten compiled guard mutations pass. It remains
+unpublished/unintegrated, with full Maven/OCI verification pending. Lead continues
+its typed browser API client; two writers and remote read-only review remain.
 
 Two-IDE continuation: [native handoff and exact ownership](ide2-native-handoff.md).
 Lead is the sole IDE1 application writer; previous writing subagents are stopped.
