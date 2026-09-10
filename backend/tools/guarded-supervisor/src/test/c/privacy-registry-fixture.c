@@ -29,7 +29,7 @@ es_root_result __wrap_es_root_disarm(es_root *p){return disarm_fault?ES_ROOT_CLE
 JNIEXPORT void JNICALL Java_studio_environment_supervisor_PrivacyBridgeProbe_disarmFault(JNIEnv *e,jclass c){(void)e;(void)c;disarm_fault=1;}
 JNIEXPORT jint JNICALL Java_studio_environment_supervisor_PrivacyBridgeProbe_metrics(JNIEnv *e,jclass c){
  (void)e;(void)c;unsigned refs=0,live=0,retired=0,bad=0;
- pthread_mutex_lock(&invocation.mutex);for(unsigned i=0;i<invocation.issued;i++){es_registry_entry *p=&entries[i];refs+=p->refs;if(p->retired){retired++;if(p->complete){es_launch *o=&p->owner;
+ pthread_mutex_lock(&invocation.mutex);for(unsigned i=0;i<invocation.issued;i++){es_registry_entry *p=&entries[i];refs+=p->refs;if(p->retired){retired++;if(p->complete&&p->owner.initialized){es_launch *o=&p->owner;
    if(o->cancel_fd>=0||p->finally_owed||p->event_active||o->users||o->signals)bad=1;
    if(o->listener.state&&(o->listener.directory_fd>=0||o->listener.socket_path_fd>=0||o->listener.listen_fd>=0||o->listener.live))bad=1;
    for(unsigned j=0;j<o->listener.accepted;j++)if(o->listener.peers[j].fd>=0)bad=1;
@@ -120,6 +120,70 @@ JNIEXPORT jlong JNICALL Java_studio_environment_supervisor_PrivacyBridgeProbe_he
 }
 JNIEXPORT void JNICALL Java_studio_environment_supervisor_PrivacyBridgeProbe_releaseAllocation(JNIEnv *e,jclass c){(void)e;(void)c;pthread_mutex_lock(&fixture_lock);allocation_released=1;pthread_cond_broadcast(&fixture_changed);pthread_mutex_unlock(&fixture_lock);}
 #include <errno.h>
+/* Independently invented native-construction schedules. Underlying syscalls stay
+   real; only their construction completion/failure boundary is perturbed. */
+#include <sys/random.h>
+static int open_fault,open_expired,open_observed,open_descriptors[4],open_fd_count;
+static uint64_t open_startup,open_operation,open_released,open_cleanup_left;
+static unsigned open_close_calls;
+static void native_open_boundary(void){
+ es_launch *p=&entries[invocation.issued-1].owner;
+ open_startup=p->startup_deadline;open_operation=p->operation_deadline;open_fd_count=0;
+ if(p->cancel_fd>=0)open_descriptors[open_fd_count++]=p->cancel_fd;
+ if(p->listener.state){int fds[]={p->listener.directory_fd,p->listener.socket_path_fd,p->listener.listen_fd};
+  for(unsigned i=0;i<3;i++)if(fds[i]>=0)open_descriptors[open_fd_count++]=fds[i];}
+ uint64_t end=open_expired?open_startup+150000000ULL:es_registry_now()+20000000ULL;
+ struct timespec until={(time_t)(end/1000000000ULL),(long)(end%1000000000ULL)};
+ int status;do{status=clock_nanosleep(CLOCK_MONOTONIC,TIMER_ABSTIME,&until,NULL);}while(status==EINTR);
+ if(status)abort();
+ open_released=es_registry_now();open_observed=1;
+}
+es_listener_result __real_es_listener_path(es_listener *,char *);
+es_listener_result __wrap_es_listener_path(es_listener *p,char *out){
+ es_listener_result r=__real_es_listener_path(p,out);if(open_fault==1&&r==ES_LISTENER_OK){open_fault=0;native_open_boundary();}return r;
+}
+es_listener_result __real_es_listener_open(es_listener *,int,const char *,int,uint64_t,unsigned);
+es_listener_result __wrap_es_listener_open(es_listener *p,int fd,const char *path,int cancel,uint64_t deadline,unsigned width){
+ es_listener_result r=__real_es_listener_open(p,fd,path,cancel,deadline,width);
+ if(open_fault==3&&r==ES_LISTENER_OK){open_fault=0;native_open_boundary();return ES_LISTENER_IO;}return r;
+}
+ssize_t __real_getrandom(void *,size_t,unsigned);
+ssize_t __wrap_getrandom(void *p,size_t n,unsigned flags){
+ ssize_t r=__real_getrandom(p,n,flags);if(open_fault==2){open_fault=0;native_open_boundary();errno=EIO;return -1;}return r;
+}
+int __real_eventfd(unsigned,int);
+int __wrap_eventfd(unsigned value,int flags){
+ if(open_fault==4){open_fault=0;int fd=__real_eventfd(value,flags);if(fd<0||close(fd))abort();native_open_boundary();errno=EMFILE;return -1;}
+ return __real_eventfd(value,flags);
+}
+es_launch_cleanup __real_es_launch_close(es_launch *,uint64_t);
+es_launch_cleanup __wrap_es_launch_close(es_launch *p,uint64_t left){
+ if(open_observed&&p==&entries[0].owner&&open_close_calls++==0)open_cleanup_left=left;
+ return __real_es_launch_close(p,left);
+}
+JNIEXPORT void JNICALL Java_studio_environment_supervisor_PrivacyBridgeProbe_nativeOpenFault(JNIEnv *e,jclass c,jint mode,jboolean expired){
+ (void)e;(void)c;open_fault=mode;open_expired=expired;
+}
+JNIEXPORT jint JNICALL Java_studio_environment_supervisor_PrivacyBridgeProbe_nativeOpenOutcome(JNIEnv *e,jclass c,jint fault){
+ (void)e;(void)c;pthread_mutex_lock(&invocation.mutex);es_registry_entry *p=&entries[0];es_launch *o=&p->owner;
+ if(!fault){int bad=invocation.issued!=1||invocation.live||!p->retired||!p->settled||p->refs||p->published||p->uncertain||!p->complete
+   ||p->failure!=ES_BRIDGE_DEADLINE||o->initialized||o->startup_deadline||o->operation_deadline;
+  const unsigned char *bytes=(const unsigned char*)o;for(size_t i=0;i<sizeof(*o);i++)if(bytes[i])bad=1;
+  pthread_mutex_unlock(&invocation.mutex);return bad;}
+ es_bridge_failure expected=fault==1?ES_BRIDGE_DEADLINE:fault==3?ES_BRIDGE_PLATFORM:ES_BRIDGE_RESOURCE;
+ es_launch_result original=fault==1?ES_LAUNCH_DEADLINE:fault==3?ES_LAUNCH_IO:ES_LAUNCH_RESOURCE;
+ int bad=!open_observed||p->published||!p->retired||!p->settled||p->refs||p->finally_owed||p->event_active||invocation.live
+  ||p->failure!=expected||o->startup_deadline!=open_startup||o->operation_deadline!=open_operation
+  ||o->failure!=original||o->closing!=ES_LAUNCH_CLOSE_SETTLED||!open_close_calls
+  ||(o->listener.state&&o->listener.startup_deadline_ns!=open_startup);
+ if(open_expired)bad|=open_cleanup_left!=0||!p->uncertain||p->complete||!o->inconclusive||o->cleanup_deadline<open_released;
+ else bad|=!open_cleanup_left||open_released>=open_startup||open_cleanup_left>open_startup-open_released||p->uncertain||!p->complete||o->inconclusive;
+ uint64_t excess=o->cleanup_deadline>open_startup?o->cleanup_deadline-open_startup:0;
+ printf("NATIVE_OPEN_REMAINING=%llu CLEANUP_AFTER_STARTUP=%llu COMPLETE=%u UNCERTAIN=%u\n",(unsigned long long)open_cleanup_left,(unsigned long long)excess,p->complete,p->uncertain);
+ pthread_mutex_unlock(&invocation.mutex);
+ for(int i=0;i<open_fd_count;i++){errno=0;if(fcntl(open_descriptors[i],F_GETFD)!=-1||errno!=EBADF)bad=1;}
+ return bad;
+}
 /* Read-only observation of the reserved entry after the original open caller
    joined. Production token lookup must never expose this unpublished owner. */
 JNIEXPORT jint JNICALL Java_studio_environment_supervisor_PrivacyBridgeProbe_unpublishedOutcome(JNIEnv *e,jclass c,jlong token){
