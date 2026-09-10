@@ -7,4 +7,6 @@ import studio.environment.core.session.SessionLedger;
 @FunctionalInterface
 public interface SessionCleanup {
     void invalidate(SessionLedger.Lease lease);
+    /** Passive exact-lease ownership only; synchronous hooks need no override. */
+    default boolean awaitingWork(SessionLedger.Lease lease) { return false; }
 }

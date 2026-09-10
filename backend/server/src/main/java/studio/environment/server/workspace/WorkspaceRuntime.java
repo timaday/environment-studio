@@ -39,6 +39,7 @@ public final class WorkspaceRuntime {
                 new V3NativeWorkspaceCompiler(), new V3ProfileWorkspaceCompiler(), publishers);
     }
     public void cleanupV3(studio.environment.core.session.SessionLedger.Lease lease){v3Operations.invalidate(lease);}
+    public boolean awaitingV3CleanupWork(studio.environment.core.session.SessionLedger.Lease lease){return v3Operations.awaitingWork(lease);}
     DraftWorkspace service(WorkspaceCommit commit) {
         return new DraftWorkspace(store.orElseThrow(() -> new WorkspaceRefusal(WorkspaceRefusal.Code.UNAVAILABLE)).withCommit(commit),
             command -> new DefinitionBytesCompiler().compile(StrictUtf8.encode(command.source()), DefinitionBytesCompiler.Format.valueOf(command.format().name())));

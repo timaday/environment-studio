@@ -7,5 +7,10 @@ import studio.environment.server.session.SessionCleanup;
 
 @Configuration
 class PlanLifecycleConfiguration {
-    @Bean SessionCleanup planCleanup(ObjectProvider<PlanRuntime> runtime) { return lease->runtime.getObject().cleanup(lease); }
+    @Bean SessionCleanup planCleanup(ObjectProvider<PlanRuntime> runtime) {
+        return new SessionCleanup() {
+            public void invalidate(studio.environment.core.session.SessionLedger.Lease lease) { runtime.getObject().cleanup(lease); }
+            public boolean awaitingWork(studio.environment.core.session.SessionLedger.Lease lease) { return runtime.getObject().awaitingCleanupWork(lease); }
+        };
+    }
 }

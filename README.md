@@ -59,6 +59,9 @@ Combined Java1373 passes; new v3 plan routes remain required.
 [Small v3 summaries](docs/evidence/qf34-plan-summary.md) now distinguish physical
 and computed totals, and [body callbacks](docs/evidence/owned-body-callbacks.md)
 no longer wait behind the reader monitor. Combined Java1393 passes.
+[Transfer foundations](docs/evidence/owned-plan-transfer-foundation.md) now preserve
+cleanup retries across work families and enforce encoding/completion ownership.
+Combined Java1427 passes; the v3 plan transfer registry and routes remain in progress.
 The exact `047d1b0` [local image](docs/evidence/shared-validation-artifacts.md)
 repeats Java1320 and passes protected startup/workspace smoke; release qualification
 remains open.

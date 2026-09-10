@@ -96,8 +96,10 @@ verified. [Immutable model-version admission](../evidence/qf34-plan-version-admi
 and [legacy HTTP enforcement](../evidence/qf34-plan-version-http.md) now pass fixed
 independent reviews and combined Java1373. [Small v3 summaries](../evidence/qf34-plan-summary.md)
 and [body callbacks](../evidence/owned-body-callbacks.md) now pass combined Java1393.
-Next backend work is mixed-family cleanup recovery, bounded encoding and
-owned transfer and versioned plan routes; export remains unavailable.
+[Cleanup and transfer helpers](../evidence/owned-plan-transfer-foundation.md) now
+pass fixed independent review and combined Java1427. Next backend work is the
+shared-capacity v3 registry, owned small replies and versioned plan routes; export
+remains unavailable.
 
 The lead owns shared contracts and compatibility. Independent fixed-candidate
 review, actual RED/GREEN, targeted guard mutations and integrated verification

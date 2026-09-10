@@ -165,7 +165,21 @@ public final class HostedSessions {
     /** Plan worker completion can coincide with the original retirement hook; retain that notification. */
     public Optional<CleanupReport> resumeCleanupAfterWork(String id) {
         var slot=slots.get(id);if(slot==null)return Optional.empty();
-        synchronized(slot){if(!slot.retired || slot.lease==null)return Optional.empty();}
+        SessionLedger.Lease original;
+        boolean[] completed;
+        synchronized(slot){
+            if(!slot.retired || slot.lease==null)return Optional.empty();
+            original=slot.lease;completed=slot.hookComplete.clone();
+        }
+        for(int i=0;i<cleanup.size();i++) {
+            if(completed[i])continue;
+            try {
+                if(cleanup.get(i).awaitingWork(original))return ledger.cleanupReports().stream().filter(report->report.sessionId().equals(id)).findFirst();
+            } catch(RuntimeException failedCheck) {
+                return ledger.cleanupReports().stream().filter(report->report.sessionId().equals(id)).findFirst();
+            }
+        }
+        synchronized(slot){if(slots.get(id)!=slot || !slot.retired || !original.equals(slot.lease))return Optional.empty();}
         return ledger.resumeCleanup(id);
     }
     private void invalidate(SessionLedger.Lease lease) {

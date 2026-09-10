@@ -34,6 +34,7 @@
 | Immutable plan model-version admission | [plan-version-admission.md](plan-version-admission.md) |
 | Legacy plan route version enforcement | [plan-http-version-admission-v1.md](plan-http-version-admission-v1.md) |
 | Small v3 plan metadata | [plan-summary-v3.md](plan-summary-v3.md) |
+| Encoding authority and completion settlement | [plan-encoding-authority.md](plan-encoding-authority.md), [plan-transfer-completion.md](plan-transfer-completion.md) |
 | HTTP | [api.md](api.md), [openapi.yaml](openapi.yaml) |
 | Deployment | [../../deploy/README.md](../../deploy/README.md) |
 

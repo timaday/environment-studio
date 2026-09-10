@@ -37,7 +37,10 @@ public class HostedSecurity {
     @Bean Clock sessionClock() { return Clock.systemUTC(); }
     @Bean HostedSessions hostedSessions(Clock clock, List<SessionCleanup> cleanup) { return new HostedSessions(clock, cleanup); }
     @Bean SessionCleanup v3WorkspaceCleanup(org.springframework.beans.factory.ObjectProvider<studio.environment.server.workspace.WorkspaceRuntime> runtime) {
-        return lease->runtime.getObject().cleanupV3(lease);
+        return new SessionCleanup() {
+            public void invalidate(studio.environment.core.session.SessionLedger.Lease lease) { runtime.getObject().cleanupV3(lease); }
+            public boolean awaitingWork(studio.environment.core.session.SessionLedger.Lease lease) { return runtime.getObject().awaitingV3CleanupWork(lease); }
+        };
     }
     @Bean SessionExpiry sessionExpiry(HostedSessions sessions) { return new SessionExpiry(sessions); }
     static final class SessionExpiry {

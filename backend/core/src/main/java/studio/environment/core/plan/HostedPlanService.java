@@ -489,6 +489,15 @@ public final class HostedPlanService {
         }
         operation.phase=Phase.CANCELLED; operation.code="CANCELLED";
     }
+    /** Passive original-lease work query; no authority, expiry or cleanup-handle polling. */
+    public boolean awaitingCleanupWork(SessionLedger.Lease lease) {
+        synchronized(lock) {
+            var state=state(lease);
+            return state!=null && (state.commandReaders>0
+                    || state.plan!=null && (state.plan.rendering || state.plan.readers>0)
+                    || state.operations.values().stream().anyMatch(operation->operation.cleanup!=Cleanup.COMPLETE));
+        }
+    }
     /** Session cleanup hook. Original unfinished cleanup only; never observes again or restores authority. */
     public void invalidate(SessionLedger.Lease lease) {
         List<Operation> pending;

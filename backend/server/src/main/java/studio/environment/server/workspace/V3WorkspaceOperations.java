@@ -15,6 +15,9 @@ final class V3WorkspaceOperations implements SessionCleanup {
     @Override public synchronized void invalidate(SessionLedger.Lease lease) {
         if(active.stream().anyMatch(op->op.lease.equals(lease)))throw new IllegalStateException("WORKSPACE_CLEANUP_INCONCLUSIVE");
     }
+    @Override public synchronized boolean awaitingWork(SessionLedger.Lease lease) {
+        return active.stream().anyMatch(operation->operation.lease.equals(lease));
+    }
     synchronized int activeCount(){return active.size();}
     final class Operation {
         final SessionLedger.Lease lease;

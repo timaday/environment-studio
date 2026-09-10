@@ -59,6 +59,37 @@ three-attempt ceiling, commit-permit exclusion and explicit inconclusive state.
 Ordinary cleanup-status reads and retry calls do not create repeated notification
 loops. The plan adapter signals only after its original plan cleanup is confirmed,
 so intermediate reader completions cannot exhaust the session retry allowance.
+Before a work-completion notification spends a retry, the hosted session adapter
+checks each unfinished hook for outstanding asynchronous work on that exact lease.
+This passive check neither invalidates resources nor polls/retries cleanup handles,
+releases capacity, changes authority or consumes the three-attempt budget. A pending
+or failed check retains quarantine and does not request a ledger retry. The final
+settling worker must notify again; no background notification loop or queue is added.
+Readiness is checked outside the slot monitor and registry/completion locks. The
+existing ledger still coalesces a notification racing an active cleanup attempt.
+Initial retirement and explicit bounded retry retain their existing behavior and
+attempt all unfinished obligations; the passive gate applies only to notifications.
+
+SessionCleanup.awaitingWork(lease) defaults false for synchronous hooks. Hooks with
+asynchronous ownership must override it and report retained work, including terminal
+uncertainty. The actual plan and workspace composition must forward these checks.
+The plan check reports exact-lease command/view readers, active rendering and
+operations whose cleanup is not COMPLETE, including uncertainty. Idle retained
+plan state alone is not pending work: the later ledger retry still invalidates it.
+It never calls operation status or cleanup handles. The workspace check reports
+any retained operation for the lease,
+including inconclusive records. A completed hook is not queried or invalidated again.
+Every new asynchronous cleanup family must join this gate before its routes open.
+Readiness alone is never cleanup completion: the original ledger retry must still
+observe servlet and all hook cleanup, plus the original commit-permit exclusion.
+
+Acceptance includes repeated metadata-worker notifications while an actual workspace
+record remains held, then its final completion and successful fresh owner login.
+Use different-owner and stale-completion controls, multiple async families, failed
+passive checks, original running-attempt races, commit-permit exclusion and explicit
+three-attempt exhaustion. Controlled session/registry tests do not establish an
+actual HTTP scheduling defect or complete deployment qualification.
+
 Initial application limits are 64 live sessions total and one live session per
 owner. A new login for an already active owner is refused rather than silently
 invalidating active work. Capacity is checked atomically before pending login

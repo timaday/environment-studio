@@ -131,12 +131,19 @@ failures/errors/skips, assembly/hostile launcher,10 September at01:46:09BST. Fix
 nine-file manifest7ea0c46b4556675f0aaceaa3a538d10c1aa6870d94f710bad08c5bc8668f07e2
 over688e799 includes both independent reviews' tests. Missing computed evidence
 remains distinct from complete empty graphs; callbacks signal without reader locks.
-A separate controlled session/registry test reproduces mixed-family completion
-notifications exhausting three cleanup attempts while workspace work is held.
-Next backend work is its passive pending-work gate, bounded encoding/owned transfer,
-then versioned plan HTTP. Actual client/content/review evidence and combined resources
-remain open. Frontend40/schema42 are still scoped to8b5843d; retained image047d1b0
-predates these changes.
+The [reviewed transfer foundations](../evidence/owned-plan-transfer-foundation.md)
+now correct mixed-family cleanup retry exhaustion, add encoding-time authority/
+deadline checks and retain completion uncertainty after actual worker closure.
+Review reproduced and corrected reentrant observer-lock and contradictory later
+completion results before integration. Fixed22 manifest
+dd9f942ea9dbbad4a53d25bee537524e36cdb7398b8be343719c10adc28afcf2 over473a344 passes
+full Java1427 (324 core,7 parser,786 server,310 supervisor), zero failures/errors/
+skips, assembly/hostile launcher,10 September at02:05:48BST. All eight independent
+added cases are integrated. No route or readiness flag is enabled by these helpers.
+Next backend work is the shared-capacity v3 transfer registry, owned small replies
+and seven versioned creation/inspection/status routes. Actual client/content/review
+evidence and combined resources remain open. Frontend40/schema42 are still scoped
+to8b5843d; retained image047d1b0 predates these changes.
 No Q feedback GitHub publication is authorized. Existing MVP scope and completed
 work remain in place.
 

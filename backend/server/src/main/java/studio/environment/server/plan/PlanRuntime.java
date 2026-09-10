@@ -44,6 +44,7 @@ public final class PlanRuntime {
         return service().create(lease,command.requestId(),command.definition(),command.bindingId(),command.destinationId());
     }
     public void cleanup(SessionLedger.Lease lease) { service.ifPresent(value->value.invalidate(lease)); }
+    public boolean awaitingCleanupWork(SessionLedger.Lease lease) { return service.map(value->value.awaitingCleanupWork(lease)).orElse(false); }
     static final class Unavailable extends RuntimeException { Unavailable(){super("PLAN_SERVICES_UNAVAILABLE",null,false,false);} }
     static final class DestinationDenied extends RuntimeException { DestinationDenied(){super("DESTINATION_DENIED",null,false,false);} }
 }
