@@ -1,5 +1,26 @@
 # Handoff and capability status
 
+Latest lead slice after de0ce25 is the
+[capture persistence browser prerequisite](../evidence/v3-profile-capture-browser.md).
+The test-only profiles-v3 mode reuses matching invented historical definition
+storage and observation witnesses. Stable real HTTPS/OIDC/SQLite browser4 passes
+capture without save, separate exact draft save/history/replay/relogin and foreign
+owner denial. Missing stored definition and injected stored canary controls fail
+as expected. Fresh221frontend/59schema/check/build pass; fixed non-author source
+review has no confirmed defect. This is no rendered capture/hook qualification.
+
+- Ready: finish candidate publication; implement the next nonvisual whole/partial
+  reuse state while new capture design approval remains a separate requirement.
+- Awaiting another owner: remote bc6d→78f2b1a→8d87311→d67df44→de0ce25 review;
+  IDE2 native resource evidence, now under independent diagnostic review.
+- Blockers: pending Definitions rendered design exceptions; required combined
+  integration, production publication/native/client/resource/release qualification.
+
+User publication of78f2b1a/8d87311/d67df44/de0ce25 is confirmed by exact remote heads
+and fetch. Queue5625865147 activates their fixed scopes without replacing current
+bc6d review. Local profile tests use18445/18446 and separate RAM; remote18443/18444
+and full/OCI ownership remain reserved. Root is unchanged173cde2/application30446e2.
+
 Updated: 10 September 2026. See [starter evidence](../evidence/starter-verification.md)
 and [D01a integration](../evidence/d01a-integration.md) for actual commands and
 results; the table below reports capability, not test count.
