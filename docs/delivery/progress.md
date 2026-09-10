@@ -5,15 +5,20 @@ and [D01a integration](../evidence/d01a-integration.md) for actual commands and
 results; the table below reports capability, not test count.
 
 The [shared remote review queue](https://github.com/timaday/environment-studio/issues/9)
-is active. Its completed f5025cc review found **JNI-QA-001**, a fresh cleanup
-allowance after failed native open. Lead source inspection confirms it remains
-in integrated30446e2; the earlier Java1619 pass did not detect it. Accepted and
-assigned only to IDE2, with closure WIP preserved before the separate correction.
-The physical browser client is a local immutable review candidate59fef10, with
-frontend96/schema58/check/build passing; review and integration are pending.
-Publishing its review branch was rejected by automatic approval policy, so the
-remote reviewer has not been asked to test an unavailable commit. Lead continues
-dependency-ready computed client work; two writers and remote read-only review remain.
+is active. Accepted JNI-QA-001 and its confirmed duration-handoff extension are
+corrected in local IDE2 candidate `3a84c2c432aec05d256b0f5e85cfd4636ee789b8`
+(parent01b6485), with author51 focused checks. Closure WIP remains preserved and
+assigned only to IDE2. The lead corrected OBS-QA-001 cancellation publication as
+`2d185bd0a88ae83a5788340d8fde2f9b8c5753bb` and PostgreSQL OBS-QA-002 redundant
+uniqueness as `a6291d2605b87d3730b2166e36f5aa7e03d253d7`; their combined local
+branch passes72 focused Java checks. Oracle redundancy is not a reproduced defect.
+Physical/computed/definition clients are frozen as59fef10/06b0888/954ded6;
+the final stack passes125 frontend/58 schema/check/build. All these candidates
+remain unreviewed and unintegrated. Automatic approval review rejected Git push
+because approval is required while AskForApproval is Never. The user has been
+asked to publish the three branch heads listed in issue9; no alternate upload or
+unfetchable test assignment is used. Lead continues the separate owned v3 review/
+content-policy WIP; two writers and remote read-only review remain.
 
 Two-IDE continuation: [native handoff and exact ownership](ide2-native-handoff.md).
 Lead is the sole IDE1 application writer; previous writing subagents are stopped.
@@ -23,8 +28,8 @@ to fix before acceptance. IDE2 has returned fixed commit `f5025cc5afbdca2df70fa1
 with author full1617 passing. Non-author correction review and lead combined
 Java1617/distribution checks now pass; the exact native candidate is integrated.
 The full Maven window is released. IDE1 has integrated the reviewed
-typed-v3 browser client and continues application work. First two-hour checkpoint
-is14:49BST,10 September. Native full1596 and independent79 checks pass on their
+typed-v3 browser client and continues application work. The first two-hour checkpoint
+was reported at14:49BST,10 September. Native full1596 and independent79 checks pass on their
 recorded bases; neither establishes integrated or release qualification.
 
 The latest continuation prioritizes [three confirmed corrections](../evidence/continuation-p2-corrections.md):
