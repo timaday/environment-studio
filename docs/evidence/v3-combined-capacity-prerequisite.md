@@ -48,3 +48,35 @@ whole-process resource qualification ran. The JVM's1GiB maximum is a test settin
 not a measured deployment allocation. Next is the actual hosted lifecycle/harness
 and measured large retained shapes on a fixed artifact with assigned resources.
 Do not replace the existing missing qualification with this small PASS.
+
+## Scalable fixture preparation
+
+The later external `es-v3-capacity-shape-20260910` control prepares the large
+case without running its projection or writer. Actual compilation still returns
+Incomplete/MECHANISM_UNQUALIFIED. Construction checks 128 documents of 131,072
+bytes on each independently rendered current/target side: exactly 16 MiB each.
+The expected large result is 10,000 physical plus 10,000 computed nodes, 50,000
+membership edges, 100,000 contributor links, 8,388,605 computed value bytes and
+64,000 zero-pair rules. These remain projected counts, not measured graph results.
+
+The same scalable source passes actual small compiler/projection/typed writer
+checks with two documents, 8,192 bytes per side, 10 physical/10 computed nodes,
+50 memberships/100 links, 185 value bytes and 64 rules. Complete XML, physical
+and derived inputs, ordered contributors, memberships, rules and provenance are
+checked. Independent review found a missing full target-pin comparison; fixed3
+adds logical/binding identity and digest to revision/document equality. Small3
+and large-fixture2 javac/JVM runs exit0; fixed delta review finds it addressed
+and verifies hashes without execution. An earlier variable-shadow compiler error
+is preserved as harness setup failure.
+
+Fixed source SHA256 is
+`b37d77f50a04ea32b3baa8da881880d9f9257e0fffab729296b0eb435a6a2b99`;
+small3 result SHA256 is
+`a0e88d00961528797ca43d8803667d4c550b7b333a91fd4a7423a944024462fa`;
+large-fixture2 result SHA256 is
+`68417fda2edb9aee739c1eea149af323351a5cd54160314b8a49c06b76d4b9fc`.
+External return, frozen runners and both `es-v3-capacity-shape-fixed*review`
+reports retain the exact commands and limits. Rendered expected XML complements
+the earlier literal fixture; no large execution or capacity qualification is
+claimed. The [small hosted lifecycle control](v3-hosted-capacity-prerequisite.md)
+separately verifies ownership and paging with explicit mock ports.
