@@ -35,9 +35,9 @@ final class PrivacyLaunchOwner {
      * Java scheduling and do not qualify actual blocked ProcessBuilder.start.
      */
     interface CapturePort {
-        Step arm();
+        PrivacyBridge.ForkResult arm();
         Step register(long exactReturnedPid);
-        Step disarm();
+        PrivacyBridge.DisarmResult disarm();
         void cancel();
         Cleanup close(long remainingCleanupNanos);
     }
@@ -79,13 +79,15 @@ final class PrivacyLaunchOwner {
 
     private void launch(List<String> command,Map<String,String> environment,Path directory) {
         boolean armEntered=false,disarmed=true,registered=false;
+        PrivacyBridge.ForkResult armResult=null;
         try {
             if(!live())return;
             var builder=new ProcessBuilder(command).directory(directory.toFile()).redirectErrorStream(true);
             builder.environment().clear();builder.environment().putAll(environment);
             // No user callback or unrelated launch is allowed between arm and start.
             armEntered=true;disarmed=false;
-            if(port.arm()!=Step.OK){refuse(Failure.PROTOCOL);return;}
+            armResult=port.arm();
+            if(armResult!=PrivacyBridge.ForkArmed.ARMED){refuse(Failure.PROTOCOL);return;}
             if(!live())return;
             process=builder.start(); // Sole creation site; no supplied Process or PID seam.
             if(!live())return;
@@ -95,7 +97,15 @@ final class PrivacyLaunchOwner {
             registered=live();
         } catch(Throwable failure) {refuse(Failure.RESOURCE);}
         finally {
-            if(armEntered)try {disarmed=port.disarm()==Step.OK;}catch(Throwable failure){disarmed=false;}
+            if(armEntered)try {
+                var result=port.disarm();
+                disarmed=result==PrivacyBridge.ForkDisarmed.DISARMED
+                    ||armResult instanceof PrivacyBridge.ForkFailed armFailure
+                    &&armFailure.ownership()==PrivacyBridge.ArmOwnership.NO_WINDOW_ACQUIRED
+                    &&result instanceof PrivacyBridge.DisarmFailed disarmFailure
+                    &&disarmFailure.failure()==PrivacyBridge.Failure.PROTOCOL
+                    &&disarmFailure.ownership()==PrivacyBridge.ArmOwnership.NO_WINDOW_ACQUIRED;
+            }catch(Throwable failure){disarmed=false;}
             if(!disarmed){uncertain=true;refuse(Failure.CLEANUP);}
             // A failed/unreturned disarm retains the process-wide quarantine.
             if(disarmed)WINDOW.release();

@@ -101,8 +101,9 @@ production qualification remain required. The [typed v3 browser client](docs/evi
 now passes independent review and frontend65/schema58 checks and build. It exposes
 the plan workflow through the shared session; React journey integration remains.
 The [production JNI ownership contract](docs/evidence/privacy-jni-ownership-contract.md)
-now passes independent review; bridge implementation and complete native admission
-remain required.
+now has a [reviewed bridge implementation](docs/evidence/privacy-jni-ownership.md).
+Combined Java1617 and distribution checks pass, including the corrected late-open
+deadline. Complete native admission remains required.
 Complete Oracle CLOB/PostgreSQL text observation, value-free profile composition
 and cross-document structural target materialization are implemented as reviewed
 internal mechanisms. The hosted plan service joins these mechanisms with session

@@ -77,7 +77,7 @@ static es_launch_result leave(es_launch *p,es_launch_result r){
  if(r!=ES_LAUNCH_OK&&r!=ES_LAUNCH_ROOT_CORRELATED)r=fail(p,r);
  --p->users;pthread_cond_broadcast(&p->changed);pthread_mutex_unlock(&p->mutex);settle(p);return r;
 }
-es_launch_result es_launch_open(es_launch *p,int parent,const char *path,uint64_t left,char out[ES_LISTENER_PATH_BYTES]){
+es_launch_result es_launch_open_started(es_launch *p,int parent,const char *path,uint64_t left,uint64_t started,char out[ES_LISTENER_PATH_BYTES]){
  if(!out)return ES_LAUNCH_INVALID;
  size_t path_size=path?strnlen(path,ES_LISTENER_PATH_BYTES):0;
  if(path&&path_size<ES_LISTENER_PATH_BYTES)++path_size;
@@ -89,12 +89,12 @@ es_launch_result es_launch_open(es_launch *p,int parent,const char *path,uint64_
  wipe(out,ES_LISTENER_PATH_BYTES);
  if(path_size==ES_LISTENER_PATH_BYTES&&path[path_size-1]!=0)return ES_LAUNCH_INVALID;
  if(p->initialized||parent<0||!left||left>180000000000ULL||strnlen(path,ES_LISTENER_PATH_BYTES)==ES_LISTENER_PATH_BYTES)return ES_LAUNCH_INVALID;
- uint64_t n=now();if(!n||left>UINT64_MAX-n)return ES_LAUNCH_DEADLINE;
+ uint64_t n=now();if(!n||!started||started>n||left>UINT64_MAX-started||n-started>=(left<NS10?left:NS10))return ES_LAUNCH_DEADLINE;
  if(pthread_mutex_init(&p->mutex,NULL))return ES_LAUNCH_PLATFORM;
  pthread_condattr_t attr;if(pthread_condattr_init(&attr)){pthread_mutex_destroy(&p->mutex);return ES_LAUNCH_PLATFORM;}
  int error=pthread_condattr_setclock(&attr,CLOCK_MONOTONIC);if(!error)error=pthread_cond_init(&p->changed,&attr);
  pthread_condattr_destroy(&attr);if(error){pthread_mutex_destroy(&p->mutex);return ES_LAUNCH_PLATFORM;}
- p->initialized=MAGIC;p->cancel_fd=-1;p->operation_deadline=n+left;p->startup_deadline=n+(left<NS10?left:NS10);
+ p->initialized=MAGIC;p->cancel_fd=-1;p->operation_deadline=started+left;p->startup_deadline=started+(left<NS10?left:NS10);
  p->cancel_fd=eventfd(0,EFD_NONBLOCK|EFD_CLOEXEC);
  es_launch_result r=p->cancel_fd<0?ES_LAUNCH_RESOURCE:ES_LAUNCH_OK;
  size_t used=0;
@@ -109,6 +109,7 @@ es_launch_result es_launch_open(es_launch *p,int parent,const char *path,uint64_
  if(r!=ES_LAUNCH_OK)wipe(out,ES_LISTENER_PATH_BYTES);
  return r;
 }
+es_launch_result es_launch_open(es_launch *p,int parent,const char *path,uint64_t left,char out[ES_LISTENER_PATH_BYTES]){return es_launch_open_started(p,parent,path,left,now(),out);}
 es_launch_result es_launch_arm(es_launch *p){
  if(!valid(p))return ES_LAUNCH_INVALID;
  pthread_mutex_lock(&p->mutex);++p->users;

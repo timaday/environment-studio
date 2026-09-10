@@ -9,8 +9,9 @@ Lead is the sole IDE1 application writer; previous writing subagents are stopped
 IDE2 receives the frozen21-file JNI candidate in its separate worktree from
 `d7c484425a3dcc88e26525a7e5041f41c83d056d`, with one confirmed late-open deadline P2
 to fix before acceptance. IDE2 has returned fixed commit `f5025cc5afbdca2df70fa142be77f02aac4221ef`
-with author full1617 passing; non-author correction review is pending. Its source
-is frozen and the full Maven window is released. IDE1 has integrated the reviewed
+with author full1617 passing. Non-author correction review and lead combined
+Java1617/distribution checks now pass; the exact native candidate is integrated.
+The full Maven window is released. IDE1 has integrated the reviewed
 typed-v3 browser client and continues application work. First two-hour checkpoint
 is14:49BST,10 September. Native full1596 and independent79 checks pass on their
 recorded bases; neither establishes integrated or release qualification.
@@ -46,9 +47,9 @@ its separate supervisor ZIP and member checksums pass. This is local development
 proof; all eleven release capability gates remain NOT_RUN. The
 [production JNI ownership contract](../evidence/privacy-jni-ownership-contract.md)
 passes independent fixed review, with explicit no-window evidence, finite native
-retention and separate launch/JVM cleanup. Its implementation candidate is frozen
-for independent review and transfer to the second IDE; it is not integrated or
-release-qualified.
+retention and separate launch/JVM cleanup. Its [bridge implementation](../evidence/privacy-jni-ownership.md)
+is now integrated after IDE2's deadline correction, fixed non-author review and
+combined Java1617/distribution checks. Complete native admission remains unqualified.
 
 The reviewed [QF-0001/0002 mapping extension](../evidence/qf12-child-property.md)
 is now integrated under [child-property-v1](../contracts/child-property-v1.md).

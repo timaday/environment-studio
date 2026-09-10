@@ -33,6 +33,8 @@ typedef struct es_launch {
  See frozen ABI for single launcher/receiver, output aliases, clocks and sticky
  cleanup. No production JNI token, CHALLENGE or privacy/runtime admission. */
 es_launch_result es_launch_open(es_launch *,int,const char *,uint64_t,char[ES_LISTENER_PATH_BYTES]);
+/* Trusted native entry origin only; no Java/peer epoch or caller policy. */
+es_launch_result es_launch_open_started(es_launch *,int,const char *,uint64_t,uint64_t,char[ES_LISTENER_PATH_BYTES]);
 es_launch_result es_launch_arm(es_launch *);
 es_launch_result es_launch_capture(es_launch *);
 es_launch_result es_launch_register(es_launch *,uint64_t);

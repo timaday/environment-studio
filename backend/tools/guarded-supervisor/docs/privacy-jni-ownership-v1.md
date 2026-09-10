@@ -260,8 +260,16 @@ owner. No caller may infer cleanup success merely because cancel returned.
 
 openLaunch accepts1..180,000,000,000 remaining operation nanoseconds, additionally
 bounded by its compiled chain. Check signed input and overflow before conversion.
-Create the original native startup deadline once, min(operation deadline, now+10s),
-using CLOCK_MONOTONIC. Allocation, parent/record checks, root capture, all expected
+Capture CLOCK_MONOTONIC at the actual native openLaunch entry before registry,
+record or parent work. Create operation deadline=entry+validated remaining budget
+and startup deadline=min(operation deadline,entry+10s), with checked arithmetic.
+The private es_launch_open_started helper receives this trusted native entry time;
+it is never a Java/peer absolute timestamp or configurable policy. It rejects a
+zero/future timestamp and expired/overflowed original deadlines. The existing
+es_launch_open C API remains a wrapper that captures its own native entry time.
+Listener/root/control owners receive these exact clocks from inception; do not
+pass a shortened startup duration as a substitute for the retained operation
+clock or overwrite clocks after a subordinate opens. Allocation, parent/record checks, root capture, all expected
 execs, identity and handshakes consume it. The Java lifecycle receives and uses
 only remaining time from its existing original budget; no cross-language epoch
 assumption or newly started10s allowance is permitted.
@@ -404,6 +412,8 @@ support, with explicitly identified narrow fault substitutions only. Exercise:
   endpoint and calls that launch cleanup complete.
 - Wrong launcher/receiver, second coordinator, cancellation across each operation,
   late arm/capture/JNI result, close while calls are active, shortened deadlines,
+  elapsed registry work before open with unchanged startup and outer-operation
+  deadlines (including an operation allowance greater than10s),
   late cleanup settlement, repeated close and signal-reference retention.
 - JNI allocation and registration failures before/after ownership acquisition;
   close errors still attempt every other owner; no leaks on unpublishable opens,
