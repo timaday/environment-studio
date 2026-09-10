@@ -16,6 +16,14 @@ all three corrections. Next are capture/reuse and paged validation APIs.
 Operator UX, native/export/readback and release qualification
 remain required.
 
+The exact c3b891a [computed-route image](../evidence/v3-plan-artifacts.md) passes a
+fresh Java1579/frontend40/schema57 build and protected container/workspace smoke;
+its separate supervisor ZIP and member checksums pass. This is local development
+proof; all eleven release capability gates remain NOT_RUN. The
+[production JNI ownership contract](../evidence/privacy-jni-ownership-contract.md)
+passes independent fixed review, with explicit no-window evidence, finite native
+retention and separate launch/JVM cleanup. Its implementation is still pending.
+
 The reviewed [QF-0001/0002 mapping extension](../evidence/qf12-child-property.md)
 is now integrated under [child-property-v1](../contracts/child-property-v1.md).
 Projection, scalar/structural changes, creation, views, whole/partial profile reuse,

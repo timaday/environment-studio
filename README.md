@@ -83,13 +83,16 @@ now pass independent review, full Java1549 and frontend40/schema55, including
 exact multi-document XML and explicit disclosure. The five computed HTTP views
 now pass independent review and combined Java1579/frontend40/schema57;
 actual compiler publication remains incomplete.
-The exact `8ad1e6a` [local image](docs/evidence/v3-plan-artifacts.md)
-passes Java1549 and protected startup/workspace smoke. A separate
+The exact `c3b891a` [local image](docs/evidence/v3-plan-artifacts.md)
+passes Java1579/frontend40/schema57 and protected startup/workspace smoke. The
 [computed HTTP integration](docs/evidence/v3-plan-computed-candidate.md) preserves
 the reviewed exact keys, complete contributors and original transfer ownership.
 The [three priority corrections](docs/evidence/continuation-p2-corrections.md)
 pass independent review, full Java1563 and frontend40/schema55 verification.
 Release qualification remains open.
+The [production JNI ownership contract](docs/evidence/privacy-jni-ownership-contract.md)
+now passes independent review; bridge implementation and complete native admission
+remain required.
 Complete Oracle CLOB/PostgreSQL text observation, value-free profile composition
 and cross-document structural target materialization are implemented as reviewed
 internal mechanisms. The hosted plan service joins these mechanisms with session

@@ -975,7 +975,8 @@ static native CloseResult closeLaunch(long launch, long cleanupRemainingNanos);
 
 `SelfResult` is ESTABLISHED or a fixed Failure. `OpenResult` is a valid nonzero
 opaque launch token and bounded socket path, or Failure. `ForkResult` is ARMED or
-Failure. `DisarmResult` is DISARMED or Failure; disarming grants no root admission
+Failure carrying the completed arm ownership evidence defined in
+[JNI ownership v1](privacy-jni-ownership-v1.md). `DisarmResult` is DISARMED or Failure; disarming grants no root admission
 and cannot erase an earlier failure. `RootResult` is REGISTERED
 or Failure. `Event` is FINAL_ADMITTED with a native-owned final identity token,
 FAILED with Failure, or CLOSED. `Status` is STARTING, ADMITTED, FAILED or CLOSED.
@@ -985,10 +986,11 @@ DEADLINE, CANCELLED or CLEANUP. No result includes syscall text or raw output.
 
 A token is a generation-checked native registry handle, not a descriptor/address.
 Bound the registry to one live supervisor invocation and at most four concurrent
-launches. An invalid/stale/wrong-invocation token refuses; it cannot touch a newly
+launches, with at most256 tokens issued per JVM invocation. Issuance never resets;
+settled tombstones are neither reused nor evicted. An invalid/stale/wrong-invocation token refuses; it cannot touch a newly
 reused descriptor. Successful close retains a tombstone until invocation teardown
 so repeat close returns its original result, with no renewed deadline. Token
-exhaustion refuses. `cleanupRemainingNanos` conveys the already-running Java
+exhaustion refuses RESOURCE. `cleanupRemainingNanos` conveys the already-running Java
 cleanup budget, not a configurable timeout. The first close fixes a native
 absolute deadline no later than that remaining budget or ten seconds from first
 close; repeated calls can only shorten it. A nonpositive remaining budget starts
@@ -1012,6 +1014,12 @@ array across blocking I/O. Control/identity native scratch is at most 1 MiB per
 launch, excluding immutable compiled installation records; allocation failure
 refuses. The compiled closure contents and platform representation of device,
 inode and process start ticks require exact qualification before admission.
+
+The exact result classes, JNI constructors, compiled-record boundary, registry
+references/tombstones, parent lifetime and Java no-window propagation are frozen
+in [JNI ownership v1](privacy-jni-ownership-v1.md). That ownership slice stops at
+the mandatory missing-identity refusal; it cannot emit FINAL_ADMITTED or send
+CHALLENGE before the complete mapped-image/loader strategy exists.
 
 ## Cleanup and qualification gates
 

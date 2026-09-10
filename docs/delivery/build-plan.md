@@ -118,8 +118,9 @@ independent review, full Java1549 and frontend40/schema55. The
 combined Java1563. The [computed HTTP integration](../evidence/v3-plan-computed-candidate.md)
 now passes independent Java50/schema57 review and combined Java1579/frontend40/schema57,
 preserving all three corrections. Capture/reuse and paged validation are next. The committed
-[8ad1e6a image](../evidence/v3-plan-artifacts.md) passes its own Java1549 build and
-protected smoke. Export remains unavailable.
+[c3b891a image](../evidence/v3-plan-artifacts.md) passes its own Java1579/frontend40/schema57
+build and protected smoke. The [production JNI ownership contract](../evidence/privacy-jni-ownership-contract.md)
+passes independent review and is ready for implementation. Export remains unavailable.
 
 The lead owns shared contracts and compatibility. Independent fixed-candidate
 review, actual RED/GREEN, targeted guard mutations and integrated verification

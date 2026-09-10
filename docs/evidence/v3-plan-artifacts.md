@@ -1,41 +1,40 @@
-# V3 document-route image and supervisor artifacts
+# V3 computed-route image and supervisor artifacts
 
-The committed application at `8ad1e6a16eefc3c1c846ea9c9a0a0f286a1ab2ae`
+The committed application at `c3b891a8b8056c56870514dcc4cb5dbb99fe029c`
 passes a full pinned OCI build and protected startup/workspace smoke. It includes
 owned v3 creation/inspection/commands/materialization, physical/structural/binding
-views and document/location routes. The separately prepared computed HTTP
-candidate is not part of this committed-source image.
+views, document/location routes and all five computed views. It includes the
+three reviewed workspace, v2 cancellation and native arm-cleanup corrections.
 
 The [container input correction](v3-container-contract-inputs.md) was required:
 Docker now receives the v3 OpenAPI file used by the frontend contract tests.
-The actual preceding UI-stage execution passed40 component/55 schema tests,
-checking and production build; that identical UI layer is cached in the full
-build. The Java step executes afresh and passes1549 tests (324core/7parser/
-908server/310supervisor), zero failures/errors/skips, assembly and hostile-launch
-checks,10 September2026 at09:47:28UTC. All base images and build packages retain
+The UI stage executes40 component/57 schema tests, checking and production build.
+The Java step executes afresh and passes1579 tests (330core/7parser/
+927server/315supervisor), zero failures/errors/skips, assembly and hostile-launch
+checks,10 September2026 at10:42:13UTC. All base images and build packages retain
 existing pins. No runtime dependency or supported workload limit changed.
 
 ## Recorded identity
 
 | Artifact | Identity |
 | --- | --- |
-| Local development tag | `environment-studio:v3-document-8ad1e6a16eef` |
-| OCI index | `sha256:f038a250aff3ea83d59a743e68f716901a9b9a145df82a6316f6daa49a9eb6ce` |
-| Linux amd64 manifest | `sha256:40aca4a1ab5c7ebeb4dbacd2311219c3b0bcef492eaeeb06c0868eb49380e13e` |
-| Runtime config | `sha256:122b32a7d8bd5a5a4c6233781403269486d70e491a3e4c24bbeec92d9f53d252` |
-| Supervisor ZIP SHA256 | `de9c958e2031d68f31f2de280be8692dbc719a23b1bcb86b71746394b451dd31` |
+| Local development tag | `environment-studio:v3-computed-c3b891a8b805` |
+| OCI index | `sha256:c8d47282cbc492c79ed96d9b3dc243843ea67781940b246f89ec3a1d30700987` |
+| Linux amd64 manifest | `sha256:2fdc9c06d03e435dd4e2d964b9a3291d8b377b58b7be372afc6882e7a9ec7663` |
+| Runtime config | `sha256:67643721100efbf74e266b6ed4e4e3ce84d71010564f94b5d42b4c554fcac966` |
+| Supervisor ZIP SHA256 | `cc6bab5106e6ece4f6c079d5fecd1cba36feb7c1cb4643036c09ab946b0a328d` |
 
 Docker's image ID here identifies the OCI index; the runtime config identity above
 comes from the explicit build export record. The image source label exactly
-matches8ad1e6a and its configured user is10001:10001. External inspection record:
-`es-v3-document-runtime-oci-inspection-20260910.json`; source archive
-`es-v3-document-runtime-oci-gqoa8s5k`. The separately exported supervisor directory
-and ZIP are under `es-v3-document-supervisor-8ad1e6a`; every SHA256SUMS member passes.
+matchesc3b891a and its configured user is10001:10001. External inspection record:
+`es-computed-c3b891a-oci-inspection-20260910.json`; exact git source archive
+`es-computed-c3b891a-oci-t9x1iru1`. The separately exported supervisor directory
+and ZIP are under `es-computed-c3b891a-supervisor-artifacts`; every SHA256SUMS member passes.
 Export reused the same qualified Java build layers.
 
 ## Actual smoke and remaining limits
 
-`bash scripts/container_smoke.sh environment-studio:v3-document-8ad1e6a16eef`
+`bash scripts/container_smoke.sh environment-studio:v3-computed-c3b891a8b805`
 passes readonly rootfs, dropped capabilities, no-new-privileges, non-root startup,
 static UI, readiness, demo capability/operation denial and private workspace checks.
 Schema2 initialization, legacy offline upgrade, explicit schema3 upgrade/fresh
@@ -51,11 +50,15 @@ remote CI, GHCR publication or actual HiveForge qualification is claimed.
 The actual compiler still refuses new v3 publication. This local development
 image does not enable unqualified operational UI or export.
 
-Build log `es-v3-document-runtime-oci-build-20260910.log` SHA
-`89d0d4c6af95f7aa00a8dab3f1b066739b049ed9236fd37f34687bcf1ecf32e8`.
-Smoke log `es-v3-document-runtime-oci-smoke-20260910.log` SHA
+Build log `es-computed-c3b891a-oci-build-20260910.log` SHA
+`2fe87c910958706fc1bd806ebdc73be129454005536321381129436a2e0de93f`.
+Smoke log `es-computed-c3b891a-oci-smoke-20260910.log` SHA
 `45222001bbf6ae154f65907b4a7ae509fbbea3cb9f92222837a341726644261b`.
 Actual `python3 scripts/release_readiness.py` still exits1: no matching source
 fingerprint and all eleven capability gates NOT_RUN. No release evidence status
 was changed. Exact-revision CI/upload remains subject to the previously recorded
 automatic approval rejection; no alternate publication path was attempted.
+
+The preceding8ad1e6a document-route image remains historical evidence in this
+file's Git history. Later uncommitted API and native contract work is excluded
+from the c3b891a source archive and image.
