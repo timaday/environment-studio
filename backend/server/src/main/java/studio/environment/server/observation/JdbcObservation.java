@@ -197,7 +197,9 @@ public final class JdbcObservation implements ObservationPort {
         private void releaseIfConfirmed() { if (finished() && cleanupConfirmed && cancelConfirmed && released.compareAndSet(false, true)) CAPACITY.release(); }
         ObservationResult result(Code terminal) {
             releaseIfConfirmed();
-            if (status() != Cleanup.COMPLETE) return new Refused(terminal == null ? Code.CLEANUP_INCONCLUSIVE : terminal, Cleanup.INCONCLUSIVE, Optional.of(this));
+            Cleanup cleanup = status();
+            if (terminal == null && cancellation.cancelled()) terminal = Code.CANCELLED;
+            if (cleanup != Cleanup.COMPLETE) return new Refused(terminal == null ? Code.CLEANUP_INCONCLUSIVE : terminal, Cleanup.INCONCLUSIVE, Optional.of(this));
             if (terminal == null && System.nanoTime() >= deadline) terminal = Code.DEADLINE_EXCEEDED;
             if (terminal != null || failure != null) return new Refused(terminal == null ? failure : terminal, Cleanup.COMPLETE);
             return new Complete(Objects.requireNonNull(observation));

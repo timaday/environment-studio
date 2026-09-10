@@ -201,6 +201,11 @@ path. Roll back the read transaction. Cancellation, abort and close are separate
 steps: a requested cancel is not confirmed cleanup. If work/cleanup cannot be
 confirmed within the bound, return INCONCLUSIVE and retain the session's resource
 reservation/quarantine; no observation or later export authority survives it.
+At the final completed-work result check, recheck the original cancellation
+flag, including cancellation during rollback or connection close. With no earlier
+latched terminal reason, an observed cancellation selects `CANCELLED`; it cannot
+publish a complete observation. Keep the actual cleanup outcome independent: cancellation
+does not make cleanup complete, renew a deadline or release a quarantined permit.
 Successful driver close/rollback behavior must be checked against actual backend
 session disappearance in disposable tests. Do not claim guaranteed remote cleanup
 during network partitions. No background task may continue with unowned secrets.
