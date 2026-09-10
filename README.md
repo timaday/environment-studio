@@ -105,8 +105,8 @@ adds exact save/history and explicit publication with reviewed response correlat
 integrated frontend79/schema58/check/build pass.
 The [production JNI ownership contract](docs/evidence/privacy-jni-ownership-contract.md)
 now has a [reviewed bridge implementation](docs/evidence/privacy-jni-ownership.md).
-Combined Java1617 and distribution checks pass, including the corrected late-open
-deadline. Complete native admission remains required.
+Combined Java1619 and distribution checks pass, including the corrected late-open
+deadline and two reviewed exception-path supplements. Complete native admission remains required.
 Complete Oracle CLOB/PostgreSQL text observation, value-free profile composition
 and cross-document structural target materialization are implemented as reviewed
 internal mechanisms. The hosted plan service joins these mechanisms with session

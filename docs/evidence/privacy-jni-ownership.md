@@ -101,6 +101,44 @@ security review examined clocks, token/reference lifetime, lock order and cleanu
 QA investigated late allocation, exact descriptor reuse, retained uncertainty and
 capacity recovery. These local RST investigations do not replace operator rehearsal.
 
+## Supplemental exception-path evidence
+
+IDE2 returned test-only commits `7a349d87cb6c5aa424ad1c782a2ab5d42b7f5e65`
+and `6545a9c1477929f9e7b23db6fd44b1d33273463b`, sequentially over f5025cc.
+Both change only privacy-registry-fixture.c, PrivacyBridgeProbe and
+PrivacyBridgeTest. Production source, contracts and distribution JAR/ZIP bytes
+are unchanged. These are additional executed tests of existing behavior; no new
+production defect, correction or TDD RED is claimed.
+
+The first holds Opened allocation through expiry, then throws an exact preallocated
+Java error during OpenFailed construction. It checks exception identity, retained
+native DEADLINE, drained refs, descriptor closure, sticky INCONCLUSIVE and live-slot
+recovery. The second reaches actual Java FORK/native root correlation, then fails
+EventFailed construction on the original coordinator thread. Java reports RESOURCE
+and remains INCONCLUSIVE while native INSTALLATION/cleanup retain their separate
+outcomes. The exact owned child exits/reaps, expected stdout/stderr are preserved
+and a later real launch recovers the original finally window.
+
+Fixed non-author reviews `es-review-jni-refusal-allocation-20260910.md` and
+`es-review-jni-coordinator-allocation-20260910.md` verified both exact three-file
+commits and independently rebuilt the final C/Java fixtures. Three direct-open
+modes and two coordinator/lifecycle modes pass. Expired socket names are observed
+before explicit external teardown; coordinator controls leave zero names. There
+are no remaining confirmed findings. The second case does not expose exact Java
+throwable identity or independently fault every pipe close. Injected allocation
+failure is not proof of actual heap exhaustion.
+
+Author focused26 then27 and five separately compiled assertion-killed mutations
+pass. Their earlier full1617 result is not relabeled. Lead combined verification
+over the integrated profile client and native supplements passes **Java1619**:
+330 core/7 parser/947 server/335 supervisor, zero failures/errors/skips, distribution
+and hostile launcher PASS. Exact archive `es-jni-supplements-integrated-s5zxocaa`,
+base ddad9cf plus both reviewed test patches; full Maven verify passed at13:48:33BST
+in4m23s. Log `es-jni-supplements-integrated-full1-20260910.log`. Frontend79/schema58/
+check/build remain the integrated profile-client result; no frontend code changes
+in this supplement. G00 provenance/content, repository/Python11 and whitespace
+checks pass. OCI and runtime qualification remain open.
+
 ## Remaining qualification
 
 Mapped bytes, loader/constructor/graph closure, exact installed bootstrap and

@@ -52,6 +52,10 @@ passes independent fixed review, with explicit no-window evidence, finite native
 retention and separate launch/JVM cleanup. Its [bridge implementation](../evidence/privacy-jni-ownership.md)
 is now integrated after IDE2's deadline correction, fixed non-author review and
 combined Java1617/distribution checks. Complete native admission remains unqualified.
+Two independently reviewed exception-path test supplements now also pass combined
+Java1619/distribution checks. IDE2 has accepted the next stopped-root closure
+assignment from exact base `ff07427a75da07b9423d428eb7fb0100ab3dd2c6`; its native
+implementation remains separate from current admission/release qualification.
 
 The reviewed [QF-0001/0002 mapping extension](../evidence/qf12-child-property.md)
 is now integrated under [child-property-v1](../contracts/child-property-v1.md).
