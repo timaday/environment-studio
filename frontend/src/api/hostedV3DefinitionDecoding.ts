@@ -149,6 +149,11 @@ function source(value: unknown): string {
     return D.invalid();
   return text()(value);
 }
+export const save = D.object(
+  { expectedRevision: minimum, requestId: D.uuid, format: D.choice("JSON", "YAML"), source },
+  {},
+);
+export const preparedSave = D.object({ objectId: D.uuid, command: save }, {});
 const diagnostic = D.object(
   {
     phase: D.literal("publication"),

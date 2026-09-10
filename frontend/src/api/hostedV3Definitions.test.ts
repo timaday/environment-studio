@@ -4,7 +4,12 @@ import workspaceSchema from "../../../docs/contracts/openapi-workspace-v3.json";
 import inspectionSchema from "../../../schemas/definition-inspection-v3.schema.json";
 import { HostedApi } from "./hosted";
 import { HostedV3Api } from "./hostedV3";
-import { discoverBinding, HostedV3Definitions } from "./hostedV3Definitions";
+import {
+  discoverBinding,
+  HostedV3Definitions,
+  prepareDefinitionSave,
+  type SaveDefinition,
+} from "./hostedV3Definitions";
 import { HostedV3Physical } from "./hostedV3Physical";
 
 // All declarations and source strings are independently invented wire fixtures.
@@ -101,6 +106,12 @@ const document = {
   projection: incomplete,
 };
 const owners: HostedApi[] = [];
+const saveCommand = (): SaveDefinition => ({
+  expectedRevision: "0",
+  requestId: "50000000-0000-0000-0000-000000000003",
+  format: "JSON",
+  source: document.source,
+});
 afterEach(() => {
   for (const owner of owners) owner.clear();
   owners.length = 0;
@@ -123,6 +134,197 @@ async function client(...replies: unknown[]) {
   await owner.session();
   return { api: new HostedV3Definitions(owner), owner, fetcher };
 }
+it("detaches the prepared definition destination and exact command from later caller edits", async () => {
+  const command = { ...saveCommand() };
+  const prepared = prepareDefinitionSave(objectId, command);
+  command.source = "later edit";
+  command.requestId = "50000000-0000-0000-0000-000000000004";
+  const { api, fetcher } = await client(document);
+  await api.saveDefinition(prepared);
+  expect(JSON.parse(fetcher.mock.calls[1][1]?.body as string)).toEqual(saveCommand());
+  expect(Object.isFrozen(prepared)).toBe(true);
+  expect(Object.isFrozen(prepared.command)).toBe(true);
+});
+it("refuses a definition save reply with another source or destination", async () => {
+  const { api, fetcher } = await client();
+  for (const reply of [
+    { ...document, source: "different source" },
+    { ...document, objectId: "50000000-0000-0000-0000-000000000002" },
+    { ...document, format: "YAML" },
+  ]) {
+    shape("DefinitionRevision", reply);
+    fetcher.mockResolvedValueOnce(json(reply));
+    await expect(
+      api.saveDefinition(prepareDefinitionSave(objectId, saveCommand())),
+    ).rejects.toMatchObject({ code: "RESPONSE_UNAVAILABLE" });
+  }
+});
+it("refuses malformed definition commands before transport", async () => {
+  const { api, fetcher } = await client(document);
+  await expect(
+    api.saveDefinition({ objectId, command: { ...saveCommand(), expectedRevision: "01" } }),
+  ).rejects.toMatchObject({ code: "INVALID_REQUEST" });
+  expect(fetcher).toHaveBeenCalledTimes(1);
+});
+it("saves exact JSON and YAML through the fixed v3 PUT with schema-valid wrappers and replies", async () => {
+  const { api, fetcher } = await client();
+  for (const [format, source] of [
+    ["JSON", `${JSON.stringify(model, null, 2)}\r\n`],
+    ["YAML", "# invented 🦉 source\r\nschemaVersion: 3\r\nid: invented\r\n"],
+  ] as const) {
+    const command = { ...saveCommand(), format, source, expectedRevision: "9".repeat(1024) };
+    const reply = { ...document, format, source };
+    shape("SaveDefinition", command);
+    shape("DefinitionRevision", reply);
+    fetcher.mockResolvedValueOnce(json(reply));
+    expect(await api.saveDefinition(prepareDefinitionSave(objectId, command))).toEqual(reply);
+    const [url, init] = fetcher.mock.calls.at(-1) ?? [];
+    expect(url).toBe(`/api/v3/definitions/${objectId}`);
+    expect(init).toMatchObject({
+      method: "PUT",
+      credentials: "same-origin",
+      cache: "no-store",
+      redirect: "error",
+      headers: { "X-CSRF-TOKEN": "mock-csrf", "Content-Type": "application/json" },
+      body: JSON.stringify(command),
+    });
+  }
+});
+it("replays the same detached definition command explicitly after loss and later history", async () => {
+  const { api, fetcher } = await client();
+  const prepared = prepareDefinitionSave(objectId, saveCommand());
+  fetcher.mockRejectedValueOnce(new Error("invented response loss"));
+  await expect(api.saveDefinition(prepared)).rejects.toMatchObject({ code: "NETWORK_UNCERTAIN" });
+  expect(fetcher).toHaveBeenCalledTimes(2);
+  fetcher.mockResolvedValueOnce(
+    json({ ...document, workspaceRevision: "3", source: "later edit" }),
+  );
+  expect((await api.definition(objectId)).workspaceRevision).toBe("3");
+  fetcher.mockResolvedValueOnce(json({ ...document, workspaceRevision: "1" }));
+  expect((await api.saveDefinition(prepared)).workspaceRevision).toBe("1");
+  expect(fetcher.mock.calls[3][0]).toBe(fetcher.mock.calls[1][0]);
+  expect(fetcher.mock.calls[3][1]?.body).toBe(fetcher.mock.calls[1][1]?.body);
+  expect(prepared.command).toEqual(saveCommand());
+});
+it("bounds definition request Unicode by strict UTF8 without parsing or rewriting its source", async () => {
+  const { api, fetcher } = await client();
+  const source = "🦉".repeat(262144);
+  const command = { ...saveCommand(), source };
+  fetcher.mockResolvedValueOnce(json({ ...document, source }));
+  expect((await api.saveDefinition(prepareDefinitionSave(objectId, command))).source).toBe(source);
+  const before = fetcher.mock.calls.length;
+  for (const source of [
+    `${command.source}x`,
+    "x".repeat(1048577),
+    "\uD800",
+    "\uDC00",
+    "x\uD800y",
+  ]) {
+    expect(() => prepareDefinitionSave(objectId, { ...command, source })).toThrow(
+      "INVALID_REQUEST",
+    );
+    await expect(
+      api.saveDefinition({ objectId, command: { ...command, source } }),
+    ).rejects.toMatchObject({ code: "INVALID_REQUEST" });
+  }
+  expect(fetcher).toHaveBeenCalledTimes(before);
+});
+it("closes both prepared definition and command wrappers at preparation and submission", async () => {
+  const { api, fetcher } = await client();
+  const bad: unknown[] = [
+    null,
+    [],
+    {},
+    { ...saveCommand(), extra: true },
+    { ...saveCommand(), format: "json" },
+    { ...saveCommand(), source: 3 },
+    { ...saveCommand(), requestId: "../foreign" },
+    ...["01", "-1", "1\n", "1".repeat(1025)].map((expectedRevision) => ({
+      ...saveCommand(),
+      expectedRevision,
+    })),
+  ];
+  for (const key of Object.keys(saveCommand())) {
+    const missing: Record<string, unknown> = { ...saveCommand() };
+    delete missing[key];
+    bad.push(missing);
+  }
+  for (const command of bad) {
+    expect(() => prepareDefinitionSave(objectId, command as SaveDefinition)).toThrow(
+      "INVALID_REQUEST",
+    );
+    await expect(api.saveDefinition({ objectId, command } as never)).rejects.toMatchObject({
+      code: "INVALID_REQUEST",
+    });
+  }
+  for (const prepared of [
+    null,
+    {},
+    { command: saveCommand() },
+    { objectId, command: saveCommand(), extra: true },
+    { objectId: "../foreign", command: saveCommand() },
+  ])
+    await expect(api.saveDefinition(prepared as never)).rejects.toMatchObject({
+      code: "INVALID_REQUEST",
+    });
+  expect(() => prepareDefinitionSave("../foreign", saveCommand())).toThrow("INVALID_REQUEST");
+  expect(fetcher).toHaveBeenCalledTimes(1);
+});
+it("rejects a published definition as a save result and keeps the original replay available", async () => {
+  const { api, fetcher } = await client();
+  const published = {
+    ...document,
+    state: "published",
+    projection: { ...incomplete, kind: "historical-ready", diagnostics: [] },
+    publication: {
+      digest: "d".repeat(64),
+      sourceRevision: "2",
+      exportPolicies: [{ bindingId: "mock-pg", documentId: "mock-a", content: "deny" }],
+    },
+  };
+  shape("DefinitionRevision", published);
+  const prepared = prepareDefinitionSave(objectId, saveCommand());
+  fetcher.mockResolvedValueOnce(json(published));
+  await expect(api.saveDefinition(prepared)).rejects.toMatchObject({
+    code: "RESPONSE_UNAVAILABLE",
+  });
+  fetcher.mockResolvedValueOnce(json(document));
+  expect(await api.saveDefinition(prepared)).toEqual(document);
+});
+it("preserves safe save refusals without retry and rejects late JSON after the original session clears", async () => {
+  const { api, owner, fetcher } = await client();
+  const prepared = prepareDefinitionSave(objectId, saveCommand());
+  for (const [status, code] of [
+    [409, "CONFLICT"],
+    [422, "REJECTED"],
+    [503, "UNAVAILABLE"],
+  ] as const) {
+    const before = fetcher.mock.calls.length;
+    fetcher.mockResolvedValueOnce(json({ code }, status));
+    await expect(api.saveDefinition(prepared)).rejects.toMatchObject({ status, code });
+    expect(fetcher).toHaveBeenCalledTimes(before + 1);
+  }
+  let finish: ((value: unknown) => void) | undefined;
+  const response = json(document);
+  const decoding = vi.spyOn(response, "json").mockImplementation(
+    () =>
+      new Promise((resolve) => {
+        finish = resolve;
+      }),
+  );
+  fetcher.mockResolvedValueOnce(response);
+  const pending = api.saveDefinition(prepared);
+  const refused = expect(pending).rejects.toMatchObject({ code: "SESSION_REQUIRED" });
+  await vi.waitFor(() => expect(decoding).toHaveBeenCalledTimes(1));
+  const signal = fetcher.mock.calls.at(-1)?.[1]?.signal;
+  owner.clear();
+  expect(signal?.aborted).toBe(true);
+  finish?.(document);
+  await refused;
+  const before = fetcher.mock.calls.length;
+  await expect(api.saveDefinition(prepared)).rejects.toMatchObject({ code: "SESSION_REQUIRED" });
+  expect(fetcher).toHaveBeenCalledTimes(before);
+});
 it("refuses another definition revision in the plan's pinned historical read", async () => {
   const { api } = await client({ ...document, workspaceRevision: "2" });
   await expect(api.definitionRevision(objectId, revision)).rejects.toMatchObject({

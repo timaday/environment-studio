@@ -27,6 +27,19 @@ duplicate/unknown keys, trailing input, JSON/YAML format and source1 MiB/wrapper
 is separate; v1/v2 source rejects without persistence. Exact successful replay
 precedes compilation and returns its original immutable historical result.
 
+The typed browser save facade prepares a detached immutable pair of destination
+objectId and this exact command. It accepts canonical expectedRevision0 for an
+initial save and preserves JSON/YAML source exactly, without parsing or rewriting
+the native model. Validate the closed pair again before its one PUT; reject
+malformed scalar Unicode and source over1 MiB before transport. Response loss
+permits an explicit replay of that same pair, never an automatic retry or a new
+request ID. A successful result must be a draft for the same object with identical
+source and format. The existing complete DefinitionRevision decoder applies;
+historical replay need not match the latest current revision. The caller owns
+the prepared pair in memory; the facade adds no cache or persistence. Requests
+retain the existing HostedApi session revocation and late-response checks.
+This adds no route, publication permission or browser storage.
+
 Capture the original session lease before reading the request. Recheck it after
 read/parse and after service execution; the final SQLite commit must use the
 existing authenticated commit admission. Expiry/revocation during body reads,
