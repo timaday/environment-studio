@@ -100,6 +100,9 @@ validation paging with explicit test publication/observation ports. Browser and
 production qualification remain required. The [typed v3 browser client](docs/evidence/v3-browser-client.md)
 now passes independent review and frontend65/schema58 checks and build. It exposes
 the plan workflow through the shared session; React journey integration remains.
+The [profile workspace client](docs/evidence/v3-profile-browser-client.md) now
+adds exact save/history and explicit publication with reviewed response correlation;
+integrated frontend79/schema58/check/build pass.
 The [production JNI ownership contract](docs/evidence/privacy-jni-ownership-contract.md)
 now has a [reviewed bridge implementation](docs/evidence/privacy-jni-ownership.md).
 Combined Java1617 and distribution checks pass, including the corrected late-open

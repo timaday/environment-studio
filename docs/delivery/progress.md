@@ -30,8 +30,10 @@ frontend40/schema58 pass. Real HTTP tests cover whole/partial reuse, exact
 multi-record one-to-two changes and large-page refusal/recovery using explicit
 test publication/observation ports. The [typed v3 browser client](../evidence/v3-browser-client.md)
 now passes fixed non-author review, frontend65/schema58 and build, including six
-compiled guard mutations. Profile workspace client support and React integration
-remain; no new operator journey is claimed.
+compiled guard mutations. The [profile workspace client](../evidence/v3-profile-browser-client.md)
+is also integrated after correcting reply correlation and fixed non-author review:
+frontend79/schema58/check/build and six guard mutations pass. Physical/computed
+clients and React integration remain; no new operator journey is claimed.
 Operator UX, native/export/readback and release qualification
 remain required.
 
