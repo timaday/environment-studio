@@ -7,6 +7,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.*;
 import studio.environment.core.plan.*;
 import studio.environment.core.session.SessionLedger;
+import studio.environment.core.workspace.WorkspaceRefusal;
 import studio.environment.server.session.HostedSessions;
 
 /** One admitted worker owns its application resources through sole async settlement. */
@@ -223,6 +224,10 @@ final class V3PlanTransport {
     }
     private record Refusal(int status,String code,boolean closeConnection){}
     private static Refusal refusal(RuntimeException failure){
+        if(failure instanceof WorkspaceRefusal workspace){
+            if(workspace.code()==WorkspaceRefusal.Code.NOT_FOUND)return new Refusal(404,"NOT_FOUND",false);
+            if(workspace.code()==WorkspaceRefusal.Code.UNAVAILABLE)return new Refusal(503,"PLAN_SERVICES_UNAVAILABLE",false);
+        }
         if(failure instanceof PlanRuntime.Unavailable)return new Refusal(503,"PLAN_SERVICES_UNAVAILABLE",false);
         if(failure instanceof PlanRuntime.DestinationDenied)return new Refusal(403,"DESTINATION_DENIED",false);
         if(failure instanceof PlanBodyFailure body)return new Refusal(body.code()==PlanBodyFailure.Code.BODY_TOO_LARGE?413:body.code()==PlanBodyFailure.Code.CANCELLED?409:400,body.code().name(),true);

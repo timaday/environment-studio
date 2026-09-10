@@ -114,9 +114,10 @@ independent HTTP review, full Java1531 and frontend40/schema51.
 independent HTTP review, full Java1539 and frontend40/schema53.
 [Document comparison and locations](../evidence/v3-plan-document-views.md) now pass
 independent review, full Java1549 and frontend40/schema55. The next backend step is
-independent review of the [computed HTTP candidate](../evidence/v3-plan-computed-candidate.md),
-then capture/reuse and validation. Author Java1565/frontend40/schema57 and five
-mutations pass; reviewer account usage limits block integration. The committed
+integration of the independently reviewed [computed HTTP candidate](../evidence/v3-plan-computed-candidate.md),
+after [three priority corrections](../evidence/continuation-p2-corrections.md), then
+capture/reuse and validation. Author Java1565/frontend40/schema57 and five
+mutations pass; independent Java50/schema57 review now passes. The committed
 [8ad1e6a image](../evidence/v3-plan-artifacts.md) passes its own Java1549 build and
 protected smoke. Export remains unavailable.
 

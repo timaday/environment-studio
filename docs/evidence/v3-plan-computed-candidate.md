@@ -1,11 +1,11 @@
-# Computed HTTP candidate — independent review pending
+# Computed HTTP candidate — independently reviewed, integration pending
 
 The five computed collection/contributor routes are implemented and locally tested
 in an isolated candidate. They are **not integrated into the branch**. The next
-required step is independent fixed-candidate review; all available reviewer agents
-hit account usage limits. The lead has not retried those agents or substituted a
-model to bypass the limit. Passing author tests does not satisfy the repository's
-requirement for a reviewer who did not author a material change.
+step is integration after the three priority continuation corrections. Review was
+previously blocked by reviewer account limits. The new continuation obtained a
+fixed independent review; no replacement model or credential was used to bypass a
+denial. Passing author tests alone was not treated as independent review.
 
 ## Fixed source
 
@@ -17,7 +17,8 @@ Review patch `es-v3-computed-http-lead-review-candidate-20260910.patch` SHA
 `1a788eefa4fa7c1ed6df54f7b4151add57c6468f4f5f5001104c283af14d5ab3`.
 All fourteen hashes remain exact after full verification and restored mutation
 controls. All other base files were compared against their Git blob identities.
-The lead owns this entire candidate; no independent review is claimed.
+The lead authored this entire candidate; the later independent reviewer did not
+author or edit it.
 
 The candidate adds `hosted-plan-computed-views-v3.md` before implementation,
 `plan-computed-view-v3.schema.json`, five OpenAPI routes, a dedicated streaming
@@ -26,7 +27,7 @@ The existing eighteen OpenAPI routes/components and v1 reader/schemas are unchan
 It delegates existing [controlled computed views](../contracts/plan-computed-views-v3.md)
 inside the original executing/pinned view and shared semantic transfer lifetime.
 
-## Behavior and contract choices awaiting review
+## Reviewed behavior and contract choices
 
 Collections return nodes, memberships, co-occurrences and complete rule outcomes,
 with exact structured keys, full counts, stable ordering and bounded pages.
@@ -120,13 +121,24 @@ Smoke log SHA`45222001bbf6ae154f65907b4a7ae509fbbea3cb9f92222837a341726644261b`.
 remain exact after the build. `git apply --check` confirms the frozen review patch
 applies to the branch; it has not been applied there.
 
+## Independent review, 10 September
+
+All fourteen hashes, the patch and1,003 unchanged base files were verified.
+Independent Java50 and schema57 pass in a fresh archive; source review found no
+new material computed defect. The reviewer inspected the actual author logs and
+five mutation/restoration pairs, without claiming to rerun the full suite or OCI.
+Report `es-review-computed-newturn-report.md` SHA256
+`fe8f157a16e65790cab0ea1d8d6801fd03a8deed9f704d8fb4fe8502dd43058d`;
+review elapsed244.6s. The existing workspace refusal mapping is a separate baseline
+correction: preserve it when merging the computed transport changes. Integrated
+verification remains required. No new runtime, operator or resource qualification
+is implied by this review.
+
 ## Resume
 
-Review the fixed fourteen files and contract choices, investigate any findings,
-and verify any changes before integration. Preserve the explicit test-only
-publication witnesses and current compiler refusal. Do not stage/commit this
-candidate as reviewed or enable v3 availability on author evidence alone.
-Capture/reuse and validation HTTP follow this dependency-ready review step;
+Integrate the fixed fourteen files after the priority corrections, review the
+merged transport and run combined gates. Preserve explicit test-only publication
+witnesses and current compiler refusal. Capture/reuse and validation HTTP follow;
 operator UX, native execution/readback, combined resources, exact remote CI,
 GHCR and actual HiveForge remain incomplete. The current branch image excludes
 these isolated computed routes. No private model, live credential, actual user

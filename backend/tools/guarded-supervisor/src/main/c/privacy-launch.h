@@ -21,7 +21,7 @@ typedef struct es_launch {
  pthread_mutex_t mutex;pthread_cond_t changed;
  es_launch_phase phase;es_launch_result failure;es_launch_close_state closing;
  unsigned inconclusive,cancelled,users,signals,root_active,disarm_active;
- unsigned launcher_bound,receiver_bound,arm_entered,arm_done,capture_entered,capture_done;
+ unsigned launcher_bound,receiver_bound,arm_entered,arm_done,arm_unowned,capture_entered,capture_done;
  unsigned register_entered,register_done,disarm_entered,disarm_done,correlate_entered,maps_entered,image_entered;
  pthread_t launcher,receiver;
  int cancel_fd;uint64_t startup_deadline,operation_deadline,cleanup_deadline;

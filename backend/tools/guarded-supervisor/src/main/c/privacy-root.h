@@ -7,7 +7,7 @@ typedef enum { ES_ROOT_OK=0,ES_ROOT_CAPTURED=1,ES_ROOT_REGISTERED=2,ES_ROOT_CORR
  ES_ROOT_PROTOCOL=8,ES_ROOT_DEADLINE=9,ES_ROOT_CANCELLED=10,ES_ROOT_IO=11,ES_ROOT_CLEANUP=12 } es_root_result;
 typedef enum { ES_ROOT_CLOSED_COMPLETE=0,ES_ROOT_CLOSED_INCONCLUSIVE=1,ES_ROOT_CLOSE_INVALID=2 } es_root_cleanup;
 typedef struct {
- es_fork fork;unsigned state,cleanup_started,arm_failed_ended;uint64_t generation,deadline_ns,cleanup_deadline_ns;
+ es_fork fork;unsigned state,cleanup_started,arm_failed_ended,arm_failed_unowned;uint64_t generation,deadline_ns,cleanup_deadline_ns;
  int cancel_fd;pthread_t launcher;_Atomic unsigned disarmed,disarm_failure;
  es_root_result terminal;es_root_cleanup cleanup;
 } es_root;

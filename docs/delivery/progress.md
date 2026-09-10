@@ -4,6 +4,17 @@ Updated: 10 September 2026. See [starter evidence](../evidence/starter-verificat
 and [D01a integration](../evidence/d01a-integration.md) for actual commands and
 results; the table below reports capability, not test count.
 
+The latest continuation prioritizes [three confirmed corrections](../evidence/continuation-p2-corrections.md):
+safe workspace404/503 translation, v2 view cancellation before target mutation,
+and native cleanup after proven non-owning arm refusal. Fixed independent reviews,
+actual RED/GREEN and targeted guard mutations pass. Combined Java1563 (330core,
+7parser,911server,315supervisor), distribution checks and frontend40/schema55 pass.
+The exact source was verified in an isolated archive after concurrent checkout
+build artifacts caused two recorded failures. Independent computed review also
+passes; integrate it after these corrections, then finish capture/reuse and
+validation APIs. Operator UX, native/export/readback and release qualification
+remain required.
+
 The reviewed [QF-0001/0002 mapping extension](../evidence/qf12-child-property.md)
 is now integrated under [child-property-v1](../contracts/child-property-v1.md).
 Projection, scalar/structural changes, creation, views, whole/partial profile reuse,
@@ -220,8 +231,8 @@ Raw/Placeholders/Formatted, complete field/reference occurrences and explicit
 full-document disclosure even for empty/beyond-end pages. Fresh target-only spans,
 original/target separation and logout recovery pass; fresh frontend40/schema55/
 check/build also pass. The reviewer saved its complete report before its usage-limit
-error; the report was found and hash-verified. Further agent reviews are unavailable
-at present, so subsequent author work must remain pending independent review.
+error; the report was found and hash-verified. Further reviews were unavailable
+then; the latest continuation has now obtained the pending computed review.
 Computed routes, capture/reuse and validation are next. Current compiler/publication,
 operator UX, native/export/readback, combined capacity and delivery remain incomplete.
 
@@ -233,15 +244,16 @@ frontend40/schema55/check/build inside Docker. The
 passes protected startup, private workspace/schema3 and separate supervisor
 checksum checks. Its digest/source identity is recorded; release remains blocked.
 
-The [computed HTTP candidate](../evidence/v3-plan-computed-candidate.md) is isolated
-and awaiting independent review, which is blocked by agent account usage limits.
+The [computed HTTP candidate](../evidence/v3-plan-computed-candidate.md) remains isolated
+and now has independent fixed-candidate review with50 Java and57 schema tests.
 Fixed14 manifestcdd9993aeda87f3a4393267131b8129a39738760481b0471fc652fdc442069de
 on8ad1e6a passes full Java1565 (324/7/924/310), assembly/hostile launcher,
 frontend40/schema57/check/build, five caught/restored guard mutations and actual
 HTTP/Unicode/large-selector/child-location controls. Its separate review image
-repeats Java1565/frontend40/schema57 and passes protected startup/workspace smoke. This author candidate is not
-on the branch or in its runtime image; do not count it as independently reviewed.
-Resume with fixed review before integration, then capture/reuse and validation.
+repeats Java1565/frontend40/schema57 and passes protected startup/workspace smoke.
+It is not yet on the branch or in its runtime image. Integrate after the three
+priority corrections, preserving the workspace transport fix, then capture/reuse
+and validation.
 
 The later independent review's confirmed
 [retained-origin consistency defect](../evidence/derived-retained-origin-fix.md)

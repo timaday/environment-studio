@@ -59,6 +59,12 @@ encoded buffers and close its application admission exactly once. A committed
 partial response is aborted; never append a refusal JSON object to it. Bytes
 already handed to the servlet/container or peer cannot be recalled. Do not call
 a queued response client-received, or report physical delivery as complete.
+Closing a view also cancels its in-progress materialization before either target
+installation or target removal. A late complete or refused adapter result cannot
+change the retained target or diagnostics after that closure. Hold scratch until
+the worker actually returns, then release it once. This applies to v2 and v3 views;
+it does not change completion or replay of an already accepted v2 command. A target
+installed before a later transfer failure is not rolled back by that failure.
 The server must not retain application-owned encoded pages merely because a peer
 stops reading. Qualify slow, unread, disconnected, expired and revoked transfers
 through actual sockets, including recovery by a separate live operator.

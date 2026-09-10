@@ -23,6 +23,12 @@ Missing/foreign/wrong-version resources and unavailable current-plan identities
 share safe404; revoked originallease401. Retained original operation and replay
 metadata keep the ownership behavior specified below.
 Version check precedes transfer capacity, body/output/async access, expiry or cleanup.
+Creation translates missing/foreign workspace definition history to the same404
+NOT_FOUND. Workspace unavailability, including an incompatible workspace schema,
+returns503 PLAN_SERVICES_UNAVAILABLE. Owned unpublished history still returns422
+PUBLICATION_REQUIRED; unqualified current compilation returns422 UNSUPPORTED_DEFINITION.
+Unexpected failures remain500 PLAN_INTERNAL_REFUSAL. Error responses contain only
+closed codes, never exception messages or workspace existence details.
 
 Acknowledgement fields remain planId, decimal-string revision and optional operationId.
 Operation fields remain operationId, planId, lowercasephase, closedcode, cleanup

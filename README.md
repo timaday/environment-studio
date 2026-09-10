@@ -85,7 +85,9 @@ actual compiler publication remains incomplete.
 The exact `8ad1e6a` [local image](docs/evidence/v3-plan-artifacts.md)
 passes Java1549 and protected startup/workspace smoke. A separate
 [computed HTTP candidate](docs/evidence/v3-plan-computed-candidate.md) passes
-Java1565/frontend40/schema57 and awaits independent review; it is not integrated.
+Java1565/frontend40/schema57 and now passes independent review; it is not integrated.
+The [three priority corrections](docs/evidence/continuation-p2-corrections.md)
+pass independent review, full Java1563 and frontend40/schema55 verification.
 Release qualification remains open.
 Complete Oracle CLOB/PostgreSQL text observation, value-free profile composition
 and cross-document structural target materialization are implemented as reviewed

@@ -58,7 +58,7 @@ static es_launch_result connection_result(es_connection_result r){
 static uint64_t cleanup_clock(es_launch *p){pthread_mutex_lock(&p->mutex);uint64_t d=p->cleanup_deadline;pthread_mutex_unlock(&p->mutex);return d;}
 static void settle(es_launch *p){
  pthread_mutex_lock(&p->mutex);
- if(p->closing!=ES_LAUNCH_CLOSE_REQUESTED||p->users||p->signals||p->root_active||p->disarm_active||(p->arm_entered&&!p->disarm_done)){
+ if(p->closing!=ES_LAUNCH_CLOSE_REQUESTED||p->users||p->signals||p->root_active||p->disarm_active||(p->arm_entered&&!p->arm_unowned&&!p->disarm_done)){
   pthread_mutex_unlock(&p->mutex);return;
  }
  p->closing=ES_LAUNCH_CLOSE_SETTLING;pthread_mutex_unlock(&p->mutex);
@@ -117,6 +117,7 @@ es_launch_result es_launch_arm(es_launch *p){
  p->launcher=pthread_self();p->launcher_bound=1;p->arm_entered=1;p->root_active=1;pthread_mutex_unlock(&p->mutex);
  r=root_result(es_root_arm(&p->root,p->cancel_fd,p->startup_deadline,p->launch_id));
  pthread_mutex_lock(&p->mutex);p->root_active=0;p->arm_done=1;
+ p->arm_unowned=r!=ES_LAUNCH_OK&&p->root.arm_failed_unowned;
  if(r==ES_LAUNCH_OK){r=guard(p);if(!r)p->phase=ES_LAUNCH_PHASE_ARMED;}
  return leave(p,r);
 }
@@ -154,7 +155,7 @@ es_launch_result es_launch_disarm(es_launch *p){
  p->disarm_entered=1;p->disarm_active=1;pthread_mutex_unlock(&p->mutex);
  es_launch_result r=root_result(es_root_disarm(&p->root));
  pthread_mutex_lock(&p->mutex);p->disarm_active=0;
- if(!r)p->disarm_done=1;else{p->inconclusive=1;fail(p,r);}
+ if(!r)p->disarm_done=1;else{if(!p->arm_unowned||r!=ES_LAUNCH_INVALID)p->inconclusive=1;fail(p,r);}
  /* Ended-window OK is independent of a prior owner refusal. */
  --p->users;pthread_cond_broadcast(&p->changed);pthread_mutex_unlock(&p->mutex);settle(p);return r;
 }

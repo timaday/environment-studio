@@ -46,8 +46,11 @@ es_root_result es_root_arm(es_root *p,int cancel,uint64_t deadline,const uint8_t
  if(overlap(id,16,p,sizeof(*p)))return ES_ROOT_INVALID;
  p->state=1;p->launcher=pthread_self();p->deadline_ns=deadline;p->cancel_fd=cancel;
  atomic_init(&p->disarmed,0);atomic_init(&p->disarm_failure,0);
- if(!atomic_is_lock_free(&p->disarmed)||!atomic_is_lock_free(&p->disarm_failure))return fail(p,ES_ROOT_PLATFORM);
+ if(!atomic_is_lock_free(&p->disarmed)||!atomic_is_lock_free(&p->disarm_failure)){p->arm_failed_unowned=1;return fail(p,ES_ROOT_PLATFORM);}
  es_root_result r=fork_result(es_fork_arm(&p->fork,cancel,deadline,id));p->generation=p->fork.generation;
+ /* Fork arm initializes state/generation immediately after acquiring its window.
+    Only its completed pre-initialization INVALID refusal proves no ownership. */
+ p->arm_failed_unowned=r==ES_ROOT_INVALID&&!p->fork.state&&!p->fork.generation;
  p->arm_failed_ended=r!=ES_ROOT_OK&&p->generation&&atomic_load_explicit(&p->fork.armed,memory_order_acquire)==0;
  return r==ES_ROOT_OK?r:fail(p,r);
 }
