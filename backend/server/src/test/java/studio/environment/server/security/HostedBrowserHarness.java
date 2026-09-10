@@ -43,11 +43,12 @@ public final class HostedBrowserHarness {
     public static void main(String[] args)throws Exception {
         var out=System.out;try {start(mode(args));}catch(Throwable failure){for(Throwable cause=failure;cause!=null;cause=cause.getCause()){out.println("MOCK_START_FAILURE "+cause.getClass().getSimpleName());if(cause.getMessage()!=null && cause.getMessage().matches("[A-Z][A-Z0-9_]{1,100}"))out.println(cause.getMessage());}throw new IllegalStateException("MOCK_START_FAILED");}
     }
-    enum Mode { LEGACY, DEFINITIONS_V3, PLANS_V3, PROFILES_V3 }
+    enum Mode { LEGACY, DEFINITIONS_V3, DEFINITIONS_V3_REFUSAL, PLANS_V3, PROFILES_V3 }
     static Mode mode(String[] args) {
         if(args.length==0)return Mode.LEGACY;
         if(args.length==1)return switch(args[0]) {
             case "definitions-v3" -> Mode.DEFINITIONS_V3;
+            case "definitions-v3-refusal" -> Mode.DEFINITIONS_V3_REFUSAL;
             case "plans-v3" -> Mode.PLANS_V3;
             case "profiles-v3" -> Mode.PROFILES_V3;
             default -> throw new IllegalArgumentException("MOCK_INVALID_MODE");
@@ -55,8 +56,8 @@ public final class HostedBrowserHarness {
         throw new IllegalArgumentException("MOCK_INVALID_MODE");
     }
     private static void start(Mode mode)throws Exception {
-        int listenerPort=mode==Mode.PROFILES_V3?18445:18443;
-        int controlPort=mode==Mode.PROFILES_V3?18446:18444;
+        int listenerPort=mode==Mode.PROFILES_V3 || mode==Mode.DEFINITIONS_V3_REFUSAL?18445:18443;
+        int controlPort=mode==Mode.PROFILES_V3 || mode==Mode.DEFINITIONS_V3_REFUSAL?18446:18444;
         var original=System.out;var captured=new BoundedLog();System.setOut(new PrintStream(captured,true,StandardCharsets.UTF_8));System.setErr(new PrintStream(captured,true,StandardCharsets.UTF_8));
         var owned=new Owned(original);
         owned.add(captured::clear);
@@ -81,7 +82,7 @@ public final class HostedBrowserHarness {
         properties.put("server.address","127.0.0.1");properties.put("server.port",Integer.toString(listenerPort));properties.put("server.ssl.enabled","true");properties.put("server.ssl.key-store",key.toUri().toString());properties.put("server.ssl.key-store-password",password);properties.put("server.ssl.key-store-type","PKCS12");
         properties.put("spring.web.resources.static-locations",Path.of("../../frontend/dist").toAbsolutePath().normalize().toUri().toString()+"/");properties.put("logging.level.org.springframework.web","DEBUG");properties.put("logging.level.org.springframework.web.client.DefaultRestClient","TRACE");
         var app=switch(mode) {
-            case DEFINITIONS_V3 -> new SpringApplication(EnvironmentStudioApplication.class);
+            case DEFINITIONS_V3, DEFINITIONS_V3_REFUSAL -> new SpringApplication(EnvironmentStudioApplication.class);
             case LEGACY -> new SpringApplication(EnvironmentStudioApplication.class,PlanHttpTestConfiguration.class);
             case PLANS_V3 -> new SpringApplication(EnvironmentStudioApplication.class,V3DocumentHttpTestConfiguration.class);
             case PROFILES_V3 -> new SpringApplication(EnvironmentStudioApplication.class,V3WorkflowHttpTestConfiguration.class);

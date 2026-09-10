@@ -55,14 +55,50 @@ test("uploads, saves and inspects a v3 definition with exact uncertain replay", 
     await page.setViewportSize({ width: 390, height: 844 });
   }
   const source = `${await readFile("../fixtures/native-v3/definition.json", "utf8")}\r\n`;
+  // Actual unmodified semantic422, followed by a corrected upload and save.
+  const malformed = "{ Browser-Source-Canary independently-invented invalid JSON";
+  const invalidPicker = page.waitForEvent("filechooser");
+  await area.getByRole("button", { name: "Upload definition" }).click();
+  await (await invalidPicker).setFiles({
+    name: "invalid.json",
+    mimeType: "application/json",
+    buffer: Buffer.from(malformed),
+  });
+  await expect(area.getByRole("textbox", { name: "Source", exact: true })).toHaveValue(malformed);
+  const rejectedResponse = page.waitForResponse(
+    (response) =>
+      response.request().method() === "PUT" &&
+      /\/api\/v3\/definitions\/[^/]+$/.test(new URL(response.url()).pathname),
+  );
+  await area.getByRole("button", { name: "Save draft", exact: true }).click();
+  const rejected = await rejectedResponse;
+  expect(rejected.status()).toBe(422);
+  expect((await rejected.json()).kind).toBe("rejected");
+  await expect(area.getByRole("alert")).toContainText("REJECTED");
+  await expect(area.getByRole("textbox", { name: "Source", exact: true })).toBeEnabled();
+  await expect(area.getByRole("textbox", { name: "Source", exact: true })).toHaveValue(malformed);
+  await expect(area.getByRole("button", { name: "Retry original save" })).toHaveCount(0);
+  await expect(area.getByRole("button", { name: "Upload definition" })).toBeEnabled();
+
   const pickerOpened = page.waitForEvent("filechooser");
   await area.getByRole("button", { name: "Upload definition" }).click();
   const picker = await pickerOpened;
+  page.once("dialog", async (dialog) => {
+    expect(dialog.type()).toBe("confirm");
+    expect(dialog.message()).toBe(
+      "Replace the unsaved definition source? Your existing edits will be discarded.",
+    );
+    await dialog.accept();
+  });
   await picker.setFiles({
     name: "invented.json",
     mimeType: "application/json",
     buffer: Buffer.from(source),
   });
+  // The previous rejected source is nonempty: wait for the new file, not merely an enabled save.
+  await expect(area.getByRole("textbox", { name: "Source", exact: true })).toHaveValue(
+    source.replace(/\r\n/g, "\n"),
+  );
   await expect(area.getByRole("button", { name: "Save draft", exact: true })).toBeEnabled();
   const commands: string[] = [];
   let objectPath = "";
@@ -144,4 +180,9 @@ test("uploads, saves and inspects a v3 definition with exact uncertain replay", 
   await area.getByRole("tab", { name: "Source", exact: true }).click();
   expect(await area.getByRole("tabpanel").locator("pre").textContent()).toBe(yaml);
   expect(JSON.parse(commands.at(-1) ?? "").format).toBe("YAML");
+  const controlPort =
+    process.env.ES_HOSTED_BROWSER_MODE === "definitions-v3-refusal" ? 18446 : 18444;
+  expect((await page.request.get(`http://127.0.0.1:${controlPort}/control/checks`)).ok()).toBe(
+    true,
+  );
 });

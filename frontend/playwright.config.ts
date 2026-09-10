@@ -2,7 +2,8 @@ import { defineConfig, devices } from "@playwright/test";
 
 const hosted = process.env.ES_HOSTED_BROWSER === "1";
 const planJourney = process.env.ES_HOSTED_BROWSER_MODE === "plans-v3";
-const definitionJourney = process.env.ES_HOSTED_BROWSER_MODE === "definitions-v3";
+const refusalJourney = process.env.ES_HOSTED_BROWSER_MODE === "definitions-v3-refusal";
+const definitionJourney = process.env.ES_HOSTED_BROWSER_MODE === "definitions-v3" || refusalJourney;
 const profileJourney = process.env.ES_HOSTED_BROWSER_MODE === "profiles-v3";
 const hostedOutput = process.env.ES_HOSTED_BROWSER_OUTPUT_DIR;
 if (
@@ -31,7 +32,7 @@ export default defineConfig({
   reporter: "list",
   use: {
     baseURL: hosted
-      ? profileJourney
+      ? profileJourney || refusalJourney
         ? "https://localhost:18445"
         : "https://localhost:18443"
       : "http://127.0.0.1:4173",

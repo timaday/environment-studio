@@ -1,25 +1,31 @@
 # Handoff and capability status
 
-Latest lead slice after de0ce25 is the
-[capture persistence browser prerequisite](../evidence/v3-profile-capture-browser.md).
-The test-only profiles-v3 mode reuses matching invented historical definition
-storage and observation witnesses. Stable real HTTPS/OIDC/SQLite browser4 passes
-capture without save, separate exact draft save/history/replay/relogin and foreign
-owner denial. Missing stored definition and injected stored canary controls fail
-as expected. Fresh221frontend/59schema/check/build pass; fixed non-author source
-review has no confirmed defect. This is no rendered capture/hook qualification.
+Latest lead slice is the [semantic workspace-refusal correction](../evidence/v3-workspace-refusal-integration.md).
+The isolated correction is 61e22d27aaabefd85d91a0a8fb03124c32a7b6ba on bc6dfe8;
+eb045ad carries it onto the current 1522cc5 application stack, preserving upload
+and capture tests. Actual malformed-definition HTTP422 now permits correction;
+malformed refusal envelopes and potentially committed403/413 retain exact replay.
+Final local checks pass 250 frontend/59 schema tests, types, formatting and build.
+Fresh desktop/narrow actual HTTPS journeys pass with bounded canary checks and
+complete cleanup. Fixed non-author integration review found no confirmed defect;
+remote correction acceptance remains pending. Root stays173cde2/application30446e2.
 
-- Ready: finish candidate publication; implement the next nonvisual whole/partial
-  reuse state while new capture design approval remains a separate requirement.
-- Awaiting another owner: remote bc6d→78f2b1a→8d87311→d67df44→de0ce25 review;
-  IDE2 native resource evidence, now under independent diagnostic review.
-- Blockers: pending Definitions rendered design exceptions; required combined
-  integration, production publication/native/client/resource/release qualification.
+- Ready: finish the correction handoff, then implement nonvisual whole/partial
+  reuse state. Capture persistence prerequisite 1522cc5 is locally reviewed.
+- Awaiting another owner: remote d67df44 review followed by de0ce25; IDE2 native
+  allocation/stack packet is now in read-only independent review.
+- Blockers: pending Definitions rendered exceptions; combined integration gates,
+  actual publication/native/client/resource qualification and release evidence.
 
-User publication of78f2b1a/8d87311/d67df44/de0ce25 is confirmed by exact remote heads
-and fetch. Queue5625865147 activates their fixed scopes without replacing current
-bc6d review. Local profile tests use18445/18446 and separate RAM; remote18443/18444
-and full/OCI ownership remain reserved. Root is unchanged173cde2/application30446e2.
+Remote review resolved READBACK-QA-001 on exact78f2b1a (353 core tests and bounded
+independent regression/mutation evidence). Definitions upload8d87311 has no new
+product finding; inherited DEF-QA-001 is addressed by the current correction.
+Its exact1MiB positive boundary was covered only by an independent added probe;
+its v3 browser runs did not sample the final log/PKCE control. Preserve those
+limits. The current correction adds that finite sampled check, without claiming
+universal disclosure protection. User-published78f2/8d/d67/de0 are fetch-confirmed;
+new correction and1522 candidates still need publication. Remote18443/18444 and
+full/OCI ownership remain reserved; local focused browser checks use18445/18446.
 
 Updated: 10 September 2026. See [starter evidence](../evidence/starter-verification.md)
 and [D01a integration](../evidence/d01a-integration.md) for actual commands and
