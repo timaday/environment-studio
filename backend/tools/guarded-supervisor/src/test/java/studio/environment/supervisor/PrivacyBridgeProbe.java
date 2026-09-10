@@ -20,6 +20,8 @@ public final class PrivacyBridgeProbe {
     static native int clocks(long token);
     static native void allocationFault(int mode);
     static native void refusalAllocationFault(Throwable failure);
+    static native int eventAllocationFault();
+    static native int eventAllocationObserved(long token);
     static native long heldToken();
     static native void releaseAllocation();
     static native int unpublishedOutcome(long token);
@@ -51,6 +53,25 @@ public final class PrivacyBridgeProbe {
     }
     static void delayedOpen(long allowance,long holdMillis,boolean expired)throws Exception{
         delayedOpen(allowance,holdMillis,expired,false);
+    }
+    static void coordinatorAllocation(String child)throws Exception{
+        var open=opened();check(eventAllocationFault()==0,"EVENT_FAULT_SETUP");
+        var coordinator=new PrivacyLaunchCoordinator(open);
+        var owner=new PrivacyLaunchOwner(List.of(child,"owned-child"),Map.of("ES_LAUNCH_TEST_ENDPOINT",open.socketPath()),Path.of("/tmp"),coordinator,deadline());
+        Process exact=null;
+        try {
+            check(owner.await().state()==PrivacyLaunchOwner.State.REGISTERED,"EVENT_ROOT_REGISTRATION");
+            check(coordinator.await(deadline()).equals(new PrivacyBridge.EventFailed(PrivacyBridge.Failure.RESOURCE)),"EVENT_EXCEPTION_REFUSAL");
+            check(eventAllocationObserved(open.launch())==0,"CORRELATED_EXCEPTION_RELEASED");
+            var field=PrivacyLaunchOwner.class.getDeclaredField("process");field.setAccessible(true);exact=(Process)field.get(owner);
+            check(exact!=null&&exact.isAlive(),"EXACT_CHILD_STILL_BLOCKED");
+            check(new String(exact.getInputStream().readNBytes(26),StandardCharsets.US_ASCII).equals("INVENTED-OUT\nINVENTED-ERR\n"),"EVENT_OUTPUT_PRESERVED");
+        } finally {check(owner.close(deadline())==PrivacyLaunchOwner.Cleanup.INCONCLUSIVE,"JAVA_EVENT_UNCERTAINTY");}
+        check(exact!=null&&!exact.isAlive()&&exact.waitFor(1,TimeUnit.SECONDS),"EXACT_CHILD_REAPED");
+        complete(open); // Native COMPLETE is separate from the Java exception.
+        check(coordinator.close(1_000_000_000L)==PrivacyLaunchOwner.Cleanup.INCONCLUSIVE,"COORDINATOR_UNCERTAINTY_STICKY");
+        check(owner.close(deadline())==PrivacyLaunchOwner.Cleanup.INCONCLUSIVE,"OWNER_UNCERTAINTY_STICKY");
+        lifecycle(child,true); // Original finally-disarm released the Java window.
     }
     static void delayedOpen(long allowance,long holdMillis,boolean expired,boolean failRefusal)throws Exception{
         var result=new java.util.concurrent.atomic.AtomicReference<PrivacyBridge.OpenResult>();
@@ -112,6 +133,7 @@ public final class PrivacyBridgeProbe {
             case "unexpired-publication" -> delayedOpen(3_000_000_000L,250,false);
             case "startup-expired-publication" -> delayedOpen(12_000_000_000L,10_250,true);
             case "expired-refusal-allocation" -> delayedOpen(100_000_000L,250,true,true);
+            case "event-allocation" -> coordinatorAllocation(args[2]);
             case "arm-allocation" -> {var open=opened();var delegate=new PrivacyLaunchCoordinator(open);var port=new PrivacyLaunchOwner.CapturePort(){
                 public PrivacyBridge.ForkResult arm(){allocationFault(2);return delegate.arm();}
                 public PrivacyLaunchOwner.Step register(long pid){return delegate.register(pid);}

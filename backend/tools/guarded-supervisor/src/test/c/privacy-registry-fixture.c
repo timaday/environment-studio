@@ -48,6 +48,8 @@ static struct JNINativeInterface_ fault_jni;
 static __thread int allocation_fault,expire_root;
 static __thread jobject refusal_throwable;
 static int refusal_expected,refusal_injected;
+static JavaVM *event_vm;
+static int event_fault,event_injected;
 static int allocation_held,allocation_released;
 static uint64_t held_startup,held_operation;
 static int held_descriptors[4];
@@ -67,7 +69,10 @@ static jobject faulty_object(JNIEnv *e,jclass type,jmethodID constructor,...){
    if(refusal_throwable)(*e)->DeleteGlobalRef(e,refusal_throwable);
    refusal_throwable=NULL;return NULL;
   }
-  else{jclass oom=(*e)->FindClass(e,"java/lang/OutOfMemoryError");if(oom){(*e)->ThrowNew(e,oom,"invented allocation fault");(*e)->DeleteLocalRef(e,oom);}return NULL;}
+  else{jclass oom=(*e)->FindClass(e,"java/lang/OutOfMemoryError");if(oom){
+    int thrown=(*e)->ThrowNew(e,oom,"invented allocation fault");(*e)->DeleteLocalRef(e,oom);
+    if(mode==6&&thrown==JNI_OK){pthread_mutex_lock(&fixture_lock);event_injected=1;pthread_mutex_unlock(&fixture_lock);}
+   }return NULL;}
  }
  va_list args;va_start(args,constructor);jobject result=original_jni->NewObjectV(e,type,constructor,args);va_end(args);
  if(fail_refusal){allocation_fault=5;*e=&fault_jni;}
@@ -79,6 +84,29 @@ JNIEXPORT void JNICALL Java_studio_environment_supervisor_PrivacyBridgeProbe_all
 JNIEXPORT void JNICALL Java_studio_environment_supervisor_PrivacyBridgeProbe_refusalAllocationFault(JNIEnv *e,jclass c,jthrowable throwable){
  refusal_expected=1;refusal_throwable=(*e)->NewGlobalRef(e,throwable);
  if(refusal_throwable)Java_studio_environment_supervisor_PrivacyBridgeProbe_allocationFault(e,c,4);
+}
+JNIEXPORT jint JNICALL Java_studio_environment_supervisor_PrivacyBridgeProbe_eventAllocationFault(JNIEnv *e,jclass c){
+ (void)c;JavaVM *vm=NULL;if((*e)->GetJavaVM(e,&vm)!=JNI_OK)return 1;
+ pthread_mutex_lock(&fixture_lock);event_vm=vm;event_fault=1;pthread_mutex_unlock(&fixture_lock);return 0;
+}
+es_bridge_result __real_es_registry_event(es_registry_ref *);
+es_bridge_result __wrap_es_registry_event(es_registry_ref *ref){
+ /* Run the real capture/correlation first. Only JNI construction on its
+    original Java coordinator thread is faulted; no event is fabricated. */
+ es_bridge_result result=__real_es_registry_event(ref);
+ pthread_mutex_lock(&fixture_lock);int inject=event_fault&&result.failure==ES_BRIDGE_INSTALLATION&&!result.closed;
+ JavaVM *vm=event_vm;if(inject)event_fault=0;pthread_mutex_unlock(&fixture_lock);
+ if(inject&&vm){JNIEnv *e=NULL;if((*vm)->GetEnv(vm,(void**)&e,JNI_VERSION_1_8)==JNI_OK)
+   Java_studio_environment_supervisor_PrivacyBridgeProbe_allocationFault(e,NULL,6);}
+ return result;
+}
+JNIEXPORT jint JNICALL Java_studio_environment_supervisor_PrivacyBridgeProbe_eventAllocationObserved(JNIEnv *e,jclass c,jlong token){
+ (void)e;(void)c;unsigned number=(unsigned)((uint64_t)token&511U);if(!number||number>LIMIT)return 1;
+ pthread_mutex_lock(&fixture_lock);int bad=!event_injected||event_fault;pthread_mutex_unlock(&fixture_lock);
+ pthread_mutex_lock(&invocation.mutex);es_registry_entry *p=&entries[number-1];
+ bad=bad||p->token!=(uint64_t)token||!p->published||p->failure!=ES_BRIDGE_INSTALLATION||p->refs
+  ||!p->event_entered||p->event_active||p->finally_owed;
+ pthread_mutex_unlock(&invocation.mutex);return bad;
 }
 es_root_result __real_es_root_arm(es_root *,int,uint64_t,const uint8_t *);
 es_root_result __wrap_es_root_arm(es_root *p,int cancel,uint64_t deadline,const uint8_t *id){if(expire_root){expire_root=0;deadline=es_registry_now()-1;}return __real_es_root_arm(p,cancel,deadline,id);}

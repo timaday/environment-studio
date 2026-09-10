@@ -19,7 +19,7 @@ class PrivacyBridgeTest {
             var command=new ArrayList<>(List.of("/usr/bin/cc","-std=c17","-O2","-Wall","-Wextra","-Werror","-pthread","-fstack-protector-strong","-D_FORTIFY_SOURCE=3","-fPIC","-shared","-Wl,-z,relro,-z,now,-z,defs","-Isrc/main/c","-I"+System.getProperty("java.home")+"/include","-I"+System.getProperty("java.home")+"/include/linux"));
             for(String name:COMPONENTS)command.add("src/main/c/privacy-"+name+".c");
             command.add("src/main/c/privacy-jni.c");
-            if(mock)command.addAll(List.of("-DES_FIXTURE_PARENT=\""+parent+"\"","-DES_FIXTURE_JAVA=\""+System.getProperty("java.runtime.version")+"\"","src/test/c/privacy-compiled-fixture.c","src/test/c/privacy-registry-fixture.c","-Wl,--wrap=es_root_disarm,--wrap=es_root_arm,--wrap=es_compiled_find_chain,--wrap=close"));
+            if(mock)command.addAll(List.of("-DES_FIXTURE_PARENT=\""+parent+"\"","-DES_FIXTURE_JAVA=\""+System.getProperty("java.runtime.version")+"\"","src/test/c/privacy-compiled-fixture.c","src/test/c/privacy-registry-fixture.c","-Wl,--wrap=es_root_disarm,--wrap=es_root_arm,--wrap=es_compiled_find_chain,--wrap=es_registry_event,--wrap=close"));
             else command.addAll(List.of("src/main/c/privacy-compiled.c","src/main/c/privacy-registry.c"));
             command.addAll(List.of("-lcrypto","-o",(mock?fixture:production).toString()));
             assertEquals(0,PrivacyConnectionTest.run(command));
@@ -69,6 +69,9 @@ class PrivacyBridgeTest {
     }
     @Test void refusalConstructionFailurePreservesExpiredOwnershipAndExactException() throws Exception {
         expiredMode("expired-refusal-allocation");
+    }
+    @Test void coordinatorConstructionExceptionRetainsJavaUncertaintyAfterNativeCleanup() throws Exception {
+        mode("event-allocation");
     }
     static void expiredMode(String expired) throws Exception {
         try {
