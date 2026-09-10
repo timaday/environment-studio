@@ -116,9 +116,16 @@ actual v2/v3 workspace adapters, deferring schema3 access to preserve schema2
 startup and v2 replay. Combined Java1343 (297 core,7 parser,729 server,310
 supervisor), assembly/hostile launcher, frontend40/schema42, checking and build
 pass on the fixed twenty-four-file candidate over69752c8,10 September at01:02:27BST.
-The retained047d1b0 image predates this candidate. Next backend work is immutable
-model-version admission followed by versioned plan HTTP. Actual client/content/
-review evidence and combined resource qualification remain open.
+The [immutable model-version boundary](../evidence/qf34-plan-version-admission.md)
+and [legacy HTTP adoption](../evidence/qf34-plan-version-http.md) now pass separate
+fixed independent reviews. V1 routes reject V3 before resource/credential/cleanup
+admission; immutable original versions preserve retired replay and operation
+metadata across replacement. Combined Java1373 (315 core,7 parser,741 server,
+310 supervisor), assembly/hostile launcher pass on the fixed thirteen-file
+candidate over8b5843d,10 September at01:26:09BST. Frontend40/schema42 remain scoped
+to8b5843d; source is unchanged. The retained047d1b0 image predates these changes.
+Next backend work is small v3 summaries and owned transfer, then versioned plan
+HTTP. Actual client/content/review evidence and combined resources remain open.
 No Q feedback GitHub publication is authorized. Existing MVP scope and completed
 work remain in place.
 

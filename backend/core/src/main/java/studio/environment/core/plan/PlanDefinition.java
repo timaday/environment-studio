@@ -7,6 +7,8 @@ import studio.environment.core.definitionv3.NativeCompilationResult.Checked;
 
 /** Versioned internal metadata; publication and live plan authority are separate. */
 public sealed interface PlanDefinition {
+    enum Version { V2, V3 }
+    default Version version() { return switch(this) { case V2 ignored -> Version.V2; case V3 ignored -> Version.V3; }; }
     Logical physical();
     default java.util.List<studio.environment.core.definitionv2.NativeDefinition.Binding> bindings() {
         return switch(this) {case V2 v2 -> v2.ready().checked().definition().bindings();case V3 v3 -> v3.checked().definition().bindings();};

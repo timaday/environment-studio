@@ -18,6 +18,9 @@ revision, consume a command replay ID or persist results. Ordinary user actions
 may touch idle expiry; operation polling remains explicitly non-touching.
 Check authority both before work and before publishing its response. A race with
 revision, observation replacement, discard or revocation refuses the result.
+All thirteen routes require fixed model V2 admission before Work/body allocation
+and at view reservation, as specified by the
+[legacy model-version boundary](plan-http-version-admission-v1.md).
 
 Every request object is closed; no omitted default, duplicate/unknown property,
 extra root, malformed Unicode or noncanonical integer is accepted. `revision` is

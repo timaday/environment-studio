@@ -11,6 +11,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.web.bind.annotation.*;
 import tools.jackson.databind.json.JsonMapper;
 import studio.environment.core.plan.*;
+import static studio.environment.core.plan.PlanDefinition.Version.V2;
 import studio.environment.core.session.SessionLedger;
 import studio.environment.server.session.HostedSessions;
 
@@ -38,9 +39,10 @@ public final class PlanController {
     }
     private void summaryResponse(SessionLedger.Lease lease,Optional<String> planId,HttpServletResponse response) throws IOException {
         var service=runtime.service();
+        var snapshot=service.view(lease,planId,V2);
         try(var slot=metadata();var encoded=new PlanViewEncoding(32_768)) {
-            var snapshot=service.view(lease,planId);encoded.encode(view(snapshot));
-            Runnable verify=()->service.verifySummary(lease,snapshot);verify.run();
+            encoded.encode(view(snapshot));
+            Runnable verify=()->service.verifySummary(lease,snapshot,V2);verify.run();
             var output=response.getOutputStream();verify.run();
             response.setStatus(200);response.setHeader("Cache-Control","no-store");response.setContentType("application/json");response.setContentLength(encoded.size());
             encoded.write(output,verify);output.flush();verify.run();
@@ -57,13 +59,13 @@ public final class PlanController {
     }
     @PostMapping("/api/v1/plans/{planId}/inspections")
     public void reserve(@PathVariable("planId") String planId,HttpServletRequest request,HttpServletResponse response) throws IOException {
-        var lease=lease(request); var service=runtime.service(); service.requireOwned(lease,planId);
+        var lease=lease(request); var service=runtime.service(); service.requireOwned(lease,planId,V2);
         var slot=metadata();
-        start(lease,request,response,slot,()->!runtime.service().live(lease),16_384,10,202,body->ack(service.reserve(lease,planId,new PlanMetadataReader().reserve(body))));
+        start(lease,request,response,slot,()->!runtime.service().live(lease),16_384,10,202,body->ack(service.reserve(lease,planId,new PlanMetadataReader().reserve(body),V2)));
     }
     @PostMapping("/api/v1/operations/{operationId}/credentials")
     public void credentials(@PathVariable("operationId") String operationId,HttpServletRequest request,HttpServletResponse response) throws IOException {
-        var lease=lease(request); var submission=runtime.service().claimCredentials(lease,operationId);
+        var lease=lease(request); var submission=runtime.service().claimCredentials(lease,operationId,V2);
         start(lease,request,response,submission,submission::cancelled,16_384,10,200,body->{
             var failure=new PlanBodyFailure[1];
             var status=submission.process((user,password)->{
@@ -76,17 +78,17 @@ public final class PlanController {
     }
     @GetMapping("/api/v1/operations/{operationId}")
     public void operation(@PathVariable("operationId") String operationId,HttpServletRequest request,HttpServletResponse response) throws IOException {
-        write(response,200,status(runtime.service().status(lease(request),operationId)));
+        write(response,200,status(runtime.service().status(lease(request),operationId,V2)));
     }
     @PostMapping("/api/v1/operations/{operationId}/cancel")
     public void cancel(@PathVariable("operationId") String operationId,HttpServletRequest request,HttpServletResponse response) throws IOException {
-        var lease=lease(request); var service=runtime.service(); service.status(lease,operationId);
+        var lease=lease(request); var service=runtime.service(); service.status(lease,operationId,V2);
         var slot=metadata();
-        start(lease,request,response,slot,()->!runtime.service().live(lease),16_384,10,200,body->{new PlanMetadataReader().empty(body);return status(service.cancel(lease,operationId));});
+        start(lease,request,response,slot,()->!runtime.service().live(lease),16_384,10,200,body->{new PlanMetadataReader().empty(body);return status(service.cancel(lease,operationId,V2));});
     }
     @PostMapping("/api/v1/plans/{planId}/commands")
     public void command(@PathVariable("planId") String planId,HttpServletRequest request,HttpServletResponse response) throws IOException {
-        var lease=lease(request); var admission=runtime.service().reserveCommand(lease,planId);
+        var lease=lease(request); var admission=runtime.service().reserveCommand(lease,planId,V2);
         start(lease,request,response,admission,()->!admission.live(),134_217_728,30,200,body->ack(admission.execute(new PlanCommandReader().read(body))));
     }
     static SessionLedger.Lease lease(HttpServletRequest request) {

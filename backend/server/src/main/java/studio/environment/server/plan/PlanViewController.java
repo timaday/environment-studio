@@ -5,6 +5,7 @@ import jakarta.servlet.http.*;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.web.bind.annotation.*;
 import studio.environment.core.plan.*;
+import static studio.environment.core.plan.PlanDefinition.Version.V2;
 import studio.environment.core.session.SessionLedger;
 import static studio.environment.server.plan.PlanViewRequest.Route;
 
@@ -40,7 +41,7 @@ public final class PlanViewController {
     @PostMapping("/api/v1/plans/{planId}/validations")
     public void validation(@PathVariable("planId") String planId,HttpServletRequest request,HttpServletResponse response)throws IOException{start(Route.VALIDATION,planId,request,response);}
     private void start(Route route,String planId,HttpServletRequest request,HttpServletResponse response)throws IOException {
-        var lease=PlanController.lease(request);var service=runtime.service();service.requireOwned(lease,planId);
+        var lease=PlanController.lease(request);var service=runtime.service();service.requireOwned(lease,planId,V2);
         var work=new Work(service,lease,planId,route);
         transport.start(lease,request,response,work,work::cancelled,route.collection()?67_108_864:16_384,route.collection()?30:10,200,
             body->(PlanResponse)(output,status)->work.transfer(body,output,status));
@@ -52,12 +53,12 @@ public final class PlanViewController {
         private final PlanController.MetadataSlot metadata;private HostedPlanService.ViewAdmission admission;
         Work(HostedPlanService service,SessionLedger.Lease lease,String planId,Route route){
             this.service=service;this.lease=lease;this.planId=planId;this.route=route;
-            if(route.collection()){admission=service.reserveView(lease,planId);metadata=null;}else metadata=PlanController.metadata();
+            if(route.collection()){admission=service.reserveView(lease,planId,V2);metadata=null;}else metadata=PlanController.metadata();
         }
         boolean cancelled(){return !service.live(lease) || admission!=null && !admission.live();}
         void transfer(OwnedServletBody body,HttpServletResponse response,int status)throws IOException {
             PlanViewRequest small=null;
-            if(admission==null){small=new PlanViewReader().read(route,body);admission=service.reserveView(lease,planId);}
+            if(admission==null){small=new PlanViewReader().read(route,body);admission=service.reserveView(lease,planId,V2);}
             final PlanViewRequest decoded=small;
             try {
                 admission.run(()->{

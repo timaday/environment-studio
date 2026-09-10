@@ -92,8 +92,10 @@ fresh publication/full XML verification and a separate v3 identity.
 [shared runtime registration](../evidence/qf34-plan-runtime.md) now pass independent
 review and combined Java1343/frontend40/schema42. Current compilation still refuses
 new publication. Concurrent workspace cleanup and schema2/v2 compatibility are
-verified. Immutable model-version admission and versioned plan HTTP are the next
-backend work; export remains unavailable.
+verified. [Immutable model-version admission](../evidence/qf34-plan-version-admission.md)
+and [legacy HTTP enforcement](../evidence/qf34-plan-version-http.md) now pass fixed
+independent reviews and combined Java1373. Next backend work is small v3 summaries,
+owned transfer and versioned plan routes; export remains unavailable.
 
 The lead owns shared contracts and compatibility. Independent fixed-candidate
 review, actual RED/GREEN, targeted guard mutations and integrated verification

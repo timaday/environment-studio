@@ -31,6 +31,8 @@
 | V3 definition draft and historical HTTP routes | [workspace-http-v3.md](workspace-http-v3.md), [openapi-workspace-v3.json](openapi-workspace-v3.json) |
 | V3 definition/profile publication HTTP | [workspace-publication-http-v3.md](workspace-publication-http-v3.md) |
 | Shared versioned plan runtime | [plan-runtime-v3.md](plan-runtime-v3.md) |
+| Immutable plan model-version admission | [plan-version-admission.md](plan-version-admission.md) |
+| Legacy plan route version enforcement | [plan-http-version-admission-v1.md](plan-http-version-admission-v1.md) |
 | HTTP | [api.md](api.md), [openapi.yaml](openapi.yaml) |
 | Deployment | [../../deploy/README.md](../../deploy/README.md) |
 

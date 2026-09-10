@@ -45,7 +45,7 @@ public final class HostedPlanService {
     private static final class LeaseState {
         final SessionLedger.Lease lease;
         final Map<String,Replay> replay = new LinkedHashMap<>();
-        final Set<String> ownedPlans = new HashSet<>();
+        final Map<String,PlanDefinition.Version> ownedPlans = new HashMap<>();
         final Map<String,Operation> operations = new LinkedHashMap<>();
         Plan plan;
         int commandReaders;
@@ -84,6 +84,7 @@ public final class HostedPlanService {
         final String id = UUID.randomUUID().toString();
         Plan plan;
         final String planId;
+        final PlanDefinition.Version version;
         final String revision;
         final long generation;
         final long reservedAt;
@@ -96,7 +97,7 @@ public final class HostedPlanService {
         boolean consumed;
         volatile ObservationResult.CleanupHandle cleanupHandle;
         Operation(Plan plan, long now, ObservationPort.Permit permit) {
-            this.plan=plan; this.planId=plan.id; this.revision=plan.revision.toString(); this.generation=plan.generation; this.reservedAt=now; this.permit=permit;
+            this.plan=plan; this.planId=plan.id; this.version=plan.definition.model().version(); this.revision=plan.revision.toString(); this.generation=plan.generation; this.reservedAt=now; this.permit=permit;
         }
         Status status() { return new Status(id,planId,phase,code,cleanup,installed); }
     }
@@ -131,7 +132,7 @@ public final class HostedPlanService {
     }
     private LeaseState ownedState(SessionLedger.Lease lease,String planId) {
         var state=state(lease);
-        if(state==null || !state.ownedPlans.contains(planId)) throw new PlanRefusal(NOT_FOUND);
+        if(state==null || !state.ownedPlans.containsKey(planId)) throw new PlanRefusal(NOT_FOUND);
         return state;
     }
     private Plan plan(SessionLedger.Lease lease,String id) {
@@ -193,7 +194,7 @@ public final class HostedPlanService {
             var state=leases.computeIfAbsent(lease.id(),ignored->new LeaseState(lease));
             var previous=replay(state,requestId,identity); if(previous.isPresent()) return previous.get();
             if(state.plan!=null || livePlans()>=4) throw new PlanRefusal(CAPACITY);
-            state.plan=new Plan(published,binding,selected); state.ownedPlans.add(state.plan.id);
+            state.plan=new Plan(published,binding,selected); state.ownedPlans.put(state.plan.id, state.plan.definition.model().version());
             var acknowledgement=state.plan.ack(); state.replay.put(requestId,new Replay(identity,acknowledgement));
             return acknowledgement;
         });
@@ -597,6 +598,63 @@ public final class HostedPlanService {
             if(viewScratch==this){viewScratch=null;materializationScratch=false;}
         }
         @Override public String toString(){return "ViewAdmission[redacted]";}
+    }
+    /** Immutable version admission precedes any legacy operation side effect. */
+    private static void expectedVersion(PlanDefinition.Version expectedVersion) {
+        if(expectedVersion==null)throw new PlanRefusal(INVALID_REQUEST);
+    }
+    private void ownedVersion(SessionLedger.Lease lease,String id,PlanDefinition.Version expectedVersion) {
+        expectedVersion(expectedVersion);
+        guarded(lease,()->{
+            var state=ownedState(lease,id);
+            if(state.ownedPlans.get(id)!=expectedVersion)throw new PlanRefusal(NOT_FOUND);
+            return true;
+        });
+    }
+    private void operationVersion(SessionLedger.Lease lease,String id,PlanDefinition.Version expectedVersion) {
+        expectedVersion(expectedVersion);
+        guarded(lease,()->{
+            // operation() may expire/close a reservation; do not call it before matching.
+            var state=state(lease);var operation=state==null?null:state.operations.get(id);
+            if(operation==null || operation.version!=expectedVersion)throw new PlanRefusal(NOT_FOUND);
+            return true;
+        });
+    }
+    public void requireOwned(SessionLedger.Lease lease,String id,PlanDefinition.Version expectedVersion) {
+        ownedVersion(lease,id,expectedVersion);
+    }
+    public View view(SessionLedger.Lease lease,Optional<String> id,PlanDefinition.Version expectedVersion) {
+        expectedVersion(expectedVersion);
+        String selected=guarded(lease,()->{
+            var state=state(lease);
+            if(state==null || state.plan==null)throw new PlanRefusal(NOT_FOUND);
+            String matched=id.orElse(state.plan.id);
+            if(state.ownedPlans.get(matched)!=expectedVersion)throw new PlanRefusal(NOT_FOUND);
+            return matched;
+        });
+        // Never resolve current again: a later replacement cannot substitute its ID.
+        return view(lease,Optional.of(selected));
+    }
+    public void verifySummary(SessionLedger.Lease lease,View snapshot,PlanDefinition.Version expectedVersion) {
+        expectedVersion(expectedVersion);ownedVersion(lease,snapshot.planId(),expectedVersion);verifySummary(lease,snapshot);
+    }
+    public ViewAdmission reserveView(SessionLedger.Lease lease,String id,PlanDefinition.Version expectedVersion) {
+        ownedVersion(lease,id,expectedVersion);return reserveView(lease,id);
+    }
+    public CommandAdmission reserveCommand(SessionLedger.Lease lease,String id,PlanDefinition.Version expectedVersion) {
+        ownedVersion(lease,id,expectedVersion);return reserveCommand(lease,id);
+    }
+    public Ack reserve(SessionLedger.Lease lease,String id,Mutation command,PlanDefinition.Version expectedVersion) {
+        ownedVersion(lease,id,expectedVersion);return reserve(lease,id,command);
+    }
+    public Submission claimCredentials(SessionLedger.Lease lease,String id,PlanDefinition.Version expectedVersion) {
+        operationVersion(lease,id,expectedVersion);return claimCredentials(lease,id);
+    }
+    public Status status(SessionLedger.Lease lease,String id,PlanDefinition.Version expectedVersion) {
+        operationVersion(lease,id,expectedVersion);return status(lease,id);
+    }
+    public Status cancel(SessionLedger.Lease lease,String id,PlanDefinition.Version expectedVersion) {
+        operationVersion(lease,id,expectedVersion);return cancel(lease,id);
     }
     public boolean live(SessionLedger.Lease lease) { return authority.guard(lease,()->true).orElse(false); }
     public void requireOwned(SessionLedger.Lease lease,String planId) { guarded(lease,()->ownedState(lease,planId)); }

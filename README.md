@@ -51,6 +51,11 @@ now rechecks publication and complete XML proofs, preserves UNKNOWN evidence and
 uses a separate v3 fingerprint. Combined Java1343 and frontend40/schema42 pass;
 versioned plan HTTP and
 client/content/review qualification remain required before availability.
+[Immutable model-version admission](docs/evidence/qf34-plan-version-admission.md)
+and [legacy route enforcement](docs/evidence/qf34-plan-version-http.md) now keep
+v3 plans out of v1 APIs before credentials, resource admission or cleanup polling.
+V2 replay and retained operation access survive replacement by a v3 plan.
+Combined Java1373 passes; new v3 plan routes remain required.
 The exact `047d1b0` [local image](docs/evidence/shared-validation-artifacts.md)
 repeats Java1320 and passes protected startup/workspace smoke; release qualification
 remains open.

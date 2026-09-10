@@ -23,6 +23,12 @@ below. Request IDs never substitute for current authentication.
 No request contains an owner, driver properties, JDBC URL, observed XML, claimed
 validation outcome, execution command or serialized capability.
 
+These plan/operation routes address model V2 only. The
+[immutable version boundary](plan-http-version-admission-v1.md) requires safe404
+for model V3 before resource, body, credential or cleanup admission, while retaining
+correct V2 replay and terminal operation metadata. Summary capture precedes its
+metadata slot, with original final checks retained throughout output.
+
 ## Initial operations
 
 | Method and path | Closed request / result |
