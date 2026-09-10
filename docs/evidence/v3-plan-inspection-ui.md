@@ -47,6 +47,13 @@ Wrong-cwd Biome configuration failure was setup, not a behavior RED. An absence
 mutation initially failed its source-marker setup and did not run; the corrected
 runner compiled and killed it. Neither failure is concealed or counted as a kill.
 
+Correction after `37351a9`: check5 preceded the final browser sizing/reflow probe
+addition. The next full check found a Biome line-wrap error in that final test;
+the earlier broad final-candidate G02 claim was incorrect. Only whitespace in
+the test expression changed. Non-author review verified the diff and identical
+non-whitespace bytes. Fresh check6, tests3 (198 frontend/59 schema) and build4
+pass on the correction. This does not reopen the fixed selection defect.
+
 ## Actual browser scope
 
 The test-only harness adds a closed `plans-v3` mode using existing invented
@@ -69,6 +76,11 @@ no-plan lookup, current without target, changed/unchanged documents, disclosure
 reset, exact reads, formatted display, clearing, logout and new-session absence.
 Browser1 passed functionality but source changed during formatting: it is not
 fixed-candidate evidence. Browser2/3 remain earlier fixed1 evidence only.
+
+After the formatting correction, fresh desktop browser6 passes in 3.0s and
+narrow browser7 in 3.1s, with source/runtime hashes unchanged and complete cleanup.
+Earlier browser4/5 remain bound to their original test bytes. The production
+source and existing legacy/Definitions tests are unchanged by this correction.
 
 Accessibility scope: empty and populated axe scans, keyboard XML focus,
 document-level reflow, no browser storage, seven empty-state controls with minimum

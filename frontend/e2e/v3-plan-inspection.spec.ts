@@ -27,14 +27,12 @@ test("resumes actual v3 current and target documents with explicit disclosure", 
   }
   expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
   const controls = page.getByRole("region", { name: "Native v3 plan inspection" });
-  const sizes = await controls
-    .locator("button, select, .v3-plan-consent")
-    .evaluateAll((items) =>
-      items.map((item) => ({
-        width: item.getBoundingClientRect().width,
-        height: item.getBoundingClientRect().height,
-      })),
-    );
+  const sizes = await controls.locator("button, select, .v3-plan-consent").evaluateAll((items) =>
+    items.map((item) => ({
+      width: item.getBoundingClientRect().width,
+      height: item.getBoundingClientRect().height,
+    })),
+  );
   expect(sizes.every(({ width, height }) => width >= 44 && height >= 44)).toBe(true);
   console.log(
     `UI_PROBE_CONTROLS ${JSON.stringify({ count: sizes.length, minHeight: Math.min(...sizes.map((s) => s.height)) })}`,
