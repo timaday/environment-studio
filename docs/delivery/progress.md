@@ -28,16 +28,27 @@ oracles. This concrete defect does not prove every original failure's cause or
 clear the failed full gate. JNI-QA-001 and OBS-QA-001/002 remain accepted corrections
 awaiting independent verification on the combined tree.
 
-The user published the combined branch; read-only remote refs and fetch confirm
-exact875a257. Issue9 assignment5621471846 is active, and reviewer5621531344
-confirmed fresh clean checkouts on Ubuntu24.04/WSL2 amd64, JDK21.0.10,
-Maven3.9.16 and Windows Node24.20.0. The first full Maven run reports core335
-and parser7 passing, with two V3ProfileBoundaryTest logout assertions expecting204
-but receiving503. These are actual gate failures; cleanup settlement timing is
-under investigation, not yet a confirmed application defect. Lead5621630770
-acknowledges needs reproduction and reserves corrections to the lead. The remote
-reviewer owns bounded isolation and the remaining assigned verification; no
-duplicate full run or G08 campaign has started. Combined acceptance remains open.
+The user published the combined branch; remote refs and fetch confirm875a257.
+Reviewer5621531344 confirmed clean checkouts on Ubuntu24.04/WSL2 amd64,
+JDK21.0.10/Maven3.9.16 and Windows Node24.20.0. Its first full Maven gate failed:
+1,355 tests (335core/7parser/1,013server), two profile logout204/503 failures,
+no errors/skips; supervisor was skipped. Reviewer5621732360 reproduced legitimate
+response-before-workspace-removal timing with exact original ownership,503 and
+revocation/recovery. TEST-QA-002 is accepted as a distinct test-oracle defect.
+
+The lead's corrected candidate is39a9009fc93f22bb65a2eb992718c96cb67b0d0b on
+`review/profile-settlement-20260910`, based on875a257. Five ordinary logout sites
+wait for actual workspace settlement; held-body logout and both immediate429
+checks remain unchanged. Both local controlled cases pass RED/GREEN and detect
+removal of the same test barrier; timeout cleanup/failure preservation and
+focused56Java pass.
+Fixed non-author source review has no blocking finding; G00/11Python pass.
+The user published the exact correction branch; remote refs and fetch confirm
+39a9009. Issue9 handoff5621865060 is activated by5621903401 for the existing reviewer:
+fixed correction verification, combined full Maven and remaining assigned gates.
+Existing independent correction probes continue without unnecessary repetition;
+no local duplicate full/G08 run or accepted integration. Both earlier failed
+full runs remain evidence; publication does not clear them.
 
 IDE2 exclusively owns the preserved native closure WIP. Frozen symbol/version
 WIP3 and vDSO WIP4 have bounded non-author source reviews with no confirmed
