@@ -7,6 +7,7 @@ import { HostedV3Api } from "./hostedV3";
 import {
   discoverBinding,
   HostedV3Definitions,
+  prepareDefinitionPublication,
   prepareDefinitionSave,
   type SaveDefinition,
 } from "./hostedV3Definitions";
@@ -112,6 +113,22 @@ const saveCommand = (): SaveDefinition => ({
   format: "JSON",
   source: document.source,
 });
+const publishCommand = () => ({
+  expectedRevision: "2",
+  requestId: "50000000-0000-0000-0000-000000000005",
+  exportPolicies: [{ bindingId: "mock-pg", documentId: "mock-a", content: "deny" as const }],
+});
+const publishedDefinition = () => ({
+  ...document,
+  workspaceRevision: "3",
+  state: "published",
+  projection: { ...incomplete, kind: "historical-ready", diagnostics: [] },
+  publication: {
+    digest: "d".repeat(64),
+    sourceRevision: "2",
+    exportPolicies: publishCommand().exportPolicies,
+  },
+});
 afterEach(() => {
   for (const owner of owners) owner.clear();
   owners.length = 0;
@@ -134,6 +151,239 @@ async function client(...replies: unknown[]) {
   await owner.session();
   return { api: new HostedV3Definitions(owner), owner, fetcher };
 }
+it("rejects definition publication success for the wrong source revision", async () => {
+  const reply = publishedDefinition();
+  reply.publication.sourceRevision = "1";
+  shape("DefinitionRevision", reply);
+  const { api } = await client(reply);
+  await expect(
+    api.publishDefinition(prepareDefinitionPublication(objectId, publishCommand())),
+  ).rejects.toMatchObject({ code: "RESPONSE_UNAVAILABLE" });
+});
+it("rejects definition publication success with changed policy content or draft state", async () => {
+  const changed = {
+    ...publishedDefinition(),
+    publication: {
+      ...publishedDefinition().publication,
+      exportPolicies: [
+        { bindingId: "mock-pg", documentId: "mock-a", content: "protected-self-contained" },
+      ],
+    },
+  };
+  const { api, fetcher } = await client();
+  for (const reply of [changed, document]) {
+    shape("DefinitionRevision", reply);
+    fetcher.mockResolvedValueOnce(json(reply));
+    await expect(
+      api.publishDefinition(prepareDefinitionPublication(objectId, publishCommand())),
+    ).rejects.toMatchObject({ code: "RESPONSE_UNAVAILABLE" });
+  }
+});
+it("preserves detached publication policy order while correlating the complete sorted result", async () => {
+  const bindings = ["a", "a-b"].map((id) => ({
+    ...model.bindings[0],
+    id,
+    documents: ["a", "a-b"].map((id) => ({ ...model.bindings[0].documents[0], id })),
+  }));
+  const sorted = bindings.flatMap((binding) =>
+    binding.documents.map((document, i) => ({
+      bindingId: binding.id,
+      documentId: document.id,
+      content: i ? ("protected-self-contained" as const) : ("deny" as const),
+    })),
+  );
+  const reply = {
+    ...publishedDefinition(),
+    projection: {
+      ...publishedDefinition().projection,
+      model: { ...model, bindings },
+      bindingDigests: { a: "a".repeat(64), "a-b": "b".repeat(64) },
+    },
+    publication: { ...publishedDefinition().publication, exportPolicies: sorted },
+  };
+  const command = {
+    ...publishCommand(),
+    exportPolicies: [...sorted].reverse().map((p) => ({ ...p })),
+  };
+  const original = structuredClone(command);
+  shape("PublishDefinition", original);
+  shape("DefinitionRevision", reply);
+  const prepared = prepareDefinitionPublication(objectId, command);
+  command.exportPolicies[0].bindingId = "changed";
+  command.exportPolicies.pop();
+  const { api, fetcher } = await client(reply);
+  expect(await api.publishDefinition(prepared)).toEqual(reply);
+  expect(fetcher.mock.calls[1][0]).toBe(`/api/v3/definitions/${objectId}/publish`);
+  expect(fetcher.mock.calls[1][1]).toMatchObject({
+    method: "POST",
+    body: JSON.stringify(original),
+    headers: { "X-CSRF-TOKEN": "mock-csrf", "Content-Type": "application/json" },
+    credentials: "same-origin",
+    cache: "no-store",
+  });
+  expect(prepared.command).toEqual(original);
+  expect(Object.isFrozen(prepared)).toBe(true);
+  expect(Object.isFrozen(prepared.command)).toBe(true);
+  expect(Object.isFrozen(prepared.command.exportPolicies)).toBe(true);
+  expect(Object.isFrozen(prepared.command.exportPolicies[0])).toBe(true);
+});
+it("preserves duplicate policy entries for backend refusal and rejects collapsed success", async () => {
+  const command = {
+    ...publishCommand(),
+    exportPolicies: [...publishCommand().exportPolicies, ...publishCommand().exportPolicies],
+  };
+  const { api, fetcher } = await client();
+  fetcher.mockResolvedValueOnce(
+    json(
+      {
+        code: "REJECTED",
+        diagnostics: [
+          {
+            phase: "publication",
+            code: "INVALID_EXPORT_POLICIES",
+            pointer: "",
+            message: "Invented refusal.",
+          },
+        ],
+      },
+      422,
+    ),
+  );
+  const prepared = prepareDefinitionPublication(objectId, command);
+  await expect(api.publishDefinition(prepared)).rejects.toMatchObject({
+    status: 422,
+    code: "REJECTED",
+  });
+  expect(JSON.parse(fetcher.mock.calls[1][1]?.body as string)).toEqual(command);
+  fetcher.mockResolvedValueOnce(json(publishedDefinition()));
+  await expect(api.publishDefinition(prepared)).rejects.toMatchObject({
+    code: "RESPONSE_UNAVAILABLE",
+  });
+});
+it("replays the exact publication explicitly after response loss and newer history", async () => {
+  const { api, fetcher } = await client();
+  const prepared = prepareDefinitionPublication(objectId, publishCommand());
+  fetcher.mockRejectedValueOnce(new Error("invented loss"));
+  await expect(api.publishDefinition(prepared)).rejects.toMatchObject({
+    code: "NETWORK_UNCERTAIN",
+  });
+  expect(fetcher).toHaveBeenCalledTimes(2);
+  fetcher.mockResolvedValueOnce(json({ ...document, workspaceRevision: "5" }));
+  await api.definition(objectId);
+  fetcher.mockResolvedValueOnce(json(publishedDefinition()));
+  expect((await api.publishDefinition(prepared)).workspaceRevision).toBe("3");
+  expect(fetcher.mock.calls[3][0]).toBe(fetcher.mock.calls[1][0]);
+  expect(fetcher.mock.calls[3][1]?.body).toBe(fetcher.mock.calls[1][1]?.body);
+});
+it("validates both publication wrappers and bounded policies before transport", async () => {
+  const { api, fetcher } = await client();
+  const policy = publishCommand().exportPolicies[0];
+  const bad: unknown[] = [
+    null,
+    {},
+    { ...publishCommand(), extra: true },
+    { ...publishCommand(), requestId: "../bad" },
+    { ...publishCommand(), expectedRevision: "01" },
+    { ...publishCommand(), expectedRevision: "1".repeat(1025) },
+    { ...publishCommand(), source: "forbidden" },
+    { ...publishCommand(), exportPolicies: [] },
+    { ...publishCommand(), exportPolicies: Array(20001).fill(policy) },
+  ];
+  for (const entry of [
+    { ...policy, extra: true },
+    { ...policy, content: "allow" },
+    { ...policy, bindingId: "a\n" },
+    { ...policy, documentId: "\uD800" },
+    { bindingId: policy.bindingId, content: policy.content },
+  ])
+    bad.push({ ...publishCommand(), exportPolicies: [entry] });
+  for (const key of Object.keys(publishCommand())) {
+    const command: Record<string, unknown> = { ...publishCommand() };
+    delete command[key];
+    bad.push(command);
+  }
+  for (const command of bad) {
+    expect(() => prepareDefinitionPublication(objectId, command as never)).toThrow(
+      "INVALID_REQUEST",
+    );
+    await expect(api.publishDefinition({ objectId, command } as never)).rejects.toMatchObject({
+      code: "INVALID_REQUEST",
+    });
+  }
+  for (const prepared of [
+    null,
+    { command: publishCommand() },
+    { objectId, command: publishCommand(), extra: true },
+    { objectId: "../bad", command: publishCommand() },
+  ])
+    await expect(api.publishDefinition(prepared as never)).rejects.toMatchObject({
+      code: "INVALID_REQUEST",
+    });
+  expect(fetcher).toHaveBeenCalledTimes(1);
+});
+it("forwards the complete maximum policy list and canonical revision strings without claiming readiness", async () => {
+  const { api, fetcher } = await client();
+  const policies = Array.from({ length: 20000 }, (_, i) => ({
+    bindingId: "mock-pg",
+    documentId: `doc-${i}`,
+    content: "deny" as const,
+  }));
+  for (const expectedRevision of ["0", "9".repeat(1024)]) {
+    const command = { ...publishCommand(), expectedRevision, exportPolicies: policies };
+    shape("PublishDefinition", command);
+    fetcher.mockResolvedValueOnce(
+      json(
+        {
+          code: "REJECTED",
+          diagnostics: [
+            {
+              phase: "publication",
+              code: "DEFINITION_INCOMPLETE",
+              pointer: "",
+              message: "Invented current compiler refusal.",
+            },
+          ],
+        },
+        422,
+      ),
+    );
+    await expect(
+      api.publishDefinition(prepareDefinitionPublication(objectId, command)),
+    ).rejects.toMatchObject({
+      status: 422,
+      code: "REJECTED",
+      diagnostics: [{ code: "DEFINITION_INCOMPLETE" }],
+    });
+    expect(JSON.parse(fetcher.mock.calls.at(-1)?.[1]?.body as string)).toEqual(command);
+  }
+});
+it("rejects foreign publication replies and late publication JSON after original session clear", async () => {
+  const { api, owner, fetcher } = await client();
+  const prepared = prepareDefinitionPublication(objectId, publishCommand());
+  fetcher.mockResolvedValueOnce(
+    json({ ...publishedDefinition(), objectId: "50000000-0000-0000-0000-000000000002" }),
+  );
+  await expect(api.publishDefinition(prepared)).rejects.toMatchObject({
+    code: "RESPONSE_UNAVAILABLE",
+  });
+  let finish: ((value: unknown) => void) | undefined;
+  const response = json(publishedDefinition());
+  const decoding = vi.spyOn(response, "json").mockImplementation(
+    () =>
+      new Promise((resolve) => {
+        finish = resolve;
+      }),
+  );
+  fetcher.mockResolvedValueOnce(response);
+  const pending = api.publishDefinition(prepared);
+  const refused = expect(pending).rejects.toMatchObject({ code: "SESSION_REQUIRED" });
+  await vi.waitFor(() => expect(decoding).toHaveBeenCalledTimes(1));
+  const signal = fetcher.mock.calls.at(-1)?.[1]?.signal;
+  owner.clear();
+  expect(signal?.aborted).toBe(true);
+  finish?.(publishedDefinition());
+  await refused;
+});
 it("detaches the prepared definition destination and exact command from later caller edits", async () => {
   const command = { ...saveCommand() };
   const prepared = prepareDefinitionSave(objectId, command);

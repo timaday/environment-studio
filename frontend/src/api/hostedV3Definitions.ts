@@ -6,6 +6,14 @@ export type DefinitionRevision = ReturnType<typeof W.definition>;
 export type DefinitionList = ReturnType<typeof W.list>;
 export type SaveDefinition = ReturnType<typeof W.save>;
 export type PreparedDefinitionSave = ReturnType<typeof W.preparedSave>;
+export type PublishDefinition = ReturnType<typeof W.publish>;
+export type PreparedDefinitionPublication = ReturnType<typeof W.preparedPublication>;
+export function prepareDefinitionPublication(
+  objectId: string,
+  command: PublishDefinition,
+): PreparedDefinitionPublication {
+  return request(W.preparedPublication, { objectId, command });
+}
 // Retain the destination and exact command for explicit response-loss replay.
 export function prepareDefinitionSave(
   objectId: string,
@@ -48,6 +56,27 @@ function sameObject(value: unknown, objectId: string): DefinitionRevision {
 /** Exact v3 history; historical-ready data never grants current qualification. */
 export class HostedV3Definitions {
   constructor(private readonly api: HostedApi) {}
+  async publishDefinition(
+    value: PreparedDefinitionPublication,
+  ): Promise<DefinitionRevision & { readonly state: "published" }> {
+    const prepared = request(W.preparedPublication, value);
+    const result = sameObject(
+      await this.api.post(`${path(prepared.objectId)}/publish`, prepared.command),
+      prepared.objectId,
+    );
+    if (
+      result.state !== "published" ||
+      result.publication.sourceRevision !== prepared.command.expectedRevision
+    )
+      return D.invalid();
+    const compare = (a: string, b: string) => (a === b ? 0 : a < b ? -1 : 1);
+    const expected = [...prepared.command.exportPolicies].sort(
+      (a, b) => compare(a.bindingId, b.bindingId) || compare(a.documentId, b.documentId),
+    );
+    if (JSON.stringify(result.publication.exportPolicies) !== JSON.stringify(expected))
+      return D.invalid();
+    return result;
+  }
   async saveDefinition(value: PreparedDefinitionSave): Promise<DefinitionRevision> {
     const prepared = request(W.preparedSave, value);
     const result = sameObject(

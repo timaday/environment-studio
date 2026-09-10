@@ -154,6 +154,23 @@ export const save = D.object(
   {},
 );
 export const preparedSave = D.object({ objectId: D.uuid, command: save }, {});
+export const publish = D.object(
+  {
+    expectedRevision: minimum,
+    requestId: D.uuid,
+    exportPolicies: D.array(
+      D.object(
+        { bindingId: id, documentId: id, content: D.choice("deny", "protected-self-contained") },
+        {},
+      ),
+      1,
+      20000,
+      false,
+    ),
+  },
+  {},
+);
+export const preparedPublication = D.object({ objectId: D.uuid, command: publish }, {});
 const diagnostic = D.object(
   {
     phase: D.literal("publication"),
