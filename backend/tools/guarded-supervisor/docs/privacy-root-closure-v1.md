@@ -122,6 +122,61 @@ all secret-consuming threads and later loading/exec transitions. A PREPARE-time
 snapshot cannot supply those lifetime guarantees. This prerequisite retains
 missing-stage refusal even after every byte in its invented closure matches.
 
+## Direct-root script association
+
+The immutable original chain node explicitly distinguishes direct ELF from a
+script launch. A script node requires exactly one compiled association; a direct
+ELF node has none. Absence cannot convert a script node into a direct ELF launch.
+The association names distinct positive ordinals for one SCRIPT_ONLY installation
+file and its actual mapped ELF interpreter, the exact shebang byte-pool span and
+script argv index. Reuse the recipe's complete argument span and those objects'
+existing trusted paths/digests. No peer-selected path, alias discovery, Java field,
+mutable setter or new JNI/API supplies the association.
+
+SCRIPT_ONLY is the sole non-ELF object form: it has zero mapped ranges and no ELF
+layout/byte/relocation records. It cannot carry executable/interpreter/loader/guard
+roles or satisfy mapped coverage. Every other object retains its complete required
+ELF and mapped-byte rules. A script-only file mapping is not authorized by this
+form; required mapped script forms need separately implemented evidence. The
+interpreter must be the actual current executable associated with the original
+stopped root, not merely another admitted ELF with matching bytes. The script and
+interpreter both remain required entries in the unchanged ordered ordinal/device/
+inode/file-SHA encoding; neither is a fictitious mapped object or omitted
+because it already participated in an association check.
+
+Validate kind, count, ordinal references, distinctness and all immutable spans
+before access. Missing, duplicate, foreign, unreferenced SCRIPT_ONLY or conflicting
+associations refuse. Both entries count within the existing512-object bound; all
+association fields and bytes count within existing recipe storage/extent totals.
+The script path additionally obeys the helper's1024-byte argument limit. Exact
+shebang and argv vocabulary remains the existing no-option or exact-e form in
+privacy-abi-v1; literal interpreter tokens and trusted canonical file paths remain
+separate explicit facts. No nested interpreter, env dispatch or inferred option
+support is introduced.
+
+Invoke es_script_check with the original stopped peer and retained trusted script/
+interpreter files under the same launch claim, hash owner, cancellation descriptor
+and absolute startup clock. Its five successful hash charges remain additional
+to all other file/mapped checks actually performed; never reset, refund or create
+a second budget. Match its measured identities with the corresponding ordered
+closure entries and complete all interpreter/loader mapped evidence. Apply the
+existing fresh stopped acquisition and original post-call clock/identity checks.
+Attempt every temporary cleanup and wipe failed output. ES_SCRIPT_CLEANUP retains
+the helper's precedence; the enclosing launch separately preserves its first
+operational refusal and sticky cleanup uncertainty. A held helper call retains its
+claim/storage until actual return and closure; expiry cannot authorize release.
+
+Acceptance uses actual Java FORK of an independently invented script and ELF
+interpreter/loader, exact kernel argv, independent file hashes, complete mapped
+interpreter bytes and ordered measured identities. Internal success still ends
+INSTALLATION with owned cleanup and no CHALLENGE/FinalAdmitted. Different script
+under the same interpreter; wrong hash/path/index/shebang/extra argv; missing or
+wrong-kind association; original budget/deadline/cancellation and uncertain-close
+cases refuse. This proves current association only, not previously consumed or
+future reopened script bytes, constructor blocking, exec generation, complete
+graph/lifetime control or installed-client admission. Those existing qualification
+obligations and the full product support matrix remain unchanged.
+
 ## Special and ordinary non-file coverage
 
 The compiled runtime/kernel recipe separately accounts for kernel-provided
