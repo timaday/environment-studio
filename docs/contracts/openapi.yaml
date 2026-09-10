@@ -253,6 +253,12 @@ paths:
   /api/v3/plans/{planId}/materializations:
     $ref: './openapi-plans-v3.json#/paths/~1api~1v3~1plans~1{planId}~1materializations'
 
+  /api/v3/plans/{planId}/views/documents:
+    $ref: './openapi-plans-v3.json#/paths/~1api~1v3~1plans~1{planId}~1views~1documents'
+
+  /api/v3/plans/{planId}/views/entities:
+    $ref: './openapi-plans-v3.json#/paths/~1api~1v3~1plans~1{planId}~1views~1entities'
+
 components:
   parameters:
     ObjectId:

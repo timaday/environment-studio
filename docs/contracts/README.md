@@ -38,6 +38,7 @@
 | Bounded v3 transfer records and closed replies | [plan-transfers-v3.md](plan-transfers-v3.md), [plan-replies-v3.md](plan-replies-v3.md) |
 | Initial v3 hosted plan routes | [hosted-plan-http-v3.md](hosted-plan-http-v3.md), [openapi-plans-v3.json](openapi-plans-v3.json) |
 | Hosted v3 semantic commands | [hosted-plan-commands-v3.md](hosted-plan-commands-v3.md) |
+| Hosted v3 document inventory and physical entities | [hosted-plan-physical-views-v3.md](hosted-plan-physical-views-v3.md) |
 | Hosted v3 materialization | [hosted-plan-materialization-v3.md](hosted-plan-materialization-v3.md) |
 | HTTP | [api.md](api.md), [openapi.yaml](openapi.yaml) |
 | Deployment | [../../deploy/README.md](../../deploy/README.md) |

@@ -634,9 +634,9 @@ test("v3 small replies preserve common v1 revision and optional-field wire contr
   assert.equal(operation({ ...status, installedRevision: null }), false);
   assert.equal(operation({ ...status, cleanup: "complete-anyway" }), false);
 });
-test("v3 exposes exactly nine authenticated routes and documents early empty controller refusals", () => {
+test("v3 exposes exactly eleven authenticated routes and documents early empty controller refusals", () => {
   const paths = ["/api/v3/plans", "/api/v3/plans/current", "/api/v3/plans/{planId}", "/api/v3/plans/{planId}/inspections",
-    "/api/v3/operations/{operationId}/credentials", "/api/v3/operations/{operationId}", "/api/v3/operations/{operationId}/cancel", "/api/v3/plans/{planId}/commands", "/api/v3/plans/{planId}/materializations"];
+    "/api/v3/operations/{operationId}/credentials", "/api/v3/operations/{operationId}", "/api/v3/operations/{operationId}/cancel", "/api/v3/plans/{planId}/commands", "/api/v3/plans/{planId}/materializations", "/api/v3/plans/{planId}/views/documents", "/api/v3/plans/{planId}/views/entities"];
   assert.deepEqual(Object.keys(planV3Api.paths).sort(), paths.sort());
   for (const item of Object.values(planV3Api.paths)) for (const [method, route] of Object.entries(item)) {
     assert.deepEqual(route.security, [{ sessionCookie: [] }]);
@@ -716,4 +716,44 @@ test("v3 materialization is one authenticated revision-only POST without replay 
   assert.equal(validate({ revision: "2" }), true);
   for (const field of ["requestId", "modelVersion", "owner", "targetXml", "state", "complete", "diagnostics", "exportAvailable"])
     assert.equal(validate({ revision: "2", [field]: "caller" }), false);
+});
+
+test("v3 document and physical entity routes preserve exact v1 request and result shapes", () => {
+  const v1 = read("../docs/contracts/openapi-plans-v1.json");
+  for (const name of ["documents", "entities"]) {
+    const path = `/api/v3/plans/{planId}/views/${name}`;
+    assert.ok(planV3Api.paths[path], "physical view route is documented");
+    assert.deepEqual(Object.keys(planV3Api.paths[path]), ["post"]);
+    const route = planV3Api.paths[path].post;
+    const old = v1.paths[`/api/v1/plans/{planId}/views/${name}`].post;
+    assert.deepEqual(route.requestBody, old.requestBody);
+    assert.deepEqual(route.parameters, old.parameters);
+    assert.deepEqual(route.responses["200"], old.responses["200"]);
+  }
+});
+
+test("physical view schemas keep unavailable inventory, declared masking and closed paging distinct", () => {
+  const schema = read("../schemas/plan-view-v1.schema.json");
+  const validate = name => new Ajv2020({ allErrors: true, strict: true }).addSchema(read("../schemas/plan-command-v1.schema.json")).compile({ ...schema, $ref: `#/$defs/${name}` });
+  const documents = validate("documentsResponse");
+  const row = { documentId: "sheet", currentDigest: "a".repeat(64), targetDigest: null, changed: null };
+  assert.equal(documents({ revision: "2", documents: [row] }), true);
+  assert.equal(documents({ revision: "2", documents: [{ ...row, changed: false }] }), false);
+  assert.equal(documents({ revision: "2", documents: [{ ...row, targetDigest: "a".repeat(64), changed: false }] }), true);
+  const entities = validate("entitiesResponse");
+  const fields = [ { fieldId: "visible", present: true, masked: false, value: "" },
+    { fieldId: "hidden", present: true, masked: true, value: null }, { fieldId: "missing", present: false, masked: false, value: null } ];
+  const item = { entity: { kind: "existing", handle: "00000000-0000-4000-8000-000000000091" }, typeId: "item", fields };
+  const page = { revision: "2", total: 3, offset: 0, nextOffset: 1, items: [item] };
+  assert.equal(entities(page), true, JSON.stringify(entities.errors));
+  assert.equal(entities({ ...page, offset: 50000, nextOffset: null, items: [] }), true);
+  assert.equal(entities({ ...page, items: [{ ...item, entity: { kind: "fresh", slotId: "replacement", typeId: "item" } }] }), true);
+  for (const field of [ { ...fields[1], value: "must-not-appear" }, { ...fields[2], value: "must-not-appear" }, { ...fields[0], value: null } ])
+    assert.equal(entities({ ...page, items: [{ ...item, fields: [field] }] }), false);
+  assert.equal(entities({ ...page, items: [{ ...item, computed: true }] }), false);
+  const request = validate("entitiesRequest"); const body = { revision: "2", side: "target", offset: 0, limit: 100 };
+  assert.equal(request(body), true);
+  for (const value of [{ ...body, side: "computed" }, { ...body, offset: 50001 }, { ...body, limit: 101 },
+    { ...body, revealSecrets: true }, { ...body, modelVersion: 3 }, { ...body, completeDocumentDisclosure: true }, { ...body, filter: "caller" }])
+    assert.equal(request(value), false);
 });

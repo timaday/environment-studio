@@ -23,6 +23,12 @@ sealed interface V3PlanReply {
         }
         @Override public String toString(){return "V3PlanReply.Acknowledgement[redacted]";}
     }
+    record Physical(String planId,Map<String,Object> value) implements V3PlanReply {
+        public Physical {Objects.requireNonNull(planId);value=Collections.unmodifiableMap(new LinkedHashMap<>(value));}
+        public Map<String,Object> wire(){return value;}
+        public void verify(HostedPlanService service,SessionLedger.Lease lease){service.requireOwned(lease,planId,V3);}
+        @Override public String toString(){return "V3PlanReply.Physical[redacted]";}
+    }
     record Materialized(String planId,String revision,HostedPlanService.Materialization value) implements V3PlanReply {
         public Materialized {Objects.requireNonNull(planId);Objects.requireNonNull(revision);Objects.requireNonNull(value);}
         public Map<String,Object> wire(){

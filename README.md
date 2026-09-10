@@ -72,7 +72,10 @@ authoritative recomputation, replay and stalled-body recovery are verified.
 [V3 materialization](docs/evidence/v3-plan-materialization.md) now preserves
 original view cancellation and distinct complete/incomplete/refused outcomes;
 independent HTTP review, full Java1522 and frontend40/schema49 pass.
-Document/entity and remaining versioned views are in progress; actual compiler publication remains incomplete.
+[V3 document and entity views](docs/evidence/v3-plan-physical-views.md) now pass
+independent HTTP review, full Java1531 and frontend40/schema51. Returned physical
+references drive identity/value edits; secret masking and original transfer ownership
+are preserved. Structural/binding views are next; actual compiler publication remains incomplete.
 The exact `047d1b0` [local image](docs/evidence/shared-validation-artifacts.md)
 repeats Java1320 and passes protected startup/workspace smoke; release qualification
 remains open.

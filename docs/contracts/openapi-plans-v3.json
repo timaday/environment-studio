@@ -3,7 +3,7 @@
   "info": {
     "title": "Environment Studio hosted v3 plans",
     "version": "0.3.0",
-    "description": "Nine fixed-v3 routes including semantic commands and explicit materialization. Actual compiler publication remains incomplete; test publication witnesses do not qualify runtime availability. See hosted-plan-http-v3.md, hosted-plan-commands-v3.md and hosted-plan-materialization-v3.md for original session authority, shared admission, bounded transfers and early no-body controller refusals. No export or readback endpoint is provided."
+    "description": "Eleven fixed-v3 routes including semantic commands, explicit materialization, document inventory and physical entity pages. Actual compiler publication remains incomplete; test publication witnesses do not qualify runtime availability. See hosted-plan-http-v3.md, hosted-plan-commands-v3.md, hosted-plan-materialization-v3.md and hosted-plan-physical-views-v3.md for original session authority, shared admission, bounded transfers and early no-body controller refusals. No export or readback endpoint is provided."
   },
   "paths": {
     "/api/v3/plans": {
@@ -698,6 +698,188 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Materialization"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error500"
+          }
+        }
+      }
+    },
+    "/api/v3/plans/{planId}/views/documents": {
+      "post": {
+        "operationId": "v3ListPlanDocuments",
+        "summary": "Complete revision-bound document inventory",
+        "description": "See hosted-plan-physical-views-v3.md. Original live lease, Host/Origin/CSRF and fixed V3 ownership precede the existing full scratch and single semantic HTTP record admission and body access. The original pinned ViewAdmission remains executing through complete re-verification, rendering, encoding, output and final verification, including errors after pinning. Closed small request: 16 KiB/depth 4/128 tokens/original 10 seconds. Full response: 128 MiB with one original 30-second encoding/output/flush deadline. No revision increment, command replay, computed rows, disclosure override or export authority.",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "planId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Uuid"
+            }
+          },
+          {
+            "name": "X-CSRF-TOKEN",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "../../schemas/plan-view-v1.schema.json#/$defs/revisionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Bounded owned revision result; no-store; shape is not export authority",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "../../schemas/plan-view-v1.schema.json#/$defs/documentsResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error500"
+          }
+        }
+      }
+    },
+    "/api/v3/plans/{planId}/views/entities": {
+      "post": {
+        "operationId": "v3ListPlanEntities",
+        "summary": "Revision-bound physical entity page",
+        "description": "See hosted-plan-physical-views-v3.md. Original live lease, Host/Origin/CSRF and fixed V3 ownership precede the existing full scratch and single semantic HTTP record admission and body access. The original pinned ViewAdmission remains executing through complete re-verification, rendering, encoding, output and final verification, including errors after pinning. Closed small request: 16 KiB/depth 4/128 tokens/original 10 seconds. Full response: 128 MiB with one original 30-second encoding/output/flush deadline. No revision increment, command replay, computed rows, disclosure override or export authority.",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "planId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Uuid"
+            }
+          },
+          {
+            "name": "X-CSRF-TOKEN",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "../../schemas/plan-view-v1.schema.json#/$defs/entitiesRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Bounded owned revision result; no-store; shape is not export authority",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "../../schemas/plan-view-v1.schema.json#/$defs/entitiesResponse"
                 }
               }
             }

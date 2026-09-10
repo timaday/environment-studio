@@ -108,8 +108,10 @@ now pass independent real HTTP review, full Java1506 and frontend40/schema47.
 [Owned v3 materialization](../evidence/v3-plan-materialization.md) now corrects
 original view-cancellation forwarding and keeps the pinned view executing through
 all response checks. Independent HTTP review, full Java1522 and frontend40/schema49
-pass. Next backend work adds document inventory and physical entity pages, then
-complete versioned views/capture/reuse/validation. Export remains unavailable.
+pass. [V3 document/entity pages](../evidence/v3-plan-physical-views.md) now pass
+independent HTTP review, full Java1531 and frontend40/schema51. Next backend work
+adds structural/binding pages, then document/computed views, capture/reuse and
+validation. Export remains unavailable.
 
 The lead owns shared contracts and compatibility. Independent fixed-candidate
 review, actual RED/GREEN, targeted guard mutations and integrated verification

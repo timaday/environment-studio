@@ -179,12 +179,24 @@ outcomes, repair and held-body recovery. Fixed16 manifest
 758754666dfa49f694f8863524ad07c1c3db6ca74b4f044c69a8689b2332602f over963a084 passes
 full Java1522 (324 core,7 parser,881 server,310 supervisor), zero failures/errors/
 skips and assembly/hostile launcher,10 September at03:41:31BST. Fresh frontend40/
-schema49/check/build pass. Next backend work is document inventory and physical
-entity pages, then complete views/capture/reuse/validation. Native client/content/review evidence, combined
+schema49/check/build pass. Further versioned views/capture/reuse/validation and
+native client/content/review evidence, combined
 resources and export/readback remain open. Retained image047d1b0 predates this work;
 no current browser, remote CI, GHCR or HiveForge qualification is claimed.
 No Q feedback GitHub publication is authorized. Existing MVP scope and completed
 work remain in place.
+
+The [v3 document/entity routes](../evidence/v3-plan-physical-views.md) now pass
+fixed independent review and actual HTTP/OIDC checks. Returned opaque references
+survive identity/PUBLIC edits, SECRET text stays masked, optional empty/absent
+values remain distinct, and held-body cancellation preserves capacity until worker
+closure. Fixed13 manifest449dc87e6ef639b654cc8581b4eb7c44821dbd008c8c994027a99ce9be412c7b
+overf9329cd passes full Java1531 (324 core,7 parser,890 server,310 supervisor), zero
+failures/errors/skips, assembly/hostile launcher,10 September at03:59:23BST.
+Fresh frontend40/schema51, checking and build pass on the exact OpenAPI candidate.
+UNKNOWN/unreadable definitions remain refused during qualification; no actual HTTP
+masking proof is claimed for those unsupported definitions. Structural/binding
+pages are next. Actual publication/runtime qualification remains incomplete.
 
 The later independent review's confirmed
 [retained-origin consistency defect](../evidence/derived-retained-origin-fix.md)

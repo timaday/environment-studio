@@ -34,6 +34,11 @@ final class V3PlanTransport {
     void semanticBody(SessionLedger.Lease lease,HttpServletRequest request,HttpServletResponse response,V3PlanTransfers.Operation operation,int status,AutoCloseable resource,BooleanSupplier cancelled,BodyAction action){
         start(lease,request,response,operation,status,BodyMode.SEMANTIC,resource,cancelled,body->action.apply(body.orElseThrow()),Optional.empty());
     }
+    enum PhysicalRoute {
+        DOCUMENTS(PlanViewRequest.Route.DOCUMENTS),ENTITIES(PlanViewRequest.Route.ENTITIES);
+        final PlanViewRequest.Route request;
+        PhysicalRoute(PlanViewRequest.Route request){this.request=request;}
+    }
     private enum ResponseMode {
         SMALL(32_768),VIEW(134_217_728);
         final int bytes;
@@ -54,10 +59,24 @@ final class V3PlanTransport {
             if(pinned)admission.verify();
             else if(!admission.live())throw new PlanRefusal(PlanRefusal.Code.CANCELLED);
         }
+        private PlanViewRequest request(PlanViewRequest.Route route,OwnedServletBody body){
+            var request=new PlanViewReader().read(route,body);
+            admission.pin(request.revision());pinned=true;return request;
+        }
         V3PlanReply materialize(OwnedServletBody body){
-            var request=new PlanViewReader().read(PlanViewRequest.Route.MATERIALIZATION,body);
-            admission.pin(request.revision());pinned=true;
+            var request=request(PlanViewRequest.Route.MATERIALIZATION,body);
             return new V3PlanReply.Materialized(planId,request.revision(),admission.materialize());
+        }
+        V3PlanReply physical(PhysicalRoute route,OwnedServletBody body){
+            var request=request(route.request,body);
+            var result=switch(route){
+                case DOCUMENTS -> V3PlanPhysicalViews.documents(admission);
+                case ENTITIES -> {
+                    var page=(PlanViewRequest.GraphPage)request;
+                    yield V3PlanPhysicalViews.entities(admission,page.side()==PlanViewRequest.Side.TARGET,page.offset(),page.limit());
+                }
+            };
+            return new V3PlanReply.Physical(planId,result);
         }
     }
     void materializationBody(SessionLedger.Lease lease,String planId,HttpServletRequest request,HttpServletResponse response,
@@ -65,6 +84,12 @@ final class V3PlanTransport {
         var scope=new ViewScope(lease,planId,admission);
         start(lease,request,response,operation,200,BodyMode.SMALL,admission,()->!admission.live(),
                 body->scope.materialize(body.orElseThrow()),Optional.of(scope));
+    }
+    void physicalBody(SessionLedger.Lease lease,String planId,HttpServletRequest request,HttpServletResponse response,
+            V3PlanTransfers.Operation operation,HostedPlanService.ViewAdmission admission,PhysicalRoute route){
+        var scope=new ViewScope(lease,planId,admission);
+        start(lease,request,response,operation,200,BodyMode.SMALL,admission,()->!admission.live(),
+                body->scope.physical(route,body.orElseThrow()),Optional.of(scope));
     }
     private void check(SessionLedger.Lease lease,V3PlanTransfers.Operation operation){
         if(!service.live(lease))throw new PlanRefusal(PlanRefusal.Code.SESSION_REQUIRED);
