@@ -87,6 +87,33 @@ class V3WorkspaceControllerTest {
         var historical=new Request();historical.setAsyncSupported(true);historical.setAttribute(HostedSessions.REQUEST_LEASE,first.getAttribute(HostedSessions.REQUEST_LEASE));
         controller.definitionRevision(id,"1",historical,historical.response);historical.await();assertArrayEquals(first.response.getContentAsByteArray(),historical.response.getContentAsByteArray());
     }
+    @Test void definitionCommittedBeforeOutputRevocationReturnsForbiddenAndReplaysExactly()throws Exception {
+        var original=request("definition-postcommit-owner");
+        var lease=(studio.environment.core.session.SessionLedger.Lease)original.getAttribute(HostedSessions.REQUEST_LEASE);
+        String source=Files.readString(Path.of("../../fixtures/native-v3/definition.json")).replace("Glyph","POSTCOMMIT-SOURCE-CANARY");
+        String id=UUID.randomUUID().toString();byte[] command=body(source,"0",UUID.randomUUID().toString());original.setContent(command);
+        var response=new Response(){
+            boolean revoked;
+            @Override public ServletOutputStream getOutputStream(){
+                if(!revoked){revoked=true;sessions.logout(original);}
+                return super.getOutputStream();
+            }
+        };
+        controller.saveDefinition(id,original,response);original.await();
+        assertEquals(403,response.getStatus());
+        assertFalse(response.getContentAsString().contains("POSTCOMMIT-SOURCE-CANARY"));
+        assertEquals("FORBIDDEN",V3NativeSnapshotCodec.JSON.readTree(response.getContentAsByteArray()).get("code").asString());
+        long deadline=System.nanoTime()+TimeUnit.SECONDS.toNanos(3);
+        while(runtime.v3Operations().activeCount()!=0 && System.nanoTime()<deadline)Thread.sleep(10);
+        assertEquals(0,runtime.v3Operations().activeCount());
+        var committed=runtime.v3Store().read(lease.owner(),id,Optional.empty(),false);
+        assertEquals("1",committed.workspaceRevision());assertEquals(source,committed.source());
+        var replay=request("definition-postcommit-owner");replay.setContent(command);
+        controller.saveDefinition(id,replay,replay.response);replay.await();assertEquals(200,replay.response.getStatus());
+        var received=V3NativeSnapshotCodec.JSON.readTree(replay.response.getContentAsByteArray());
+        assertEquals("1",received.get("workspaceRevision").asString());assertEquals(source,received.get("source").asString());
+        assertEquals(committed,runtime.v3Store().read(lease.owner(),id,Optional.empty(),false));
+    }
     @Test void schemaTwoIsNotUpgradedAndMissingConfigurationIsUnavailable()throws Exception {
         var old=Files.createTempDirectory("es-v3-old-schema-mock-");SqliteDraftStore.initialize(old);byte[] before=Files.readAllBytes(old.resolve("studio-workspace.db"));
         for(var environment:List.of(new MockEnvironment(),new MockEnvironment().withProperty("studio.workspace.directory",old.toString()))){

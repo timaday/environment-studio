@@ -167,7 +167,11 @@ global session authority monitor across request reads, compilation, SQLite I/O o
 cleanup, and never interpret an interrupted thread as proof of rollback/close.
 SQLite lock deadlines do not guarantee a bound on operating-system commit I/O.
 A lost response retains original-command replay semantics; do not invent another
-request ID or claim a known outcome before the store establishes it.
+request ID or claim a known outcome before the store establishes it. A403
+WORKSPACE_FORBIDDEN from the post-service lease check can follow an admitted
+commit. The existing Definitions retry flow must retain the original command for
+this ambiguous outcome; the status class alone does not prove a failed mutation.
+A current session teardown still clears transient UI state.
 
 V2 command identity uses domain `ES-WORKSPACE-COMMAND-2`, a zero byte and native
 framing of the closed decoded command with `kind` added (`save-definition`,

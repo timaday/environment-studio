@@ -1,0 +1,32 @@
+[
+  {
+    "reference": "definitions-desktop-v1.png",
+    "sha256": "4a156582de4442f8e3fe48d334c29404c3c60d4f3461b3a3050105c2a39a1263",
+    "pixels": [
+      1505,
+      1045
+    ],
+    "intendedCssViewport": [
+      1440,
+      1000
+    ],
+    "intendedDpr": 1,
+    "approval": "PENDING",
+    "source": "built-in image generation; no product records or model data"
+  },
+  {
+    "reference": "definitions-narrow-v1.png",
+    "sha256": "1e321ada2f9c6d4f8d19c1fbbd1ee6494ab3b8a5c3247e4c4b042939268f4692",
+    "pixels": [
+      853,
+      1844
+    ],
+    "intendedCssViewport": [
+      390,
+      844
+    ],
+    "intendedDpr": 1,
+    "approval": "PENDING",
+    "source": "built-in image generation; no product records or model data"
+  }
+]

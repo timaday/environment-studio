@@ -13,7 +13,7 @@ import studio.environment.server.EnvironmentStudioApplication;
 import studio.environment.server.plan.PlanHttpTestConfiguration;
 import studio.environment.server.workspace.SqliteDraftStore;
 
-/** Actual local HTTPS/OIDC/workspace harness. Observation is explicitly the independent mock port. */
+/** Actual HTTPS/OIDC/workspace harness; only the legacy plan mode uses mock observation. */
 public final class HostedBrowserHarness {
     private static final class BoundedLog extends OutputStream {
         private final ByteArrayOutputStream bytes=new ByteArrayOutputStream();
@@ -37,9 +37,14 @@ public final class HostedBrowserHarness {
         }
     }
     public static void main(String[] args)throws Exception {
-        var out=System.out;try {start();}catch(Throwable failure){for(Throwable cause=failure;cause!=null;cause=cause.getCause()){out.println("MOCK_START_FAILURE "+cause.getClass().getSimpleName());if(cause.getMessage()!=null && cause.getMessage().matches("[A-Z][A-Z0-9_]{1,100}"))out.println(cause.getMessage());}throw new IllegalStateException("MOCK_START_FAILED");}
+        var out=System.out;try {start(definitionsMode(args));}catch(Throwable failure){for(Throwable cause=failure;cause!=null;cause=cause.getCause()){out.println("MOCK_START_FAILURE "+cause.getClass().getSimpleName());if(cause.getMessage()!=null && cause.getMessage().matches("[A-Z][A-Z0-9_]{1,100}"))out.println(cause.getMessage());}throw new IllegalStateException("MOCK_START_FAILED");}
     }
-    private static void start()throws Exception {
+    static boolean definitionsMode(String[] args) {
+        if(args.length==0)return false;
+        if(args.length==1 && args[0].equals("definitions-v3"))return true;
+        throw new IllegalArgumentException("MOCK_INVALID_MODE");
+    }
+    private static void start(boolean definitionsV3)throws Exception {
         var original=System.out;var captured=new BoundedLog();System.setOut(new PrintStream(captured,true,StandardCharsets.UTF_8));System.setErr(new PrintStream(captured,true,StandardCharsets.UTF_8));
         var owned=new Owned(original);
         owned.add(captured::clear);
@@ -47,7 +52,7 @@ public final class HostedBrowserHarness {
         try {
         var root=Files.createTempDirectory(Path.of("/dev/shm"),"es-browser-mock-",PosixFilePermissions.asFileAttribute(PosixFilePermissions.fromString("rwx------")));
         owned.add(()->{try(var paths=Files.walk(root)){for(var path:paths.sorted(Comparator.reverseOrder()).toList())Files.delete(path);}});
-        var store=Files.createDirectory(root.resolve("workspace"),PosixFilePermissions.asFileAttribute(PosixFilePermissions.fromString("rwx------")));SqliteDraftStore.initialize(store);
+        var store=Files.createDirectory(root.resolve("workspace"),PosixFilePermissions.asFileAttribute(PosixFilePermissions.fromString("rwx------")));if(definitionsV3)SqliteDraftStore.initializeV3(store);else SqliteDraftStore.initialize(store);
         String password=UUID.randomUUID().toString();var key=root.resolve("listener.p12");
         var process=new ProcessBuilder(Path.of(System.getProperty("java.home"),"bin/keytool").toString(),"-genkeypair","-alias","mock","-keyalg","RSA","-keysize","2048","-validity","1","-storetype","PKCS12","-keystore",key.toString(),"-dname","CN=localhost","-ext","SAN=dns:localhost,ip:127.0.0.1","-noprompt").redirectOutput(ProcessBuilder.Redirect.DISCARD).redirectError(ProcessBuilder.Redirect.DISCARD).start();
         owned.add(()->{if(process.isAlive()){process.destroyForcibly();if(!process.waitFor(10,TimeUnit.SECONDS))throw new IllegalStateException("MOCK_TLS_CLEANUP_INCONCLUSIVE");}});
@@ -60,18 +65,18 @@ public final class HostedBrowserHarness {
         properties.put("studio.workspace.directory",store.toString());properties.put("studio.workspace.definition-publishers[0].issuer",issuer.issuer());properties.put("studio.workspace.definition-publishers[0].subject","browser-maintainer");
         properties.put("server.address","127.0.0.1");properties.put("server.port","18443");properties.put("server.ssl.enabled","true");properties.put("server.ssl.key-store",key.toUri().toString());properties.put("server.ssl.key-store-password",password);properties.put("server.ssl.key-store-type","PKCS12");
         properties.put("spring.web.resources.static-locations",Path.of("../../frontend/dist").toAbsolutePath().normalize().toUri().toString()+"/");properties.put("logging.level.org.springframework.web","DEBUG");properties.put("logging.level.org.springframework.web.client.DefaultRestClient","TRACE");
-        var app=new SpringApplication(EnvironmentStudioApplication.class,PlanHttpTestConfiguration.class);var environment=new org.springframework.core.env.StandardEnvironment();environment.getPropertySources().addFirst(new org.springframework.core.env.MapPropertySource("independent-browser-test",properties));app.setEnvironment(environment);app.setAdditionalProfiles("oidc-test");var context=app.run();owned.add(context::close);
+        var app=definitionsV3?new SpringApplication(EnvironmentStudioApplication.class):new SpringApplication(EnvironmentStudioApplication.class,PlanHttpTestConfiguration.class);var environment=new org.springframework.core.env.StandardEnvironment();environment.getPropertySources().addFirst(new org.springframework.core.env.MapPropertySource("independent-browser-test",properties));app.setEnvironment(environment);app.setAdditionalProfiles("oidc-test");var context=app.run();owned.add(context::close);
         var control=HttpServer.create(new InetSocketAddress("127.0.0.1",18444),0);
         owned.add(()->control.stop(0));
         control.createContext("/control",exchange->{
             String path=exchange.getRequestURI().getPath();int status=200;
             if(path.equals("/control/operator"))issuer.subject="browser-operator";
             else if(path.equals("/control/maintainer"))issuer.subject="browser-maintainer";
-            else if(path.equals("/control/expire"))PlanHttpTestConfiguration.clock.advance(1800);
-            else if(path.equals("/control/reset-clock")){PlanHttpTestConfiguration.clock.advance(28801);context.getBean(studio.environment.server.session.HostedSessions.class).expire();PlanHttpTestConfiguration.clock.reset();PlanHttpTestConfiguration.connections.set(0);PlanHttpTestConfiguration.exactCredentials.set(false);}
+            else if(!definitionsV3 && path.equals("/control/expire"))PlanHttpTestConfiguration.clock.advance(1800);
+            else if(!definitionsV3 && path.equals("/control/reset-clock")){PlanHttpTestConfiguration.clock.advance(28801);context.getBean(studio.environment.server.session.HostedSessions.class).expire();PlanHttpTestConfiguration.clock.reset();PlanHttpTestConfiguration.connections.set(0);PlanHttpTestConfiguration.exactCredentials.set(false);}
             else if(path.equals("/control/checks")){
                 var canaries=new ArrayList<>(List.of("Db-Password-Canary","Browser-Source-Canary","mock-platform-secret","mock-access-canary",password));canaries.addAll(issuer.issuedCodes);canaries.addAll(issuer.receivedVerifiers);canaries.addAll(issuer.issuedTokens);
-                if(!issuer.verifiedPkce || !PlanHttpTestConfiguration.exactCredentials.get() || PlanHttpTestConfiguration.connections.get()!=1 || canaries.stream().anyMatch(captured::contains))status=500;
+                if(!issuer.verifiedPkce || (!definitionsV3 && (!PlanHttpTestConfiguration.exactCredentials.get() || PlanHttpTestConfiguration.connections.get()!=1)) || canaries.stream().anyMatch(captured::contains))status=500;
             }else status=404;
             byte[] body=(status==200?"MOCK_CHECK_OK":"MOCK_CHECK_FAILED").getBytes(StandardCharsets.UTF_8);exchange.sendResponseHeaders(status,body.length);exchange.getResponseBody().write(body);exchange.close();
         });control.start();

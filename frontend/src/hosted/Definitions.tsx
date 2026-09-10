@@ -116,6 +116,8 @@ export function Definitions({
           e instanceof ApiFailure &&
           e.status >= 400 &&
           e.status < 500 &&
+          // The post-service lease check can fail after an admitted commit.
+          !(e.status === 403 && e.code === "WORKSPACE_FORBIDDEN") &&
           e.code !== "RESPONSE_UNAVAILABLE";
         setPending(refused ? null : command);
       }

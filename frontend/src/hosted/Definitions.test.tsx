@@ -101,51 +101,62 @@ it("blocks a new save after uncertain delivery until the workspace is reconciled
   expect(await screen.findByRole("alert")).toHaveTextContent("NETWORK_UNCERTAIN");
   expect(screen.getByRole("button", { name: "Save immutable draft" })).toBeDisabled();
 });
-it("replays the original immutable save after response loss without creating another object or request", async () => {
-  const user = userEvent.setup();
-  const put = vi
-    .fn()
-    .mockRejectedValueOnce(new ApiFailure(0, "NETWORK_UNCERTAIN"))
-    .mockResolvedValue(result);
-  const changed = vi.fn();
-  render(
-    <Definitions
-      api={
-        {
-          get: vi.fn().mockResolvedValue({ definitions: [], canPublish: false }),
-          put,
-        } as unknown as HostedApi
-      }
-      enabled
-      changed={changed}
-    />,
-  );
-  await user.click(screen.getByLabelText("Native definition source", { exact: true }));
-  await user.paste("{}");
-  await user.click(screen.getByRole("button", { name: "Save immutable draft" }));
-  const retry = await screen.findByRole("button", { name: "Retry original command" });
-  expect(put).toHaveBeenCalledOnce();
-  expect(changed).not.toHaveBeenCalled();
-  expect(screen.getByRole("button", { name: "New draft" })).toBeDisabled();
-  expect(screen.getByLabelText("Native definition source", { exact: true })).toBeDisabled();
-  await user.click(retry);
-  expect(put).toHaveBeenCalledTimes(2);
-  expect(put.mock.calls[1]).toEqual(put.mock.calls[0]);
-  expect(put.mock.calls[1][1]).toEqual({
-    expectedRevision: "0",
-    requestId: expect.any(String),
-    format: "JSON",
-    source: "{}",
-  });
-  expect(await screen.findByText(/workspace revision 9007199254740993/)).toBeVisible();
-  expect(screen.queryByRole("button", { name: "Retry original command" })).not.toBeInTheDocument();
-  expect(changed).toHaveBeenCalledOnce();
-});
-it("retains the exact publication policies after an unreadable success response", async () => {
+it.each([
+  [0, "NETWORK_UNCERTAIN"],
+  [403, "WORKSPACE_FORBIDDEN"],
+] as const)(
+  "replays original save after %s %s without another object or request",
+  async (status, code) => {
+    const user = userEvent.setup();
+    const put = vi
+      .fn()
+      .mockRejectedValueOnce(new ApiFailure(status, code))
+      .mockResolvedValue(result);
+    const changed = vi.fn();
+    render(
+      <Definitions
+        api={
+          {
+            get: vi.fn().mockResolvedValue({ definitions: [], canPublish: false }),
+            put,
+          } as unknown as HostedApi
+        }
+        enabled
+        changed={changed}
+      />,
+    );
+    await user.click(screen.getByLabelText("Native definition source", { exact: true }));
+    await user.paste("{}");
+    await user.click(screen.getByRole("button", { name: "Save immutable draft" }));
+    const retry = await screen.findByRole("button", { name: "Retry original command" });
+    expect(put).toHaveBeenCalledOnce();
+    expect(changed).not.toHaveBeenCalled();
+    expect(screen.getByRole("button", { name: "New draft" })).toBeDisabled();
+    expect(screen.getByLabelText("Native definition source", { exact: true })).toBeDisabled();
+    await user.click(retry);
+    expect(put).toHaveBeenCalledTimes(2);
+    expect(put.mock.calls[1]).toEqual(put.mock.calls[0]);
+    expect(put.mock.calls[1][1]).toEqual({
+      expectedRevision: "0",
+      requestId: expect.any(String),
+      format: "JSON",
+      source: "{}",
+    });
+    expect(await screen.findByText(/workspace revision 9007199254740993/)).toBeVisible();
+    expect(
+      screen.queryByRole("button", { name: "Retry original command" }),
+    ).not.toBeInTheDocument();
+    expect(changed).toHaveBeenCalledOnce();
+  },
+);
+it.each([
+  [200, "RESPONSE_UNAVAILABLE"],
+  [403, "WORKSPACE_FORBIDDEN"],
+] as const)("retains exact publication policies after %s %s", async (status, code) => {
   const user = userEvent.setup();
   const post = vi
     .fn()
-    .mockRejectedValueOnce(new ApiFailure(200, "RESPONSE_UNAVAILABLE"))
+    .mockRejectedValueOnce(new ApiFailure(status, code))
     .mockResolvedValue({ ...result, state: "published", workspaceRevision: "9007199254740994" });
   render(
     <Definitions
