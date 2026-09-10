@@ -55,15 +55,19 @@ client/content/review qualification remain required before availability.
 and [legacy route enforcement](docs/evidence/qf34-plan-version-http.md) now keep
 v3 plans out of v1 APIs before credentials, resource admission or cleanup polling.
 V2 replay and retained operation access survive replacement by a v3 plan.
-Combined Java1373 passes; new v3 plan routes remain required.
+Combined Java1373 passes for that admission boundary.
 [Small v3 summaries](docs/evidence/qf34-plan-summary.md) now distinguish physical
 and computed totals, and [body callbacks](docs/evidence/owned-body-callbacks.md)
 no longer wait behind the reader monitor. Combined Java1393 passes.
 [Transfer foundations](docs/evidence/owned-plan-transfer-foundation.md) now preserve
 cleanup retries across work families and enforce encoding/completion ownership.
 Combined Java1427 passes. The [v3 registry and closed replies](docs/evidence/v3-plan-transfer-registry.md)
-now pass fixed independent review and combined Java1448. The v3 plan routes remain
-in progress; actual compiler publication remains incomplete.
+now pass fixed independent review and combined Java1448. The
+[initial v3 plan HTTP routes](docs/evidence/v3-plan-http.md) now pass independent
+review and full Java1488, frontend40/schema46, checking and build. Creation,
+inspection, summary, status and cancellation share original ownership and bounded
+transfers. V3 semantic commands and complete views remain in progress; actual
+compiler publication remains incomplete.
 The exact `047d1b0` [local image](docs/evidence/shared-validation-artifacts.md)
 repeats Java1320 and passes protected startup/workspace smoke; release qualification
 remains open.

@@ -226,6 +226,27 @@ paths:
   /api/v1/plans/{planId}/views/binding-locations:
     $ref: './openapi-plans-v1.json#/paths/~1api~1v1~1plans~1{planId}~1views~1binding-locations'
 
+  /api/v3/plans:
+    $ref: './openapi-plans-v3.json#/paths/~1api~1v3~1plans'
+
+  /api/v3/plans/current:
+    $ref: './openapi-plans-v3.json#/paths/~1api~1v3~1plans~1current'
+
+  /api/v3/plans/{planId}:
+    $ref: './openapi-plans-v3.json#/paths/~1api~1v3~1plans~1{planId}'
+
+  /api/v3/plans/{planId}/inspections:
+    $ref: './openapi-plans-v3.json#/paths/~1api~1v3~1plans~1{planId}~1inspections'
+
+  /api/v3/operations/{operationId}/credentials:
+    $ref: './openapi-plans-v3.json#/paths/~1api~1v3~1operations~1{operationId}~1credentials'
+
+  /api/v3/operations/{operationId}:
+    $ref: './openapi-plans-v3.json#/paths/~1api~1v3~1operations~1{operationId}'
+
+  /api/v3/operations/{operationId}/cancel:
+    $ref: './openapi-plans-v3.json#/paths/~1api~1v3~1operations~1{operationId}~1cancel'
+
 components:
   parameters:
     ObjectId:

@@ -45,6 +45,10 @@ public final class PlanRuntime {
         if(!allowed.test(lease.owner(),command.destinationId())) throw new DestinationDenied();
         return service().create(lease,command.requestId(),command.definition(),command.bindingId(),command.destinationId());
     }
+    HostedPlanService.Ack createV3(SessionLedger.Lease lease,PlanMetadataReader.Create command) {
+        if(!allowed.test(lease.owner(),command.destinationId())) throw new DestinationDenied();
+        return service().createV3(lease,command.requestId(),command.definition(),command.bindingId(),command.destinationId());
+    }
     public void cleanup(SessionLedger.Lease lease) {
         boolean incomplete=false;
         try {service.ifPresent(value->value.invalidate(lease));}catch(RuntimeException refusal){incomplete=true;}

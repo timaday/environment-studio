@@ -99,8 +99,13 @@ and [body callbacks](../evidence/owned-body-callbacks.md) now pass combined Java
 [Cleanup and transfer helpers](../evidence/owned-plan-transfer-foundation.md) now
 pass fixed independent review and combined Java1427. The
 [v3 registry and closed replies](../evidence/v3-plan-transfer-registry.md) now pass
-fixed independent review and combined Java1448. Next backend work is the owned
-transport and versioned plan routes; export remains unavailable.
+fixed independent review and combined Java1448. The
+[initial v3 plan HTTP routes](../evidence/v3-plan-http.md) now pass independent
+real HTTP/OIDC review and full Java1488, frontend40/schema46, checking and build.
+Original authority, one-shot credentials and stalled-body recovery are verified;
+compiler publication remains incomplete. Next backend work is the owned semantic
+command route, then complete versioned views/capture/reuse/validation. Export
+remains unavailable.
 
 The lead owns shared contracts and compatibility. Independent fixed-candidate
 review, actual RED/GREEN, targeted guard mutations and integrated verification

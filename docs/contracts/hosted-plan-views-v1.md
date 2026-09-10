@@ -47,6 +47,13 @@ observe live session/revision authority and cancellation, with checks at most
 not leave the application writer blocked in a socket write. Scheduling pauses,
 including JVM GC, are not a promise of real-time cancellation.
 
+After a Servlet readiness probe returns true, recheck the original authority,
+cancellation, local close/error state and original deadline before starting a new
+write or flush. A readiness call can overlap revocation or consume the remaining
+budget; its return is not an authority snapshot. This does not make the subsequent
+check and container call atomic or recall an already in-flight write. The shared
+output helper applies this rule to every caller, including v3 small replies.
+
 Retain the owned view admission until the writer stops, then wipe/release its
 encoded buffers and close its application admission exactly once. A committed
 partial response is aborted; never append a refusal JSON object to it. Bytes

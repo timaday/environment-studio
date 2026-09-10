@@ -36,6 +36,7 @@
 | Small v3 plan metadata | [plan-summary-v3.md](plan-summary-v3.md) |
 | Encoding authority and completion settlement | [plan-encoding-authority.md](plan-encoding-authority.md), [plan-transfer-completion.md](plan-transfer-completion.md) |
 | Bounded v3 transfer records and closed replies | [plan-transfers-v3.md](plan-transfers-v3.md), [plan-replies-v3.md](plan-replies-v3.md) |
+| Initial v3 hosted plan routes | [hosted-plan-http-v3.md](hosted-plan-http-v3.md), [openapi-plans-v3.json](openapi-plans-v3.json) |
 | HTTP | [api.md](api.md), [openapi.yaml](openapi.yaml) |
 | Deployment | [../../deploy/README.md](../../deploy/README.md) |
 

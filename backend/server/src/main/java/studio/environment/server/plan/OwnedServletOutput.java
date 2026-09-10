@@ -29,7 +29,7 @@ final class OwnedServletOutput extends OutputStream implements WriteListener {
     }
     private void ready() throws IOException {
         while(true) {
-            check();if(output.isReady())return;
+            check();if(output.isReady()){check();return;}
             long remaining=deadline-clock.getAsLong();if(remaining<=0)throw refused();
             LockSupport.parkNanos(this,Math.min(100_000_000L,remaining));
             if(Thread.currentThread().isInterrupted())throw refused();

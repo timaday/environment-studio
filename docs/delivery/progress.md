@@ -148,10 +148,24 @@ e5516c7e40e6456c3f0681417017623967a53ea10cbb43d9155dd82c3f25e200 overb2a5ba1
 includes all five independent new cases. An initial synthetic-session mutation
 survivor is covered by an added still-live-original-session control; both original
 and later results remain recorded. No v3 route or readiness flag is enabled here.
-Next backend work is the owned small-response transport and seven versioned
-creation/inspection/status routes. Actual client/content/review
-evidence and combined resources remain open. Frontend40/schema42 are still scoped
-to8b5843d; retained image047d1b0 predates these changes.
+The [initial v3 plan HTTP routes](../evidence/v3-plan-http.md) now pass fixed
+independent review: creation, current/ID summary, inspection reservation, one-shot
+credentials, status and cancellation use original versioned authority and bounded
+owned transfers. Review corrected the security route allowlist, authority checks
+after output readiness, and the error-length schema. Eight actual HTTP/OIDC cases
+include distinct physical/computed counts, owner/version/CSRF refusal, four stalled
+bodies with capacity recovery, and logout/re-login after original worker closure.
+The logout test permits both legal cleanup schedules; controlled tests separately
+prove retained-worker uncertainty. Fixed22 manifest
+fd8dff7ae6f082e0bb305a92ea8c9a3a51e3773204323d31cd9e09e53644a464 overce1c306
+passes full Java1488 (324 core,7 parser,847 server,310 supervisor), zero failures/
+errors/skips, assembly/hostile launcher,10 September at03:01:53BST. Fresh
+frontend40/schema46, checking and build pass on the corrected contract candidate.
+Actual compiler publication remains incomplete; witnesses confer no availability.
+Next backend work is the owned v3 semantic command route, followed by complete
+views/capture/reuse/validation. Native client/content/review evidence, combined
+resources and export/readback remain open. Retained image047d1b0 predates this work;
+no current browser, remote CI, GHCR or HiveForge qualification is claimed.
 No Q feedback GitHub publication is authorized. Existing MVP scope and completed
 work remain in place.
 

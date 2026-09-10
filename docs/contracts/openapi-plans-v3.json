@@ -1,0 +1,1372 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Environment Studio initial v3 hosted plans",
+    "version": "0.3.0",
+    "description": "Seven fixed-v3 routes. Actual compiler publication remains incomplete; test publication witnesses do not qualify runtime availability. See hosted-plan-http-v3.md for original session authority, shared admission, bounded transfers and early no-body controller refusals. No export or readback endpoint is provided."
+  },
+  "paths": {
+    "/api/v3/plans": {
+      "post": {
+        "operationId": "v3CreateHostedPlan",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Safe owned result; no-store; no export authority implied",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Ack"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error500"
+          }
+        },
+        "parameters": [
+          {
+            "name": "X-CSRF-TOKEN",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePlan"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v3/plans/current": {
+      "get": {
+        "operationId": "v3GetCurrentHostedPlan",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Safe owned result; no-store; no export authority implied",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlanSummary"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error500"
+          }
+        }
+      }
+    },
+    "/api/v3/plans/{planId}": {
+      "get": {
+        "operationId": "v3GetHostedPlan",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Safe owned result; no-store; no export authority implied",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlanSummary"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error500"
+          }
+        },
+        "parameters": [
+          {
+            "name": "planId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Uuid"
+            }
+          }
+        ]
+      }
+    },
+    "/api/v3/plans/{planId}/inspections": {
+      "post": {
+        "operationId": "v3ReservePlanInspection",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Safe owned result; no-store; no export authority implied",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Ack"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error500"
+          }
+        },
+        "parameters": [
+          {
+            "name": "planId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Uuid"
+            }
+          },
+          {
+            "name": "X-CSRF-TOKEN",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReserveInspection"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v3/operations/{operationId}/credentials": {
+      "post": {
+        "operationId": "v3SubmitReservedCredentialsOnce",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Safe owned result; no-store; no export authority implied",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Operation"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error500"
+          }
+        },
+        "parameters": [
+          {
+            "name": "operationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Uuid"
+            }
+          },
+          {
+            "name": "X-CSRF-TOKEN",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Credentials"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v3/operations/{operationId}": {
+      "get": {
+        "operationId": "v3GetOwnedOperation",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Safe owned result; no-store; no export authority implied",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Operation"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error500"
+          }
+        },
+        "parameters": [
+          {
+            "name": "operationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Uuid"
+            }
+          }
+        ]
+      }
+    },
+    "/api/v3/operations/{operationId}/cancel": {
+      "post": {
+        "operationId": "v3CancelOwnedOperation",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Safe owned result; no-store; no export authority implied",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Operation"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error500"
+          }
+        },
+        "parameters": [
+          {
+            "name": "operationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Uuid"
+            }
+          },
+          {
+            "name": "X-CSRF-TOKEN",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Empty"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Uuid": {
+        "type": "string",
+        "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}(?![\\s\\S])"
+      },
+      "Id": {
+        "type": "string",
+        "pattern": "^[a-z][a-z0-9.-]{0,63}(?![\\s\\S])",
+        "maxLength": 64
+      },
+      "Revision": {
+        "type": "string",
+        "pattern": "^[1-9][0-9]*(?![\\s\\S])",
+        "maxLength": 1024
+      },
+      "Sha256": {
+        "type": "string",
+        "pattern": "^[0-9a-f]{64}(?![\\s\\S])"
+      },
+      "Code": {
+        "type": "string",
+        "pattern": "^[A-Z][A-Z0-9_]{0,63}(?![\\s\\S])"
+      },
+      "PublicationRef": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "objectId",
+          "workspaceRevision"
+        ],
+        "properties": {
+          "objectId": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "workspaceRevision": {
+            "$ref": "#/components/schemas/Revision"
+          }
+        }
+      },
+      "CreatePlan": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "expectedRevision",
+          "requestId",
+          "definition",
+          "bindingId",
+          "destinationId"
+        ],
+        "properties": {
+          "expectedRevision": {
+            "const": "0"
+          },
+          "requestId": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "definition": {
+            "$ref": "#/components/schemas/PublicationRef"
+          },
+          "bindingId": {
+            "$ref": "#/components/schemas/Id"
+          },
+          "destinationId": {
+            "$ref": "#/components/schemas/Id"
+          }
+        }
+      },
+      "ReserveInspection": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "expectedRevision",
+          "requestId",
+          "discardDraftOnSuccess"
+        ],
+        "properties": {
+          "expectedRevision": {
+            "$ref": "#/components/schemas/Revision"
+          },
+          "requestId": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "discardDraftOnSuccess": {
+            "const": true
+          }
+        }
+      },
+      "Credentials": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "username",
+          "password"
+        ],
+        "properties": {
+          "username": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[^\\u0000]*(?![\\s\\S])",
+            "writeOnly": true
+          },
+          "password": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1024,
+            "pattern": "^[^\\u0000]*(?![\\s\\S])",
+            "writeOnly": true
+          }
+        }
+      },
+      "Ack": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "planId",
+          "revision"
+        ],
+        "properties": {
+          "planId": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "revision": {
+            "$ref": "#/components/schemas/Revision"
+          },
+          "operationId": {
+            "$ref": "#/components/schemas/Uuid"
+          }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "code"
+        ],
+        "properties": {
+          "code": {
+            "$ref": "#/components/schemas/Code"
+          }
+        }
+      },
+      "Empty": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [],
+        "properties": {}
+      },
+      "Counts": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "documents",
+          "entities",
+          "relations"
+        ],
+        "properties": {
+          "documents": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 128
+          },
+          "entities": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 20000
+          },
+          "relations": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 50000
+          }
+        }
+      },
+      "PlanSummary": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "planId",
+          "revision",
+          "definition",
+          "bindingId",
+          "destinationId",
+          "currentCounts",
+          "targetCounts",
+          "inspectionValid",
+          "targetComplete",
+          "exportAvailable",
+          "blockers",
+          "observedDestination",
+          "currentComputedCounts",
+          "targetComputedCounts"
+        ],
+        "properties": {
+          "planId": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "revision": {
+            "$ref": "#/components/schemas/Revision"
+          },
+          "definition": {
+            "$ref": "#/components/schemas/PublicationRef"
+          },
+          "bindingId": {
+            "$ref": "#/components/schemas/Id"
+          },
+          "destinationId": {
+            "$ref": "#/components/schemas/Id"
+          },
+          "currentCounts": {
+            "$ref": "#/components/schemas/Counts"
+          },
+          "targetCounts": {
+            "$ref": "#/components/schemas/Counts"
+          },
+          "inspectionValid": {
+            "type": "boolean"
+          },
+          "targetComplete": {
+            "type": "boolean"
+          },
+          "exportAvailable": {
+            "type": "boolean",
+            "const": false
+          },
+          "blockers": {
+            "type": "array",
+            "maxItems": 256,
+            "items": {
+              "$ref": "#/components/schemas/Code"
+            }
+          },
+          "activeOperationId": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "observedDestination": {
+            "$ref": "#/components/schemas/ObservedDestination"
+          },
+          "currentComputedCounts": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/ComputedCounts"
+              }
+            ],
+            "description": "Null means no complete retained partition; a present all-zero object is an empty complete partition."
+          },
+          "targetComputedCounts": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/ComputedCounts"
+              }
+            ],
+            "description": "Null means no complete retained partition; a present all-zero object is an empty complete partition."
+          }
+        }
+      },
+      "Operation": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "operationId",
+          "planId",
+          "phase",
+          "code",
+          "cleanup"
+        ],
+        "properties": {
+          "operationId": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "planId": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "phase": {
+            "enum": [
+              "reserved",
+              "running",
+              "succeeded",
+              "refused",
+              "cancelled",
+              "expired"
+            ]
+          },
+          "code": {
+            "$ref": "#/components/schemas/Code"
+          },
+          "cleanup": {
+            "enum": [
+              "complete",
+              "in-progress",
+              "inconclusive"
+            ]
+          },
+          "installedRevision": {
+            "$ref": "#/components/schemas/Revision"
+          }
+        }
+      },
+      "ObservedDestination": {
+        "oneOf": [
+          {
+            "type": "null"
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "engine",
+              "identity",
+              "observationFingerprint",
+              "evidenceValid"
+            ],
+            "properties": {
+              "engine": {
+                "const": "postgresql"
+              },
+              "identity": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "systemIdentifier",
+                  "databaseOid",
+                  "databaseName"
+                ],
+                "properties": {
+                  "systemIdentifier": {
+                    "type": "string",
+                    "pattern": "^[1-9][0-9]{0,19}$"
+                  },
+                  "databaseOid": {
+                    "type": "string",
+                    "pattern": "^[1-9][0-9]{0,19}$"
+                  },
+                  "databaseName": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 128,
+                    "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f\\ud800-\\udfff]+$",
+                    "not": {
+                      "pattern": "^[\\u0020\\u1680\\u2000-\\u2006\\u2008-\\u200a\\u2028\\u2029\\u205f\\u3000]*$"
+                    }
+                  }
+                }
+              },
+              "observationFingerprint": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "evidenceValid": {
+                "type": "boolean"
+              }
+            }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "engine",
+              "identity",
+              "observationFingerprint",
+              "evidenceValid"
+            ],
+            "properties": {
+              "engine": {
+                "const": "oracle"
+              },
+              "identity": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "dbid",
+                  "dbUniqueName",
+                  "conId",
+                  "conUid",
+                  "conName",
+                  "pdbGuid"
+                ],
+                "properties": {
+                  "dbid": {
+                    "type": "string",
+                    "pattern": "^[1-9][0-9]{0,19}$"
+                  },
+                  "dbUniqueName": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 128,
+                    "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f\\ud800-\\udfff]+$",
+                    "not": {
+                      "pattern": "^[\\u0020\\u1680\\u2000-\\u2006\\u2008-\\u200a\\u2028\\u2029\\u205f\\u3000]*$"
+                    }
+                  },
+                  "conId": {
+                    "type": "string",
+                    "pattern": "^[1-9][0-9]{0,19}$"
+                  },
+                  "conUid": {
+                    "type": "string",
+                    "pattern": "^[1-9][0-9]{0,19}$"
+                  },
+                  "conName": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 128,
+                    "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f\\ud800-\\udfff]+$",
+                    "not": {
+                      "pattern": "^[\\u0020\\u1680\\u2000-\\u2006\\u2008-\\u200a\\u2028\\u2029\\u205f\\u3000]*$"
+                    }
+                  },
+                  "pdbGuid": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{32}$"
+                  }
+                }
+              },
+              "observationFingerprint": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "evidenceValid": {
+                "type": "boolean"
+              }
+            }
+          }
+        ]
+      },
+      "ComputedCounts": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "nodes",
+          "memberships",
+          "cooccurrences"
+        ],
+        "description": "One computed partition. Java separately enforces the shared physical-plus-computed graph limits.",
+        "properties": {
+          "nodes": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 20000
+          },
+          "memberships": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 50000
+          },
+          "cooccurrences": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 50000
+          }
+        }
+      },
+      "ControllerErrorCode": {
+        "type": "string",
+        "enum": [
+          "BODY_DEADLINE",
+          "BODY_TOO_LARGE",
+          "CANCELLED",
+          "CAPACITY",
+          "CLEANUP_INCONCLUSIVE",
+          "CONFLICT",
+          "CREDENTIALS_ALREADY_CONSUMED",
+          "DESTINATION_DENIED",
+          "DISCLOSURE_REQUIRED",
+          "EXPORT_UNAVAILABLE",
+          "INCOMPLETE_TARGET",
+          "INSPECTION_REQUIRED",
+          "INVALID_CREDENTIALS",
+          "INVALID_DESTINATION",
+          "INVALID_REQUEST",
+          "MALFORMED_BODY",
+          "NOT_FOUND",
+          "OBSERVATION_REFUSED",
+          "PLAN_BUSY",
+          "PLAN_INTERNAL_REFUSAL",
+          "PLAN_SERVICES_UNAVAILABLE",
+          "PROFILE_REFUSED",
+          "PROJECTION_REFUSED",
+          "PUBLICATION_REQUIRED",
+          "RESERVATION_EXPIRED",
+          "RESOURCE_LIMIT",
+          "SESSION_REQUIRED",
+          "STALE_PREVIEW",
+          "UNSUPPORTED_DEFINITION"
+        ]
+      }
+    },
+    "responses": {
+      "Error400": {
+        "description": "Malformed or unknown request fields; an early controller refusal has no body and includes Content-Length: 0 plus X-Environment-Studio-Code together. The closed-code header denotes that branch and requires zero length. Other branches may also carry a nonzero Content-Length. An owned transfer or security middleware may instead return its documented JSON error body.",
+        "headers": {
+          "Cache-Control": {
+            "schema": {
+              "type": "string",
+              "const": "no-store"
+            }
+          },
+          "Content-Length": {
+            "description": "Zero when X-Environment-Studio-Code denotes an early no-body controller refusal. Owned JSON errors carry their actual encoded length. OpenAPI cannot enforce this conditional relationship between headers and body.",
+            "schema": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          "X-Environment-Studio-Code": {
+            "description": "Closed safe code on the early no-body controller branch; paired with Content-Length: 0.",
+            "schema": {
+              "$ref": "#/components/schemas/ControllerErrorCode"
+            }
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "Error401": {
+        "description": "No live hosted authentication; an early controller refusal has no body and includes Content-Length: 0 plus X-Environment-Studio-Code together. The closed-code header denotes that branch and requires zero length. Other branches may also carry a nonzero Content-Length. An owned transfer or security middleware may instead return its documented JSON error body.",
+        "headers": {
+          "Cache-Control": {
+            "schema": {
+              "type": "string",
+              "const": "no-store"
+            }
+          },
+          "Content-Length": {
+            "description": "Zero when X-Environment-Studio-Code denotes an early no-body controller refusal. Owned JSON errors carry their actual encoded length. OpenAPI cannot enforce this conditional relationship between headers and body.",
+            "schema": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          "X-Environment-Studio-Code": {
+            "description": "Closed safe code on the early no-body controller branch; paired with Content-Length: 0.",
+            "schema": {
+              "$ref": "#/components/schemas/ControllerErrorCode"
+            }
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "Error403": {
+        "description": "Host, Origin, CSRF or policy denied; unavailable in demo; an early controller refusal has no body and includes Content-Length: 0 plus X-Environment-Studio-Code together. The closed-code header denotes that branch and requires zero length. Other branches may also carry a nonzero Content-Length. An owned transfer or security middleware may instead return its documented JSON error body.",
+        "headers": {
+          "Cache-Control": {
+            "schema": {
+              "type": "string",
+              "const": "no-store"
+            }
+          },
+          "Content-Length": {
+            "description": "Zero when X-Environment-Studio-Code denotes an early no-body controller refusal. Owned JSON errors carry their actual encoded length. OpenAPI cannot enforce this conditional relationship between headers and body.",
+            "schema": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          "X-Environment-Studio-Code": {
+            "description": "Closed safe code on the early no-body controller branch; paired with Content-Length: 0.",
+            "schema": {
+              "$ref": "#/components/schemas/ControllerErrorCode"
+            }
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "Error404": {
+        "description": "Missing, foreign-owner, foreign-lease or wrong-version resource; original retained v3 operation metadata remains eligible; an early controller refusal has no body and includes Content-Length: 0 plus X-Environment-Studio-Code together. The closed-code header denotes that branch and requires zero length. Other branches may also carry a nonzero Content-Length. An owned transfer or security middleware may instead return its documented JSON error body.",
+        "headers": {
+          "Cache-Control": {
+            "schema": {
+              "type": "string",
+              "const": "no-store"
+            }
+          },
+          "Content-Length": {
+            "description": "Zero when X-Environment-Studio-Code denotes an early no-body controller refusal. Owned JSON errors carry their actual encoded length. OpenAPI cannot enforce this conditional relationship between headers and body.",
+            "schema": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          "X-Environment-Studio-Code": {
+            "description": "Closed safe code on the early no-body controller branch; paired with Content-Length: 0.",
+            "schema": {
+              "$ref": "#/components/schemas/ControllerErrorCode"
+            }
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "Error409": {
+        "description": "Stale or colliding request, busy plan or consumed reservation; an early controller refusal has no body and includes Content-Length: 0 plus X-Environment-Studio-Code together. The closed-code header denotes that branch and requires zero length. Other branches may also carry a nonzero Content-Length. An owned transfer or security middleware may instead return its documented JSON error body.",
+        "headers": {
+          "Cache-Control": {
+            "schema": {
+              "type": "string",
+              "const": "no-store"
+            }
+          },
+          "Content-Length": {
+            "description": "Zero when X-Environment-Studio-Code denotes an early no-body controller refusal. Owned JSON errors carry their actual encoded length. OpenAPI cannot enforce this conditional relationship between headers and body.",
+            "schema": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          "X-Environment-Studio-Code": {
+            "description": "Closed safe code on the early no-body controller branch; paired with Content-Length: 0.",
+            "schema": {
+              "$ref": "#/components/schemas/ControllerErrorCode"
+            }
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "Error413": {
+        "description": "Wire byte limit exceeded; an early controller refusal has no body and includes Content-Length: 0 plus X-Environment-Studio-Code together. The closed-code header denotes that branch and requires zero length. Other branches may also carry a nonzero Content-Length. An owned transfer or security middleware may instead return its documented JSON error body.",
+        "headers": {
+          "Cache-Control": {
+            "schema": {
+              "type": "string",
+              "const": "no-store"
+            }
+          },
+          "Content-Length": {
+            "description": "Zero when X-Environment-Studio-Code denotes an early no-body controller refusal. Owned JSON errors carry their actual encoded length. OpenAPI cannot enforce this conditional relationship between headers and body.",
+            "schema": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          "X-Environment-Studio-Code": {
+            "description": "Closed safe code on the early no-body controller branch; paired with Content-Length: 0.",
+            "schema": {
+              "$ref": "#/components/schemas/ControllerErrorCode"
+            }
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "Error422": {
+        "description": "Semantic operation refused; an early controller refusal has no body and includes Content-Length: 0 plus X-Environment-Studio-Code together. The closed-code header denotes that branch and requires zero length. Other branches may also carry a nonzero Content-Length. An owned transfer or security middleware may instead return its documented JSON error body.",
+        "headers": {
+          "Cache-Control": {
+            "schema": {
+              "type": "string",
+              "const": "no-store"
+            }
+          },
+          "Content-Length": {
+            "description": "Zero when X-Environment-Studio-Code denotes an early no-body controller refusal. Owned JSON errors carry their actual encoded length. OpenAPI cannot enforce this conditional relationship between headers and body.",
+            "schema": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          "X-Environment-Studio-Code": {
+            "description": "Closed safe code on the early no-body controller branch; paired with Content-Length: 0.",
+            "schema": {
+              "$ref": "#/components/schemas/ControllerErrorCode"
+            }
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "Error429": {
+        "description": "Bounded plan, operation or memory capacity exhausted; an early controller refusal has no body and includes Content-Length: 0 plus X-Environment-Studio-Code together. The closed-code header denotes that branch and requires zero length. Other branches may also carry a nonzero Content-Length. An owned transfer or security middleware may instead return its documented JSON error body.",
+        "headers": {
+          "Cache-Control": {
+            "schema": {
+              "type": "string",
+              "const": "no-store"
+            }
+          },
+          "Content-Length": {
+            "description": "Zero when X-Environment-Studio-Code denotes an early no-body controller refusal. Owned JSON errors carry their actual encoded length. OpenAPI cannot enforce this conditional relationship between headers and body.",
+            "schema": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          "X-Environment-Studio-Code": {
+            "description": "Closed safe code on the early no-body controller branch; paired with Content-Length: 0.",
+            "schema": {
+              "$ref": "#/components/schemas/ControllerErrorCode"
+            }
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "Error503": {
+        "description": "Trusted service or configuration unavailable; an early controller refusal has no body and includes Content-Length: 0 plus X-Environment-Studio-Code together. The closed-code header denotes that branch and requires zero length. Other branches may also carry a nonzero Content-Length. An owned transfer or security middleware may instead return its documented JSON error body.",
+        "headers": {
+          "Cache-Control": {
+            "schema": {
+              "type": "string",
+              "const": "no-store"
+            }
+          },
+          "Content-Length": {
+            "description": "Zero when X-Environment-Studio-Code denotes an early no-body controller refusal. Owned JSON errors carry their actual encoded length. OpenAPI cannot enforce this conditional relationship between headers and body.",
+            "schema": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          "X-Environment-Studio-Code": {
+            "description": "Closed safe code on the early no-body controller branch; paired with Content-Length: 0.",
+            "schema": {
+              "$ref": "#/components/schemas/ControllerErrorCode"
+            }
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "Error500": {
+        "description": "Closed internal controller refusal; an early controller refusal has no body and includes Content-Length: 0 plus X-Environment-Studio-Code together. The closed-code header denotes that branch and requires zero length. Other branches may also carry a nonzero Content-Length. An owned transfer or security middleware may instead return its documented JSON error body.",
+        "headers": {
+          "Cache-Control": {
+            "schema": {
+              "type": "string",
+              "const": "no-store"
+            }
+          },
+          "Content-Length": {
+            "description": "Zero when X-Environment-Studio-Code denotes an early no-body controller refusal. Owned JSON errors carry their actual encoded length. OpenAPI cannot enforce this conditional relationship between headers and body.",
+            "schema": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          "X-Environment-Studio-Code": {
+            "description": "Closed safe code on the early no-body controller branch; paired with Content-Length: 0.",
+            "schema": {
+              "$ref": "#/components/schemas/ControllerErrorCode"
+            }
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "sessionCookie": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "JSESSIONID"
+      }
+    }
+  }
+}

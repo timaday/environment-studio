@@ -589,3 +589,80 @@ test("v3 publication has exactly two POST routes and historical response shapes 
     for (const status of ["400", "401", "403", "404", "409", "413", "422", "429", "503"]) assert.ok(route.post.responses[status]);
   }
 });
+
+const planV3Api = read("../docs/contracts/openapi-plans-v3.json");
+const planV3Defs = JSON.parse(JSON.stringify(planV3Api.components.schemas).replaceAll("#/components/schemas/", "#/$defs/"));
+const planV3Schema = (name) => new Ajv2020({ allErrors: true, strict: true }).compile({ $defs: planV3Defs, $ref: `#/$defs/${name}` });
+const emptyV3Summary = () => ({
+  planId: "00000000-0000-4000-8000-000000000041", revision: "1",
+  definition: { objectId: "00000000-0000-4000-8000-000000000042", workspaceRevision: "2" },
+  bindingId: "invented.binding", destinationId: "invented.destination",
+  currentCounts: { documents: 0, entities: 0, relations: 0 }, targetCounts: { documents: 0, entities: 0, relations: 0 },
+  observedDestination: null, inspectionValid: false, targetComplete: false, exportAvailable: false,
+  blockers: ["INSPECTION_REQUIRED", "EXPORT_UNAVAILABLE"], currentComputedCounts: null, targetComputedCounts: null,
+});
+test("v3 summary requires separate bounded computed counts and keeps absent distinct from empty", () => {
+  const validate = planV3Schema("PlanSummary");
+  const empty = emptyV3Summary();
+  assert.equal(validate(empty), true, JSON.stringify(validate.errors));
+  const zero = structuredClone(empty); zero.currentComputedCounts = { nodes: 0, memberships: 0, cooccurrences: 0 };
+  assert.equal(validate(zero), true, JSON.stringify(validate.errors));
+  assert.notDeepEqual(empty, zero);
+  for (const field of ["currentComputedCounts", "targetComputedCounts"]) {
+    const missing = structuredClone(empty); delete missing[field]; assert.equal(validate(missing), false);
+    for (const bad of [{ nodes: -1, memberships: 0, cooccurrences: 0 }, { nodes: 20001, memberships: 0, cooccurrences: 0 },
+      { nodes: 0, memberships: 50001, cooccurrences: 0 }, { nodes: 0, memberships: 0, cooccurrences: 50001 },
+      { nodes: 0, memberships: 0, cooccurrences: "0" }, { nodes: 0, memberships: 0, cooccurrences: 0, contributors: [] }]) {
+      assert.equal(validate({ ...empty, [field]: bad }), false);
+    }
+  }
+  assert.equal(validate({ ...empty, exportAvailable: true }), false);
+  assert.equal(validate({ ...empty, values: {} }), false);
+});
+test("v3 small replies preserve common v1 revision and optional-field wire contracts", () => {
+  const legacy = read("../docs/contracts/openapi-plans-v1.json").components.schemas;
+  for (const name of ["Uuid", "Id", "Revision", "PublicationRef", "CreatePlan", "ReserveInspection", "Credentials", "Ack", "Operation", "Counts", "ObservedDestination"]) {
+    assert.deepEqual(planV3Api.components.schemas[name], legacy[name], name);
+  }
+  const ack = planV3Schema("Ack");
+  const candidate = { planId: emptyV3Summary().planId, revision: "9007199254740993" };
+  assert.equal(ack(candidate), true); assert.equal(ack({ ...candidate, revision: 9007199254740992 }), false);
+  assert.equal(ack({ ...candidate, operationId: null }), false);
+  const operation = planV3Schema("Operation");
+  const status = { operationId: "00000000-0000-4000-8000-000000000043", planId: candidate.planId, phase: "cancelled", code: "CANCELLED", cleanup: "in-progress" };
+  assert.equal(operation(status), true); assert.equal(operation({ ...status, installedRevision: candidate.revision }), true);
+  assert.equal(operation({ ...status, installedRevision: null }), false);
+  assert.equal(operation({ ...status, cleanup: "complete-anyway" }), false);
+});
+test("v3 exposes exactly seven authenticated routes and documents early empty controller refusals", () => {
+  const paths = ["/api/v3/plans", "/api/v3/plans/current", "/api/v3/plans/{planId}", "/api/v3/plans/{planId}/inspections",
+    "/api/v3/operations/{operationId}/credentials", "/api/v3/operations/{operationId}", "/api/v3/operations/{operationId}/cancel"];
+  assert.deepEqual(Object.keys(planV3Api.paths).sort(), paths.sort());
+  for (const item of Object.values(planV3Api.paths)) for (const [method, route] of Object.entries(item)) {
+    assert.deepEqual(route.security, [{ sessionCookie: [] }]);
+    if (method === "post") assert.ok(route.parameters.some((value) => value.name === "X-CSRF-TOKEN" && value.required));
+    assert.deepEqual(route.responses["500"], { $ref: "#/components/responses/Error500" });
+  }
+  for (const response of Object.values(planV3Api.components.responses)) {
+    const lengthSchema = response.headers["Content-Length"].schema;
+    const length = new Ajv2020({ strict: true }).compile(lengthSchema);
+    assert.equal(length(0), true);
+    assert.equal(length(Buffer.byteLength('{"code":"MALFORMED_BODY"}')), true, "owned JSON has a nonzero Content-Length");
+    assert.equal(length(-1), false); assert.equal(length(1.5), false);
+    assert.deepEqual(lengthSchema, { type: "integer", minimum: 0 });
+    assert.deepEqual(response.headers["X-Environment-Studio-Code"].schema, { $ref: "#/components/schemas/ControllerErrorCode" });
+    assert.match(response.description, /no.body/i);
+  }
+  const aggregate = readFileSync(new URL("../docs/contracts/openapi.yaml", import.meta.url), "utf8");
+  for (const path of paths) assert.ok(aggregate.includes(`./openapi-plans-v3.json#/paths/${path.replaceAll("/", "~1")}`));
+});
+test("v3 create and one-shot credentials refuse caller-supplied model or admission authority", () => {
+  const creation = planV3Schema("CreatePlan");
+  const request = { expectedRevision: "0", requestId: "00000000-0000-4000-8000-000000000044", definition: emptyV3Summary().definition, bindingId: "invented.binding", destinationId: "invented.destination" };
+  assert.equal(creation(request), true);
+  for (const field of ["modelVersion", "owner", "driver", "exportAvailable", "observedXml"]) assert.equal(creation({ ...request, [field]: "invented" }), false);
+  const credentials = planV3Schema("Credentials");
+  const body = { username: "invented-reader", password: "invented-password" };
+  assert.equal(credentials(body), true);
+  for (const field of ["requestId", "owner", "modelVersion", "operationId"]) assert.equal(credentials({ ...body, [field]: "invented" }), false);
+});
