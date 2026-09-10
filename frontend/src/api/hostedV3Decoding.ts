@@ -677,7 +677,12 @@ const wValidationSummaryResponse = object(
 
 export const uuid = pUuid;
 // Shared closed primitives; plan decoding remains unchanged.
-export { array, choice, literal, object, string, union };
+export { array, choice, integer, literal, object, string, union };
+export const booleanValue = boolean;
+export const existing = cExisting;
+export const fresh = cFresh;
+export const entityRef = cEntityRef;
+export const placement = cPlacement;
 export const revision = pRevision;
 export const declaredId = pId;
 export const digest = cSha256;
