@@ -98,12 +98,46 @@ seven compiled guard mutations and final staged G00/11Python pass. Fixed non-aut
 source review found no confirmed issues; no reviewer tests ran. The candidate's
 `docs/evidence/v3-definition-publication-client.md` records detailed scope.
 [Queue handoff5622709535](https://github.com/timaday/environment-studio/issues/9#issuecomment-5622709535)
-is prepared but inactive: automatic approval review rejected this new branch's
-push because approval is required while AskForApproval is Never. User publication
-is needed. The existing41c8 remote assignment remains active; no new reviewer
-results or STARTED acknowledgement were present at this checkpoint. Verify the
-new client after exact fetch and completion of that assignment, without duplicate
-Maven/OCI/native runs. Neither candidate is accepted root integration.
+is now fetch-confirmed by5622748709: the user published exact e338ec9 and its
+publication blocker is resolved. Existing41c8 independent/G08 assignment remains
+first; no STARTED acknowledgement or new result is present at this checkpoint.
+Verify e338 after that assignment, without duplicate Maven/OCI/native runs.
+Neither candidate is accepted root integration.
+
+The readback comparison prerequisite is reviewed commit
+5d724159d7cb839cdcf762f0704c2bf5b5afb137, based on e338, on
+`implementation/readback-comparison-20260910` in
+`/home/tim/.tmp/es-readback-comparison-20260910`. It compares supplied complete
+observation against immutable expected destination/inventory and returns
+Matches/Differs/Unknown without authorizing export or executing a database read.
+Meaningful RED/GREEN,15 focused/350 core tests, ten compiled mutants and fixed
+non-author source review pass. User publication is now visible: lead remote refs
+and fetch confirm exact5d724159. Handoff5623067892 follows existing41c8/e338
+assignments; the earlier push-policy blocker is resolved. Actual artifact ownership, fresh database
+readback and combined integration/release gates remain open.
+
+Lead is implementing nonvisual Definitions state in
+`/home/tim/.tmp/es-v3-definitions-journey-20260910`, branch
+`implementation/v3-definitions-journey-20260910`, base e338ec9. User0e2df3e's exact
+UX skill/AGENTS are carried forward. Two generated desktop/narrow first-use
+proposals and their hashes are recorded in that candidate; approval remains
+pending, so no affected layout is implemented. Initial9 hook/162 frontend and59
+schema tests, checks/build passed. Fixed source review identified postcommit403
+replay loss; two additional403/413 transport RED cases now pass after preserving
+exact command identity. Fixed correction review has no new findings; seven
+compiled mutants and final164 frontend/59 schema/check/build pass. The schema3
+harness passes actual HTTPS/OIDC save/readback, historical replay and re-login
+persistence with complete owned cleanup and canary checks. Its source review is
+pending; UI browser persistence, accessibility and fidelity remain unverified.
+
+Current work queues:
+
+- Ready: finish schema3 browser-harness review; implement approved Definitions
+  layouts when their pending approval arrives.
+- Awaiting another owner: remote41c8 then e338/5d verification; IDE2 allocation/
+  retained-cleanup tests and assigned credential-free exact-client inventory.
+- Blockers: new Definitions image approval; exact independent/artifact
+  verification before root acceptance.
 
 IDE2 exclusively owns the preserved native closure WIP. Frozen symbol/version
 WIP3 and vDSO WIP4 have bounded non-author source reviews with no confirmed
@@ -123,8 +157,20 @@ mandatory missing-stage refusal remain. IDE2 applied the exact reviewed contract
 WIP9 stop-receipt supplement passes author63 tests/110 modes and fixed non-author
 source review without confirmed findings; reviewers executed no tests. Real
 stop/continue events, injected ECHILD and early-phase mutation evidence retain
-their separate limits. Script implementation, full lifetime/
-resources and installed-runtime acceptance remain open. Two writers
+their separate limits. WIP10 script association now has115 author focused tests/143 modes and a fixed
+non-author source review without confirmed findings. WIP11 adds actual nonchild
+PREPARE parentage/refusal/fixture disposal:75 author tests/144 modes and fixed
+source review without findings; production unchanged. Neither source review ran
+tests. Special parent wait4/socket-pin disposal and phase-detecting mutants do not
+qualify arbitrary descendant cleanup. WIP12 actual two-thread/group-stop and
+continuation supplement passes77 author tests/146 modes and fixed source review.
+WIP13 corrects image-helper result mapping and sticky subordinate cleanup
+uncertainty after four actual RED cases; final112 author tests/151 modes and fixed
+source review pass. No reviewer tests ran; delayed kernel-stop membership and
+whole-runtime control remain open. IDE2 continues allocation/construction and
+retained-cleanup acceptance. Existing extracted client candidates plus retained
+Temurin21.0.12+8 are assigned read-only inventory only; missing external dependency
+closure and runtime qualification remain open. Full lifetime/resources remain open. Two writers
 remain: lead application/integration and IDE2 native; all subagents and the remote
 reviewer are read-only. A [small hosted v3 control](../evidence/v3-hosted-capacity-prerequisite.md)
 now passes with fixed non-author source review: four retained owners, complete
