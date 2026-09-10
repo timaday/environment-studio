@@ -28,12 +28,16 @@ oracles. This concrete defect does not prove every original failure's cause or
 clear the failed full gate. JNI-QA-001 and OBS-QA-001/002 remain accepted corrections
 awaiting independent verification on the combined tree.
 
-Automatic approval review rejected Git push because approval is required while
-AskForApproval is Never. Read-only remote refs still lack the prepared combined
-and application branches; native remote remains6545a9c. Issue9 comment5621281666
-records the exact combined candidate and prepared checks as NOT FETCHABLE /
-NOT ASSIGNED. The existing publication question remains pending; no alternate
-upload or duplicate baseline campaign is used.
+The user published the combined branch; read-only remote refs and fetch confirm
+exact875a257. Issue9 assignment5621471846 is active, and reviewer5621531344
+confirmed fresh clean checkouts on Ubuntu24.04/WSL2 amd64, JDK21.0.10,
+Maven3.9.16 and Windows Node24.20.0. The first full Maven run reports core335
+and parser7 passing, with two V3ProfileBoundaryTest logout assertions expecting204
+but receiving503. These are actual gate failures; cleanup settlement timing is
+under investigation, not yet a confirmed application defect. Lead5621630770
+acknowledges needs reproduction and reserves corrections to the lead. The remote
+reviewer owns bounded isolation and the remaining assigned verification; no
+duplicate full run or G08 campaign has started. Combined acceptance remains open.
 
 IDE2 exclusively owns the preserved native closure WIP. Frozen symbol/version
 WIP3 and vDSO WIP4 have bounded non-author source reviews with no confirmed
@@ -42,8 +46,11 @@ is integrated as41effa6 and returned as an exact one-file patch with pre/post
 hashes, unblocking the actual omitted-kernel-role RED. Complete closure,
 resources/lifetime and installed-runtime qualification remain open. Two writers
 remain: lead application/integration and IDE2 native; all subagents and the remote
-reviewer are read-only. The next application prerequisite is a real v3 combined
-source/derived/target resource control. Required UX skill location remains
+reviewer are read-only. A [small hosted v3 control](../evidence/v3-hosted-capacity-prerequisite.md)
+now passes with fixed non-author source review: four retained owners, complete
+current/target proofs and64-rule paging, held-view logout and same-owner recovery.
+Publication/observation ports are explicit mocks; large shapes, HTTP transfers
+and whole-process resource qualification remain open. Required UX skill location remains
 unresolved; no new React journey or production readiness is claimed.
 
 Two-IDE continuation: [native handoff and exact ownership](ide2-native-handoff.md).

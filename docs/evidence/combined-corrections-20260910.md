@@ -87,6 +87,11 @@ prove the cause of every original failure. Required independent corrected-probe
 verification and the combined full Maven/OCI gates remain pending. The prior
 c3b891a image does not contain these changes. No production compiler/publication,
 native/client/export, resource allocation or release readiness was enabled.
-The shared issue9 queue receives the final exact SHA only when frozen; it must
-be fetchable before assigning remote work. Automatic push approval rejection
-remains unresolved; no alternate upload or duplicate baseline campaign is used.
+The user published exact875a257d659d3139a2c180cc587531ddcd095c96 on the combined
+review branch; lead remote-ref inspection and fetch confirm it. Issue9
+assignment5621471846 and reviewer acknowledgement5621531344 activate the existing
+remote review lane on clean checkouts. The first full Maven checkpoint5621613092
+reports core335/parser7 pass and two V3ProfileBoundaryTest logout204/503 failures.
+The lead acknowledges these as actual gate failures with cause needing
+reproduction; the reviewer owns bounded isolation. No duplicate full campaign,
+G08 run, accepted integration or release qualification is claimed.
