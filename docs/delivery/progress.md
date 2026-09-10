@@ -136,19 +136,34 @@ through e338), not an exact OCI artifact.
 The two new desktop/narrow first-use images and hashes remain pending approval;
 no affected v3 rendering, accessibility or fidelity is implemented/qualified.
 [Queue5623546190](https://github.com/timaday/environment-studio/issues/9#issuecomment-5623546190)
-contains the complete exact-candidate handoff. Automatic approval review rejected
-this new branch push; the manual publication request remains pending. Previously
-published41c8/e338/5d remain resolved and must not be requested again.
+contains the complete exact-candidate handoff. User publication is now visible:
+lead remote lookup and fresh fetch confirm exactbc6dfe8. Queue5623788071 activates
+that existing handoff after41c8/e338/5d; no new remote acknowledgement/result yet.
+The publication blocker is resolved for all four candidates.
+
+The reviewed [COPY contract prerequisite](../evidence/native-copy-contract.md)
+now defines the next native implementation: private version2, complete symbol
+extents, independent initialization bytes and unchanged admission refusal. Review
+found and resolved an extent-binding ambiguity; fixed2 has no remaining concrete
+findings and no reviewer execution. Contract-only G00/11Python pass. IDE2 retains
+native source ownership and receives the exact lead patch at its next checkpoint.
 
 Current work queues:
 
-- Ready: implement the proposed Definitions screen after its existing image
-  approval; continue with dependent profile/plan journeys as their designs and
-  backend qualification allow.
-- Awaiting another owner: remote41c8 then e338/5d verification; IDE2 allocation/
-  retained-cleanup tests and assigned credential-free exact-client inventory.
-- Blockers: new Definitions image approval; bc6d candidate publication under
-  current push policy; exact independent/artifact verification before root acceptance.
+- Ready: IDE2 bounded COPY implementation after its current resource checkpoint;
+  lead application prerequisites that do not require new rendering or admission.
+- Awaiting another owner: remote41c8 then e338/5d/bc6d verification; IDE2 whole-owner
+  resource work. Definitions rendering awaits the existing image approval.
+- Blockers: new Definitions image approval; exact independent/artifact verification
+  before root application acceptance; native runtime/distribution qualification.
+
+Native WIP14 adds three test files' construction/held-arena cases, production
+unchanged from reviewedWIP13. Author85 focused tests/154 modes and four killed
+mutation executions pass; fixed non-author source review has no findings and no
+execution. Synthetic allocation refusal and initially zeroed storage remain
+explicit limitations. Assigned static client inventory is complete as scoped;
+COPY/TLS/IFUNC, effective loader choices, script components, distribution trust
+and collector policy remain actual qualification dependencies. No client ran.
 
 IDE2 exclusively owns the preserved native closure WIP. Frozen symbol/version
 WIP3 and vDSO WIP4 have bounded non-author source reviews with no confirmed

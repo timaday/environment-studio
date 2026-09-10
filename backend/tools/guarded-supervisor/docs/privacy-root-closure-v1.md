@@ -78,9 +78,11 @@ R_X86_64_RELATIVE, R_X86_64_64, R_X86_64_GLOB_DAT and R_X86_64_JUMP_SLOT, using
 their ABI-defined widths/formulas and checked overflow. Symbol forms require the
 exact defining object and versioned symbol metadata; unresolved lazy slots refuse.
 No generic mutable-region predicate is implemented by this version: such regions
-must have complete FILE/ZERO/LITERAL/RELOCATION coverage or refuse. COPY, TLS,
-IFUNC/IRELATIVE, other relocation kinds and anonymous/JIT executable recipes are
-explicitly unsupported required evidence at this stage. Extending that mechanism
+must have complete FILE/ZERO/LITERAL/RELOCATION coverage or refuse. Version1
+refuses COPY. The separately specified [version2 COPY prerequisite](privacy-copy-relocation-v1.md)
+adds only its closed initialization-image form, pending implementation and evidence.
+TLS, IFUNC/IRELATIVE, other relocation kinds and anonymous/JIT executable recipes
+remain unsupported required evidence at this stage. Extending that mechanism
 vocabulary is lead-owned contract work before dependent implementation, not a
 reduction of required client/JVM qualification. A successful small fixture must
 be complete within these forms and remain visibly distinct from an installed
