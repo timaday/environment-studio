@@ -26,20 +26,52 @@ final class V3PlanTransport {
     }
     @FunctionalInterface interface BodyAction { V3PlanReply apply(OwnedServletBody body); }
     void read(SessionLedger.Lease lease,HttpServletRequest request,HttpServletResponse response,V3PlanTransfers.Operation operation,int status,Supplier<V3PlanReply> action){
-        start(lease,request,response,operation,status,BodyMode.NONE,()->{},()->false,body->action.get());
+        start(lease,request,response,operation,status,BodyMode.NONE,()->{},()->false,body->action.get(),Optional.empty());
     }
     void body(SessionLedger.Lease lease,HttpServletRequest request,HttpServletResponse response,V3PlanTransfers.Operation operation,int status,AutoCloseable resource,BooleanSupplier cancelled,BodyAction action){
-        start(lease,request,response,operation,status,BodyMode.SMALL,resource,cancelled,body->action.apply(body.orElseThrow()));
+        start(lease,request,response,operation,status,BodyMode.SMALL,resource,cancelled,body->action.apply(body.orElseThrow()),Optional.empty());
     }
     void semanticBody(SessionLedger.Lease lease,HttpServletRequest request,HttpServletResponse response,V3PlanTransfers.Operation operation,int status,AutoCloseable resource,BooleanSupplier cancelled,BodyAction action){
-        start(lease,request,response,operation,status,BodyMode.SEMANTIC,resource,cancelled,body->action.apply(body.orElseThrow()));
+        start(lease,request,response,operation,status,BodyMode.SEMANTIC,resource,cancelled,body->action.apply(body.orElseThrow()),Optional.empty());
+    }
+    private enum ResponseMode {
+        SMALL(32_768),VIEW(134_217_728);
+        final int bytes;
+        ResponseMode(int bytes){this.bytes=bytes;}
+    }
+    /** A pinned view stays executing through encoding, writable waits and final verification. */
+    private final class ViewScope {
+        private final SessionLedger.Lease lease;
+        private final String planId;
+        private final HostedPlanService.ViewAdmission admission;
+        private boolean pinned;
+        ViewScope(SessionLedger.Lease lease,String planId,HostedPlanService.ViewAdmission admission){
+            this.lease=lease;this.planId=planId;this.admission=admission;
+        }
+        void run(Runnable transfer){admission.run(()->{transfer.run();return true;});}
+        void verify(){
+            service.requireOwned(lease,planId,studio.environment.core.plan.PlanDefinition.Version.V3);
+            if(pinned)admission.verify();
+            else if(!admission.live())throw new PlanRefusal(PlanRefusal.Code.CANCELLED);
+        }
+        V3PlanReply materialize(OwnedServletBody body){
+            var request=new PlanViewReader().read(PlanViewRequest.Route.MATERIALIZATION,body);
+            admission.pin(request.revision());pinned=true;
+            return new V3PlanReply.Materialized(planId,request.revision(),admission.materialize());
+        }
+    }
+    void materializationBody(SessionLedger.Lease lease,String planId,HttpServletRequest request,HttpServletResponse response,
+            V3PlanTransfers.Operation operation,HostedPlanService.ViewAdmission admission){
+        var scope=new ViewScope(lease,planId,admission);
+        start(lease,request,response,operation,200,BodyMode.SMALL,admission,()->!admission.live(),
+                body->scope.materialize(body.orElseThrow()),Optional.of(scope));
     }
     private void check(SessionLedger.Lease lease,V3PlanTransfers.Operation operation){
         if(!service.live(lease))throw new PlanRefusal(PlanRefusal.Code.SESSION_REQUIRED);
         if(operation.cancelled())throw new PlanRefusal(PlanRefusal.Code.CANCELLED);
     }
     private void start(SessionLedger.Lease lease,HttpServletRequest request,HttpServletResponse response,V3PlanTransfers.Operation operation,int status,
-            BodyMode mode,AutoCloseable resource,BooleanSupplier cancelled,Function<Optional<OwnedServletBody>,V3PlanReply> action){
+            BodyMode mode,AutoCloseable resource,BooleanSupplier cancelled,Function<Optional<OwnedServletBody>,V3PlanReply> action,Optional<ViewScope> scope){
         OwnedAsyncCompletion completion=null;Optional<OwnedServletBody> body=Optional.empty();
         var cleanupUncertain=new AtomicBoolean();boolean asyncAttempted=false,started=false;
         try {
@@ -56,11 +88,15 @@ final class V3PlanTransport {
             var ownedBody=body;
             var worker=new Thread(null,()->{
                 try {
-                    V3PlanReply reply;
-                    try {check(lease,operation);owner.checkActive();reply=Objects.requireNonNull(action.apply(ownedBody));}
-                    catch(RuntimeException failure){sendFailure(response,failure,lease,operation,owner,clock.getAsLong()+30_000_000_000L);return;}
-                    sendReply(response,status,reply,lease,operation,owner);
-                } finally {
+                    Runnable transfer=()->{
+                        V3PlanReply reply;
+                        try {check(lease,operation);owner.checkActive();reply=Objects.requireNonNull(action.apply(ownedBody));}
+                        catch(RuntimeException failure){sendFailure(response,failure,lease,operation,owner,clock.getAsLong()+30_000_000_000L,scope);return;}
+                        sendReply(response,status,reply,lease,operation,owner,scope);
+                    };
+                    if(scope.isPresent())scope.orElseThrow().run(transfer);else transfer.run();
+                } catch(RuntimeException failure){LOG.warn("V3_PLAN_RESPONSE_ABORTED");}
+                finally {
                     closeResources(ownedBody,resource,cleanupUncertain);
                     owner.workerClosed();
                 }
@@ -80,30 +116,30 @@ final class V3PlanTransport {
         try {body.ifPresent(OwnedServletBody::close);}catch(RuntimeException failure){uncertain.set(true);}
         try {resource.close();}catch(Exception failure){uncertain.set(true);}
     }
-    private Runnable outputAuthority(SessionLedger.Lease lease,V3PlanTransfers.Operation operation,OwnedAsyncCompletion completion,long deadline){
-        return ()->{check(lease,operation);completion.checkActive();if(deadline-clock.getAsLong()<=0)throw new PlanRefusal(PlanRefusal.Code.CANCELLED);};
+    private Runnable outputAuthority(SessionLedger.Lease lease,V3PlanTransfers.Operation operation,OwnedAsyncCompletion completion,long deadline,Optional<ViewScope> scope){
+        return ()->{check(lease,operation);completion.checkActive();if(deadline-clock.getAsLong()<=0)throw new PlanRefusal(PlanRefusal.Code.CANCELLED);scope.ifPresent(ViewScope::verify);};
     }
-    private void sendReply(HttpServletResponse response,int status,V3PlanReply reply,SessionLedger.Lease lease,V3PlanTransfers.Operation operation,OwnedAsyncCompletion completion){
+    private void sendReply(HttpServletResponse response,int status,V3PlanReply reply,SessionLedger.Lease lease,V3PlanTransfers.Operation operation,OwnedAsyncCompletion completion,Optional<ViewScope> scope){
         long deadline=clock.getAsLong()+30_000_000_000L;var outputAttempted=new AtomicBoolean();
-        Runnable authority=outputAuthority(lease,operation,completion,deadline);
+        Runnable authority=outputAuthority(lease,operation,completion,deadline,scope);
         Runnable verify=()->{authority.run();reply.verify(service,lease);};
-        try {write(response,status,reply.wire(),verify,deadline,outputAttempted);}
+        try {write(response,status,reply.wire(),verify,deadline,outputAttempted,scope.isPresent()?ResponseMode.VIEW:ResponseMode.SMALL);}
         catch(RuntimeException failure){
-            if(!outputAttempted.get() && !response.isCommitted())sendFailure(response,failure,lease,operation,completion,deadline);
+            if(!outputAttempted.get() && !response.isCommitted())sendFailure(response,failure,lease,operation,completion,deadline,scope);
             else LOG.warn("V3_PLAN_RESPONSE_ABORTED");
         } catch(IOException failure){LOG.warn("V3_PLAN_RESPONSE_ABORTED");}
     }
-    private void sendFailure(HttpServletResponse response,RuntimeException failure,SessionLedger.Lease lease,V3PlanTransfers.Operation operation,OwnedAsyncCompletion completion,long deadline){
+    private void sendFailure(HttpServletResponse response,RuntimeException failure,SessionLedger.Lease lease,V3PlanTransfers.Operation operation,OwnedAsyncCompletion completion,long deadline,Optional<ViewScope> scope){
         if(response.isCommitted()){LOG.warn("V3_PLAN_RESPONSE_ABORTED");return;}
-        var refusal=refusal(failure);var verify=outputAuthority(lease,operation,completion,deadline);
+        var refusal=refusal(failure);var verify=outputAuthority(lease,operation,completion,deadline,scope);
         try {
             verify.run();response.resetBuffer();response.setHeader("Content-Length",null);
             if(refusal.closeConnection())response.setHeader("Connection","close");
-            write(response,refusal.status(),Map.of("code",refusal.code()),verify,deadline,new AtomicBoolean());
+            write(response,refusal.status(),Map.of("code",refusal.code()),verify,deadline,new AtomicBoolean(),scope.isPresent()?ResponseMode.VIEW:ResponseMode.SMALL);
         } catch(IOException|RuntimeException denied){LOG.warn("V3_PLAN_RESPONSE_ABORTED");}
     }
-    private void write(HttpServletResponse response,int status,Object value,Runnable verify,long deadline,AtomicBoolean outputAttempted)throws IOException {
-        try(var encoded=new PlanViewEncoding(32_768,verify)){
+    private void write(HttpServletResponse response,int status,Object value,Runnable verify,long deadline,AtomicBoolean outputAttempted,ResponseMode mode)throws IOException {
+        try(var encoded=new PlanViewEncoding(mode.bytes,verify)){
             encoded.encode(value);verify.run();outputAttempted.set(true);
             var stream=response.getOutputStream();verify.run();
             response.setStatus(status);response.setHeader("Cache-Control","no-store");response.setContentType("application/json");response.setContentLength(encoded.size());

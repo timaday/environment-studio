@@ -250,6 +250,9 @@ paths:
   /api/v3/plans/{planId}/commands:
     $ref: './openapi-plans-v3.json#/paths/~1api~1v3~1plans~1{planId}~1commands'
 
+  /api/v3/plans/{planId}/materializations:
+    $ref: './openapi-plans-v3.json#/paths/~1api~1v3~1plans~1{planId}~1materializations'
+
 components:
   parameters:
     ObjectId:

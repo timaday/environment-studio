@@ -170,10 +170,17 @@ over6acb1e2 includes actual HTTP edit/recompute, replay/collision, original-vers
 and stalled-body/logout recovery controls. Fresh frontend40/schema47/check/build
 pass on the fixed contract candidate. The existing full scratch and one new
 semantic HTTP record remain held through Ack; no extra physical permit is added.
-Next backend work corrects an independently reproduced direct-view cancellation
-defect: a held v3 materializer can install a late target before outer verification
-refuses. Its correction is isolated for independent review before hosted
-materialization, then complete views/capture/reuse/validation. Native client/content/review evidence, combined
+The [v3 materialization route](../evidence/v3-plan-materialization.md) now includes
+the reviewed original-view cancellation correction: late complete/refused results
+cannot install or drop targets after original cancellation, while executing scratch
+stays reserved. The pinned view remains executing through response/error encoding,
+output and final verification. Actual HTTP drives COMPLETE, INCOMPLETE and REFUSED
+outcomes, repair and held-body recovery. Fixed16 manifest
+758754666dfa49f694f8863524ad07c1c3db6ca74b4f044c69a8689b2332602f over963a084 passes
+full Java1522 (324 core,7 parser,881 server,310 supervisor), zero failures/errors/
+skips and assembly/hostile launcher,10 September at03:41:31BST. Fresh frontend40/
+schema49/check/build pass. Next backend work is document inventory and physical
+entity pages, then complete views/capture/reuse/validation. Native client/content/review evidence, combined
 resources and export/readback remain open. Retained image047d1b0 predates this work;
 no current browser, remote CI, GHCR or HiveForge qualification is claimed.
 No Q feedback GitHub publication is authorized. Existing MVP scope and completed

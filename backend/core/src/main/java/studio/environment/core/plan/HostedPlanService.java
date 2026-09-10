@@ -890,7 +890,11 @@ public final class HostedPlanService {
             if(materializationScratch && !ownsScratch(admission)) throw new PlanRefusal(CAPACITY);
             // A single full old/new target scratch reservation exists before calling any XML adapter.
             materializationScratch=true; plan.rendering=true;
-            return plan.definition.model() instanceof PlanDefinition.V3 && admission instanceof CommandAdmission command?rendering(plan,revision,command.cancellation):rendering(plan,revision);
+            if(plan.definition.model() instanceof PlanDefinition.V3) {
+                if(admission instanceof CommandAdmission command)return rendering(plan,revision,command.cancellation);
+                if(admission instanceof ViewAdmission view)return rendering(plan,revision,view.cancellation);
+            }
+            return rendering(plan,revision);
         });
         ContentResult result;
         Materialization.State targetState=Materialization.State.REFUSED;

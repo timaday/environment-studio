@@ -3,7 +3,7 @@
   "info": {
     "title": "Environment Studio hosted v3 plans",
     "version": "0.3.0",
-    "description": "Eight fixed-v3 routes including semantic commands. Actual compiler publication remains incomplete; test publication witnesses do not qualify runtime availability. See hosted-plan-http-v3.md and hosted-plan-commands-v3.md for original session authority, shared admission, bounded transfers and early no-body controller refusals. No export or readback endpoint is provided."
+    "description": "Nine fixed-v3 routes including semantic commands and explicit materialization. Actual compiler publication remains incomplete; test publication witnesses do not qualify runtime availability. See hosted-plan-http-v3.md, hosted-plan-commands-v3.md and hosted-plan-materialization-v3.md for original session authority, shared admission, bounded transfers and early no-body controller refusals. No export or readback endpoint is provided."
   },
   "paths": {
     "/api/v3/plans": {
@@ -643,6 +643,97 @@
         },
         "description": "Uses the existing closed command protocol after immutable V3 ownership and both immediate admissions. Original single full scratch and semantic HTTP record remain owned through the small acknowledgement transfer. Body maximum134217728 UTF8 bytes and one original30s read deadline; no caller-selected model, computed membership or export authority. See hosted-plan-commands-v3.md."
       }
+    },
+    "/api/v3/plans/{planId}/materializations": {
+      "post": {
+        "operationId": "v3MaterializeOwnedPlan",
+        "summary": "Materialize the exact owned v3 revision",
+        "description": "Requires original fixed V3 ownership, one full view scratch and the shared semantic HTTP record before body access. Closed16KiB revision body with original10s read deadline; full128MiB response with original30s encoding/output/flush budget. Original pinned ViewAdmission.run spans all work and response checks, including owned errors. See hosted-plan-materialization-v3.md. No replay ID or export authority.",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "planId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Uuid"
+            }
+          },
+          {
+            "name": "X-CSRF-TOKEN",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "../../schemas/plan-view-v1.schema.json#/$defs/revisionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Bounded owned revision result; no-store; shape is not export authority",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Materialization"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error500"
+          }
+        }
+      }
     }
   },
   "components": {
@@ -1140,6 +1231,70 @@
       },
       "PlanCommand": {
         "$ref": "../../schemas/plan-command-v1.schema.json"
+      },
+      "Materialization": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "revision",
+          "state",
+          "complete",
+          "diagnostics"
+        ],
+        "properties": {
+          "revision": {
+            "$ref": "#/components/schemas/Revision"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "COMPLETE",
+              "INCOMPLETE",
+              "REFUSED"
+            ]
+          },
+          "complete": {
+            "type": "boolean"
+          },
+          "diagnostics": {
+            "type": "array",
+            "maxItems": 256,
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 129
+            }
+          }
+        },
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "state": {
+                  "const": "COMPLETE"
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "complete": {
+                  "const": true
+                },
+                "diagnostics": {
+                  "maxItems": 0,
+                  "type": "array"
+                }
+              }
+            },
+            "else": {
+              "properties": {
+                "complete": {
+                  "const": false
+                }
+              }
+            }
+          }
+        ]
       }
     },
     "responses": {

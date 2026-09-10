@@ -23,6 +23,17 @@ sealed interface V3PlanReply {
         }
         @Override public String toString(){return "V3PlanReply.Acknowledgement[redacted]";}
     }
+    record Materialized(String planId,String revision,HostedPlanService.Materialization value) implements V3PlanReply {
+        public Materialized {Objects.requireNonNull(planId);Objects.requireNonNull(revision);Objects.requireNonNull(value);}
+        public Map<String,Object> wire(){
+            var result=new LinkedHashMap<String,Object>();
+            result.put("revision",revision);result.put("state",value.state().name());
+            result.put("complete",value.complete());result.put("diagnostics",value.diagnostics());
+            return Collections.unmodifiableMap(result);
+        }
+        public void verify(HostedPlanService service,SessionLedger.Lease lease){service.requireOwned(lease,planId,V3);}
+        @Override public String toString(){return "V3PlanReply.Materialized[redacted]";}
+    }
     record Status(HostedPlanService.Status value) implements V3PlanReply {
         public Status { Objects.requireNonNull(value); }
         public Map<String,Object> wire() {

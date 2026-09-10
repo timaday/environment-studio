@@ -634,9 +634,9 @@ test("v3 small replies preserve common v1 revision and optional-field wire contr
   assert.equal(operation({ ...status, installedRevision: null }), false);
   assert.equal(operation({ ...status, cleanup: "complete-anyway" }), false);
 });
-test("v3 exposes exactly eight authenticated routes and documents early empty controller refusals", () => {
+test("v3 exposes exactly nine authenticated routes and documents early empty controller refusals", () => {
   const paths = ["/api/v3/plans", "/api/v3/plans/current", "/api/v3/plans/{planId}", "/api/v3/plans/{planId}/inspections",
-    "/api/v3/operations/{operationId}/credentials", "/api/v3/operations/{operationId}", "/api/v3/operations/{operationId}/cancel", "/api/v3/plans/{planId}/commands"];
+    "/api/v3/operations/{operationId}/credentials", "/api/v3/operations/{operationId}", "/api/v3/operations/{operationId}/cancel", "/api/v3/plans/{planId}/commands", "/api/v3/plans/{planId}/materializations"];
   assert.deepEqual(Object.keys(planV3Api.paths).sort(), paths.sort());
   for (const item of Object.values(planV3Api.paths)) for (const [method, route] of Object.entries(item)) {
     assert.deepEqual(route.security, [{ sessionCookie: [] }]);
@@ -682,4 +682,38 @@ test("v3 semantic commands preserve the existing closed command protocol and own
   assert.equal(validate(body), true, JSON.stringify(validate.errors));
   for (const field of ["modelVersion", "owner", "computed", "targetXml", "validation", "exportAvailable"])
     assert.equal(validate({ ...body, [field]: "caller-cannot-select" }), false);
+});
+
+test("v3 materialization preserves complete, incomplete and refused states with complete diagnostic references", () => {
+  assert.ok(planV3Api.components.schemas.Materialization, "v3 materialization result is declared");
+  const validate = planV3Schema("Materialization");
+  const complete = { revision: "2", state: "COMPLETE", complete: true, diagnostics: [] };
+  const incomplete = { revision: "2", state: "INCOMPLETE", complete: false, diagnostics: ["by-tone", "item/finish"] };
+  const refused = { revision: "2", state: "REFUSED", complete: false, diagnostics: ["RESOURCE_LIMIT"] };
+  for (const value of [complete, incomplete, refused]) assert.equal(validate(value), true, JSON.stringify(validate.errors));
+  for (const value of [ { ...complete, complete: false }, { ...incomplete, complete: true }, { ...refused, complete: true },
+    { ...complete, state: "READY" }, { ...complete, revision: 2 }, { ...complete, revision: "02" },
+    { ...complete, targetXml: "caller" }, { ...complete, exportAvailable: true }, { ...complete, diagnostics: ["RESOURCE_LIMIT"] } ])
+    assert.equal(validate(value), false, JSON.stringify(value));
+  const references = Array.from({ length: 256 }, (_, index) => "a".repeat(64)+"/"+("field"+index).padEnd(64,"x"));
+  assert.equal(validate({ ...incomplete, revision: "9".repeat(1024), diagnostics: references }), true);
+  assert.ok(Buffer.byteLength(JSON.stringify({ ...incomplete, revision: "9".repeat(1024), diagnostics: references })) > 32768);
+  assert.equal(validate({ ...incomplete, diagnostics: [...references, "overflow"] }), false);
+  assert.equal(validate({ ...incomplete, diagnostics: ["x".repeat(130)] }), false);
+});
+
+test("v3 materialization is one authenticated revision-only POST without replay or result authority", () => {
+  const path = "/api/v3/plans/{planId}/materializations";
+  assert.ok(planV3Api.paths[path], "materialization route is documented");
+  assert.deepEqual(Object.keys(planV3Api.paths[path]), ["post"]);
+  const route = planV3Api.paths[path].post;
+  const v1 = read("../docs/contracts/openapi-plans-v1.json").paths["/api/v1/plans/{planId}/materializations"].post;
+  assert.deepEqual(route.requestBody, v1.requestBody);
+  assert.deepEqual(route.parameters, v1.parameters);
+  assert.equal(route.responses["200"].content["application/json"].schema.$ref, "#/components/schemas/Materialization");
+  const schema = read("../schemas/plan-view-v1.schema.json");
+  const validate = new Ajv2020({ allErrors: true, strict: true }).addSchema(read("../schemas/plan-command-v1.schema.json")).compile({ ...schema, $ref: "#/$defs/revisionRequest" });
+  assert.equal(validate({ revision: "2" }), true);
+  for (const field of ["requestId", "modelVersion", "owner", "targetXml", "state", "complete", "diagnostics", "exportAvailable"])
+    assert.equal(validate({ revision: "2", [field]: "caller" }), false);
 });

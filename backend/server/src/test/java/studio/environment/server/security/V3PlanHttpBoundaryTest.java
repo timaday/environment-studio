@@ -197,7 +197,7 @@ class V3PlanHttpBoundaryTest {
 
     @Test void actualWrongOriginAndUnimplementedRoutesStayDenied() throws Exception {
         var client = login("mock-v3-closed-"+UUID.randomUUID()); String plan = create(client);
-        for (String suffix : List.of("materializations", "views/documents", "profile-captures", "validations", "export")) {
+        for (String suffix : List.of("views/documents", "profile-captures", "validations", "export")) {
             assertEquals(403, client.request("POST", "/api/v3/plans/"+plan+"/"+suffix, "{}", true).status());
         }
         try (var socket = new java.net.Socket(java.net.InetAddress.getLoopbackAddress(), port)) {

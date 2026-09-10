@@ -37,7 +37,13 @@ V3Target evidence, including the unchanged-target case. Preserve v2's initial
 current/target behavior and account for only the content actually retained.
 
 Materialization retains original current content and a work-owned cancellation
-flag; retirement/invalidation signals it. Current pin comes from retained plan
+flag; retirement/invalidation signals it. When invoked through an original V3
+CommandAdmission or ViewAdmission, forward that admission's exact cancellation
+flag through the adapter and final target-install check. Closing the originating
+view must signal held materialization immediately and prevent installation of an
+already-computed late result. Retain shared scratch until the original executing
+worker returns; cancellation does not release it early. V2 cancellation and
+completion behavior remains unchanged. Current pin comes from retained plan
 observation metadata. Target decisions use a distinct plan/revision/generation
 token with original document digests. Call the actual complete v3 adapter.
 Recheck lease/generation/revision, observation context, cancellation and shared
