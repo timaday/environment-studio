@@ -187,6 +187,64 @@ refuse. The role asserts current NX geometry only, not benign data, control-stat
 integrity or future mprotect/JIT safety. Those remain complete-runtime/continuation
 requirements; this explicit role cannot enable admission or a support reduction.
 
+### Stopped smaps exclusion evidence
+
+Before ordinary classification, acquire one fresh no-follow smaps descriptor
+through the original stopped owner's pinned proc directory. Stream it against
+the complete stopped maps snapshot. Require exactly one matching header and one
+complete VmFlags field per maps occurrence, in the same order, including special
+mappings. Header equality covers address interval, r/w/x and s/p, offset, device
+and inode. Missing, duplicate, extra, reordered, contradictory or incomplete
+records refuse. Names are bounded discarded labels, never identity selectors.
+
+Both STACK and ANONYMOUS must exclude io, pf and mm (VM_IO, VM_PFNMAP and
+VM_MIXEDMAP). Their absence is necessary negative evidence, not universal proof
+of ordinary memory. Required file-image and independently admitted kernel ranges
+take precedence; an ordinary role cannot absorb an omitted kernel role, including
+one with compatible NX permissions or aggregate geometry. KERNEL_DATA_NX still
+requires its independently selected complete kernel/vDSO geometry and context.
+Flags alone never grant kernel identity. Installation qualification must establish
+that every relevant kernel non-file form is independently covered or excluded;
+this conditional prerequisite cannot certify an unknown kernel from absent bits.
+
+For this Linux amd64 vocabulary, recognized VmFlags tokens are rd, wr, ex, sh,
+mr, mw, me, ms, gd, pf, gu, lo, io, sr, rr, dc, de, lf, ac, nr, ht, sf, ar, wf,
+dd, sd, mm, hg, nh, mg, um, uw, ui, ss, dp and sl. They are distinct two-letter
+ASCII tokens; unknown tokens, ??, duplicates and malformed fields refuse.
+Recognizing a token grants no new role or permission. Correlate rd/wr/ex with
+the current r/w/x header bits. Linux's s/p header uses VM_MAYSHARE (ms), not
+VM_SHARED (sh); correlate ms with that header and require both absent for an
+ordinary private role. Do not substitute mr/mw/me for current access bits or
+equate sh with ms. Other smaps counters may be streamed and discarded after
+bounded line validation; they are not classification or identity evidence.
+
+Stream at most16MiB input with an8192-byte line ceiling including its newline.
+Require complete newline-terminated records and observed EOF; reaching the input
+ceiling without established EOF refuses without an unbudgeted read. Reuse the
+existing <=64KiB scratch; no second retained arena. Include line/parser state
+and any per-occurrence flags in the unchanged1MiB active ceiling. Before open or
+read, conservatively charge one occurrence and reserve16MiB against the same
+512-occurrence/2GiB cumulative work owner; no refund, reset or second work budget.
+
+All existing original clocks, cancellation, stop/identity checks and close-once
+uncertainty apply. Missing/unavailable smaps, read failure, malformed/truncated
+input or unsupported classification refuses with the existing typed reason.
+A blocked or late kernel read retains its claim, buffer and descriptor until
+actual return/closure; expiry cannot authorize reclamation or success. Preserve
+the first operational refusal separately from sticky cleanup uncertainty.
+Smaps may walk page tables: bounded output is not proof of bounded kernel work
+or syscall duration. Exact installed-kernel resource/lifetime qualification is
+still required; no assumption of interruptible reads or new trusted-control
+exclusion is introduced.
+
+Acceptance includes omitted one/all kernel-data roles; absorption by either
+ordinary discriminator; legitimate named/unnamed ordinary NX ranges; file or
+special overlap; missing/duplicate/reordered/mismatched headers and flags;
+rd/wr/ex versus mr/mw/me and sh versus ms; known newer and unknown tokens;
+truncated/overlong/ceiling reads; original deadline/cancel, held reads, descriptor
+recovery and sticky uncertain close. Preserve mandatory missing-stage INSTALLATION
+and no CHALLENGE/FinalAdmitted after any successful internal comparison.
+
 Kernel-special checks are mandatory inputs bound to the existing compiled runtime
 identity. They do not create fictitious inode/file hashes in ES_PRIVACY_CLOSURE_1:
 that ordered installation-file object encoding is unchanged. An absent/failed
@@ -286,4 +344,8 @@ and [glibc dynamic loader constraints](https://sourceware.org/glibc/manual/2.43/
 Kernel-special semantics are defined by Linux's
 [vDSO implementation](https://github.com/torvalds/linux/blob/v6.8/arch/x86/entry/vdso/vma.c)
 and [vsyscall implementation](https://github.com/torvalds/linux/blob/v6.8/arch/x86/entry/vsyscall/vsyscall_64.c).
+The smaps exclusion and header semantics are grounded in
+[Linux proc maps/smaps](https://github.com/torvalds/linux/blob/v7.0/fs/proc/task_mmu.c),
+[generic vvar flags](https://github.com/torvalds/linux/blob/v7.0/lib/vdso/datastore.c)
+and [x86 vvar_vclock flags](https://github.com/torvalds/linux/blob/v7.0/arch/x86/entry/vdso/vma.c).
 These motivate the contract; they do not qualify the current installed runtime.
