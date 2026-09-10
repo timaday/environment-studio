@@ -4,6 +4,15 @@ Updated: 10 September 2026. See [starter evidence](../evidence/starter-verificat
 and [D01a integration](../evidence/d01a-integration.md) for actual commands and
 results; the table below reports capability, not test count.
 
+Two-IDE continuation: [native handoff and exact ownership](ide2-native-handoff.md).
+Lead is the sole IDE1 application writer; previous writing subagents are stopped.
+IDE2 receives the frozen21-file JNI candidate in its separate worktree from
+`d7c484425a3dcc88e26525a7e5041f41c83d056d`, with one confirmed late-open deadline P2
+to fix before acceptance. IDE2 owns the next full Maven build window; IDE1 continues
+the preserved typed-v3 browser client with frontend checks. First two-hour checkpoint
+is14:49BST,10 September. Native full1596 and independent79 checks pass on their
+recorded bases; neither establishes integrated or release qualification.
+
 The latest continuation prioritizes [three confirmed corrections](../evidence/continuation-p2-corrections.md):
 safe workspace404/503 translation, v2 view cancellation before target mutation,
 and native cleanup after proven non-owning arm refusal. Fixed independent reviews,
