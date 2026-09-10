@@ -18,6 +18,8 @@ public final class V3PlanWorkflowController {
     public void preview(@PathVariable("planId") String id,HttpServletRequest request,HttpServletResponse response){start(id,request,response,V3PlanWorkflowReader.Route.PREVIEW);}
     @PostMapping("/api/v3/plans/{planId}/validations")
     public void validation(@PathVariable("planId") String id,HttpServletRequest request,HttpServletResponse response){start(id,request,response,V3PlanWorkflowReader.Route.VALIDATION);}
+    @PostMapping("/api/v3/plans/{planId}/reviews")
+    public void review(@PathVariable("planId") String id,HttpServletRequest request,HttpServletResponse response){start(id,request,response,V3PlanWorkflowReader.Route.REVIEW);}
     private void start(String id,HttpServletRequest request,HttpServletResponse response,V3PlanWorkflowReader.Route route){
         var lease=PlanController.lease(request);var service=runtime.service();
         service.requireOwned(lease,id,V3);V3PlanTransport.requireJson(request);

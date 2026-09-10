@@ -10,7 +10,7 @@ class V3WorkflowWireAssertionsTest {
     private static final String PLAN = "/api/v3/plans/11111111-1111-4111-8111-111111111111/";
 
     @Test void malformedSuccessfulResponsesFailForEveryWorkflowFamily() {
-        assertAll(List.of("profile-captures", "profile-previews", "validations").stream()
+        assertAll(List.of("profile-captures", "profile-previews", "validations", "reviews").stream()
                 .flatMap(route -> List.of("{}", "").stream().map(body ->
                         (org.junit.jupiter.api.function.Executable) () -> assertThrows(AssertionError.class,
                                 () -> V3WorkflowWireAssertions.verify(PLAN + route, 200, body)))));
@@ -34,7 +34,7 @@ class V3WorkflowWireAssertionsTest {
     }
 
     @Test void refusalsUseTheirOwnContract() {
-        for (String route : List.of("profile-captures", "profile-previews", "validations"))
+        for (String route : List.of("profile-captures", "profile-previews", "validations", "reviews"))
             assertDoesNotThrow(() -> V3WorkflowWireAssertions.verify(PLAN + route, 409, "{\"code\":\"CONFLICT\"}"));
     }
 

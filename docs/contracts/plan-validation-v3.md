@@ -100,3 +100,7 @@ independent digest oracle and unchanged v2 identity. No test publication witness
 qualifies the actual compiler. Combined graph/provenance/recomputation/hash/retained
 target and response resources, cancellation latency, versioned HTTP/encoding,
 client/review/content evidence and operational availability remain open.
+
+The separate [v3 review acknowledgement](plan-review-v3.md) extends only the owned
+REVIEW/CONTENT_POLICY evaluation after fresh verification. It preserves every
+fingerprint field and the unavailable export capability.

@@ -156,6 +156,34 @@ class V3PlanWorkflowHttpBoundaryTest {
         var summary=ok(client.request("POST","/api/v3/plans/"+plan+"/validations",revision("2"),true));
         assertEquals(10,summary.get("checks").size());assertTrue(summary.get("computedRuleCount").isNull());
     }
+    @Test void reviewAcknowledgesExactWholeDocumentPolicyAndReplaysAfterRetirement()throws Exception {
+        for(boolean denied:List.of(false,true)) {
+            String subject="mock-review-"+UUID.randomUUID();
+            V3WorkflowHttpTestConfiguration.reviewPolicies.put(subject,List.of(
+                    new studio.environment.core.workspace.NativeCommand.Policy("mock-pg","sheet","protected-self-contained"),
+                    new studio.environment.core.workspace.NativeCommand.Policy("mock-pg","tail",denied?"deny":"protected-self-contained")));
+            try {
+                var client=login(subject);String plan=create(client);inspect(client,plan);
+                ok(client.request("POST","/api/v3/plans/"+plan+"/materializations",revision("2"),true));
+                var before=ok(client.request("POST","/api/v3/plans/"+plan+"/validations",revision("2"),true));
+                assertEquals("UNKNOWN",checkOutcome(before,"REVIEW"));
+                String request=JSON.writeValueAsString(Map.of("expectedRevision","2","requestId",UUID.randomUUID().toString(),
+                        "inputFingerprint",before.get("inputFingerprint").asString(),"destinationId","mock-destination","artifactIntent","protected-self-contained"));
+                var ack=ok(client.request("POST","/api/v3/plans/"+plan+"/reviews",request,true));
+                assertEquals(2,ack.size());assertEquals(plan,ack.get("planId").asString());assertEquals("2",ack.get("revision").asString());
+                var after=ok(client.request("POST","/api/v3/plans/"+plan+"/validations",revision("2"),true));
+                assertEquals(before.get("inputFingerprint"),after.get("inputFingerprint"));assertEquals("PASS",checkOutcome(after,"REVIEW"));
+                assertEquals(denied?"FAIL":"PASS",checkOutcome(after,"CONTENT_POLICY"));assertEquals("UNKNOWN",checkOutcome(after,"CLIENT_CAPABILITY"));assertFalse(after.get("exportAvailable").asBoolean());
+                ok(client.request("POST","/api/v3/plans/"+plan+"/commands",JSON.writeValueAsString(Map.of("expectedRevision","2","requestId",UUID.randomUUID().toString(),"kind","discard")),true));
+                assertEquals(ack,ok(client.request("POST","/api/v3/plans/"+plan+"/reviews",request,true)));
+                early(client.get("/api/v3/plans/current"),404,"NOT_FOUND");
+            } finally {V3WorkflowHttpTestConfiguration.reviewPolicies.remove(subject);}
+        }
+    }
+    private static String checkOutcome(tools.jackson.databind.JsonNode validation,String name) {
+        for(var check:validation.get("checks"))if(check.get("check").asString().equals(name))return check.get("outcome").asString();
+        throw new AssertionError("MOCK_CHECK_MISSING");
+    }
     @Test void previewReachesOwnedPublicationLookupAndReportsMissingProfile()throws Exception {
         var client=login("mock-workflow-preview-"+UUID.randomUUID());String plan=create(client);inspect(client,plan);
         ok(client.request("POST","/api/v3/plans/"+plan+"/materializations",revision("2"),true));
@@ -208,7 +236,7 @@ class V3PlanWorkflowHttpBoundaryTest {
     @Test void workflowOwnershipCsrfAndStalledBodyKeepTheOriginalScratch()throws Exception {
         String subject="mock-workflow-held-"+UUID.randomUUID();var client=login(subject);String plan=create(client);inspect(client,plan);
         var other=login("mock-workflow-other-"+UUID.randomUUID());String otherPlan=create(other);inspect(other,otherPlan);
-        for(String route:List.of("profile-captures","profile-previews","validations")){
+        for(String route:List.of("profile-captures","profile-previews","validations","reviews")){
             String url="/api/v3/plans/"+plan+"/"+route;
             early(other.request("POST",url,"{",true),404,"NOT_FOUND");assertEquals(403,client.request("POST",url,revision("2"),false).status());assertEquals(400,client.request("POST",url,"{",true).status());
         }

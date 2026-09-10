@@ -91,7 +91,8 @@ admission, fresh publication and full original/retained-target proof. It never
 calls legacy validation, materializes a target, changes a revision or grants
 export. Missing target is distinct from complete empty target; invalid inspection
 refuses. Preserve all ten RequiredCheck outcomes in declared order, all physical
-count rules sorted by ID, existing UNKNOWN client/content/review categories and
+count rules sorted by ID, client capability UNKNOWN, review/content-policy outcomes defined in
+`plan-review-v3.md`, and
 the ES-PLAN-INPUT-3 fingerprint. Pagination affects only presentation.
 
 The closed request union is:

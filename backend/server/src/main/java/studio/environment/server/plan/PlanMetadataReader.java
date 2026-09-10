@@ -25,6 +25,14 @@ final class PlanMetadataReader {
         return new Mutation(revision(text(data.get("expectedRevision"))),uuid(text(data.get("requestId"))));
     }
     void empty(InputStream input) { keys(read(input)); }
+    studio.environment.core.plan.HostedPlanService.ReviewCommand review(InputStream input) {
+        var data=read(input);keys(data,"expectedRevision","requestId","inputFingerprint","destinationId","artifactIntent");
+        String fingerprint=text(data.get("inputFingerprint"));
+        if(!fingerprint.matches("[0-9a-f]{64}") || !"protected-self-contained".equals(data.get("artifactIntent")))throw invalid();
+        return new studio.environment.core.plan.HostedPlanService.ReviewCommand(
+                new Mutation(revision(text(data.get("expectedRevision"))),uuid(text(data.get("requestId")))),
+                fingerprint,tool(text(data.get("destinationId"))),studio.environment.core.plan.HostedPlanService.ArtifactIntent.PROTECTED_SELF_CONTAINED);
+    }
     private Map<String,Object> read(InputStream input) {
         try(var reader=new InputStreamReader(new Limited(input),StandardCharsets.UTF_8.newDecoder().onMalformedInput(CodingErrorAction.REPORT).onUnmappableCharacter(CodingErrorAction.REPORT));var parser=JSON.createParser(reader)) {
             parser.nextToken(); var data=object(parser,0); if(parser.nextToken()!=null) throw invalid(); return data;

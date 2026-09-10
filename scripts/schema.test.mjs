@@ -634,9 +634,9 @@ test("v3 small replies preserve common v1 revision and optional-field wire contr
   assert.equal(operation({ ...status, installedRevision: null }), false);
   assert.equal(operation({ ...status, cleanup: "complete-anyway" }), false);
 });
-test("v3 exposes exactly twenty-six authenticated routes and documents early empty controller refusals", () => {
+test("v3 exposes exactly twenty-seven authenticated routes and documents early empty controller refusals", () => {
   const paths = ["/api/v3/plans", "/api/v3/plans/current", "/api/v3/plans/{planId}", "/api/v3/plans/{planId}/inspections",
-    "/api/v3/operations/{operationId}/credentials", "/api/v3/operations/{operationId}", "/api/v3/operations/{operationId}/cancel", "/api/v3/plans/{planId}/commands", "/api/v3/plans/{planId}/materializations", "/api/v3/plans/{planId}/views/documents", "/api/v3/plans/{planId}/views/entities", "/api/v3/plans/{planId}/views/relations", "/api/v3/plans/{planId}/views/draft", "/api/v3/plans/{planId}/views/containment", "/api/v3/plans/{planId}/views/placements", "/api/v3/plans/{planId}/views/bindings", "/api/v3/plans/{planId}/views/document", "/api/v3/plans/{planId}/views/binding-locations", "/api/v3/plans/{planId}/views/computed/nodes", "/api/v3/plans/{planId}/views/computed/memberships", "/api/v3/plans/{planId}/views/computed/cooccurrences", "/api/v3/plans/{planId}/views/computed/rules", "/api/v3/plans/{planId}/views/computed/contributors", "/api/v3/plans/{planId}/profile-captures", "/api/v3/plans/{planId}/profile-previews", "/api/v3/plans/{planId}/validations"];
+    "/api/v3/operations/{operationId}/credentials", "/api/v3/operations/{operationId}", "/api/v3/operations/{operationId}/cancel", "/api/v3/plans/{planId}/commands", "/api/v3/plans/{planId}/materializations", "/api/v3/plans/{planId}/views/documents", "/api/v3/plans/{planId}/views/entities", "/api/v3/plans/{planId}/views/relations", "/api/v3/plans/{planId}/views/draft", "/api/v3/plans/{planId}/views/containment", "/api/v3/plans/{planId}/views/placements", "/api/v3/plans/{planId}/views/bindings", "/api/v3/plans/{planId}/views/document", "/api/v3/plans/{planId}/views/binding-locations", "/api/v3/plans/{planId}/views/computed/nodes", "/api/v3/plans/{planId}/views/computed/memberships", "/api/v3/plans/{planId}/views/computed/cooccurrences", "/api/v3/plans/{planId}/views/computed/rules", "/api/v3/plans/{planId}/views/computed/contributors", "/api/v3/plans/{planId}/profile-captures", "/api/v3/plans/{planId}/profile-previews", "/api/v3/plans/{planId}/validations", "/api/v3/plans/{planId}/reviews"];
   assert.deepEqual(Object.keys(planV3Api.paths).sort(), paths.sort());
   for (const item of Object.values(planV3Api.paths)) for (const [method, route] of Object.entries(item)) {
     assert.deepEqual(route.security, [{ sessionCookie: [] }]);
@@ -916,4 +916,21 @@ test("v3 workflow schemas distinguish absent target, complete empty and fingerpr
     assert.equal(post.requestBody.content["application/json"].schema.$ref, `../../schemas/plan-workflow-v3.schema.json#/$defs/${requestName}`);
     assert.equal(post.responses["200"].content["application/json"].schema.$ref, `../../schemas/plan-workflow-v3.schema.json#/$defs/${responseName}`);
   }
+});
+
+
+test("v3 review accepts exact intent and returns only an unchanged revision receipt", () => {
+  const schema = read("../schemas/plan-review-v3.schema.json");
+  const factory = new Ajv2020({ allErrors: true, strict: true }).addSchema(read("../schemas/plan-command-v1.schema.json")).addSchema(schema);
+  const request = factory.compile({ $ref: `${schema.$id}#/$defs/request` });
+  const candidate = { expectedRevision: "2", requestId: "a0000000-0000-4000-8000-000000000001", inputFingerprint: "a".repeat(64), destinationId: "mock-destination", artifactIntent: "protected-self-contained" };
+  assert.equal(request(candidate), true, JSON.stringify(request.errors));
+  for (const change of [{ expectedRevision: "0" }, { expectedRevision: "02" }, { expectedRevision: "1".repeat(1025) }, { requestId: candidate.requestId.toUpperCase() }, { inputFingerprint: "A".repeat(64) }, { inputFingerprint: "a".repeat(64)+"\n" }, { artifactIntent: "masked-preview" }, { artifactIntent: undefined }, { destinationId: "wrong_id" }, { policies: [] }, { outcome: "PASS" }, { xml: "mock" }]) assert.equal(request({ ...candidate, ...change }), false);
+  const response = factory.compile({ $ref: `${schema.$id}#/$defs/response` });
+  const receipt = { planId: candidate.requestId, revision: "2" };
+  assert.equal(response(receipt), true, JSON.stringify(response.errors));
+  for (const change of [{ operationId: candidate.requestId }, { exportAvailable: true }, { review: "PASS" }, { revision: "0" }]) assert.equal(response({ ...receipt, ...change }), false);
+  const post = read("../docs/contracts/openapi-plans-v3.json").paths["/api/v3/plans/{planId}/reviews"].post;
+  assert.equal(post.requestBody.content["application/json"].schema.$ref, "../../schemas/plan-review-v3.schema.json#/$defs/request");
+  assert.equal(post.responses["200"].content["application/json"].schema.$ref, "../../schemas/plan-review-v3.schema.json#/$defs/response");
 });

@@ -301,6 +301,8 @@ paths:
   /api/v3/plans/{planId}/profile-previews:
     $ref: "./openapi-plans-v3.json#/paths/~1api~1v3~1plans~1{planId}~1profile-previews"
 
+  /api/v3/plans/{planId}/reviews:
+    $ref: "./openapi-plans-v3.json#/paths/~1api~1v3~1plans~1{planId}~1reviews"
   /api/v3/plans/{planId}/validations:
     $ref: "./openapi-plans-v3.json#/paths/~1api~1v3~1plans~1{planId}~1validations"
 

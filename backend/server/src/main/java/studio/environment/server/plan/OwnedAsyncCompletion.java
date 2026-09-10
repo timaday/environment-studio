@@ -10,7 +10,8 @@ import jakarta.servlet.AsyncListener;
 
 /** Sole completion owner for one async cycle; register before initial dispatch returns.
  * Call finish only after worker-owned application resources have been closed.
- * Callbacks settle HTTP completion, never application cleanup or request authority.
+ * Callbacks settle HTTP completion, never application cleanup. Review transfers
+ * additionally signal their original atomic abort gate; this signal takes no lock.
  * No callback or competing worker waits on the attempt lock. Tomcat callbacks
  * may own state-machine or socket locks needed by the in-flight complete call.
  */
@@ -26,12 +27,17 @@ final class OwnedAsyncCompletion implements AsyncListener {
     private final AtomicBoolean unsupportedCycle=new AtomicBoolean();
     private final AtomicBoolean workerClosed=new AtomicBoolean(),aborted=new AtomicBoolean(),reportedUncertainty=new AtomicBoolean();
     private final java.util.function.Consumer<Outcome> settlement;
+    private final java.util.Optional<studio.environment.core.plan.HostedPlanService.ViewAdmission> review;
     private boolean attempted;
     private Outcome outcome=Outcome.INCONCLUSIVE;
 
     OwnedAsyncCompletion(AsyncContext context) { this(context,ignored->{}); }
     OwnedAsyncCompletion(AsyncContext context,java.util.function.Consumer<Outcome> settlement) {
-        this.context=Objects.requireNonNull(context);this.settlement=Objects.requireNonNull(settlement);
+        this(context,settlement,java.util.Optional.empty());
+    }
+    OwnedAsyncCompletion(AsyncContext context,java.util.function.Consumer<Outcome> settlement,
+            java.util.Optional<studio.environment.core.plan.HostedPlanService.ViewAdmission> review) {
+        this.context=Objects.requireNonNull(context);this.settlement=Objects.requireNonNull(settlement);this.review=Objects.requireNonNull(review);
         try { context.addListener(this); }
         catch(RuntimeException refused) { throw new IllegalStateException("ASYNC_COMPLETION_REGISTRATION_REFUSED"); }
     }
@@ -63,17 +69,18 @@ final class OwnedAsyncCompletion implements AsyncListener {
             return outcome;
         } finally { attemptLock.unlock(); }
     }
-    @Override public void onComplete(AsyncEvent event) { containerComplete.set(true); }
+    private void signalReviewAbort(){review.ifPresent(studio.environment.core.plan.HostedPlanService.ViewAdmission::abortReview);}
+    @Override public void onComplete(AsyncEvent event) { if(!workerClosed.get())signalReviewAbort();containerComplete.set(true); }
     @Override public void onError(AsyncEvent event) throws IOException { callback(); }
     @Override public void onTimeout(AsyncEvent event) throws IOException { callback(); }
     private void callback() throws IOException {
         // An in-flight attempt may subsequently be refused after this callback
         // returns. Do not wait under a container lock or claim it succeeded.
-        aborted.set(true);Outcome result=finish();notifySettlement(result);
+        signalReviewAbort();aborted.set(true);Outcome result=finish();notifySettlement(result);
         if(result==Outcome.INCONCLUSIVE)throw new IOException("ASYNC_COMPLETION_REFUSED");
     }
     @Override public void onStartAsync(AsyncEvent event) throws IOException {
-        aborted.set(true);unsupportedCycle.set(true);notifySettlement(Outcome.INCONCLUSIVE);
+        signalReviewAbort();aborted.set(true);unsupportedCycle.set(true);notifySettlement(Outcome.INCONCLUSIVE);
         throw new IOException("ASYNC_CYCLE_UNSUPPORTED");
     }
     @Override public String toString(){return "OwnedAsyncCompletion[redacted]";}

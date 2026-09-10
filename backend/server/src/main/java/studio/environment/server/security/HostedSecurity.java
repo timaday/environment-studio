@@ -87,7 +87,7 @@ public class HostedSecurity {
                         "/api/v3/plans/{planId}/views/documents", "/api/v3/plans/{planId}/views/entities",
                         "/api/v3/plans/{planId}/views/relations", "/api/v3/plans/{planId}/views/draft", "/api/v3/plans/{planId}/views/containment", "/api/v3/plans/{planId}/views/placements", "/api/v3/plans/{planId}/views/bindings",
                         "/api/v3/plans/{planId}/views/document", "/api/v3/plans/{planId}/views/binding-locations",
-                        "/api/v3/plans/{planId}/profile-captures", "/api/v3/plans/{planId}/profile-previews", "/api/v3/plans/{planId}/validations",
+                        "/api/v3/plans/{planId}/profile-captures", "/api/v3/plans/{planId}/profile-previews", "/api/v3/plans/{planId}/validations", "/api/v3/plans/{planId}/reviews",
                         "/api/v3/plans/{planId}/views/computed/nodes", "/api/v3/plans/{planId}/views/computed/memberships", "/api/v3/plans/{planId}/views/computed/cooccurrences", "/api/v3/plans/{planId}/views/computed/rules", "/api/v3/plans/{planId}/views/computed/contributors",
                         "/api/v3/operations/{operationId}/credentials", "/api/v3/operations/{operationId}/cancel").authenticated()
                 .requestMatchers(HttpMethod.PUT, "/api/v1/definitions/{objectId}").authenticated()

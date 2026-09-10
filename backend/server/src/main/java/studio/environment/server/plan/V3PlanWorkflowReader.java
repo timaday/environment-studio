@@ -8,7 +8,7 @@ import tools.jackson.core.json.JsonFactory;
 
 /** V3-only closed validation union; capture/preview retain the established collection grammar. */
 final class V3PlanWorkflowReader {
-    enum Route { CAPTURE, PREVIEW, VALIDATION }
+    enum Route { CAPTURE, PREVIEW, VALIDATION, REVIEW }
     sealed interface Validation {
         String revision();
         record Summary(String revision) implements Validation { }
