@@ -6,6 +6,14 @@ registration. The standalone runtime remains unqualified: production compiled
 installation tables are empty, identity returns INSTALLATION, and no
 CHALLENGE/FinalAdmitted or client admission is enabled.
 
+**Open correction:** the later [remote f5025cc review](https://github.com/timaday/environment-studio/issues/9#issuecomment-5619121544)
+found JNI-QA-001: native open failure passes the original duration to cleanup,
+renewing its budget instead of consuming the remaining startup allowance. Lead
+inspection confirms the same path in integrated30446e2. The finding is accepted
+and assigned only to IDE2; a separate corrected candidate, original independent
+probe retest and combined verification remain required. Historical passing results
+below retain their exact scope and do not close this finding.
+
 ## Fixed candidates and integration
 
 Original author base `bd30c53456a1e6410bd4c8e2308127f9fc97c03d`; candidate1
@@ -49,7 +57,8 @@ Fixed non-author reviews are `es-review-jni-candidate1-handoff-20260910.md` and
 `es-review-jni-candidate2-20260910.md`. Candidate2 review verified all21 hashes and
 the exact five-file delta, independently rebuilt production JNI and passed eight
 isolated modes. The original reviewer reproduction now reports
-`EXPIRED_OPEN_PUBLISHED=false`, exit0. No additional confirmed finding remains.
+`EXPIRED_OPEN_PUBLISHED=false`, exit0. That review found no additional defect;
+the later remote failed-native-open investigation above covers another path.
 Combined expiry plus refusal-allocation failure was source-reviewed, not newly
 fault-injected by that reviewer; broader allocation/finally controls remain in the
 author gate. Review evidence is not installed-runtime qualification.

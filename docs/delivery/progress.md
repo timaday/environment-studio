@@ -4,6 +4,17 @@ Updated: 10 September 2026. See [starter evidence](../evidence/starter-verificat
 and [D01a integration](../evidence/d01a-integration.md) for actual commands and
 results; the table below reports capability, not test count.
 
+The [shared remote review queue](https://github.com/timaday/environment-studio/issues/9)
+is active. Its completed f5025cc review found **JNI-QA-001**, a fresh cleanup
+allowance after failed native open. Lead source inspection confirms it remains
+in integrated30446e2; the earlier Java1619 pass did not detect it. Accepted and
+assigned only to IDE2, with closure WIP preserved before the separate correction.
+The physical browser client is a local immutable review candidate59fef10, with
+frontend96/schema58/check/build passing; review and integration are pending.
+Publishing its review branch was rejected by automatic approval policy, so the
+remote reviewer has not been asked to test an unavailable commit. Lead continues
+dependency-ready computed client work; two writers and remote read-only review remain.
+
 Two-IDE continuation: [native handoff and exact ownership](ide2-native-handoff.md).
 Lead is the sole IDE1 application writer; previous writing subagents are stopped.
 IDE2 receives the frozen21-file JNI candidate in its separate worktree from
