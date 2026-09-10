@@ -88,6 +88,23 @@ reviewer's assignment, with the full source SHA required for image labels.
 Neither the reviewed client nor pin refresh is accepted root integration or
 release-qualified; corrected package/build/smoke evidence remains pending.
 
+The next typed definition-publication client is committed as
+`e338ec9950693ec831836a46b6f983af705fc6bf`, based on exact41c8, in
+`/home/tim/.tmp/es-definition-publication-20260910` on
+`implementation/v3-definition-publication-client-20260910`. Its five-file delta
+adds detached publication/replay and exact source/policy response correlation.
+Two meaningful RED assertions were corrected; 153 frontend/59 schema/check/build,
+seven compiled guard mutations and final staged G00/11Python pass. Fixed non-author
+source review found no confirmed issues; no reviewer tests ran. The candidate's
+`docs/evidence/v3-definition-publication-client.md` records detailed scope.
+[Queue handoff5622709535](https://github.com/timaday/environment-studio/issues/9#issuecomment-5622709535)
+is prepared but inactive: automatic approval review rejected this new branch's
+push because approval is required while AskForApproval is Never. User publication
+is needed. The existing41c8 remote assignment remains active; no new reviewer
+results or STARTED acknowledgement were present at this checkpoint. Verify the
+new client after exact fetch and completion of that assignment, without duplicate
+Maven/OCI/native runs. Neither candidate is accepted root integration.
+
 IDE2 exclusively owns the preserved native closure WIP. Frozen symbol/version
 WIP3 and vDSO WIP4 have bounded non-author source reviews with no confirmed
 finding; reviewers executed no tests. The lead's reviewed [stopped-smaps contract](../evidence/native-smaps-contract.md)
@@ -102,7 +119,11 @@ and fixed source review; isolated controls and composed alias/bias mutation stay
 distinct. The requested explicit script-only/current-interpreter association is
 settled by reviewed lead contract1ae04ca and returned as an exact one-file patch
 with pre/post hashes. Existing narrow script guarantee, original budgets and
-mandatory missing-stage refusal remain. Script implementation, full lifetime/
+mandatory missing-stage refusal remain. IDE2 applied the exact reviewed contract.
+WIP9 stop-receipt supplement passes author63 tests/110 modes and fixed non-author
+source review without confirmed findings; reviewers executed no tests. Real
+stop/continue events, injected ECHILD and early-phase mutation evidence retain
+their separate limits. Script implementation, full lifetime/
 resources and installed-runtime acceptance remain open. Two writers
 remain: lead application/integration and IDE2 native; all subagents and the remote
 reviewer are read-only. A [small hosted v3 control](../evidence/v3-hosted-capacity-prerequisite.md)
