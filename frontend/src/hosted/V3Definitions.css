@@ -212,15 +212,15 @@
 }
 
 /* The approved Definitions shell; other workspace views retain their existing layout. */
-.definitions-active {
+:is(.definitions-active, .plans-active) {
   position: relative;
 }
-.definitions-active .app-header {
+:is(.definitions-active, .plans-active) .app-header {
   min-height: 58px;
   padding: 8px 32px;
   gap: 20px;
 }
-.definitions-active .app-header > button {
+:is(.definitions-active, .plans-active) .app-header > button {
   margin-left: auto;
   background: transparent;
   border: 0;
@@ -229,7 +229,7 @@
   min-height: 44px;
   font-size: 14px;
 }
-.definitions-active .workspace-navigation {
+:is(.definitions-active, .plans-active) .workspace-navigation {
   position: absolute;
   top: 4px;
   right: 152px;
@@ -238,51 +238,51 @@
   border: 0;
   gap: 16px;
 }
-.definitions-active .workspace-navigation button {
+:is(.definitions-active, .plans-active) .workspace-navigation button {
   min-height: 44px;
   padding: 10px 20px;
   font-size: 14px;
 }
-.definitions-active .workspace-navigation button[aria-pressed="true"] {
+:is(.definitions-active, .plans-active) .workspace-navigation button[aria-pressed="true"] {
   background: #222e4a;
   color: var(--accent);
 }
-.definitions-active .badge {
+:is(.definitions-active, .plans-active) .badge {
   border: 0;
   border-left: 1px solid var(--border);
   border-radius: 0;
   padding-left: 20px;
   font-size: 14px;
 }
-.definitions-active main {
+:is(.definitions-active, .plans-active) main {
   max-width: 1194px;
   padding: 24px 32px;
 }
-.definitions-active .session-note {
+:is(.definitions-active, .plans-active) .session-note {
   margin-top: 20px;
   font-size: 14px;
 }
 @media (max-width: 800px) {
-  .definitions-active .app-header {
+  :is(.definitions-active, .plans-active) .app-header {
     padding: 10px 16px;
     flex-wrap: nowrap;
     gap: 8px;
   }
-  .definitions-active .wordmark {
+  :is(.definitions-active, .plans-active) .wordmark {
     width: 220px;
     max-width: 65%;
   }
-  .definitions-active .badge {
+  :is(.definitions-active, .plans-active) .badge {
     display: none;
   }
-  .definitions-active .app-header > button {
+  :is(.definitions-active, .plans-active) .app-header > button {
     padding-left: 12px;
   }
-  .definitions-active .workspace-navigation {
+  :is(.definitions-active, .plans-active) .workspace-navigation {
     position: static;
     margin: 4px 16px 12px;
   }
-  .definitions-active main {
+  :is(.definitions-active, .plans-active) main {
     padding: 8px 14px 24px;
   }
 }

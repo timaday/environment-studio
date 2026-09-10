@@ -1,13 +1,14 @@
 import { useEffect, useState } from "react";
 import { type Capabilities, failureMessage, HostedApi, type Session } from "../api/hosted";
-import { Plans } from "./Plans";
 import { VersionedDefinitions } from "./VersionedDefinitions";
+import { VersionedPlans } from "./VersionedPlans";
 export function HostedWorkspace({ capabilities }: { capabilities: Capabilities }) {
   const [session, setSession] = useState<Session | null>(null);
   const [checking, setChecking] = useState(true);
   const [message, setMessage] = useState("");
   const [view, setView] = useState<"Plans" | "Definitions">("Plans");
   const [version, setVersion] = useState(0);
+  const [planVersion, setPlanVersion] = useState("2");
   const [api] = useState(
     () =>
       new HostedApi(fetch, () => {
@@ -63,7 +64,9 @@ export function HostedWorkspace({ capabilities }: { capabilities: Capabilities }
     }
   }
   return (
-    <div className={`hosted-workspace${view === "Definitions" ? " definitions-active" : ""}`}>
+    <div
+      className={`hosted-workspace${view === "Definitions" ? " definitions-active" : planVersion === "3" ? " plans-active" : ""}`}
+    >
       <header className="app-header">
         <img
           className="wordmark"
@@ -118,11 +121,13 @@ export function HostedWorkspace({ capabilities }: { capabilities: Capabilities }
               />
             </div>
             <div hidden={view !== "Plans"}>
-              <Plans
+              <VersionedPlans
                 api={api}
                 inspectionUiEnabled={capabilities.inspectionUiEnabled}
                 active={view === "Plans"}
                 definitionVersion={version}
+                openDefinitions={() => setView("Definitions")}
+                versionChanged={setPlanVersion}
               />
             </div>
             <p className="session-note">

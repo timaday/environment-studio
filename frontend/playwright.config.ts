@@ -1,6 +1,7 @@
 import { defineConfig, devices } from "@playwright/test";
 
 const hosted = process.env.ES_HOSTED_BROWSER === "1";
+const planJourney = process.env.ES_HOSTED_BROWSER_MODE === "plans-v3";
 const definitionJourney = process.env.ES_HOSTED_BROWSER_MODE === "definitions-v3";
 const hostedOutput = process.env.ES_HOSTED_BROWSER_OUTPUT_DIR;
 if (
@@ -14,9 +15,11 @@ export default defineConfig({
   testDir: "./e2e",
   outputDir: hosted ? hostedOutput : "test-results",
   testMatch: hosted
-    ? definitionJourney
-      ? "v3-definitions.spec.ts"
-      : "hosted-workflow.spec.ts"
+    ? planJourney
+      ? "v3-plan-inspection.spec.ts"
+      : definitionJourney
+        ? "v3-definitions.spec.ts"
+        : "hosted-workflow.spec.ts"
     : "definition-review.spec.ts",
   fullyParallel: false,
   forbidOnly: true,

@@ -4,6 +4,21 @@ Updated: 10 September 2026. See [starter evidence](../evidence/starter-verificat
 and [D01a integration](../evidence/d01a-integration.md) for actual commands and
 results; the table below reports capability, not test count.
 
+The [Plans resume/inspection candidate](../evidence/v3-plan-inspection-ui.md)
+adds explicit v3 current lookup and consent-controlled Raw/Formatted Current/Target
+reads. Fixed non-author review accepted the reproduced clear-selection correction.
+Author 198 frontend/59 schema tests, check/build, actual desktop/narrow Plans and
+four legacy journeys pass. Definitions viewport checks pass with separately owned
+fresh workspaces; the shared-workspace precondition failure is preserved in evidence.
+This remains candidate work, not accepted root integration or release.
+
+All five original approved Midnight images are now accessible and inspected.
+[Reference reconciliation](../ux/midnight-reference-reconciliation.md) preserves
+their scope and records token/rendering conflicts. Plans no-plan desktop/narrow
+approvals remain applicable. Visual fidelity is DIFFERENCES_REMAIN; the pending
+Definitions images remain unapproved. Full document navigation, Placeholders and
+the concrete binding rail remain required.
+
 The [Definitions upload UI candidate](../evidence/v3-definitions-upload-ui.md)
 on `implementation/definitions-upload-design-20260910`, basebc6dfe8,
 implements explicit v3 selection, JSON/YAML file upload, exact save/replay and
@@ -14,7 +29,8 @@ v2 journeys pass at their recorded source boundaries. Corrected upload designs
 are approved; concrete residual rendering exceptions await approval. This is
 implemented/reviewed candidate work, not accepted root integration or release.
 
-- Ready: candidate handoff and next approved dependency-ready application slice.
+- Ready: Plans candidate handoff; nonvisual profile capture-to-draft state and
+  its actual owned-workspace test prerequisite, followed by approved rendering.
 - Awaiting another owner: remote41c8/e338/5d/bc6d verification; IDE2 native closure.
 - Blockers: rendered-exception approval, required combined integration/OCI and
   actual native/client/resource qualification before release availability.
