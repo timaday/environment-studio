@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { type Capabilities, failureMessage, HostedApi, type Session } from "../api/hosted";
-import { Definitions } from "./Definitions";
 import { Plans } from "./Plans";
+import { VersionedDefinitions } from "./VersionedDefinitions";
 export function HostedWorkspace({ capabilities }: { capabilities: Capabilities }) {
   const [session, setSession] = useState<Session | null>(null);
   const [checking, setChecking] = useState(true);
@@ -63,7 +63,7 @@ export function HostedWorkspace({ capabilities }: { capabilities: Capabilities }
     }
   }
   return (
-    <>
+    <div className={`hosted-workspace${view === "Definitions" ? " definitions-active" : ""}`}>
       <header className="app-header">
         <img
           className="wordmark"
@@ -110,13 +110,8 @@ export function HostedWorkspace({ capabilities }: { capabilities: Capabilities }
           </section>
         ) : (
           <>
-            <p className="session-note">
-              Session absolute expiry {session.absoluteExpiresAt} · idle timeout{" "}
-              {session.idleTimeoutSeconds / 60} minutes. Background operation polls do not extend
-              it.
-            </p>
             <div hidden={view !== "Definitions"}>
-              <Definitions
+              <VersionedDefinitions
                 api={api}
                 enabled={capabilities.definitionWorkspaceEnabled}
                 changed={() => setVersion((value) => value + 1)}
@@ -130,10 +125,15 @@ export function HostedWorkspace({ capabilities }: { capabilities: Capabilities }
                 definitionVersion={version}
               />
             </div>
+            <p className="session-note">
+              Session absolute expiry {session.absoluteExpiresAt} · idle timeout{" "}
+              {session.idleTimeoutSeconds / 60} minutes. Background operation polls do not extend
+              it.
+            </p>
           </>
         )}
         {message && <p role="status">{message}</p>}
       </main>
-    </>
+    </div>
   );
 }

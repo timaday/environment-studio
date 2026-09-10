@@ -283,3 +283,107 @@ it.each([
     expect(result.current.pending).toBe(false);
   },
 );
+
+it("preserves exact UTF-8 BOM, Unicode and line endings from an uploaded file", async () => {
+  const { result, fetcher } = await setup();
+  const exact = "\ufeff# Invented\r\nlabel: café 😀\r\n";
+  act(() => result.current.upload(new File([exact], "invented.YAML")));
+  await waitFor(() => expect(result.current.reading).toBe(false));
+  expect(result.current.source).toBe(exact);
+  expect(result.current.format).toBe("YAML");
+  expect(result.current.fileError).toBe("");
+  expect(fetcher).toHaveBeenCalledTimes(2);
+});
+it.each([
+  ["malformed", () => new File([new Uint8Array([0xc3, 0x28])], "invented.json")],
+  ["oversized", () => new File([new Uint8Array(1_048_577)], "invented.json")],
+  ["unsupported", () => new File(["{}"], "invented.xml")],
+] as const)("keeps the editor after a %s file", async (_name, file) => {
+  const { result } = await setup();
+  act(() => result.current.upload(file()));
+  await waitFor(() => expect(result.current.reading).toBe(false));
+  expect(result.current.source).toBe(source);
+  expect(result.current.format).toBe("JSON");
+  expect(result.current.fileError).not.toBe("");
+});
+it("settles an aborted file read without replacing or locking the editor", async () => {
+  const { result } = await setup();
+  let reader: FileReader | undefined;
+  const read = vi.spyOn(FileReader.prototype, "readAsArrayBuffer").mockImplementation(function (
+    this: FileReader,
+  ) {
+    reader = this;
+  });
+  try {
+    act(() => result.current.upload(new File(["{}"], "invented.json")));
+    expect(result.current.reading).toBe(true);
+    act(() => {
+      reader?.dispatchEvent(new ProgressEvent("abort"));
+    });
+    expect(result.current.reading).toBe(false);
+    expect(result.current.source).toBe(source);
+    expect(result.current.fileError).not.toBe("");
+  } finally {
+    read.mockRestore();
+  }
+});
+it.each(["current", "edit", "new", "version", "unmount"] as const)(
+  "ignores late file completion after %s",
+  async (action) => {
+    const { result, unmount } = await setup();
+    let reader: FileReader | undefined;
+    const read = vi.spyOn(FileReader.prototype, "readAsArrayBuffer").mockImplementation(function (
+      this: FileReader,
+    ) {
+      reader = this;
+    });
+    try {
+      act(() => result.current.upload(new File(["{}"], "invented.json")));
+      const late = reader?.onload;
+      act(() => {
+        if (action === "edit") result.current.setSource("newer edit");
+        if (action === "new") result.current.newDefinition();
+        if (action === "version") result.current.cancelFileRead();
+        if (action === "unmount") unmount();
+      });
+      const expected = action === "current" ? "{}" : result.current.source;
+      if (!reader) throw new Error("Missing fixture reader");
+      const finishedReader = reader;
+      const bytes = new ArrayBuffer(2);
+      new Uint8Array(bytes).set([123, 125]);
+      Object.defineProperty(finishedReader, "result", { value: bytes });
+      act(() => {
+        late?.call(finishedReader, new ProgressEvent("load") as ProgressEvent<FileReader>);
+      });
+      expect(result.current.source).toBe(expected);
+    } finally {
+      read.mockRestore();
+    }
+  },
+);
+it("refuses a file while an uncertain save is awaiting exact replay", async () => {
+  const { result, fetcher } = await setup();
+  fetcher.mockRejectedValueOnce(new Error("invented loss"));
+  await act(() => result.current.save());
+  const read = vi.spyOn(FileReader.prototype, "readAsArrayBuffer");
+  try {
+    act(() => result.current.upload(new File(["{}"], "invented.json")));
+    expect(read).not.toHaveBeenCalled();
+    expect(result.current.pending).toBe(true);
+    expect(result.current.source).toBe(source);
+  } finally {
+    read.mockRestore();
+  }
+});
+
+it("refuses an oversized file before allocating a reader or starting IO", async () => {
+  const { result } = await setup();
+  const read = vi.spyOn(FileReader.prototype, "readAsArrayBuffer");
+  try {
+    act(() => result.current.upload(new File([new Uint8Array(1_048_577)], "invented.json")));
+    expect(read).not.toHaveBeenCalled();
+    expect(result.current.reading).toBe(false);
+  } finally {
+    read.mockRestore();
+  }
+});

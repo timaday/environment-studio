@@ -2,6 +2,7 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import App from "./App";
 import "./styles.css";
+import "./hosted/V3Definitions.css";
 
 const root = document.getElementById("root");
 if (!root) throw new Error("MISSING_APP_ROOT");

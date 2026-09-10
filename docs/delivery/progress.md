@@ -4,6 +4,21 @@ Updated: 10 September 2026. See [starter evidence](../evidence/starter-verificat
 and [D01a integration](../evidence/d01a-integration.md) for actual commands and
 results; the table below reports capability, not test count.
 
+The [Definitions upload UI candidate](../evidence/v3-definitions-upload-ui.md)
+on `implementation/definitions-upload-design-20260910`, basebc6dfe8,
+implements explicit v3 selection, JSON/YAML file upload, exact save/replay and
+acknowledged Model/Source/Diagnostics. Both independent review findings have
+actual RED/GREEN corrections and fixed source acceptance. Final184frontend/
+59schema/check/build, actual desktop/narrow v3 HTTPS journeys and four existing
+v2 journeys pass at their recorded source boundaries. Corrected upload designs
+are approved; concrete residual rendering exceptions await approval. This is
+implemented/reviewed candidate work, not accepted root integration or release.
+
+- Ready: candidate handoff and next approved dependency-ready application slice.
+- Awaiting another owner: remote41c8/e338/5d/bc6d verification; IDE2 native closure.
+- Blockers: rendered-exception approval, required combined integration/OCI and
+  actual native/client/resource qualification before release availability.
+
 The [shared remote review queue](https://github.com/timaday/environment-studio/issues/9)
 is active. Accepted JNI-QA-001 and its confirmed duration-handoff extension are
 corrected in local IDE2 candidate `3a84c2c432aec05d256b0f5e85cfd4636ee789b8`

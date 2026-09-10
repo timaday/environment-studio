@@ -11,8 +11,9 @@
       1000
     ],
     "intendedDpr": 1,
-    "approval": "PENDING",
-    "source": "built-in image generation; no product records or model data"
+    "approval": "SUPERSEDED",
+    "source": "built-in image generation; no product records or model data",
+    "reason": "Required file-upload action omitted; user correction."
   },
   {
     "reference": "definitions-narrow-v1.png",
@@ -26,7 +27,44 @@
       844
     ],
     "intendedDpr": 1,
-    "approval": "PENDING",
-    "source": "built-in image generation; no product records or model data"
+    "approval": "SUPERSEDED",
+    "source": "built-in image generation; no product records or model data",
+    "reason": "Required file-upload action omitted; user correction."
+  },
+  {
+    "reference": "definitions-desktop-v2.png",
+    "sha256": "aec59225c09d0f19ca7392d6b6cc7ee8f1aca65dce003cdcbab832f3093dcc02",
+    "pixels": [
+      1505,
+      1045
+    ],
+    "intendedCssViewport": [
+      1440,
+      1000
+    ],
+    "intendedDpr": 1,
+    "approval": "APPROVED",
+    "source": "built-in image edit of previous permitted proposal; no product records or model data",
+    "correction": "Visible Upload definition action for JSON/YAML files; explicit Save draft remains separate.",
+    "implementationRequirements": "Preserve approved SVG branding, readable 14\u201316px body text, at least44px controls and natural vertical scrolling; raster text does not override accessibility. Narrow reference shows the full content composition, not a no-scroll viewport promise.",
+    "approvalReference": "User replied continue directly to approval request for both corrected upload layouts, 10 September 2026."
+  },
+  {
+    "reference": "definitions-narrow-v2.png",
+    "sha256": "015ad65f9b7b03fb398cbc96c8e0926a6419122bff3246ea1733e944e1a403b2",
+    "pixels": [
+      853,
+      1844
+    ],
+    "intendedCssViewport": [
+      390,
+      844
+    ],
+    "intendedDpr": 1,
+    "approval": "APPROVED",
+    "source": "built-in image edit of previous permitted proposal; no product records or model data",
+    "correction": "Visible Upload definition action for JSON/YAML files; explicit Save draft remains separate.",
+    "implementationRequirements": "Preserve approved SVG branding, readable 14\u201316px body text, at least44px controls and natural vertical scrolling; raster text does not override accessibility. Narrow reference shows the full content composition, not a no-scroll viewport promise.",
+    "approvalReference": "User replied continue directly to approval request for both corrected upload layouts, 10 September 2026."
   }
 ]

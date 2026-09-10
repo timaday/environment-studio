@@ -17,10 +17,12 @@ export function Definitions({
   api,
   enabled,
   changed,
+  onLocked,
 }: {
   api: HostedApi;
   enabled: boolean;
   changed: () => void;
+  onLocked?: (locked: boolean) => void;
 }) {
   const [list, setList] = useState<DefinitionList>({ definitions: [], canPublish: false });
   const [selected, setSelected] = useState<Definition | null>(null);
@@ -36,6 +38,9 @@ export function Definitions({
   const [consent, setConsent] = useState(false);
   const epoch = useRef(0);
   const tabs = useRef<(HTMLButtonElement | null)[]>([]);
+  useEffect(() => {
+    onLocked?.(busy || pending !== null);
+  }, [busy, pending, onLocked]);
   useEffect(() => {
     let active = true;
     if (enabled)

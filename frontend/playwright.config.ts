@@ -1,6 +1,7 @@
 import { defineConfig, devices } from "@playwright/test";
 
 const hosted = process.env.ES_HOSTED_BROWSER === "1";
+const definitionJourney = process.env.ES_HOSTED_BROWSER_MODE === "definitions-v3";
 const hostedOutput = process.env.ES_HOSTED_BROWSER_OUTPUT_DIR;
 if (
   hosted &&
@@ -12,7 +13,11 @@ if (hosted) process.env.PLAYWRIGHT_NO_COPY_PROMPT = "1";
 export default defineConfig({
   testDir: "./e2e",
   outputDir: hosted ? hostedOutput : "test-results",
-  testMatch: hosted ? "hosted-workflow.spec.ts" : "definition-review.spec.ts",
+  testMatch: hosted
+    ? definitionJourney
+      ? "v3-definitions.spec.ts"
+      : "hosted-workflow.spec.ts"
+    : "definition-review.spec.ts",
   fullyParallel: false,
   forbidOnly: true,
   retries: 0,
