@@ -24,6 +24,7 @@ public final class PrivacyBridgeProbe {
     static native int eventAllocationObserved(long token);
     static native void nativeOpenFault(int mode,boolean expired);
     static native int nativeOpenOutcome(int failure);
+    static native void holdNativeClose(boolean mutex);
     static native long heldToken();
     static native void releaseAllocation();
     static native int unpublishedOutcome(long token);
@@ -158,6 +159,9 @@ public final class PrivacyBridgeProbe {
             case "native-listener-expired" -> failedNativeOpen(3,true,100_000_000L);
             case "native-event-expired" -> failedNativeOpen(4,true,100_000_000L);
             case "native-entropy-unexpired" -> failedNativeOpen(2,false,3_000_000_000L);
+            case "native-handoff-expired" -> {holdNativeClose(false);failedNativeOpen(2,false,100_000_000L);}
+            case "native-handoff-listener" -> {holdNativeClose(false);failedNativeOpen(3,false,100_000_000L);}
+            case "native-handoff-owner-mutex" -> {holdNativeClose(true);failedNativeOpen(2,false,100_000_000L);}
             case "native-listener-unexpired" -> failedNativeOpen(3,false,3_000_000_000L);
             case "native-event-unexpired" -> failedNativeOpen(4,false,3_000_000_000L);
             case "arm-allocation" -> {var open=opened();var delegate=new PrivacyLaunchCoordinator(open);var port=new PrivacyLaunchOwner.CapturePort(){

@@ -126,6 +126,24 @@ JNIEXPORT void JNICALL Java_studio_environment_supervisor_PrivacyBridgeProbe_rel
 static int open_fault,open_expired,open_observed,open_descriptors[4],open_fd_count;
 static uint64_t open_startup,open_operation,open_released,open_cleanup_left;
 static unsigned open_close_calls;
+static int open_handoff;
+static uint64_t handoff_entered,handoff_released;
+static pthread_mutex_t handoff_lock=PTHREAD_MUTEX_INITIALIZER;
+static pthread_cond_t handoff_changed=PTHREAD_COND_INITIALIZER;
+static pthread_t handoff_thread;
+static int handoff_locked;
+static void delay_handoff(void){
+ uint64_t end=open_startup+150000000ULL;
+ struct timespec until={(time_t)(end/1000000000ULL),(long)(end%1000000000ULL)};
+ int status;do{status=clock_nanosleep(CLOCK_MONOTONIC,TIMER_ABSTIME,&until,NULL);}while(status==EINTR);
+ if(status)abort();
+ handoff_released=es_registry_now();
+}
+static void *hold_owner_mutex(void *raw){
+ es_launch *p=raw;pthread_mutex_lock(&p->mutex);
+ pthread_mutex_lock(&handoff_lock);handoff_locked=1;pthread_cond_broadcast(&handoff_changed);pthread_mutex_unlock(&handoff_lock);
+ delay_handoff();pthread_mutex_unlock(&p->mutex);return NULL;
+}
 static void native_open_boundary(void){
  es_launch *p=&entries[invocation.issued-1].owner;
  open_startup=p->startup_deadline;open_operation=p->operation_deadline;open_fd_count=0;
@@ -156,11 +174,29 @@ int __wrap_eventfd(unsigned value,int flags){
  if(open_fault==4){open_fault=0;int fd=__real_eventfd(value,flags);if(fd<0||close(fd))abort();native_open_boundary();errno=EMFILE;return -1;}
  return __real_eventfd(value,flags);
 }
-es_launch_cleanup __real_es_launch_close(es_launch *,uint64_t);
-es_launch_cleanup __wrap_es_launch_close(es_launch *p,uint64_t left){
- if(open_observed&&p==&entries[0].owner&&open_close_calls++==0)open_cleanup_left=left;
- return __real_es_launch_close(p,left);
+static void observe_native_close(es_launch *p,uint64_t value,int absolute){
+ if(open_observed&&p==&entries[0].owner&&open_close_calls++==0){
+  uint64_t n=es_registry_now();open_cleanup_left=absolute?(value>n?value-n:0):value;
+  if(open_handoff){
+   handoff_entered=es_registry_now();
+   if(open_handoff==1)delay_handoff();
+   else{
+    pthread_mutex_lock(&handoff_lock);if(pthread_create(&handoff_thread,NULL,hold_owner_mutex,p))abort();
+    while(!handoff_locked)pthread_cond_wait(&handoff_changed,&handoff_lock);
+    pthread_mutex_unlock(&handoff_lock);
+   }
+  }
+ }
 }
+static es_launch_cleanup finish_native_close(es_launch *p,es_launch_cleanup result){
+ if(open_handoff==2&&p==&entries[0].owner&&handoff_locked){if(pthread_join(handoff_thread,NULL))abort();handoff_locked=0;}
+ return result;
+}
+es_launch_cleanup __real_es_launch_close(es_launch *,uint64_t);
+es_launch_cleanup __wrap_es_launch_close(es_launch *p,uint64_t left){observe_native_close(p,left,0);return finish_native_close(p,__real_es_launch_close(p,left));}
+es_launch_cleanup __real_es_launch_close_until(es_launch *,uint64_t);
+es_launch_cleanup __wrap_es_launch_close_until(es_launch *p,uint64_t deadline){observe_native_close(p,deadline,1);return finish_native_close(p,__real_es_launch_close_until(p,deadline));}
+JNIEXPORT void JNICALL Java_studio_environment_supervisor_PrivacyBridgeProbe_holdNativeClose(JNIEnv *e,jclass c,jboolean mutex){(void)e;(void)c;open_handoff=mutex?2:1;}
 JNIEXPORT void JNICALL Java_studio_environment_supervisor_PrivacyBridgeProbe_nativeOpenFault(JNIEnv *e,jclass c,jint mode,jboolean expired){
  (void)e;(void)c;open_fault=mode;open_expired=expired;
 }
@@ -175,8 +211,10 @@ JNIEXPORT jint JNICALL Java_studio_environment_supervisor_PrivacyBridgeProbe_nat
  int bad=!open_observed||p->published||!p->retired||!p->settled||p->refs||p->finally_owed||p->event_active||invocation.live
   ||p->failure!=expected||o->startup_deadline!=open_startup||o->operation_deadline!=open_operation
   ||o->failure!=original||o->closing!=ES_LAUNCH_CLOSE_SETTLED||!open_close_calls
-  ||(o->listener.state&&o->listener.startup_deadline_ns!=open_startup);
- if(open_expired)bad|=open_cleanup_left!=0||!p->uncertain||p->complete||!o->inconclusive||o->cleanup_deadline<open_released;
+  ||o->cleanup_deadline!=open_startup||(o->listener.state&&o->listener.startup_deadline_ns!=open_startup);
+ if(open_handoff)bad|=!open_cleanup_left||open_released>=open_startup||handoff_entered>=open_startup||handoff_released<=open_startup
+  ||o->cleanup_deadline>open_startup||!p->uncertain||p->complete||!o->inconclusive;
+ else if(open_expired)bad|=open_cleanup_left!=0||!p->uncertain||p->complete||!o->inconclusive;
  else bad|=!open_cleanup_left||open_released>=open_startup||open_cleanup_left>open_startup-open_released||p->uncertain||!p->complete||o->inconclusive;
  uint64_t excess=o->cleanup_deadline>open_startup?o->cleanup_deadline-open_startup:0;
  printf("NATIVE_OPEN_REMAINING=%llu CLEANUP_AFTER_STARTUP=%llu COMPLETE=%u UNCERTAIN=%u\n",(unsigned long long)open_cleanup_left,(unsigned long long)excess,p->complete,p->uncertain);

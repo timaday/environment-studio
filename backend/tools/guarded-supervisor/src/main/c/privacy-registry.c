@@ -160,21 +160,21 @@ es_bridge_result es_registry_status(es_registry_ref *ref){
  es_bridge_result out={.failure=ref->failure,.closed=ref->retired};es_registry_entry *p=ref->entry;if(!p)return out;
  pthread_mutex_lock(&invocation.mutex);out.failure=p->failure;out.closed=p->settled;pthread_mutex_unlock(&invocation.mutex);return out;
 }
-unsigned es_registry_close(es_registry_ref *ref,int64_t remaining){
+static unsigned close_owner(es_registry_ref *ref,int64_t remaining,int unpublished){
  if(ref->retired)return ref->complete;
  es_registry_entry *p=ref->entry;if(!p)return 0;
  if(!p->owner.initialized){pthread_mutex_lock(&invocation.mutex);p->settled=1;pthread_mutex_unlock(&invocation.mutex);return 1;}
  pthread_mutex_lock(&invocation.mutex);latch(p,ES_BRIDGE_CANCELLED);pthread_mutex_unlock(&invocation.mutex);
- es_launch_cleanup result=es_launch_close(&p->owner,remaining>0?(uint64_t)remaining:0);
+ es_launch_cleanup result=unpublished?es_launch_close_until(&p->owner,p->owner.startup_deadline)
+  :es_launch_close(&p->owner,remaining>0?(uint64_t)remaining:0);
  for(;;){pthread_mutex_lock(&invocation.mutex);unsigned owed=p->finally_owed;pthread_mutex_unlock(&invocation.mutex);if(!owed)break;
   uint64_t deadline;pthread_mutex_lock(&p->owner.mutex);deadline=p->owner.cleanup_deadline;pthread_mutex_unlock(&p->owner.mutex);
   uint64_t n=es_registry_now();if(!n||n>=deadline){result=ES_LAUNCH_CLOSED_INCONCLUSIVE;break;}struct timespec delay={0,1000000};(void)nanosleep(&delay,NULL);
  }
  pthread_mutex_lock(&invocation.mutex);if(result!=ES_LAUNCH_CLOSED_COMPLETE)p->uncertain=1;unsigned complete=result==ES_LAUNCH_CLOSED_COMPLETE&&!p->uncertain;pthread_mutex_unlock(&invocation.mutex);return complete;
 }
+unsigned es_registry_close(es_registry_ref *ref,int64_t remaining){return close_owner(ref,remaining,0);}
 
 void es_registry_unpublished(es_registry_ref *ref){
- if(!ref->entry)return;
- uint64_t deadline=ref->entry->owner.startup_deadline,n=es_registry_now();
- (void)es_registry_close(ref,deadline>n&&n?(int64_t)(deadline-n):0);
+ (void)close_owner(ref,0,1);
 }

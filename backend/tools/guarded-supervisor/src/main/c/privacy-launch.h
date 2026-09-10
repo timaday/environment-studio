@@ -49,4 +49,8 @@ es_launch_result es_launch_image(es_launch *,const es_launch_image_record *,es_e
 es_launch_result es_launch_status_read(es_launch *,es_launch_status *);
 es_launch_result es_launch_cancel(es_launch *);
 es_launch_cleanup es_launch_close(es_launch *,uint64_t);
+/* Private native owner deadline, never a Java wall-clock value. Keep this
+   absolute bound across lock waits; an expired bound stays inconclusive. Uses
+   the same close owner, first refusal, cancellation and subordinate cleanup. */
+es_launch_cleanup es_launch_close_until(es_launch *,uint64_t);
 #endif
