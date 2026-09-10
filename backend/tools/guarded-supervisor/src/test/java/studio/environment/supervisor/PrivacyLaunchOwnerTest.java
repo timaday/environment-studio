@@ -12,9 +12,9 @@ class PrivacyLaunchOwnerTest {
         final List<String> calls=new CopyOnWriteArrayList<>();
         volatile Thread armed,registered,disarmed;
         volatile long pid;
-        public PrivacyLaunchOwner.Step arm(){calls.add("arm");armed=Thread.currentThread();return PrivacyLaunchOwner.Step.OK;}
+        public PrivacyBridge.ForkResult arm(){calls.add("arm");armed=Thread.currentThread();return PrivacyBridge.ForkArmed.ARMED;}
         public PrivacyLaunchOwner.Step register(long value){calls.add("register");registered=Thread.currentThread();pid=value;return PrivacyLaunchOwner.Step.OK;}
-        public PrivacyLaunchOwner.Step disarm(){calls.add("disarm");disarmed=Thread.currentThread();return PrivacyLaunchOwner.Step.OK;}
+        public PrivacyBridge.DisarmResult disarm(){calls.add("disarm");disarmed=Thread.currentThread();return PrivacyBridge.ForkDisarmed.DISARMED;}
         public void cancel(){calls.add("cancel");}
         public PrivacyLaunchOwner.Cleanup close(long remaining){calls.add("close");return PrivacyLaunchOwner.Cleanup.COMPLETE;}
     }
@@ -44,9 +44,9 @@ class PrivacyLaunchOwnerTest {
         final CountDownLatch entered=new CountDownLatch(1),release=new CountDownLatch(1),done=new CountDownLatch(1);
         final boolean blockRegister;
         BlockedPort(boolean register){blockRegister=register;}
-        @Override public PrivacyLaunchOwner.Step arm(){var step=super.arm();if(!blockRegister){entered.countDown();released(release);}return step;}
+        @Override public PrivacyBridge.ForkResult arm(){var step=super.arm();if(!blockRegister){entered.countDown();released(release);}return step;}
         @Override public PrivacyLaunchOwner.Step register(long pid){var step=super.register(pid);if(blockRegister){entered.countDown();released(release);}return step;}
-        @Override public PrivacyLaunchOwner.Step disarm(){try{return super.disarm();}finally{done.countDown();}}
+        @Override public PrivacyBridge.DisarmResult disarm(){try{return super.disarm();}finally{done.countDown();}}
     }
     @Test void concurrentArmedWindowRefusesWithoutStartingOrTouchingAnotherPort(){
         var first=new BlockedPort(false);var owned=owner(first);released(first.entered);
@@ -104,7 +104,7 @@ class PrivacyLaunchOwnerTest {
     }
     @Test void refusalAndThrownArmStillDisarmWithoutLeakingCause(){
         for(boolean throwing:new boolean[]{false,true}){
-            Port port=new Port(){@Override public PrivacyLaunchOwner.Step arm(){super.arm();if(throwing)throw new AssertionError("invented-private-diagnostic");return PrivacyLaunchOwner.Step.REFUSED;}};
+            Port port=new Port(){@Override public PrivacyBridge.ForkResult arm(){super.arm();if(throwing)throw new AssertionError("invented-private-diagnostic");return new PrivacyBridge.ForkFailed(PrivacyBridge.Failure.PROTOCOL,PrivacyBridge.ArmOwnership.DISARM_REQUIRED_OR_UNKNOWN);}};
             var owned=owner(port);assertEquals(PrivacyLaunchOwner.State.REFUSED,owned.await().state());
             assertEquals(List.of("arm","disarm"),port.calls);assertFalse(owned.toString().contains("invented"));
             assertEquals(PrivacyLaunchOwner.Cleanup.COMPLETE,owned.close(deadline()));
@@ -121,7 +121,7 @@ class PrivacyLaunchOwnerTest {
 
     @Test void disarmMustFinishInsideTheOriginalStartupBudget() throws Exception {
         CountDownLatch disarmEntered=new CountDownLatch(1),release=new CountDownLatch(1),done=new CountDownLatch(1);
-        Port port=new Port(){@Override public PrivacyLaunchOwner.Step disarm(){disarmEntered.countDown();released(release);try{return super.disarm();}finally{done.countDown();}}};
+        Port port=new Port(){@Override public PrivacyBridge.DisarmResult disarm(){disarmEntered.countDown();released(release);try{return super.disarm();}finally{done.countDown();}}};
         var owned=new PrivacyLaunchOwner(List.of("/usr/bin/sleep","20"),Map.of(),Path.of("/tmp"),port,System.nanoTime()+TimeUnit.MILLISECONDS.toNanos(60));
         released(disarmEntered);Thread.sleep(90);release.countDown();released(done);Thread.sleep(10);
         try {assertEquals(PrivacyLaunchOwner.Failure.DEADLINE,owned.await().failure());}
@@ -169,7 +169,7 @@ class PrivacyLaunchOwnerTest {
         finally{if(child.isAlive()){child.destroyForcibly();child.waitFor(3,TimeUnit.SECONDS);}}
     }
     public static void main(String[] args){
-        Port port=new Port(){@Override public PrivacyLaunchOwner.Step disarm(){super.disarm();return PrivacyLaunchOwner.Step.REFUSED;}};
+        Port port=new Port(){@Override public PrivacyBridge.DisarmResult disarm(){super.disarm();return new PrivacyBridge.DisarmFailed(PrivacyBridge.Failure.PROTOCOL,PrivacyBridge.ArmOwnership.DISARM_REQUIRED_OR_UNKNOWN);}};
         var owned=owner(port);
         if(owned.await().state()!=PrivacyLaunchOwner.State.REFUSED)System.exit(41);
         if(owned.close(deadline())!=PrivacyLaunchOwner.Cleanup.INCONCLUSIVE)System.exit(42);

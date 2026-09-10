@@ -26,9 +26,9 @@ public final class PrivacyLaunchImageProbe {
         var receiverResult=new AtomicInteger(-1);
         var receiver=Thread.ofPlatform().start(()->receiverResult.set(captureAndCorrelate()));
         var port=new PrivacyLaunchOwner.CapturePort() {
-            public PrivacyLaunchOwner.Step arm(){return PrivacyLaunchImageProbe.arm()==0?PrivacyLaunchOwner.Step.OK:PrivacyLaunchOwner.Step.REFUSED;}
+            public PrivacyBridge.ForkResult arm(){return PrivacyLaunchImageProbe.arm()==0?PrivacyBridge.ForkArmed.ARMED:new PrivacyBridge.ForkFailed(PrivacyBridge.Failure.PROTOCOL,PrivacyBridge.ArmOwnership.DISARM_REQUIRED_OR_UNKNOWN);}
             public PrivacyLaunchOwner.Step register(long pid){return PrivacyLaunchImageProbe.register(pid)==0?PrivacyLaunchOwner.Step.OK:PrivacyLaunchOwner.Step.REFUSED;}
-            public PrivacyLaunchOwner.Step disarm(){return PrivacyLaunchImageProbe.disarm()==0?PrivacyLaunchOwner.Step.OK:PrivacyLaunchOwner.Step.REFUSED;}
+            public PrivacyBridge.DisarmResult disarm(){return PrivacyLaunchImageProbe.disarm()==0?PrivacyBridge.ForkDisarmed.DISARMED:new PrivacyBridge.DisarmFailed(PrivacyBridge.Failure.PROTOCOL,PrivacyBridge.ArmOwnership.DISARM_REQUIRED_OR_UNKNOWN);}
             public void cancel(){PrivacyLaunchImageProbe.cancel();}
             public PrivacyLaunchOwner.Cleanup close(long left){return finish(left)==0?PrivacyLaunchOwner.Cleanup.COMPLETE:PrivacyLaunchOwner.Cleanup.INCONCLUSIVE;}
         };
