@@ -247,6 +247,9 @@ paths:
   /api/v3/operations/{operationId}/cancel:
     $ref: './openapi-plans-v3.json#/paths/~1api~1v3~1operations~1{operationId}~1cancel'
 
+  /api/v3/plans/{planId}/commands:
+    $ref: './openapi-plans-v3.json#/paths/~1api~1v3~1plans~1{planId}~1commands'
+
 components:
   parameters:
     ObjectId:

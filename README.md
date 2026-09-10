@@ -66,8 +66,10 @@ now pass fixed independent review and combined Java1448. The
 [initial v3 plan HTTP routes](docs/evidence/v3-plan-http.md) now pass independent
 review and full Java1488, frontend40/schema46, checking and build. Creation,
 inspection, summary, status and cancellation share original ownership and bounded
-transfers. V3 semantic commands and complete views remain in progress; actual
-compiler publication remains incomplete.
+transfers. [V3 semantic commands](docs/evidence/v3-plan-commands.md) now pass
+independent HTTP review, full Java1506 and frontend40/schema47. PUBLIC edits,
+authoritative recomputation, replay and stalled-body recovery are verified.
+Complete versioned views remain in progress; actual compiler publication remains incomplete.
 The exact `047d1b0` [local image](docs/evidence/shared-validation-artifacts.md)
 repeats Java1320 and passes protected startup/workspace smoke; release qualification
 remains open.

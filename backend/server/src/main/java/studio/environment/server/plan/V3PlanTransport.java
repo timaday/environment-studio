@@ -19,29 +19,37 @@ final class V3PlanTransport {
     V3PlanTransport(HostedPlanService service,HostedSessions sessions,LongSupplier clock){
         this.service=Objects.requireNonNull(service);this.sessions=Objects.requireNonNull(sessions);this.clock=Objects.requireNonNull(clock);
     }
+    private enum BodyMode {
+        NONE(0,0),SMALL(16_384,10_000_000_000L),SEMANTIC(134_217_728,30_000_000_000L);
+        final int bytes;final long nanos;
+        BodyMode(int bytes,long nanos){this.bytes=bytes;this.nanos=nanos;}
+    }
     @FunctionalInterface interface BodyAction { V3PlanReply apply(OwnedServletBody body); }
     void read(SessionLedger.Lease lease,HttpServletRequest request,HttpServletResponse response,V3PlanTransfers.Operation operation,int status,Supplier<V3PlanReply> action){
-        start(lease,request,response,operation,status,false,()->{},()->false,body->action.get());
+        start(lease,request,response,operation,status,BodyMode.NONE,()->{},()->false,body->action.get());
     }
     void body(SessionLedger.Lease lease,HttpServletRequest request,HttpServletResponse response,V3PlanTransfers.Operation operation,int status,AutoCloseable resource,BooleanSupplier cancelled,BodyAction action){
-        start(lease,request,response,operation,status,true,resource,cancelled,body->action.apply(body.orElseThrow()));
+        start(lease,request,response,operation,status,BodyMode.SMALL,resource,cancelled,body->action.apply(body.orElseThrow()));
+    }
+    void semanticBody(SessionLedger.Lease lease,HttpServletRequest request,HttpServletResponse response,V3PlanTransfers.Operation operation,int status,AutoCloseable resource,BooleanSupplier cancelled,BodyAction action){
+        start(lease,request,response,operation,status,BodyMode.SEMANTIC,resource,cancelled,body->action.apply(body.orElseThrow()));
     }
     private void check(SessionLedger.Lease lease,V3PlanTransfers.Operation operation){
         if(!service.live(lease))throw new PlanRefusal(PlanRefusal.Code.SESSION_REQUIRED);
         if(operation.cancelled())throw new PlanRefusal(PlanRefusal.Code.CANCELLED);
     }
     private void start(SessionLedger.Lease lease,HttpServletRequest request,HttpServletResponse response,V3PlanTransfers.Operation operation,int status,
-            boolean readsBody,AutoCloseable resource,BooleanSupplier cancelled,Function<Optional<OwnedServletBody>,V3PlanReply> action){
+            BodyMode mode,AutoCloseable resource,BooleanSupplier cancelled,Function<Optional<OwnedServletBody>,V3PlanReply> action){
         OwnedAsyncCompletion completion=null;Optional<OwnedServletBody> body=Optional.empty();
         var cleanupUncertain=new AtomicBoolean();boolean asyncAttempted=false,started=false;
         try {
-            check(lease,operation);if(readsBody)requireJson(request);
+            check(lease,operation);if(mode!=BodyMode.NONE)requireJson(request);
             asyncAttempted=true;var context=request.startAsync();context.setTimeout(30_000);
             completion=new OwnedAsyncCompletion(context,outcome->operation.settlement(cleanupUncertain.get()?OwnedAsyncCompletion.Outcome.INCONCLUSIVE:outcome,sessions));
             context.setTimeout(0);var owner=completion;check(lease,operation);owner.checkActive();
-            if(readsBody){
-                long deadline=System.nanoTime()+10_000_000_000L;
-                body=Optional.of(new OwnedServletBody(request.getInputStream(),16_384,deadline,()->{
+            if(mode!=BodyMode.NONE){
+                long deadline=System.nanoTime()+mode.nanos;
+                body=Optional.of(new OwnedServletBody(request.getInputStream(),mode.bytes,deadline,()->{
                     check(lease,operation);owner.checkActive();return cancelled.getAsBoolean();
                 }));
             }

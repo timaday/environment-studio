@@ -591,8 +591,8 @@ test("v3 publication has exactly two POST routes and historical response shapes 
 });
 
 const planV3Api = read("../docs/contracts/openapi-plans-v3.json");
-const planV3Defs = JSON.parse(JSON.stringify(planV3Api.components.schemas).replaceAll("#/components/schemas/", "#/$defs/"));
-const planV3Schema = (name) => new Ajv2020({ allErrors: true, strict: true }).compile({ $defs: planV3Defs, $ref: `#/$defs/${name}` });
+const planV3Defs = JSON.parse(JSON.stringify(planV3Api.components.schemas).replaceAll("#/components/schemas/", "#/$defs/").replaceAll("../../schemas/plan-command-v1.schema.json", "https://environment.studio/schemas/plan-command-v1"));
+const planV3Schema = (name) => new Ajv2020({ allErrors: true, strict: true }).addSchema(read("../schemas/plan-command-v1.schema.json")).compile({ $defs: planV3Defs, $ref: `#/$defs/${name}` });
 const emptyV3Summary = () => ({
   planId: "00000000-0000-4000-8000-000000000041", revision: "1",
   definition: { objectId: "00000000-0000-4000-8000-000000000042", workspaceRevision: "2" },
@@ -634,9 +634,9 @@ test("v3 small replies preserve common v1 revision and optional-field wire contr
   assert.equal(operation({ ...status, installedRevision: null }), false);
   assert.equal(operation({ ...status, cleanup: "complete-anyway" }), false);
 });
-test("v3 exposes exactly seven authenticated routes and documents early empty controller refusals", () => {
+test("v3 exposes exactly eight authenticated routes and documents early empty controller refusals", () => {
   const paths = ["/api/v3/plans", "/api/v3/plans/current", "/api/v3/plans/{planId}", "/api/v3/plans/{planId}/inspections",
-    "/api/v3/operations/{operationId}/credentials", "/api/v3/operations/{operationId}", "/api/v3/operations/{operationId}/cancel"];
+    "/api/v3/operations/{operationId}/credentials", "/api/v3/operations/{operationId}", "/api/v3/operations/{operationId}/cancel", "/api/v3/plans/{planId}/commands"];
   assert.deepEqual(Object.keys(planV3Api.paths).sort(), paths.sort());
   for (const item of Object.values(planV3Api.paths)) for (const [method, route] of Object.entries(item)) {
     assert.deepEqual(route.security, [{ sessionCookie: [] }]);
@@ -665,4 +665,21 @@ test("v3 create and one-shot credentials refuse caller-supplied model or admissi
   const body = { username: "invented-reader", password: "invented-password" };
   assert.equal(credentials(body), true);
   for (const field of ["requestId", "owner", "modelVersion", "operationId"]) assert.equal(credentials({ ...body, [field]: "invented" }), false);
+});
+
+
+test("v3 semantic commands preserve the existing closed command protocol and owned acknowledgement", () => {
+  const path = "/api/v3/plans/{planId}/commands";
+  assert.ok(planV3Api.paths[path], "semantic command route is documented");
+  const route = planV3Api.paths[path].post;
+  const v1 = read("../docs/contracts/openapi-plans-v1.json");
+  assert.deepEqual(Object.keys(planV3Api.paths[path]), ["post"]);
+  assert.deepEqual(route.requestBody, v1.paths["/api/v1/plans/{planId}/commands"].post.requestBody);
+  assert.deepEqual(planV3Api.components.schemas.PlanCommand, v1.components.schemas.PlanCommand);
+  assert.equal(route.responses["200"].content["application/json"].schema.$ref, "#/components/schemas/Ack");
+  const validate = planCommands;
+  const body = { kind: "discard", expectedRevision: "2", requestId: "00000000-0000-4000-8000-000000000051" };
+  assert.equal(validate(body), true, JSON.stringify(validate.errors));
+  for (const field of ["modelVersion", "owner", "computed", "targetXml", "validation", "exportAvailable"])
+    assert.equal(validate({ ...body, [field]: "caller-cannot-select" }), false);
 });

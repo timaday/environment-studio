@@ -83,7 +83,7 @@ public class HostedSecurity {
                 .requestMatchers(HttpMethod.PUT, "/api/v3/profiles/{objectId}").authenticated()
                 .requestMatchers(HttpMethod.POST, "/api/v3/definitions/{objectId}/publish", "/api/v3/profiles/{objectId}/publish").authenticated()
                 .requestMatchers(HttpMethod.GET, "/api/v3/plans/current", "/api/v3/plans/{planId}", "/api/v3/operations/{operationId}").authenticated()
-                .requestMatchers(HttpMethod.POST, "/api/v3/plans", "/api/v3/plans/{planId}/inspections",
+                .requestMatchers(HttpMethod.POST, "/api/v3/plans", "/api/v3/plans/{planId}/inspections", "/api/v3/plans/{planId}/commands",
                         "/api/v3/operations/{operationId}/credentials", "/api/v3/operations/{operationId}/cancel").authenticated()
                 .requestMatchers(HttpMethod.PUT, "/api/v1/definitions/{objectId}").authenticated()
                 .requestMatchers(HttpMethod.GET, "/api/v1/destinations", "/api/v1/plans/current", "/api/v1/plans/{planId}", "/api/v1/operations/{operationId}").authenticated()

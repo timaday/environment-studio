@@ -13,7 +13,7 @@ metadata slots. No second semaphore or response queue. Credential HTTP records h
 an independent bound4, without reserving additional physical observation permits.
 The physical Submission owner remains unchanged. If its permit becomes reusable
 while HTTP completion is uncertain, that HTTP record still counts against4.
-At most8 V3 transport records total; no eviction. Capacity refusal leaves credential
+A separately bounded semantic HTTP record covers the existing sole full command/view/materialization scratch. At most1 semantic record and9 V3 transport records total; no eviction. Semantic admission creates no second scratch budget, metadata slot or physical permit. Its caller separately acquires the exact existing core admission before any request input. If either immediate admission fails, the caller conclusively releases only acquired resources; unstarted HTTP settlement follows the owned transport setup rules. Terminal semantic HTTP uncertainty remains counted after core scratch closes and cannot be discarded to admit another transfer. Capacity refusal leaves credential
 attempt unclaimed. Caller must perform pure fixedV3 plan/operation ownership before
 record/metadata allocation, then original final admissions after allocation.
 
@@ -46,7 +46,7 @@ cannot establish actual route ownership, workerclosure, credential/readoperation
 safety, actual HTTP scheduling or maximum-capacity heap qualification.
 
 Internal surface: package-private V3PlanTransfers implements SessionCleanup, with
-admitMetadata(originalLease), admitCredentials(originalLease), awaitingWork and
+admitMetadata(originalLease), admitCredentials(originalLease), admitSemantic(originalLease), awaitingWork and
 invalidate. Metadata admission acquires the shared slot inside the registry method;
 if installing its record fails, close only that acquired slot. Caller cannot transfer
 or duplicate another record's slot. Returned Operation exposes cancellation and
@@ -63,3 +63,5 @@ records. The existing Spring plan hook forwards this composite owner. Disabled
 runtime retains no application-service obligation, without skipping registry cleanup.
 No v3 route or physical credential claim is added in this slice. Registry tests do
 not claim the future caller's version checks or resource closure have been wired.
+
+Semantic acceptance: one semantic record plus all four metadata and all four credential records coexist regardless of admission order. No class can consume another class's slots. Semantic IN_PROGRESS and terminal uncertainty retain the one semantic record; conclusive settlement alone makes it reusable. Records keep the same minimal fields and original-lease cleanup rules. See [v3 semantic command contract](hosted-plan-commands-v3.md).

@@ -162,8 +162,18 @@ passes full Java1488 (324 core,7 parser,847 server,310 supervisor), zero failure
 errors/skips, assembly/hostile launcher,10 September at03:01:53BST. Fresh
 frontend40/schema46, checking and build pass on the corrected contract candidate.
 Actual compiler publication remains incomplete; witnesses confer no availability.
-Next backend work is the owned v3 semantic command route, followed by complete
-views/capture/reuse/validation. Native client/content/review evidence, combined
+The [owned v3 command route](../evidence/v3-plan-commands.md) now passes fixed
+independent review and full Java1506 (324 core,7 parser,865 server,310 supervisor),
+zero failures/errors/skips and assembly/hostile launcher,10 September at03:26:14BST.
+Fixed17 manifest500be21c2132c1bea656dad5d2a620047bb6afebeb968ace740684690fafc2c7
+over6acb1e2 includes actual HTTP edit/recompute, replay/collision, original-version
+and stalled-body/logout recovery controls. Fresh frontend40/schema47/check/build
+pass on the fixed contract candidate. The existing full scratch and one new
+semantic HTTP record remain held through Ack; no extra physical permit is added.
+Next backend work corrects an independently reproduced direct-view cancellation
+defect: a held v3 materializer can install a late target before outer verification
+refuses. Its correction is isolated for independent review before hosted
+materialization, then complete views/capture/reuse/validation. Native client/content/review evidence, combined
 resources and export/readback remain open. Retained image047d1b0 predates this work;
 no current browser, remote CI, GHCR or HiveForge qualification is claimed.
 No Q feedback GitHub publication is authorized. Existing MVP scope and completed

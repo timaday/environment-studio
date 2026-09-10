@@ -11,7 +11,7 @@ import studio.environment.server.session.SessionCleanup;
 
 /** Bounded HTTP ownership only; the caller proves original V3 authority before admission. */
 final class V3PlanTransfers implements SessionCleanup {
-    private enum Kind { METADATA, CREDENTIALS }
+    private enum Kind { METADATA, CREDENTIALS, SEMANTIC }
     private final Set<Operation> active=Collections.newSetFromMap(new IdentityHashMap<>());
 
     Operation admitMetadata(SessionLedger.Lease lease) {
@@ -20,7 +20,7 @@ final class V3PlanTransfers implements SessionCleanup {
         boolean installed=false;
         try {
             synchronized(this) {
-                if(active.size()>=8)throw new PlanRefusal(PlanRefusal.Code.CAPACITY);
+                if(active.size()>=9)throw new PlanRefusal(PlanRefusal.Code.CAPACITY);
                 var operation=new Operation(lease,Kind.METADATA,slot);
                 active.add(operation);installed=true;return operation;
             }
@@ -28,9 +28,15 @@ final class V3PlanTransfers implements SessionCleanup {
     }
     synchronized Operation admitCredentials(SessionLedger.Lease lease) {
         Objects.requireNonNull(lease);
-        if(active.size()>=8 || active.stream().filter(operation->operation.kind==Kind.CREDENTIALS).count()>=4)
+        if(active.size()>=9 || active.stream().filter(operation->operation.kind==Kind.CREDENTIALS).count()>=4)
             throw new PlanRefusal(PlanRefusal.Code.CAPACITY);
         var operation=new Operation(lease,Kind.CREDENTIALS,null);active.add(operation);return operation;
+    }
+    synchronized Operation admitSemantic(SessionLedger.Lease lease) {
+        Objects.requireNonNull(lease);
+        if(active.size()>=9 || active.stream().anyMatch(operation->operation.kind==Kind.SEMANTIC))
+            throw new PlanRefusal(PlanRefusal.Code.CAPACITY);
+        var operation=new Operation(lease,Kind.SEMANTIC,null);active.add(operation);return operation;
     }
     @Override public synchronized boolean awaitingWork(SessionLedger.Lease lease) {
         return active.stream().anyMatch(operation->operation.lease.equals(lease));

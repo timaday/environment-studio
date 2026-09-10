@@ -1,9 +1,9 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "Environment Studio initial v3 hosted plans",
+    "title": "Environment Studio hosted v3 plans",
     "version": "0.3.0",
-    "description": "Seven fixed-v3 routes. Actual compiler publication remains incomplete; test publication witnesses do not qualify runtime availability. See hosted-plan-http-v3.md for original session authority, shared admission, bounded transfers and early no-body controller refusals. No export or readback endpoint is provided."
+    "description": "Eight fixed-v3 routes including semantic commands. Actual compiler publication remains incomplete; test publication witnesses do not qualify runtime availability. See hosted-plan-http-v3.md and hosted-plan-commands-v3.md for original session authority, shared admission, bounded transfers and early no-body controller refusals. No export or readback endpoint is provided."
   },
   "paths": {
     "/api/v3/plans": {
@@ -553,6 +553,96 @@
           }
         }
       }
+    },
+    "/api/v3/plans/{planId}/commands": {
+      "post": {
+        "operationId": "v3MutateHostedPlan",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Safe owned result; no-store; no export authority implied",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Ack"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error500"
+          }
+        },
+        "parameters": [
+          {
+            "name": "planId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Uuid"
+            }
+          },
+          {
+            "name": "X-CSRF-TOKEN",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PlanCommand"
+              }
+            }
+          }
+        },
+        "description": "Uses the existing closed command protocol after immutable V3 ownership and both immediate admissions. Original single full scratch and semantic HTTP record remain owned through the small acknowledgement transfer. Body maximum134217728 UTF8 bytes and one original30s read deadline; no caller-selected model, computed membership or export authority. See hosted-plan-commands-v3.md."
+      }
     }
   },
   "components": {
@@ -1047,6 +1137,9 @@
           "STALE_PREVIEW",
           "UNSUPPORTED_DEFINITION"
         ]
+      },
+      "PlanCommand": {
+        "$ref": "../../schemas/plan-command-v1.schema.json"
       }
     },
     "responses": {
