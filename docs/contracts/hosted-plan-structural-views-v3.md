@@ -11,3 +11,21 @@ Binding rows exactly follow hosted-plan-context-v1: {fieldId,token,current,targe
 Every response freshly re-verifies complete original content and any retained target through the original admitted view. Retained current data after failed inspection is viewable without restoring inspection/export validity. After pinning, successful and error responses retain that same revision/inspection pin through output; a replacement, retirement or cancellation aborts rather than switching to lease-only verification. No raw/formatted/placeholder document, concrete location, capture, computed or validation route is introduced by this slice.
 
 Acceptance uses independently invented XML/model evidence: explicit retain/create/remove drafts; existing/Fresh binding references with masked, absent and unresolved values; exact original placement coordinates used in a creation command; physical relation endpoints preserved after identity changes; incomplete target versus readable explicit draft; stable totals and beyond-end pages; foreign/V2/stale/closed-body refusal; scratch and semantic rollback/cancellation through held output. Actual MockOIDC/CSRF/socket tests must drive returned coordinates/references into typed commands. Existing v1 behavior, digest authority and compiler refusal remain unchanged.
+
+## Browser current/target binding review
+
+An explicit read for one selected Existing or Fresh reference loads its complete
+binding collection through the existing bounded pages (maximum256 fields,
+limit100). Preserve current/target value, masked, absent, unresolved and unavailable
+states and each location-count state exactly. A missing target proof does not
+turn unavailable locations into zero or prevent review of unresolved draft values.
+No command, target materialization, XML disclosure or export authority follows.
+
+Publish the collection only after every page agrees on original plan/revision,
+entity scope and total, each field ID/token is unique, tokens identify their
+returned field, and a fresh complete plan summary matches the initiating context.
+Keep unknown/failed/partial collections null, distinct from a complete empty list.
+Retire reads and clear values on plan/entity/presentation/API/session change;
+a stale callback cannot start another read, and a late page cannot revive data.
+No automatic load/retry, local persistence or inferred field requiredness/labels.
+This nonvisual prerequisite adds no Values or placeholder renderer approval.
