@@ -38,3 +38,38 @@ independently invented test compiler/observation witnesses, not live publication
 Independent review is pending: both reviewers were retired by user instruction.
 Full integrated backend/OCI, combined resource and production export/native/client/
 release qualification are not established by these focused results.
+
+## Exact candidate integration results
+
+Source commit6574e9e04b4e9eb56b9c38dcd0fcfb09b782ff77 passed the complete
+author host Maven verify:1721tests, zero failures/errors/skips,4m38s, including
+standalone supervisor distribution verification. Full frontend432/schema61 PASS.
+Three external compiled faults (canonical binding, SQL member, count) were each
+detected by the unchanged archive oracle; fixed controls passed and source hash
+remained unchanged. Evidence: es-assembly-mutants-20260911/results.json.
+
+The exact pinned OCI build also passed1721Java and432frontend/schema61 tests.
+Local runtime image/index digest:
+sha256:a8f17641b7447fe0fd15a4a4e8dbf439872978893ca2b90190e3b3a7ccdded16.
+Its OCI revision label matches6574e9e and user is10001:10001. Protected smoke
+passed static UI, readiness, demo capability/denial, private workspace permissions,
+overwrite refusal, schema2 initialization/legacy upgrade and schema3 upgrade/
+fresh initialization/refusal. Cached export of the matching supervisor artifact
+passed all29 checksums. No independent review of this new assembler is implied.
+
+External OCI evidence directory es-assembly-oci-20260911 contains results.json,
+image identity, logs and supervisor artifacts. Build log SHA256
+c3717e9dbafaf4fdee32d7ac55cb6cb03881ff6e1005a072dd5d39bc21776eda; smoke log
+45222001bbf6ae154f65907b4a7ae509fbbea3cb9f92222837a341726644261b.
+The image is local, not published to GHCR or qualified on HiveForge.
+Release-readiness deliberately remains BLOCKED: source/evidence fingerprint and
+required release capabilities are incomplete. The1GiB smoke proves startup,
+not combined maximum workload/resource/privacy/client qualification.
+
+Both reviewers are retired; the prior9085c443 candidate has independently passed
+focused Windows25tests and two negative ownership controls. Its remote full
+Maven was interrupted at1321 recorded completed cases for retirement, not accepted
+as a complete gate. Those observations do not cover this new assembly code.
+Lead stopped the owned disposable PostgreSQL container after preserving all
+external evidence; its database used tmpfs. Runtime smoke resources were cleaned
+by their original owners. Frozen native and Reuse WIP remain untouched.
