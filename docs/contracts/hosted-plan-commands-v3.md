@@ -40,3 +40,19 @@ credentials, SQL execution, automatic retry or inferred application vocabulary.
 The controller adds no Values renderer or new image approval. Its future renderer
 must provide the approved entered/submitted/uncertain/acknowledged distinctions
 and preserve the host's passive session retirement behavior.
+
+The same original-owner browser lifecycle supports explicitly supplied structural
+commands: retain/create/remove entity decisions with their placements, batch
+upsert, replacement draft, forget decision, reference binding, containment move
+and explicit plan discard. A common target-command controller owns admission,
+immutable submission and retry; the value controller remains a narrow bind-field
+adapter. No new field, placement, reference, sibling deletion or default is
+synthesized by this browser layer. Existing backend command semantics decide what
+each explicit operation changes. Profile composition retains its separate
+preview/pin controller and cannot enter this generic target-edit path.
+
+The caller cannot supply expectedRevision/requestId to change command ownership;
+the controller pins both on explicit submission. Freshness and known-refusal
+behavior remain as above. New renderers must coordinate one active target-edit
+lane and make destructive intent explicit before calling discard/remove/replace;
+this state support does not approve those unseen screens or execute SQL.
