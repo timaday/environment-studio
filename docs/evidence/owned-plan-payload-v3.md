@@ -39,5 +39,17 @@ read-only aid to self-review, not a new full scan or independent review.
 External logs: `/home/tim/.tmp/es-owned-payload-red-20260911.log`,
 `/home/tim/.tmp/es-owned-payload-green-20260911.log` and
 `/home/tim/.tmp/es-owned-payload-affected-20260911.log`.
-Prior full Java/OCI qualification applies to exact source `6574e9e`, not this
-addition. Required new candidate integration verification is recorded separately.
+Fixed candidate `fa50f3ee3b8600381d7e7252285a5becc61ada39` subsequently passed
+the full host Maven `verify`: 1,724 tests (335 core, 7 parser, 1,039 server,
+343 supervisor), zero failures/errors/skips. Log SHA-256:
+`2c74b5e9021fd9469d8020ea7719b0b7a5e1630156cc5d06b9cd4a963afda221`.
+The external `es-owned-payload-full-results-20260911.json` records module counts.
+Two externally compiled guard-removal controls were detected: skipped fingerprint
+comparison and skipped fresh publication validation. Both fixed-source controls
+pass; production source was unchanged. Results are in
+`/home/tim/.tmp/es-owned-payload-mutants-20260911/results.json`.
+The fixed four-file self-review manifest and report are in
+`/home/tim/.tmp/es-owned-payload-review-20260911/`.
+
+Prior OCI qualification still applies only to exact source `6574e9e`, not this
+addition. No new browser, OCI, GHCR, HiveForge or release acceptance is claimed.
