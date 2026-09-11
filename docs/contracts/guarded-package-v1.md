@@ -384,3 +384,21 @@ compiler families and missing/extra child dependencies refuse. Preserve historic
 v2 cases and strict XML/payload checks. Generated transaction candidates remain
 unqualified, the inspector remains unavailable for export, and no hosted export,
 SQL execution or post-commit rollback workflow is added by this prerequisite.
+
+## Internal candidate assembly
+
+The internal assembler accepts mechanically admitted inputs and writes the exact
+four-member archive to a caller-owned output stream. It canonicalizes and
+re-admits execution/payload before generating SQL so programDigest binds the
+exact payload bytes emitted. It derives all member lengths/hashes/counts from
+those actual bytes and emits the fixed instructions; callers cannot supply SQL,
+manifests or instructions. Identical admitted content produces identical bytes.
+
+Success is explicitly an unqualified candidate with total bytes and archive
+SHA256; it is never publication, review, download or execution authority.
+Cancellation before writing emits no bytes. Cancellation/output failure during
+streaming returns refusal; any partial bytes must be discarded by the owner.
+The assembler neither flushes nor closes the caller stream. Existing per-member,
+source/target and archive limits apply. The future hosted owner must reserve
+combined memory/streaming resources and check all original live plan and export
+authority before and after assembly. No endpoint or capability is enabled here.
