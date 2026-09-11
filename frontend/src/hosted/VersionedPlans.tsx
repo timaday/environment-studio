@@ -2,7 +2,9 @@ import { useState } from "react";
 import type { HostedApi } from "../api/hosted";
 import { Plans } from "./Plans";
 import { useV3PlanInspection } from "./useV3PlanInspection";
+import { useV3ProfileCapture } from "./useV3ProfileCapture";
 import { V3PlanInspection } from "./V3PlanInspection";
+import { V3ProfileCapture } from "./V3ProfileCapture";
 export function VersionedPlans({
   api,
   inspectionUiEnabled,
@@ -10,6 +12,7 @@ export function VersionedPlans({
   definitionVersion,
   openDefinitions,
   versionChanged,
+  captureChanged,
 }: {
   api: HostedApi;
   inspectionUiEnabled: boolean;
@@ -17,9 +20,12 @@ export function VersionedPlans({
   definitionVersion: number;
   openDefinitions: () => void;
   versionChanged: (version: string) => void;
+  captureChanged?: (open: boolean) => void;
 }) {
   const [version, setVersion] = useState("2");
   const state = useV3PlanInspection(api, active && version === "3");
+  const [captureOpen, setCaptureOpen] = useState(false);
+  const capture = useV3ProfileCapture(api, state.plan, active && version === "3" && captureOpen);
   const selector = (
     <label>
       Model version
@@ -47,12 +53,29 @@ export function VersionedPlans({
         />
       </div>
       {version === "3" && (
-        <V3PlanInspection
-          state={state}
-          versionSelector={selector}
-          openDefinitions={openDefinitions}
-        />
+        <div hidden={captureOpen}>
+          <V3PlanInspection
+            state={state}
+            versionSelector={selector}
+            openDefinitions={openDefinitions}
+            captureProfile={() => {
+              setCaptureOpen(true);
+              captureChanged?.(true);
+            }}
+          />
+        </div>
       )}
+      <div hidden={!captureOpen || version !== "3"}>
+        <V3ProfileCapture
+          state={capture}
+          plan={state.plan}
+          active={active && version === "3" && captureOpen}
+          back={() => {
+            setCaptureOpen(false);
+            captureChanged?.(false);
+          }}
+        />
+      </div>
     </>
   );
 }

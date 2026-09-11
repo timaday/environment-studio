@@ -5,10 +5,12 @@ export function V3PlanInspection({
   state,
   versionSelector,
   openDefinitions,
+  captureProfile,
 }: {
   state: ReturnType<typeof useV3PlanInspection>;
   versionSelector: ReactNode;
   openDefinitions: () => void;
+  captureProfile?: () => void;
 }) {
   const plan = state.plan;
   const documents = state.inventory?.documents;
@@ -108,6 +110,11 @@ export function V3PlanInspection({
           )}
           {plan.blockers.length > 0 && <p>Backend blockers: {plan.blockers.join(", ")}</p>}
         </section>
+      )}
+      {captureProfile && (
+        <button type="button" onClick={captureProfile}>
+          Capture profile
+        </button>
       )}
       <section className="v3-plan-documents" aria-labelledby="v3-documents-heading">
         <h2 id="v3-documents-heading">Document comparison</h2>
