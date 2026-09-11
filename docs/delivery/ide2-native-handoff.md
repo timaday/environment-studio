@@ -1,6 +1,38 @@
 # IDE 2 native handoff — 10 September 2026
 
-## Current continuation assignment
+## Current ownership — 11 September 2026
+
+IDE2 has explicitly stopped writing and relinquished native implementation and
+diagnostic ownership. The lead accepted sole application, native and integration
+ownership after verifying the final checkpoint. The existing independent tester
+and bounded non-author reviewers remain read-only. All older IDE2 assignments
+below are historical and superseded; do not restart them.
+
+Preserve `/home/tim/IdeaProjects/environment-studio-native-ide2`, branch
+`implementation/native-supervisor-ide2`, HEAD
+`3a84c2c432aec05d256b0f5e85cfd4636ee789b8` (parent `01b6485bbef25e47e9c71299778904c4cccdddfd`).
+The frozen WIP23 cumulative patch is
+`4983fe4ba0fac2c263db8c9ee4f7332cd02dcef007c5f8e0fc08b53e78acc6ee`.
+All 16 modified and 13 untracked files match their hashes; the index is empty.
+Final file-manifest SHA256:
+`3284557a6209067caf298ef5c84fbe5b871cd5141fda781ff5b0340300e56e0e`.
+
+The explicit statement, complete manifest, evidence/review references, unresolved
+work and lead acceptance remain in the existing external handoff
+`/home/tim/.tmp/es-ide2-native-return-20260910.md`.
+[Queue acknowledgement](https://github.com/timaday/environment-studio/issues/9#issuecomment-5633673639)
+records the same transfer. No IDE2 workload, port, build, database, container or
+tracer reservation remains. Editor/tool services retain their existing supervisor;
+no task PID was handed over for cleanup. The lead owns retained artifacts.
+
+Transfer is separate from technical acceptance. Actual non-author WIP21–23 and
+retained-attribution reports accept their bounded prerequisite/test scopes with
+no reviewer execution. Cumulative native integration, complete resource/lifetime
+and installed-client evidence remain unfinished; production admission stays
+blocked. The lead continues one implementation slice at a time. See
+[the current checkpoint](progress.md) for the active task and test reservation.
+
+## Historical continuation assignment — superseded
 
 The initial JNI candidate and IDE2 deadline correction `f5025cc5` are integrated
 as lead commit `d26cef09a4f1256cb8fb8922c92db20b0876ede6`: fixed non-author review,

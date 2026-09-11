@@ -1,5 +1,69 @@
 # Handoff and capability status
 
+## Current integration checkpoint — 11 September, 17:30 GMT deadline
+
+Lead owns application/native/integration alone; IDE2 is retired and its frozen
+native branch,29-file WIP and evidence remain preserved. Root869f00f records the
+accepted ownership transfer; technical native admission remains unqualified.
+
+Ready: integrate reviewed Capture0472c63 and catalogue33841bc, then complete the
+next reuse/validation operator dependencies. Capture13focused and actual desktop/
+narrow duplicate/capture/save/loss/reentry/retry/readback pass; source review2
+accepts CAPTURE-UI-001 corrected. Catalogue12focused/check and source review pass.
+Neither is yet accepted as a combined application or release candidate.
+
+Awaiting reviewer: e4a41e5 G08 failed1356executed/1 physical-view HTTP test429;
+bounded original-worker investigation is running. TEST-QA-005 is independently
+verified, fresh1699host/distribution and326frontend/59schema pass. Earlier failed
+OCI builds remain preserved; no runtime image/smoke/artifact reached. Lead owns
+any confirmed correction and the related sequential-test source audit.
+
+Blockers: native trace toolchain/privilege/kernel-charge enforcement, full native/
+client/resource qualification, remaining operator journeys, actual publication,
+GHCR/HiveForge release evidence. Deadline does not change scope or gates.
+Historical checkpoints below retain their original evidence and are superseded
+for current ownership, approval, publication and queue status.
+
+## Historical ownership-transfer checkpoint — 11 September 2026
+
+The lead is the sole implementation owner for application, native and integration.
+IDE2 explicitly relinquished ownership; its branch/worktree, 29-file WIP23 and
+all external evidence are preserved. The [native handoff](ide2-native-handoff.md)
+records exact identity, verification and resource ownership. Historical writer
+assignments below are superseded.
+
+Application correction candidate `4ca0aee1fa4c9c18d80a67903284d673b590598a`
+remains clean on `review/legacy-view-settlement-20260911`. Independent held-read,
+held-close, timeout/logout and wait-removal controls verified TEST-QA-003/004;
+corrected host Maven 1,699 tests/distribution and frontend 326/schema 59/check/build
+passed in the [reported environment](https://github.com/timaday/environment-studio/issues/9#issuecomment-5633740240).
+The reviewer owns the running corrected OCI gate. Combined acceptance awaits
+that result. Prior failed gates and the unexplained d67 browser failure remain
+preserved; applicable unchanged f012 browser evidence is explicitly reused.
+
+The Capture renderer remains uncommitted in
+`/home/tim/.tmp/es-v3-capture-renderer-20260911`, branch
+`implementation/v3-capture-renderer-20260911`, HEAD
+`e0ab0af3dbe46619acc4d12cffb4667db30ca386`. Latest author checks passed 12 focused
+tests, check/build and actual desktop/narrow capture/save/readback journeys.
+These do not establish visual fidelity, recovery-state approval or integration.
+
+- Active: resume the preserved Capture renderer and its remaining recovery,
+  accessibility and fidelity work. Existing applicable approvals remain valid.
+  The external offline allocation-link decoder prerequisite is accepted after
+  correcting independently found LHASH-DEC-001: fixed packet manifest
+  `5b2ee4fe67ded36dd8ae1b4cdd238975973b7945c27c1c29192c46926b79350b`,
+  28 author tests and fixed non-author source review with no remaining finding.
+  Reviewer execution was NONE. Native source/admission are unchanged; synthetic
+  protocol results classify no real IDs.
+- Awaiting another owner: corrected application OCI results. IDE2 has no
+  remaining assignment or resource reservation.
+- Blockers: runtime tracing toolchain/privilege and actual kernel-memory charge
+  enforcement; whole native resource/closure/client qualification, remaining
+  operator journeys, publication prerequisites and release rehearsal. Pending
+  Capture recovery and Definitions designs retain their approval requirements.
+
+
 Latest correction checkpoint: TEST-QA-005 is accepted from the
 [controlled independent report](https://github.com/timaday/environment-studio/issues/9#issuecomment-5633868884).
 The [bounded v3 materialization test correction](../evidence/v3-materialization-settlement.md)
