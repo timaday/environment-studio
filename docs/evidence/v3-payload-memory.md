@@ -69,3 +69,22 @@ No real or transformed application material was used or persisted.
 Next: full exact-candidate OCI gates, then the same payload probe against the new
 packaged classes without overlays. Native access, UX approvals, operational export
 and final release evidence remain separate unresolved prerequisites.
+
+## Exact candidate result
+
+Source `200ad5d391467de32909018f5a309b42a3f9662a` passes full OCI Maven:
+1,726 tests (335 core, 7 parser, 1,041 server, 343 supervisor), no failures,
+errors or skips. The unchanged UI check/test/build layer is reused from8b85011
+(446 frontend and61 schema tests); those tests were not rerun. Protected smoke
+and all29 supervisor checksums pass. Exact source came from Git archive.
+
+Local image:
+`sha256:c3f8fb2931005f1b4a81c54e34b52583c1620cb1493fb868c1cba072c6e82f67`.
+Build/smoke/package evidence: `es-payload-memory-oci-20260911/results.json`.
+The same payload test passes against its packaged classes/JRE without overlays:
+small2.072s, large156.116s, complete byte oracle and owner cleanup, no kernel OOM,
+containers removed and bundle hashes unchanged. Result:
+`es-payload-memory-image-resource-20260911/result.json`; large log SHA256
+`487b7a5b02df5c56a6a0d52793855f4f61151f731454522fd0af4a4207e8f089`.
+This accepts the allocation correction as a locally integrated prerequisite.
+It does not qualify package admission/assembly, operational export or release.

@@ -1,27 +1,23 @@
 # Handoff and capability status
 
-## Current lead checkpoint — 11 September 2026, 19:19 UTC
+## Current lead checkpoint — 11 September 2026, 19:45 UTC
 
-Lead owns application, native and integration; all reviewers and IDE2 are retired.
-Historical assignments below do not reopen their ownership. Native branch and29
-WIP files remain preserved; actual tracing-host access is still required.
+Lead owns application/native/integration; reviewers and IDE2 remain retired.
+Current source200ad5d391467de32909018f5a309b42a3f9662a in
+`/home/tim/.tmp/es-v3-payload-resource-20260911`, branch
+`implementation/v3-payload-resource-20260911`. Canonical JSON allocation correction
+passes52 affected Java checks and two compiled fault controls. Exact OCI passes
+1726 Java, protected smoke and29supervisor checksums; unchanged446frontend/61schema
+UI layer reused. Exact-image four-plan payload probe passes156.116s with complete
+canonical-byte checks and cleanup. [Evidence](../evidence/v3-payload-memory.md).
+Previous8b85011 derived-memory correction and its exact-image evidence remain valid
+within their scope. No independent acceptance, publication or release claim.
 
-Current source `8b85011d6a2a4860f1f3cef6204ac2944594d6fb`, worktree
-`/home/tim/.tmp/es-v3-projection-lifetime-20260911`, branch
-`implementation/v3-projection-lifetime-20260911`. The derived-memory correction
-passes106 focused Java tests and a compiled provenance fault control. Combined
-OCI passes1724 Java/446frontend/61schema, protected smoke and29supervisor checksums.
-Exact-image large four-owner lifecycle passes252.123s with complete cleanup.
-[Evidence and image identity](../evidence/v3-deployment-memory-investigation.md).
-All new review/checks are lead-owned; no independent acceptance or release claim.
-
-Ready: measure existing unqualified payload generation with four large retained
-plans, then address any concrete resource failure. Awaiting user: four Values/
-Validation image approvals (preview content authorized), native tracing-host
-access. Actual publication, qualified client/export, combined transport/resource
-and release/HiveForge gates remain open. No active full-build reservation remains;
-the next bounded test gets its own named container and external result directory.
-
+Ready: measure package admission/readback of that payload under the same resource
+limits. Awaiting user: Values/Validation image approval and authorized native
+tracing host. Native29 WIP preserved. Distinct source buffers, full HTTP/native
+resource behavior, production admission/export and release/HiveForge remain open.
+No active full build reservation. Historical assignments below stay retired.
 
 ## Current integration checkpoint — 11 September, 17:30 GMT deadline
 
