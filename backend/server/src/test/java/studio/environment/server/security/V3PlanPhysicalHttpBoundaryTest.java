@@ -42,7 +42,23 @@ class V3PlanPhysicalHttpBoundaryTest {
     final List<String> codes = new ArrayList<>(), csrf = new ArrayList<>();
     @AfterAll static void stopIssuer() { issuer.close(); }
     @AfterEach void logoutAndCheckCanaries(CapturedOutput output) throws Exception {
-        for (var client : clients) client.request("POST", "/api/v1/session/logout", "{}", true);
+        Throwable cleanupFailure = null;
+        try { V3PhysicalHttpTestConfiguration.awaitRecords(0); }
+        catch (Exception | AssertionError failure) { cleanupFailure = failure; }
+        for (var client : clients) {
+            try { client.request("POST", "/api/v1/session/logout", "{}", true); }
+            catch (Exception | AssertionError failure) {
+                if (cleanupFailure == null) cleanupFailure = failure;
+                else cleanupFailure.addSuppressed(failure);
+            }
+        }
+        try { V3PhysicalHttpTestConfiguration.awaitRecords(0); }
+        catch (Exception | AssertionError failure) {
+            if (cleanupFailure == null) cleanupFailure = failure;
+            else cleanupFailure.addSuppressed(failure);
+        }
+        if (cleanupFailure instanceof Exception failure) throw failure;
+        if (cleanupFailure instanceof AssertionError failure) throw failure;
         var forbidden = new ArrayList<>(List.of("MockV3-Password", "MockV3Reader", "mock-platform-secret", "mock-access-canary",
                 Base64.getEncoder().encodeToString("mock-client:mock-platform-secret".getBytes(java.nio.charset.StandardCharsets.UTF_8))));
         forbidden.addAll(codes); forbidden.addAll(csrf); forbidden.addAll(issuer.receivedVerifiers); forbidden.addAll(issuer.issuedTokens);
@@ -53,6 +69,11 @@ class V3PlanPhysicalHttpBoundaryTest {
                 for (String value : forbidden) assertFalse(stored.contains(value), "Mock credential entered storage");
             }
         }
+    }
+    /** Sequential assertions await original HTTP settlement; held-capacity probes stay raw. */
+    PlanHttpSocketClient.Response sequentialRequest(PlanHttpSocketClient client, String method, String path, String body, boolean token) throws Exception {
+        V3PhysicalHttpTestConfiguration.awaitRecords(0);
+        return client.request(method, path, body, token);
     }
     PlanHttpSocketClient login(String owner) throws Exception {
         issuer.subject = owner; issuer.mode = MockIssuer.TokenMode.VALID;
@@ -73,12 +94,12 @@ class V3PlanPhysicalHttpBoundaryTest {
                 "bindingId", "mock-pg", "destinationId", "mock-destination"));
     }
     String create(PlanHttpSocketClient client) throws Exception {
-        var reply = client.request("POST", "/api/v3/plans", createBody(), true);
+        var reply = sequentialRequest(client, "POST", "/api/v3/plans", createBody(), true);
         assertEquals(201, reply.status());
         return JSON.readTree(reply.body()).get("planId").asString();
     }
     String reserve(PlanHttpSocketClient client, String plan, String revision) throws Exception {
-        var reply = client.request("POST", "/api/v3/plans/"+plan+"/inspections", reservationBody(revision), true);
+        var reply = sequentialRequest(client, "POST", "/api/v3/plans/"+plan+"/inspections", reservationBody(revision), true);
         assertEquals(202, reply.status());
         return JSON.readTree(reply.body()).get("operationId").asString();
     }
@@ -94,7 +115,7 @@ class V3PlanPhysicalHttpBoundaryTest {
 
     void inspect(PlanHttpSocketClient client, String plan) throws Exception {
         String operation = reserve(client,plan,"1");
-        var response = client.request("POST","/api/v3/operations/"+operation+"/credentials",
+        var response = sequentialRequest(client, "POST","/api/v3/operations/"+operation+"/credentials",
                 JSON.writeValueAsString(Map.of("username","MockV3Reader","password","MockV3-Password-𐀀")),true);
         assertEquals(200,response.status()); assertEquals("succeeded",JSON.readTree(response.body()).get("phase").asString(),response.body());
         assertEquals("2",JSON.readTree(response.body()).get("installedRevision").asString());
@@ -120,43 +141,43 @@ class V3PlanPhysicalHttpBoundaryTest {
     }
     @Test void actualPagesKeepPhysicalReferencesAndMaskingAcrossIdentityAndPublicValueChanges() throws Exception {
         var client=login("mock-v3-physical-"+UUID.randomUUID());String plan=create(client);inspect(client,plan);
-        var inventory=ok(client.request("POST",path(plan,"documents"),revision("2"),true));
+        var inventory=ok(sequentialRequest(client, "POST",path(plan,"documents"),revision("2"),true));
         var document=inventory.get("documents").get(0);assertEquals(1,inventory.get("documents").size());
         assertEquals("sheet",document.get("documentId").asString());assertEquals(digest(studio.environment.server.planning.V3PhysicalHttpWitnesses.XML),document.get("currentDigest").asString());
         assertTrue(document.get("targetDigest").isNull());assertTrue(document.get("changed").isNull());
-        var first=ok(client.request("POST",path(plan,"entities"),page("2","current",0,2),true));
+        var first=ok(sequentialRequest(client, "POST",path(plan,"entities"),page("2","current",0,2),true));
         assertEquals(3,first.get("total").asInt());assertEquals(2,first.get("items").size());assertEquals(2,first.get("nextOffset").asInt());
-        var all=ok(client.request("POST",path(plan,"entities"),page("2","current",0,100),true));
+        var all=ok(sequentialRequest(client, "POST",path(plan,"entities"),page("2","current",0,100),true));
         var one=item(all,"one");assertEquals("item",one.get("typeId").asString());assertEquals("existing",one.get("entity").get("kind").asString());assertEquals(5,one.get("fields").size());
         for(String name:List.of("secret")){var hidden=field(one,name);assertTrue(hidden.get("present").asBoolean());assertTrue(hidden.get("masked").asBoolean());assertTrue(hidden.get("value").isNull());}
         var empty=field(one,"optional");assertTrue(empty.get("present").asBoolean());assertFalse(empty.get("masked").asBoolean());assertEquals("",empty.get("value").asString());
         var absent=field(item(all,"two"),"optional");assertFalse(absent.get("present").asBoolean());assertTrue(absent.get("value").isNull());
-        var last=ok(client.request("POST",path(plan,"entities"),page("2","current",2,2),true));assertEquals(3,last.get("total").asInt());assertEquals(1,last.get("items").size());assertTrue(last.get("nextOffset").isNull());assertEquals(3,first.get("items").size()+last.get("items").size());
-        var beyond=ok(client.request("POST",path(plan,"entities"),page("2","current",50000,100),true));assertEquals(3,beyond.get("total").asInt());assertTrue(beyond.get("items").isEmpty());assertTrue(beyond.get("nextOffset").isNull());
-        var missing=client.request("POST",path(plan,"entities"),page("2","target",0,100),true);assertEquals(422,missing.status());assertEquals("INCOMPLETE_TARGET",JSON.readTree(missing.body()).get("code").asString());
+        var last=ok(sequentialRequest(client, "POST",path(plan,"entities"),page("2","current",2,2),true));assertEquals(3,last.get("total").asInt());assertEquals(1,last.get("items").size());assertTrue(last.get("nextOffset").isNull());assertEquals(3,first.get("items").size()+last.get("items").size());
+        var beyond=ok(sequentialRequest(client, "POST",path(plan,"entities"),page("2","current",50000,100),true));assertEquals(3,beyond.get("total").asInt());assertTrue(beyond.get("items").isEmpty());assertTrue(beyond.get("nextOffset").isNull());
+        var missing=sequentialRequest(client, "POST",path(plan,"entities"),page("2","target",0,100),true);assertEquals(422,missing.status());assertEquals("INCOMPLETE_TARGET",JSON.readTree(missing.body()).get("code").asString());
         var fields=new LinkedHashMap<String,Object>();for(String name:List.of("id","tone","finish","secret","optional"))fields.put(name,Map.of("kind","keep-observed"));
         fields.put("id",Map.of("kind","entered","text","renamed"));fields.put("tone",Map.of("kind","entered","text","beta"));
         String command=JSON.writeValueAsString(Map.of("expectedRevision","2","requestId",UUID.randomUUID().toString(),"kind","upsert-entity","decision",Map.of("kind","retain","entity",one.get("entity"),"fields",fields,"references",Map.of()),"placements",List.of()));
-        var ack=client.request("POST","/api/v3/plans/"+plan+"/commands",command,true);assertEquals(200,ack.status());assertEquals("3",JSON.readTree(ack.body()).get("revision").asString());
-        var target=ok(client.request("POST",path(plan,"entities"),page("3","target",0,100),true));assertEquals(3,target.get("total").asInt());var renamed=item(target,"renamed");assertEquals(one.get("entity"),renamed.get("entity"));assertEquals("beta",field(renamed,"tone").get("value").asString());
-        var original=ok(client.request("POST",path(plan,"entities"),page("3","current",0,100),true));assertEquals(one,item(original,"one"));
+        var ack=sequentialRequest(client, "POST","/api/v3/plans/"+plan+"/commands",command,true);assertEquals(200,ack.status());assertEquals("3",JSON.readTree(ack.body()).get("revision").asString());
+        var target=ok(sequentialRequest(client, "POST",path(plan,"entities"),page("3","target",0,100),true));assertEquals(3,target.get("total").asInt());var renamed=item(target,"renamed");assertEquals(one.get("entity"),renamed.get("entity"));assertEquals("beta",field(renamed,"tone").get("value").asString());
+        var original=ok(sequentialRequest(client, "POST",path(plan,"entities"),page("3","current",0,100),true));assertEquals(one,item(original,"one"));
         String expected="<items><!-- mock -->\r\n<item id='renamed' tone='beta' finish='x' secret='MOCK-SECRET-VIEW' optional=''/><item id='two' tone='alpha' finish='y'/><item id='three' tone='beta' finish='x'/></items>";
-        var changed=ok(client.request("POST",path(plan,"documents"),revision("3"),true)).get("documents").get(0);assertTrue(changed.get("changed").asBoolean());assertEquals(digest(expected),changed.get("targetDigest").asString());assertEquals(document.get("currentDigest"),changed.get("currentDigest"));
+        var changed=ok(sequentialRequest(client, "POST",path(plan,"documents"),revision("3"),true)).get("documents").get(0);assertTrue(changed.get("changed").asBoolean());assertEquals(digest(expected),changed.get("targetDigest").asString());assertEquals(document.get("currentDigest"),changed.get("currentDigest"));
         assertEquals("3",JSON.readTree(client.get("/api/v3/plans/"+plan).body()).get("revision").asString());
     }
     @Test void actualPhysicalRoutesRejectForeignVersionsAndClosedOrStaleRequestsWithoutMutation() throws Exception {
         var owner=login("mock-physical-owner-"+UUID.randomUUID());String plan=create(owner);inspect(owner,plan);var stranger=login("mock-physical-stranger-"+UUID.randomUUID());
         for(String view:List.of("documents","entities")){
-            early(stranger.request("POST",path(plan,view),"{",true),404,"NOT_FOUND");
-            assertEquals(403,owner.request("POST",path(plan,view),"{}",false).status());
-            String stale=view.equals("documents")?revision("1"):page("1","current",0,100);assertEquals(409,owner.request("POST",path(plan,view),stale,true).status());
-            assertEquals(400,owner.request("POST",path(plan,view),"{",true).status());
+            early(sequentialRequest(stranger, "POST",path(plan,view),"{",true),404,"NOT_FOUND");
+            assertEquals(403,sequentialRequest(owner, "POST",path(plan,view),"{}",false).status());
+            String stale=view.equals("documents")?revision("1"):page("1","current",0,100);assertEquals(409,sequentialRequest(owner, "POST",path(plan,view),stale,true).status());
+            assertEquals(400,sequentialRequest(owner, "POST",path(plan,view),"{",true).status());
         }
-        for(String body:List.of("{\"revision\":\"2\",\"side\":\"current\",\"offset\":0.0,\"limit\":1}","{\"revision\":\"2\",\"side\":\"current\",\"offset\":0,\"limit\":1,\"revealSecrets\":true}",page("2","current",0,101),page("2","current",0,1)+"{}"))assertEquals(400,owner.request("POST",path(plan,"entities"),body,true).status());
+        for(String body:List.of("{\"revision\":\"2\",\"side\":\"current\",\"offset\":0.0,\"limit\":1}","{\"revision\":\"2\",\"side\":\"current\",\"offset\":0,\"limit\":1,\"revealSecrets\":true}",page("2","current",0,101),page("2","current",0,1)+"{}"))assertEquals(400,sequentialRequest(owner, "POST",path(plan,"entities"),body,true).status());
         var unchanged=JSON.readTree(owner.get("/api/v3/plans/"+plan).body());assertEquals("2",unchanged.get("revision").asString());assertFalse(unchanged.get("targetComplete").asBoolean());
         String subject="mock-v2-physical-"+UUID.randomUUID();var legacy=login(subject);var published=studio.environment.server.workspace.V3PlanRuntimeFixtures.v2(workspace,new studio.environment.core.session.Owner(issuer.issuer(),subject));
-        var created=legacy.request("POST","/api/v1/plans",JSON.writeValueAsString(Map.of("expectedRevision","0","requestId",UUID.randomUUID().toString(),"definition",Map.of("objectId",published.objectId(),"workspaceRevision","2"),"bindingId","mock-pg","destinationId","mock-destination")),true);assertEquals(201,created.status());String v2=JSON.readTree(created.body()).get("planId").asString();
-        for(String view:List.of("documents","entities"))early(legacy.request("POST",path(v2,view),"{",true),404,"NOT_FOUND");assertEquals(200,legacy.get("/api/v1/plans/current").status());
+        var created=sequentialRequest(legacy, "POST","/api/v1/plans",JSON.writeValueAsString(Map.of("expectedRevision","0","requestId",UUID.randomUUID().toString(),"definition",Map.of("objectId",published.objectId(),"workspaceRevision","2"),"bindingId","mock-pg","destinationId","mock-destination")),true);assertEquals(201,created.status());String v2=JSON.readTree(created.body()).get("planId").asString();
+        for(String view:List.of("documents","entities"))early(sequentialRequest(legacy, "POST",path(v2,view),"{",true),404,"NOT_FOUND");assertEquals(200,legacy.get("/api/v1/plans/current").status());
     }
     @Test void actualPartialPhysicalBodyRetainsScratchAndSemanticRecordUntilLogoutWorkerClosure() throws Exception {
         String subject="mock-physical-held-"+UUID.randomUUID();var first=login(subject);String a=create(first);inspect(first,a);var second=login("mock-physical-waiter-"+UUID.randomUUID());String b=create(second);inspect(second,b);

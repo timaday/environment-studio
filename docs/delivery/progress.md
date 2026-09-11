@@ -6,17 +6,19 @@ Lead owns application/native/integration alone; IDE2 is retired and its frozen
 native branch,29-file WIP and evidence remain preserved. Root869f00f records the
 accepted ownership transfer; technical native admission remains unqualified.
 
-Ready: integrate reviewed Capture0472c63 and catalogue33841bc, then complete the
-next reuse/validation operator dependencies. Capture13focused and actual desktop/
-narrow duplicate/capture/save/loss/reentry/retry/readback pass; source review2
-accepts CAPTURE-UI-001 corrected. Catalogue12focused/check and source review pass.
-Neither is yet accepted as a combined application or release candidate.
+Ready: combined Capture0472c63/catalogue33841bc/root869f integrated at824d568;
+frontend351/schema59/check/build and actual Capture browser desktop/narrow pass.
+TEST-QA-006 Physical correction passes3actual author HTTP checks and fixed
+non-author source review; [evidence](../evidence/v3-physical-settlement.md).
+Next: resolve the bounded Command control, verify the combined correction,
+then complete the existing reuse/validation operator dependencies.
 
-Awaiting reviewer: e4a41e5 G08 failed1356executed/1 physical-view HTTP test429;
-bounded original-worker investigation is running. TEST-QA-005 is independently
-verified, fresh1699host/distribution and326frontend/59schema pass. Earlier failed
-OCI builds remain preserved; no runtime image/smoke/artifact reached. Lead owns
-any confirmed correction and the related sequential-test source audit.
+Awaiting reviewer: Command original-worker control started on published e4a41e5.
+Physical TEST-QA-006 is accepted from its controlled reproduction; correction
+execution/full combined gates await the next fetchable candidate. TEST-QA-005
+is independently verified. Fresh e4 host1699/distribution/frontend326/schema59
+pass; OCI1356executed/1Physical failure remains preserved. No image/smoke/artifact
+was reached. Source reviews and author checks do not establish release readiness.
 
 Blockers: native trace toolchain/privilege/kernel-charge enforcement, full native/
 client/resource qualification, remaining operator journeys, actual publication,
