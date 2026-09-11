@@ -233,9 +233,13 @@ it("keeps mappings across pages and refuses duplicate identifiers without a capt
   await screen.findByLabelText("Reusable identifier 1");
   await user.type(screen.getByLabelText("Profile identifier"), "portable");
   await user.type(screen.getByLabelText("Profile revision"), "1");
+  // Populate repetitive setup through real paste events; keep typed editing below.
+  // This test's oracle is cross-page state and diagnostics, not per-key throughput.
   for (let number = 1; number <= 20; number++) {
-    await user.type(screen.getByLabelText(`Reusable identifier ${number}`), `slot-${number}`);
-    await user.type(screen.getByLabelText(`Label ${number}`), `Item ${number}`);
+    await user.click(screen.getByLabelText(`Reusable identifier ${number}`));
+    await user.paste(`slot-${number}`);
+    await user.click(screen.getByLabelText(`Label ${number}`));
+    await user.paste(`Item ${number}`);
   }
   expect(screen.getByRole("button", { name: "Capture for review" })).toBeDisabled();
   await user.click(screen.getByRole("button", { name: "Next items" }));
@@ -260,12 +264,17 @@ it("keeps mappings across pages and refuses duplicate identifiers without a capt
   expect(screen.queryByRole("alert")).not.toBeInTheDocument();
   expect(screen.getByLabelText("Reusable identifier 21")).not.toHaveAttribute("aria-invalid");
   await user.click(screen.getByRole("button", { name: "Previous items" }));
-  expect(screen.getByLabelText("Reusable identifier 1")).toHaveValue("slot-1");
-  expect(screen.getByLabelText("Label 20")).toHaveValue("Item 20");
+  for (let number = 1; number <= 20; number++) {
+    expect(screen.getByLabelText(`Reusable identifier ${number}`)).toHaveValue(`slot-${number}`);
+    expect(screen.getByLabelText(`Label ${number}`)).toHaveValue(`Item ${number}`);
+  }
   await user.click(screen.getByRole("button", { name: "Next items" }));
   expect(screen.getByLabelText("Reusable identifier 21")).toHaveValue("slot-21");
   expect(screen.getByLabelText("Label 21")).toHaveValue("Item 21");
   expect(screen.getByRole("button", { name: "Capture for review" })).toBeEnabled();
+  expect(transport.mock.calls.some(([path]) => String(path).endsWith("/profile-captures"))).toBe(
+    false,
+  );
 });
 
 it("requires valid inspection before revealing mapping controls", async () => {
