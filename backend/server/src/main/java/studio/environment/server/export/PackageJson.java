@@ -1,6 +1,5 @@
 package studio.environment.server.export;
 
-import java.io.ByteArrayOutputStream;
 import java.nio.ByteBuffer;
 import java.nio.charset.CodingErrorAction;
 import java.nio.charset.CharacterCodingException;
@@ -70,7 +69,13 @@ final class PackageJson {
         else if(node.isObject()){ascii(digest,"O"+node.size()+":");node.propertyNames().stream().sorted(UTF8).forEach(k->{frame(NODES.stringNode(k),digest);frame(node.get(k),digest);});}
         else fail("INVALID_FRAME");
     }
-    static byte[] canonical(JsonNode node,int maximum) { var output=new Bounded(maximum);write(node,output);return output.bytes(); }
+    static byte[] canonical(JsonNode node,int maximum) {
+        var output=new Bounded(maximum);
+        write(node,output);
+        output.allocate();
+        write(node,output);
+        return output.bytes();
+    }
     private static void write(JsonNode node,Bounded out) {
         if(node.isString())string(node.asString(),out);
         else if(node.isIntegralNumber() || node.isBoolean() || node.isNull())out.add(node.toString());
@@ -84,8 +89,22 @@ final class PackageJson {
         out.add(value.substring(start));out.add("\"");
     }
     static final class Bounded {
-        private final int maximum;private final ByteArrayOutputStream out=new ByteArrayOutputStream();Bounded(int maximum){this.maximum=maximum;}
-        void add(String text){if((long)out.size()+text.length()>maximum)fail("RESOURCE_LIMIT");byte[]bytes=text.getBytes(StandardCharsets.UTF_8);if((long)out.size()+bytes.length>maximum)fail("RESOURCE_LIMIT");out.writeBytes(bytes);}
-        byte[]bytes(){return out.toByteArray();}
+        private final int maximum;
+        private int size;
+        private byte[] output;
+        Bounded(int maximum){this.maximum=maximum;}
+        void add(String text){
+            if((long)size+text.length()>maximum)fail("RESOURCE_LIMIT");
+            byte[] bytes=text.getBytes(StandardCharsets.UTF_8);
+            if((long)size+bytes.length>maximum)fail("RESOURCE_LIMIT");
+            if(output!=null){
+                if(bytes.length>output.length-size)fail("RESOURCE_LIMIT");
+                System.arraycopy(bytes,0,output,size,bytes.length);
+            }
+            size+=bytes.length;
+        }
+        // Measure first, then allocate exactly once: no geometric growth or final full copy.
+        void allocate(){output=new byte[size];size=0;}
+        byte[] bytes(){if(size!=output.length)fail("INVALID_JSON");return output;}
     }
 }
