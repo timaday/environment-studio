@@ -2,6 +2,19 @@
 
 ## Current integration checkpoint — 11 September 2026
 
+Latest review complete onf012956 (issue9/5633334317): independent1699host,
+60focused/fourfaults and9hosted/2demo browser cases pass; G02 and G08 fail.
+TEST-QA-003 is corrected on028d6b0. The second accepted finding,
+[TEST-QA-004](../evidence/legacy-view-settlement.md), adds actual scratch settlement
+before the intentionally sequential legacy replay; one freshly compiled actual
+HTTP workflow passes locally. Both corrections remain test-only.
+
+Ready: submit the combined correction for independent verification, continue
+Capture visual corrections from actual desktop/narrow save/readback evidence.
+Awaiting owners: corrected candidate publication/remote gates; IDE2's acknowledged
+offline native attribution packet. Blockers: exact combined acceptance, unseen
+recovery designs and outstanding native/resource/publication/operator/release evidence.
+
 Latest: remote reviewer owns combined f012956 G01/G02/G03/G08 (issue9/5632973237).
 Seven regression additions independently verified, including four fault oracles.
 TEST-QA-003 accepted after the first G02 run failed the asynchronous upload test;
