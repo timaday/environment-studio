@@ -25,7 +25,12 @@ public final class TransactionTemplates {
             var e=input.execution();
             if(e.exportPolicies().stream().anyMatch(p->!p.content().equals("protected-self-contained")))PackageJson.fail("CONTENT_POLICY_DENIED");
             boolean pg=e.engine()==PackageData.Engine.POSTGRESQL;
-            if(!e.client().platform().equals("linux-amd64") || !e.client().family().equals(pg?"psql":"sqlplus") || !e.client().version().equals(pg?"18.6":"23.26.3.0.0") || !e.versions().server().equals(e.client().version()) || !e.versions().template().equals(pg?"postgresql-text-v1":"oracle-clob-v1"))PackageJson.fail("TEMPLATE_VERSION_UNSUPPORTED");
+            boolean tuple = pg
+                    ? (e.client().version().equals("18.6") && e.versions().template().equals("postgresql-text-v1"))
+                        || (e.client().version().equals("16.11") && e.versions().template().equals("postgresql16-text-v1"))
+                    : e.client().version().equals("23.26.3.0.0") && e.versions().template().equals("oracle-clob-v1");
+            if(!e.client().platform().equals("linux-amd64") || !e.client().family().equals(pg?"psql":"sqlplus")
+                    || !e.versions().server().equals(e.client().version()) || !tuple)PackageJson.fail("TEMPLATE_VERSION_UNSUPPORTED");
             return pg?PostgresTransaction.generate(input):OracleTransaction.generate(input);
         }catch(PackageJson.Refusal failure){return new Result.Rejected(failure.code);}
     }

@@ -229,6 +229,21 @@ test("workspace historical mechanism versions remain readable without granting n
 const packageAjv = new Ajv2020({ allErrors: true, strict: true });
 const packageManifest = packageAjv.compile(read("../schemas/guarded-manifest-v1.schema.json"));
 const packagePayload = packageAjv.compile(read("../schemas/guarded-payload-v1.schema.json"));
+test("PostgreSQL16 candidate metadata requires its exact assigned version tuple", () => {
+  const manifest = read("../fixtures/guarded-package-v1/manifest.json");
+  const e = manifest.execution;
+  e.serverVersion = "16.11";
+  e.client.version = "16.11";
+  e.templateVersion = "postgresql16-text-v1";
+  assert.equal(packageManifest(manifest), true, JSON.stringify(packageManifest.errors));
+  for (const [field, value] of [["serverVersion", "18.6"], ["serverVersion", "16.10"], ["templateVersion", "postgresql-text-v1"]]) {
+    const candidate = structuredClone(manifest);
+    candidate.execution[field] = value;
+    assert.equal(packageManifest(candidate), false);
+  }
+  e.client.version = "18.6";
+  assert.equal(packageManifest(manifest), false);
+});
 test("guarded metadata distinguishes v3 pins without relabelling the v2 family", () => {
   const manifest = read("../fixtures/guarded-package-v1/manifest.json");
   const v2 = structuredClone(manifest.execution.mechanisms);

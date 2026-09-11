@@ -350,6 +350,9 @@ qualification; those remain separate server-owned export requirements.
 
 ## Version-explicit v3 package pins
 
+The [PostgreSQL16.11 candidate tuple](postgresql-16-template.md) is version-pinned
+separately from18.6; neither metadata acceptance nor generated SQL is authority.
+
 The closed v1 container may describe exactly one mechanism family. Existing v2
 execution metadata and bytes remain valid without change. V3 metadata requires
 `native-compiler-v3=1`, `derived-graph-v1=1` and `plan-validation-v3=1` instead of
