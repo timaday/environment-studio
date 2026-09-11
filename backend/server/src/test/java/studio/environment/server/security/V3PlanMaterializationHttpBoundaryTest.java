@@ -42,7 +42,23 @@ class V3PlanMaterializationHttpBoundaryTest {
     final List<String> codes = new ArrayList<>(), csrf = new ArrayList<>();
     @AfterAll static void stopIssuer() { issuer.close(); }
     @AfterEach void logoutAndCheckCanaries(CapturedOutput output) throws Exception {
-        for (var client : clients) client.request("POST", "/api/v1/session/logout", "{}", true);
+        Throwable cleanupFailure = null;
+        try { V3PlanHttpTestConfiguration.awaitRecords(0); }
+        catch (Exception | AssertionError failure) { cleanupFailure = failure; }
+        for (var client : clients) {
+            try { client.request("POST", "/api/v1/session/logout", "{}", true); }
+            catch (Exception | AssertionError failure) {
+                if (cleanupFailure == null) cleanupFailure = failure;
+                else cleanupFailure.addSuppressed(failure);
+            }
+        }
+        try { V3PlanHttpTestConfiguration.awaitRecords(0); }
+        catch (Exception | AssertionError failure) {
+            if (cleanupFailure == null) cleanupFailure = failure;
+            else cleanupFailure.addSuppressed(failure);
+        }
+        if (cleanupFailure instanceof Exception failure) throw failure;
+        if (cleanupFailure instanceof AssertionError failure) throw failure;
         var forbidden = new ArrayList<>(List.of("MockV3-Password", "MockV3Reader", "mock-platform-secret", "mock-access-canary",
                 Base64.getEncoder().encodeToString("mock-client:mock-platform-secret".getBytes(java.nio.charset.StandardCharsets.UTF_8))));
         forbidden.addAll(codes); forbidden.addAll(csrf); forbidden.addAll(issuer.receivedVerifiers); forbidden.addAll(issuer.issuedTokens);
@@ -53,6 +69,11 @@ class V3PlanMaterializationHttpBoundaryTest {
                 for (String value : forbidden) assertFalse(stored.contains(value), "Mock credential entered storage");
             }
         }
+    }
+    /** Sequential assertions await original HTTP settlement; held-capacity probes stay raw. */
+    PlanHttpSocketClient.Response sequentialRequest(PlanHttpSocketClient client, String method, String path, String body, boolean token) throws Exception {
+        V3PlanHttpTestConfiguration.awaitRecords(0);
+        return client.request(method, path, body, token);
     }
     PlanHttpSocketClient login(String owner) throws Exception {
         issuer.subject = owner; issuer.mode = MockIssuer.TokenMode.VALID;
@@ -73,12 +94,12 @@ class V3PlanMaterializationHttpBoundaryTest {
                 "bindingId", "mock-pg", "destinationId", "mock-destination"));
     }
     String create(PlanHttpSocketClient client) throws Exception {
-        var reply = client.request("POST", "/api/v3/plans", createBody(), true);
+        var reply = sequentialRequest(client,"POST", "/api/v3/plans", createBody(), true);
         assertEquals(201, reply.status());
         return JSON.readTree(reply.body()).get("planId").asString();
     }
     String reserve(PlanHttpSocketClient client, String plan, String revision) throws Exception {
-        var reply = client.request("POST", "/api/v3/plans/"+plan+"/inspections", reservationBody(revision), true);
+        var reply = sequentialRequest(client,"POST", "/api/v3/plans/"+plan+"/inspections", reservationBody(revision), true);
         assertEquals(202, reply.status());
         return JSON.readTree(reply.body()).get("operationId").asString();
     }
@@ -94,7 +115,7 @@ class V3PlanMaterializationHttpBoundaryTest {
 
     void inspect(PlanHttpSocketClient client, String plan) throws Exception {
         String operation = reserve(client,plan,"1");
-        var response = client.request("POST","/api/v3/operations/"+operation+"/credentials",
+        var response = sequentialRequest(client,"POST","/api/v3/operations/"+operation+"/credentials",
                 JSON.writeValueAsString(Map.of("username","MockV3Reader","password","MockV3-Password-𐀀")),true);
         assertEquals(200,response.status()); assertEquals("succeeded",JSON.readTree(response.body()).get("phase").asString());
         assertEquals("2",JSON.readTree(response.body()).get("installedRevision").asString());
@@ -114,8 +135,8 @@ class V3PlanMaterializationHttpBoundaryTest {
     @Test void actualMaterializationPreservesRevisionAndDistinguishesAllThreeEngineOutcomes() throws Exception {
         String subject="mock-v3-materialize-"+UUID.randomUUID(); var client=login(subject);String plan=create(client);inspect(client,plan);
         assertFalse(JSON.readTree(client.get("/api/v3/plans/"+plan).body()).get("targetComplete").asBoolean());
-        materialized(client.request("POST",path(plan),revision("2"),true),"2","COMPLETE",List.of());
-        materialized(client.request("POST",path(plan),revision("2"),true),"2","COMPLETE",List.of());
+        materialized(sequentialRequest(client,"POST",path(plan),revision("2"),true),"2","COMPLETE",List.of());
+        materialized(sequentialRequest(client,"POST",path(plan),revision("2"),true),"2","COMPLETE",List.of());
         var summary=JSON.readTree(client.get("/api/v3/plans/"+plan).body());
         assertEquals("2",summary.get("revision").asString()); assertTrue(summary.get("targetComplete").asBoolean());
         assertEquals(JSON.readTree("{\"nodes\":4,\"memberships\":6,\"cooccurrences\":3}"),summary.get("targetComputedCounts"));
@@ -128,38 +149,38 @@ class V3PlanMaterializationHttpBoundaryTest {
         // This core page supplies an actual opaque handle; it does not qualify an HTTP view route.
         String handle=service.entities(lease,plan,"2",false,0,100).entities().stream().filter(e->e.fields().stream()
                 .anyMatch(f->f.field().equals("id")&&f.value().orElse("").equals("one"))).findFirst().orElseThrow().handle();
-        var unresolved=client.request("POST","/api/v3/plans/"+plan+"/commands",edit("2",handle,Map.of("kind","unresolved")),true);
+        var unresolved=sequentialRequest(client,"POST","/api/v3/plans/"+plan+"/commands",edit("2",handle,Map.of("kind","unresolved")),true);
         assertEquals(200,unresolved.status());assertEquals("3",JSON.readTree(unresolved.body()).get("revision").asString());
-        materialized(client.request("POST",path(plan),revision("3"),true),"3","INCOMPLETE",List.of("by-tone"));
+        materialized(sequentialRequest(client,"POST",path(plan),revision("3"),true),"3","INCOMPLETE",List.of("by-tone"));
         assertTrue(JSON.readTree(client.get("/api/v3/plans/"+plan).body()).get("targetComputedCounts").isNull());
-        var invalid=client.request("POST","/api/v3/plans/"+plan+"/commands",edit("3",handle,Map.of("kind","entered","text","")),true);
+        var invalid=sequentialRequest(client,"POST","/api/v3/plans/"+plan+"/commands",edit("3",handle,Map.of("kind","entered","text","")),true);
         assertEquals(200,invalid.status());assertEquals("4",JSON.readTree(invalid.body()).get("revision").asString());
-        materialized(client.request("POST",path(plan),revision("4"),true),"4","REFUSED",List.of("INVALID_DERIVED_IDENTITY"));
+        materialized(sequentialRequest(client,"POST",path(plan),revision("4"),true),"4","REFUSED",List.of("INVALID_DERIVED_IDENTITY"));
         assertFalse(JSON.readTree(client.get("/api/v3/plans/"+plan).body()).get("targetComplete").asBoolean());
-        var repaired=client.request("POST","/api/v3/plans/"+plan+"/commands",edit("4",handle,Map.of("kind","entered","text","beta")),true);
+        var repaired=sequentialRequest(client,"POST","/api/v3/plans/"+plan+"/commands",edit("4",handle,Map.of("kind","entered","text","beta")),true);
         assertEquals(200,repaired.status());assertEquals("5",JSON.readTree(repaired.body()).get("revision").asString());
-        materialized(client.request("POST",path(plan),revision("5"),true),"5","COMPLETE",List.of());
+        materialized(sequentialRequest(client,"POST",path(plan),revision("5"),true),"5","COMPLETE",List.of());
         assertEquals(JSON.readTree("{\"nodes\":4,\"memberships\":6,\"cooccurrences\":2}"),JSON.readTree(client.get("/api/v3/plans/"+plan).body()).get("targetComputedCounts"));
     }
 
     @Test void actualMissingInspectionStaleVersionOwnerCsrfAndClosedBodiesRefuseWithoutTarget() throws Exception {
         var owner=login("mock-v3-materialization-refusal-"+UUID.randomUUID());String plan=create(owner);
-        var missing=owner.request("POST",path(plan),revision("1"),true);assertEquals(422,missing.status());
+        var missing=sequentialRequest(owner,"POST",path(plan),revision("1"),true);assertEquals(422,missing.status());
         assertEquals("INSPECTION_REQUIRED",JSON.readTree(missing.body()).get("code").asString());
-        var foreign=login("mock-v3-materialization-foreign-"+UUID.randomUUID());early(foreign.request("POST",path(plan),"{",true),404,"NOT_FOUND");
+        var foreign=login("mock-v3-materialization-foreign-"+UUID.randomUUID());early(sequentialRequest(foreign,"POST",path(plan),"{",true),404,"NOT_FOUND");
         inspect(owner,plan);
-        assertEquals(403,owner.request("POST",path(plan),revision("2"),false).status());
-        var stale=owner.request("POST",path(plan),revision("1"),true);assertEquals(409,stale.status());
+        assertEquals(403,sequentialRequest(owner,"POST",path(plan),revision("2"),false).status());
+        var stale=sequentialRequest(owner,"POST",path(plan),revision("1"),true);assertEquals(409,stale.status());
         assertEquals("CONFLICT",JSON.readTree(stale.body()).get("code").asString());
         for(String body:List.of("{",revision("2")+"{}","{\"revision\":2}","{\"revision\":\"2\",\"complete\":true}"))
-            assertEquals(400,owner.request("POST",path(plan),body,true).status());
+            assertEquals(400,sequentialRequest(owner,"POST",path(plan),body,true).status());
         var summary=JSON.readTree(owner.get("/api/v3/plans/"+plan).body());assertEquals("2",summary.get("revision").asString());assertFalse(summary.get("targetComplete").asBoolean());
         String subject="mock-v2-materialization-partition-"+UUID.randomUUID();var legacy=login(subject);
         var published=studio.environment.server.workspace.V3PlanRuntimeFixtures.v2(workspace,new studio.environment.core.session.Owner(issuer.issuer(),subject));
-        var created=legacy.request("POST","/api/v1/plans",JSON.writeValueAsString(Map.of("expectedRevision","0","requestId",UUID.randomUUID().toString(),
+        var created=sequentialRequest(legacy,"POST","/api/v1/plans",JSON.writeValueAsString(Map.of("expectedRevision","0","requestId",UUID.randomUUID().toString(),
                 "definition",Map.of("objectId",published.objectId(),"workspaceRevision","2"),"bindingId","mock-pg","destinationId","mock-destination")),true);
         assertEquals(201,created.status());String v2=JSON.readTree(created.body()).get("planId").asString();
-        early(legacy.request("POST",path(v2),"{",true),404,"NOT_FOUND");assertEquals(200,legacy.get("/api/v1/plans/current").status());
+        early(sequentialRequest(legacy,"POST",path(v2),"{",true),404,"NOT_FOUND");assertEquals(200,legacy.get("/api/v1/plans/current").status());
     }
 
     @Test void actualPartialViewBodyRetainsFullScratchAndLogoutRestoresAnotherOwnersMaterialization() throws Exception {

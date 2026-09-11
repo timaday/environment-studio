@@ -1,6 +1,26 @@
 # Handoff and capability status
 
-## Current integration checkpoint — 11 September 2026
+Latest correction checkpoint: TEST-QA-005 is accepted from the
+[controlled independent report](https://github.com/timaday/environment-studio/issues/9#issuecomment-5633868884).
+The [bounded v3 materialization test correction](../evidence/v3-materialization-settlement.md)
+on4ca0aee passes3affected author HTTP tests; fixed non-author review reports
+no confirmed finding (reviewer execution NONE). Corrected independent execution
+and combined verification remain pending. The original corrected OCI
+failed1356executed/1test and did not reach image/smoke/artifact checks.
+TEST-QA-003/004 and scoped host1699/frontend326/schema59 results stay preserved.
+Lead owns application/native/integration alone after explicit IDE2 retirement;
+its native branch/WIP and Capture renderer remain intact. No production change.
+
+
+Ready: publish the reviewed TEST-QA-005 correction; continue Capture recovery
+design approval using actual isolated mock save/lost-response/readback evidence.
+Awaiting owner: remote reviewer owns corrected-candidate controlled checks and
+required full host/frontend/OCI gates after fetch confirmation.
+Blockers: native trace toolchain/privilege/kernel-charge qualification, unseen
+recovery approval, and remaining publication/operator/release evidence.
+Historical ownership and queue entries below are superseded by this checkpoint.
+
+## Earlier integration checkpoint — 11 September 2026
 
 Latest review complete onf012956 (issue9/5633334317): independent1699host,
 60focused/fourfaults and9hosted/2demo browser cases pass; G02 and G08 fail.
