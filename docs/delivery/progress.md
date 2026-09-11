@@ -1,5 +1,46 @@
 # Handoff and capability status
 
+## Current checkpoint — 11 September 2026
+
+The lead is the sole implementation owner for application, native and integration.
+IDE2 explicitly relinquished ownership; its branch/worktree, 29-file WIP23 and
+all external evidence are preserved. The [native handoff](ide2-native-handoff.md)
+records exact identity, verification and resource ownership. Historical writer
+assignments below are superseded.
+
+Application correction candidate `4ca0aee1fa4c9c18d80a67903284d673b590598a`
+remains clean on `review/legacy-view-settlement-20260911`. Independent held-read,
+held-close, timeout/logout and wait-removal controls verified TEST-QA-003/004;
+corrected host Maven 1,699 tests/distribution and frontend 326/schema 59/check/build
+passed in the [reported environment](https://github.com/timaday/environment-studio/issues/9#issuecomment-5633740240).
+The reviewer owns the running corrected OCI gate. Combined acceptance awaits
+that result. Prior failed gates and the unexplained d67 browser failure remain
+preserved; applicable unchanged f012 browser evidence is explicitly reused.
+
+The Capture renderer remains uncommitted in
+`/home/tim/.tmp/es-v3-capture-renderer-20260911`, branch
+`implementation/v3-capture-renderer-20260911`, HEAD
+`e0ab0af3dbe46619acc4d12cffb4667db30ca386`. Latest author checks passed 12 focused
+tests, check/build and actual desktop/narrow capture/save/readback journeys.
+These do not establish visual fidelity, recovery-state approval or integration.
+
+- Active: resume the preserved Capture renderer and its remaining recovery,
+  accessibility and fidelity work. Existing applicable approvals remain valid.
+  The external offline allocation-link decoder prerequisite is accepted after
+  correcting independently found LHASH-DEC-001: fixed packet manifest
+  `5b2ee4fe67ded36dd8ae1b4cdd238975973b7945c27c1c29192c46926b79350b`,
+  28 author tests and fixed non-author source review with no remaining finding.
+  Reviewer execution was NONE. Native source/admission are unchanged; synthetic
+  protocol results classify no real IDs.
+- Awaiting another owner: corrected application OCI results. IDE2 has no
+  remaining assignment or resource reservation.
+- Blockers: runtime tracing toolchain/privilege and actual kernel-memory charge
+  enforcement; whole native resource/closure/client qualification, remaining
+  operator journeys, publication prerequisites and release rehearsal. Pending
+  Capture recovery and Definitions designs retain their approval requirements.
+
+## Historical checkpoints — retained evidence
+
 Updated: 10 September 2026. See [starter evidence](../evidence/starter-verification.md)
 and [D01a integration](../evidence/d01a-integration.md) for actual commands and
 results; the table below reports capability, not test count.
