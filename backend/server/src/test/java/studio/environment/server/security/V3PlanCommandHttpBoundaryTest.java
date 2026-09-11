@@ -42,7 +42,23 @@ class V3PlanCommandHttpBoundaryTest {
     final List<String> codes = new ArrayList<>(), csrf = new ArrayList<>();
     @AfterAll static void stopIssuer() { issuer.close(); }
     @AfterEach void logoutAndCheckCanaries(CapturedOutput output) throws Exception {
-        for (var client : clients) client.request("POST", "/api/v1/session/logout", "{}", true);
+        Throwable cleanupFailure = null;
+        try { V3PlanHttpTestConfiguration.awaitRecords(0); }
+        catch (Exception | AssertionError failure) { cleanupFailure = failure; }
+        for (var client : clients) {
+            try { client.request("POST", "/api/v1/session/logout", "{}", true); }
+            catch (Exception | AssertionError failure) {
+                if (cleanupFailure == null) cleanupFailure = failure;
+                else cleanupFailure.addSuppressed(failure);
+            }
+        }
+        try { V3PlanHttpTestConfiguration.awaitRecords(0); }
+        catch (Exception | AssertionError failure) {
+            if (cleanupFailure == null) cleanupFailure = failure;
+            else cleanupFailure.addSuppressed(failure);
+        }
+        if (cleanupFailure instanceof Exception failure) throw failure;
+        if (cleanupFailure instanceof AssertionError failure) throw failure;
         var forbidden = new ArrayList<>(List.of("MockV3-Password", "MockV3Reader", "mock-platform-secret", "mock-access-canary",
                 Base64.getEncoder().encodeToString("mock-client:mock-platform-secret".getBytes(java.nio.charset.StandardCharsets.UTF_8))));
         forbidden.addAll(codes); forbidden.addAll(csrf); forbidden.addAll(issuer.receivedVerifiers); forbidden.addAll(issuer.issuedTokens);
@@ -53,6 +69,11 @@ class V3PlanCommandHttpBoundaryTest {
                 for (String value : forbidden) assertFalse(stored.contains(value), "Mock credential entered storage");
             }
         }
+    }
+    /** Sequential assertions await original HTTP settlement; held-capacity probes stay raw. */
+    PlanHttpSocketClient.Response sequentialRequest(PlanHttpSocketClient client, String method, String path, String body, boolean token) throws Exception {
+        V3PlanHttpTestConfiguration.awaitRecords(0);
+        return client.request(method, path, body, token);
     }
     PlanHttpSocketClient login(String owner) throws Exception {
         issuer.subject = owner; issuer.mode = MockIssuer.TokenMode.VALID;
@@ -73,12 +94,12 @@ class V3PlanCommandHttpBoundaryTest {
                 "bindingId", "mock-pg", "destinationId", "mock-destination"));
     }
     String create(PlanHttpSocketClient client) throws Exception {
-        var reply = client.request("POST", "/api/v3/plans", createBody(), true);
+        var reply = sequentialRequest(client, "POST", "/api/v3/plans", createBody(), true);
         assertEquals(201, reply.status());
         return JSON.readTree(reply.body()).get("planId").asString();
     }
     String reserve(PlanHttpSocketClient client, String plan, String revision) throws Exception {
-        var reply = client.request("POST", "/api/v3/plans/"+plan+"/inspections", reservationBody(revision), true);
+        var reply = sequentialRequest(client, "POST", "/api/v3/plans/"+plan+"/inspections", reservationBody(revision), true);
         assertEquals(202, reply.status());
         return JSON.readTree(reply.body()).get("operationId").asString();
     }
@@ -98,7 +119,7 @@ class V3PlanCommandHttpBoundaryTest {
     static String discard(String revision) { return command(revision, "\"kind\":\"discard\""); }
     void inspect(PlanHttpSocketClient client, String plan) throws Exception {
         String operation = reserve(client, plan, "1");
-        var response = client.request("POST", "/api/v3/operations/"+operation+"/credentials",
+        var response = sequentialRequest(client, "POST", "/api/v3/operations/"+operation+"/credentials",
                 JSON.writeValueAsString(Map.of("username", "MockV3Reader", "password", "MockV3-Password-𐀀")), true);
         assertEquals(200, response.status());
         assertEquals("succeeded", JSON.readTree(response.body()).get("phase").asString());
@@ -117,7 +138,7 @@ class V3PlanCommandHttpBoundaryTest {
         String change = command("2", "\"kind\":\"upsert-entity\",\"decision\":{\"kind\":\"retain\",\"entity\":{\"kind\":\"existing\",\"handle\":\""+handle
                 +"\"},\"fields\":{\"id\":{\"kind\":\"keep-observed\"},\"tone\":{\"kind\":\"entered\",\"text\":\"beta\"},\"finish\":{\"kind\":\"keep-observed\"}},\"references\":{}},\"placements\":[]");
         String path = "/api/v3/plans/"+plan+"/commands";
-        var changed = client.request("POST", path, change, true); assertEquals(200, changed.status());
+        var changed = sequentialRequest(client, "POST", path, change, true); assertEquals(200, changed.status());
         var acknowledgement = JSON.readTree(changed.body());
         assertEquals(plan, acknowledgement.get("planId").asString()); assertEquals("3", acknowledgement.get("revision").asString());
         var summary = JSON.readTree(client.get("/api/v3/plans/"+plan).body());
@@ -129,16 +150,16 @@ class V3PlanCommandHttpBoundaryTest {
             assertEquals("<items><!-- mock -->\r\n<item id='one' tone='al&#112;ha' finish='x'/><item id='two' tone='alpha' finish='y'/><item id='three' tone='beta' finish='x'/></items>", snapshot.current().orElseThrow().sources().getFirst().xml());
             assertEquals("<items><!-- mock -->\r\n<item id='one' tone='beta' finish='x'/><item id='two' tone='alpha' finish='y'/><item id='three' tone='beta' finish='x'/></items>", snapshot.target().orElseThrow().sources().getFirst().xml());
         }
-        assertEquals(acknowledgement, JSON.readTree(client.request("POST", path, change, true).body()));
+        assertEquals(acknowledgement, JSON.readTree(sequentialRequest(client, "POST", path, change, true).body()));
         String collision = change.replace("\"text\":\"beta\"", "\"text\":\"gamma\"");
-        var conflict = client.request("POST", path, collision, true); assertEquals(409, conflict.status());
+        var conflict = sequentialRequest(client, "POST", path, collision, true); assertEquals(409, conflict.status());
         assertEquals("CONFLICT", JSON.readTree(conflict.body()).get("code").asString());
-        var discarded = client.request("POST", path, discard("3"), true); assertEquals(200, discarded.status());
+        var discarded = sequentialRequest(client, "POST", path, discard("3"), true); assertEquals(200, discarded.status());
         assertEquals("3", JSON.readTree(discarded.body()).get("revision").asString());
         String replacement = create(client); assertNotEquals(plan, replacement);
-        var replay = client.request("POST", path, change, true); assertEquals(200, replay.status());
+        var replay = sequentialRequest(client, "POST", path, change, true); assertEquals(200, replay.status());
         assertEquals(acknowledgement, JSON.readTree(replay.body()));
-        assertEquals(409, client.request("POST", path, collision, true).status());
+        assertEquals(409, sequentialRequest(client, "POST", path, collision, true).status());
         var current = JSON.readTree(client.get("/api/v3/plans/current").body());
         assertEquals(replacement, current.get("planId").asString()); assertEquals("1", current.get("revision").asString());
     }
@@ -147,19 +168,19 @@ class V3PlanCommandHttpBoundaryTest {
         var owner = login("mock-v3-command-boundaries-"+UUID.randomUUID()); String plan = create(owner);
         var foreign = login("mock-v3-command-foreign-"+UUID.randomUUID());
         String path = "/api/v3/plans/"+plan+"/commands";
-        early(foreign.request("POST", path, "{", true), 404, "NOT_FOUND");
-        assertEquals(403, owner.request("POST", path, discard("1"), false).status());
+        early(sequentialRequest(foreign, "POST", path, "{", true), 404, "NOT_FOUND");
+        assertEquals(403, sequentialRequest(owner, "POST", path, discard("1"), false).status());
         for (String body : List.of("{", discard("1")+"{}", discard("1").replace("\"kind\":\"discard\"", "\"kind\":\"discard\",\"modelVersion\":3"))) {
-            var refused = owner.request("POST", path, body, true); assertEquals(400, refused.status());
+            var refused = sequentialRequest(owner, "POST", path, body, true); assertEquals(400, refused.status());
             assertEquals("1", JSON.readTree(owner.get("/api/v3/plans/"+plan).body()).get("revision").asString());
         }
         String subject = "mock-v2-command-partition-"+UUID.randomUUID(); var legacy = login(subject);
         var published = studio.environment.server.workspace.V3PlanRuntimeFixtures.v2(workspace,
                 new studio.environment.core.session.Owner(issuer.issuer(), subject));
-        var created = legacy.request("POST", "/api/v1/plans", JSON.writeValueAsString(Map.of("expectedRevision", "0", "requestId", UUID.randomUUID().toString(),
+        var created = sequentialRequest(legacy, "POST", "/api/v1/plans", JSON.writeValueAsString(Map.of("expectedRevision", "0", "requestId", UUID.randomUUID().toString(),
                 "definition", Map.of("objectId", published.objectId(), "workspaceRevision", "2"), "bindingId", "mock-pg", "destinationId", "mock-destination")), true);
         assertEquals(201, created.status()); String v2 = JSON.readTree(created.body()).get("planId").asString();
-        early(legacy.request("POST", "/api/v3/plans/"+v2+"/commands", "{", true), 404, "NOT_FOUND");
+        early(sequentialRequest(legacy, "POST", "/api/v3/plans/"+v2+"/commands", "{", true), 404, "NOT_FOUND");
         assertEquals("1", JSON.readTree(legacy.get("/api/v1/plans/current").body()).get("revision").asString());
     }
 
