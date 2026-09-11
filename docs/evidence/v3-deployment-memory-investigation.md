@@ -78,3 +78,35 @@ compiler publication or production export. The next gate is the immutable candid
 frontend tests/check/build and package checks, followed by protected startup and
 the same resource probe against the new image. A duplicate full host Maven run
 is not required by G01; focused host checks above remain separately recorded.
+
+## Immutable candidate integration
+
+Source `8b85011d6a2a4860f1f3cef6204ac2944594d6fb` passes the combined OCI build:
+1,724 Java tests (335 core, 7 parser, 1,039 server, 343 supervisor), 446 frontend
+tests, 61 schema tests, TypeScript/format checks and production build. Protected
+container startup/static UI/health/denials, private workspace schema initialization
+and upgrade refusal checks pass. All 29 supervisor package checksums pass.
+Build context is an exact Git archive; no untracked inputs were included.
+
+Local image:
+`sha256:d381f17ecd29c27d717f526e5f3952246c3363432067abeec4f0927e7a3f3f2e`.
+Its revision label matches the source and runtime user is `10001:10001`.
+Actual commands, log hashes and results are in `es-graph-memory-oci-20260911`.
+
+The same full hosted lifecycle probe passes against that image's actual classes,
+libraries and JRE, with no replacement classes: 252.123 seconds, exit 0,
+complete owner cleanup and unchanged input bundle. Container removed; no kernel
+OOM. Result: `es-graph-memory-image-resource-20260911/result.json`; log SHA256
+`289246ea9162a8f78d23a38f66b65482c9ba8dac5730f9c853f83755a1c08ba8`.
+The entrypoint runs the explicit mock hosted probe, so full HTTP/database/native
+resource combinations are still outside this result.
+
+Lead source review found no confirmed defect; all new results are author-run.
+This accepts the correction as a locally integrated prerequisite, not production
+admission or release qualification. Release readiness still refuses: its source
+fingerprint does not match and all required release capabilities remain NOT_RUN.
+No registry publication, native ownership change or release setting was made.
+
+Next independent resource check: prepare the existing unqualified package payload
+while four large plans remain retained. Verify full original/target content and
+canonical payload bytes, without granting download or execution authority.
