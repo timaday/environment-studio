@@ -1,5 +1,12 @@
 # Handoff and capability status
 
+Latest application candidate adds [paged validation state](../evidence/v3-validation-state.md)
+on04a7f94: complete backend outcomes, fingerprint-bound bounded pages and explicit
+same-offset smaller-page recovery for actual422 RESOURCE_LIMIT. Author26focused,
+303frontend/59schema/check/build, six compiled guard faults and fixed non-author
+source review pass. No renderer or release claim. Next ready work connects the
+capture/reuse operator journey through the required image approval workflow.
+
 Latest application candidate adds [nonvisual whole/partial reuse state](../evidence/v3-profile-reuse-state.md)
 on a9d165e. Complete four-section preview, explicit mapping decisions and original-
 plan replay pass27 focused cases; full277frontend/59schema, types/format/build,
@@ -17,7 +24,7 @@ complete cleanup. Fixed non-author integration review found no confirmed defect;
 remote correction acceptance remains pending. Root stays173cde2/application30446e2.
 
 - Ready: publish prepared correction/reuse candidates and implement paged validation
-  state. Capture persistence prerequisite1522cc5 is locally reviewed.
+  state/rendering approval. Capture persistence prerequisite1522cc5 is locally reviewed.
 - Awaiting another owner: remote de0ce25 and fetchable correction acceptance;
   IDE2 is preparing the next bounded external allocator-observer design.
 - Blockers: pending Definitions rendered exceptions; combined integration gates,

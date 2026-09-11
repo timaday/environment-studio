@@ -199,3 +199,22 @@ original command receipt, never a fresh summary or target-completeness assertion
 Session termination/unmount retires owned state. Future rendering must connect
 session retirement and display receipt ownership explicitly. No rendered capture
 or reuse design is approved by this nonvisual prerequisite.
+
+## Browser validation state
+
+Explicit validation loads the complete summary without automatically fetching all
+computed rules. Retain all backend outcomes and null versus zero rule counts;
+never derive export permission. Publish a summary or page only after a fresh full
+plan summary matches the initiating context. Reads retire on context, presentation,
+owner or session changes; no partial or previous page remains visible as current.
+
+Rule navigation requests one bounded page, default limit4, at an explicit offset.
+It verifies revision, fingerprint, complete count and page arithmetic against the
+retained validation summary. A RESOURCE_LIMIT refusal retains that summary and
+the failed offset/limit for explicit retry at the same offset with a smaller
+limit down to1. It clears the old page, never advances offset or silently changes
+the page size. Other failures clear validation evidence and require revalidation.
+A new validation retires any older page read. Only one page is retained; paging
+never changes the scope of backend validation. Future rendering must propagate
+idle session retirement and disclose which page is visible. No new layout,
+accessibility result or design approval is introduced by this state prerequisite.
