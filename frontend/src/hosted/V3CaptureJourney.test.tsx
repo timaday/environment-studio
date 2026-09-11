@@ -1,4 +1,4 @@
-import { cleanup, render, screen, waitFor } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, expect, it, vi } from "vitest";
 import { HostedApi } from "../api/hosted";
@@ -233,13 +233,17 @@ it("keeps mappings across pages and refuses duplicate identifiers without a capt
   await screen.findByLabelText("Reusable identifier 1");
   await user.type(screen.getByLabelText("Profile identifier"), "portable");
   await user.type(screen.getByLabelText("Profile revision"), "1");
-  // Populate repetitive setup through real paste events; keep typed editing below.
-  // This test's oracle is cross-page state and diagnostics, not per-key throughput.
-  for (let number = 1; number <= 20; number++) {
-    await user.click(screen.getByLabelText(`Reusable identifier ${number}`));
-    await user.paste(`slot-${number}`);
-    await user.click(screen.getByLabelText(`Label ${number}`));
-    await user.paste(`Item ${number}`);
+  await user.type(screen.getByLabelText("Reusable identifier 1"), "slot-1");
+  await user.type(screen.getByLabelText("Label 1"), "Item 1");
+  // Set repetitive background rows through DOM events. Typed first/last-row editing
+  // and navigation exercise the interaction; every returned mapping is asserted.
+  for (let number = 2; number <= 20; number++) {
+    fireEvent.change(screen.getByLabelText(`Reusable identifier ${number}`), {
+      target: { value: `slot-${number}` },
+    });
+    fireEvent.change(screen.getByLabelText(`Label ${number}`), {
+      target: { value: `Item ${number}` },
+    });
   }
   expect(screen.getByRole("button", { name: "Capture for review" })).toBeDisabled();
   await user.click(screen.getByRole("button", { name: "Next items" }));

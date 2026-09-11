@@ -27,3 +27,24 @@ Independent fixed source review found no findings: two-file manifest
 external es-capture-pagination-source-review1-20260911.md; reviewer execution NONE.
 Remote corrected-candidate G02/G08 remain required. Production Capture browser evidence is unchanged in scope. This test
 correction confers no export, native client or release qualification.
+
+## Corrected Windows execution follow-up
+
+Independent ffb83da Windows425PASS/1FAIL still exceeded5000ms during row16
+setup, before cross-page assertions (issue9/5637547990). Paste was insufficient
+in that environment; the finding remains open. The next test correction uses
+DOM change events for19 repetitive background rows, with real typing retained
+on row1, row21, the duplicate and correction. Navigation,21items/two pages,
+all20 returned pairs, accessible diagnostics/clear, disabled/enabled capture and
+zero requests remain asserted. No component/state or timer/timeout changes.
+This checks controlled-input change handling; it does not claim bulk keyboard
+throughput or replace the other fully typed Capture journey.
+
+Author6Capture PASS, affected669ms; TypeScript/Biome PASS. External logs
+es-capture-pagination-input-green1-20260911.log and
+es-capture-pagination-input-check1-20260911.log. Independent Windows/G02/G08
+verification of the corrected exact SHA remains required; no localRED claimed.
+
+Fixed non-author follow-up source review found no findings; manifest
+857952801d7ce2c37ce409711865d4340143e2b166429b03714b06a35e0d7309, external
+es-capture-pagination-input-source-review1-20260911.md; execution NONE.
