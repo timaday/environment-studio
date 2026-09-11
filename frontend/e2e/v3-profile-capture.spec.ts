@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { checkValuesAndValidation } from "./v3-values-validation-checks";
 
 // Real browser session/HTTP/SQLite prerequisite. No rendered capture view or API interception.
 // Independently invented workflow fixtures only; reports and credentials stay in private RAM.
@@ -123,6 +124,8 @@ test("captures value-free structure and separately saves an owned durable profil
   expect(await request("GET", `${profilePath}/revisions/1`)).toEqual(saved);
   expect(await request("PUT", profilePath, command)).toEqual(saved);
   expect((await request("GET", "/api/v3/profiles")).profiles).toHaveLength(1);
+  await checkValuesAndValidation(request, planPath);
+  expect(await request("GET", `${profilePath}/revisions/1`)).toEqual(saved);
   await settled();
   await page.getByRole("button", { name: "Log out" }).click();
   await expect(page.getByRole("link", { name: "Sign in with OIDC" })).toBeVisible();
