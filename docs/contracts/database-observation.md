@@ -41,6 +41,18 @@ test matrix. Proposed JDBC pins are pgJDBC 42.7.13 and Oracle Thin ojdbc17
 23.26.3.0.0 on Java 21; record actual resolved versions and observed compatibility.
 No fallback driver, storage conversion, connection pool or UCP is permitted.
 
+The user-selected PostgreSQL16.11/text adds one exact observation version with
+the same pgJDBC42.7.13 and closed read-operation policy. Metadata must return
+`server_version_num=160011` or the existing180006; other versions, malformed or
+missing version facts refuse before source access. Record the actual accepted
+engine version (`16.11` or `18.6`) in the existing observation fingerprint frame;
+never relabel16 evidence as18. Existing digest framing and18 inputs stay unchanged.
+All snapshot, read-only, destination, visibility, complete inventory and cleanup
+checks remain mandatory. An account's write privileges do not permit an adapter
+write. Actual16.11 read/denial/cleanup checks are separate from the
+[candidate SQL template](postgresql-16-template.md) and do not qualify production
+TLS, hosted export or native execution.
+
 Begin PostgreSQL `REPEATABLE READ READ ONLY`, set a safe `search_path` and
 `row_security=off`, then verify effective isolation/read-only settings. Begin
 Oracle `SET TRANSACTION READ ONLY` as the first transaction statement on a

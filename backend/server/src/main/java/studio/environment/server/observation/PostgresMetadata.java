@@ -8,7 +8,11 @@ import studio.environment.core.observation.ObservationResult.Code;
 final class PostgresMetadata {
     record Verified(Map<String, String> identity, String version, String encoding) { }
     static Verified verify(SqlRead sql, Binding binding) throws SQLException {
-        if (!"180006".equals(sql.scalar(ReadQuery.PG_SERVER_VERSION))) throw new ObservationFailure(Code.STORAGE_UNSUPPORTED);
+        String versionNumber = sql.scalar(ReadQuery.PG_SERVER_VERSION);
+        String version;
+        if ("180006".equals(versionNumber)) version = "18.6";
+        else if ("160011".equals(versionNumber)) version = "16.11";
+        else throw new ObservationFailure(Code.STORAGE_UNSUPPORTED);
         if (!"UTF8".equals(sql.scalar(ReadQuery.PG_SERVER_ENCODING)) || !"UTF8".equals(sql.scalar(ReadQuery.PG_CLIENT_ENCODING))) throw new ObservationFailure(Code.STORAGE_UNSUPPORTED);
         if (!"repeatable read".equals(sql.scalar(ReadQuery.PG_ISOLATION)) || !"on".equals(sql.scalar(ReadQuery.PG_READ_ONLY)) || !"off".equals(sql.scalar(ReadQuery.PG_ROW_SECURITY))) throw new ObservationFailure(Code.VISIBILITY_UNQUALIFIED);
         var identity = sql.rows(ReadQuery.PG_IDENTITY);
@@ -36,7 +40,7 @@ final class PostgresMetadata {
         if (uniqueKeys == null || !uniqueKeys.matches("[1-9][0-9]{0,18}")
                 || new java.math.BigInteger(uniqueKeys).compareTo(java.math.BigInteger.valueOf(Long.MAX_VALUE)) > 0)
             throw new ObservationFailure(Code.STORAGE_UNSUPPORTED);
-        return new Verified(Map.of("systemIdentifier", id.get(0), "databaseOid", id.get(1), "databaseName", id.get(2)), "18.6", "UTF8");
+        return new Verified(Map.of("systemIdentifier", id.get(0), "databaseOid", id.get(1), "databaseName", id.get(2)), version, "UTF8");
     }
 
 }
