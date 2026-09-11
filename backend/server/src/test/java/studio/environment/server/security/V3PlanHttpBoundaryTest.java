@@ -42,7 +42,23 @@ class V3PlanHttpBoundaryTest {
     final List<String> codes = new ArrayList<>(), csrf = new ArrayList<>();
     @AfterAll static void stopIssuer() { issuer.close(); }
     @AfterEach void logoutAndCheckCanaries(CapturedOutput output) throws Exception {
-        for (var client : clients) client.request("POST", "/api/v1/session/logout", "{}", true);
+        Throwable cleanupFailure = null;
+        try { V3PlanHttpTestConfiguration.awaitRecords(0); }
+        catch (Exception | AssertionError failure) { cleanupFailure = failure; }
+        for (var client : clients) {
+            try { client.request("POST", "/api/v1/session/logout", "{}", true); }
+            catch (Exception | AssertionError failure) {
+                if (cleanupFailure == null) cleanupFailure = failure;
+                else cleanupFailure.addSuppressed(failure);
+            }
+        }
+        try { V3PlanHttpTestConfiguration.awaitRecords(0); }
+        catch (Exception | AssertionError failure) {
+            if (cleanupFailure == null) cleanupFailure = failure;
+            else cleanupFailure.addSuppressed(failure);
+        }
+        if (cleanupFailure instanceof Exception failure) throw failure;
+        if (cleanupFailure instanceof AssertionError failure) throw failure;
         var forbidden = new ArrayList<>(List.of("MockV3-Password", "MockV3Reader", "mock-platform-secret", "mock-access-canary",
                 Base64.getEncoder().encodeToString("mock-client:mock-platform-secret".getBytes(java.nio.charset.StandardCharsets.UTF_8))));
         forbidden.addAll(codes); forbidden.addAll(csrf); forbidden.addAll(issuer.receivedVerifiers); forbidden.addAll(issuer.issuedTokens);
@@ -53,6 +69,11 @@ class V3PlanHttpBoundaryTest {
                 for (String value : forbidden) assertFalse(stored.contains(value), "Mock credential entered storage");
             }
         }
+    }
+    /** Sequential assertions await original HTTP settlement; held-capacity probes stay raw. */
+    PlanHttpSocketClient.Response sequentialRequest(PlanHttpSocketClient client, String method, String path, String body, boolean token) throws Exception {
+        V3PlanHttpTestConfiguration.awaitRecords(0);
+        return client.request(method, path, body, token);
     }
     PlanHttpSocketClient login(String owner) throws Exception {
         issuer.subject = owner; issuer.mode = MockIssuer.TokenMode.VALID;
@@ -198,7 +219,7 @@ class V3PlanHttpBoundaryTest {
     @Test void actualWrongOriginAndUnimplementedRoutesStayDenied() throws Exception {
         var client = login("mock-v3-closed-"+UUID.randomUUID()); String plan = create(client);
         for (String suffix : List.of("profile-captures", "profile-previews", "validations")) {
-            var refused=client.request("POST", "/api/v3/plans/"+plan+"/"+suffix, "{}", true);
+            var refused=sequentialRequest(client, "POST", "/api/v3/plans/"+plan+"/"+suffix, "{}", true);
             assertEquals(400,refused.status());
             assertEquals("MALFORMED_BODY",JSON.readTree(refused.body()).get("code").asString());
         }
@@ -230,6 +251,7 @@ class V3PlanHttpBoundaryTest {
     @Test void logoutDuringActualPartialBodyReleasesOnlyAfterOriginalWorkerStops() throws Exception {
         String subject = "mock-v3-held-logout-"+UUID.randomUUID();
         var client = login(subject); String plan = create(client);
+        V3PlanHttpTestConfiguration.awaitRecords(0);
         byte[] body = reservationBody("1").getBytes(java.nio.charset.StandardCharsets.UTF_8);
         try (var pending = client.begin("POST", "/api/v3/plans/"+plan+"/inspections", body.length, true)) {
             pending.write(new byte[]{'{'}); V3PlanHttpTestConfiguration.awaitRecords(1);

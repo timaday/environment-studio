@@ -6,19 +6,23 @@ Lead owns application/native/integration alone; IDE2 is retired and its frozen
 native branch,29-file WIP and evidence remain preserved. Root869f00f records the
 accepted ownership transfer; technical native admission remains unqualified.
 
-Ready: combined Capture0472c63/catalogue33841bc/root869f integrated at824d568;
+Ready: Capture0472c63/catalogue33841bc/root869f integrated at824d568;
 frontend351/schema59/check/build and actual Capture browser desktop/narrow pass.
-TEST-QA-006 Physical correction passes3actual author HTTP checks and fixed
-non-author source review; [evidence](../evidence/v3-physical-settlement.md).
-Next: resolve the bounded Command control, verify the combined correction,
-then complete the existing reuse/validation operator dependencies.
+Physical006, Command007 and refusal008 test corrections are implemented and
+fixed-source reviewed, with3+3+8affected local HTTP tests passing. The misplaced
+wait found during review (REFUSAL-REVIEW-001) is corrected; its controlled RED
+and GREEN are preserved. See [Physical](../evidence/v3-physical-settlement.md),
+[Command](../evidence/v3-command-settlement.md), and
+[refusal](../evidence/v3-refusal-settlement.md). Next: publish one combined candidate
+for independent controlled verification and full integrated gates; continue Reuse
+presentation using existing hooks and the authorized mock-image exception.
 
-Awaiting reviewer: Command original-worker control started on published e4a41e5.
-Physical TEST-QA-006 is accepted from its controlled reproduction; correction
-execution/full combined gates await the next fetchable candidate. TEST-QA-005
-is independently verified. Fresh e4 host1699/distribution/frontend326/schema59
-pass; OCI1356executed/1Physical failure remains preserved. No image/smoke/artifact
-was reached. Source reviews and author checks do not establish release readiness.
+Awaiting reviewer: corrected006–008 execution and combined G01/G02/G03/G08 after
+fetch confirmation. No further unchanged-candidate campaign is assigned.
+TEST-QA-005 is independently verified; fresh e4 host1699/distribution/frontend326/
+schema59 pass, while OCI1356executed/1Physical failure remains preserved.
+No image/smoke/artifact was reached. Source reviews and author checks do not
+establish independent combined acceptance or release readiness.
 
 Blockers: native trace toolchain/privilege/kernel-charge enforcement, full native/
 client/resource qualification, remaining operator journeys, actual publication,
