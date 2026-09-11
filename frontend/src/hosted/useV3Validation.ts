@@ -14,26 +14,31 @@ type State = Readonly<{
 const empty: State = { summary: null, page: null, request: null, busy: false, error: "" };
 /** Bounded rule navigation over complete backend validation; never an export authority. */
 export function useV3Validation(api: HostedApi, plan: PlanSummary | null, enabled: boolean) {
+  const context = JSON.stringify(plan);
   const owner = useMemo(
     () => ({
       client: new HostedV3Api(api),
+      context,
+      enabled,
       active: false,
       generation: 0,
       reading: false,
       retry: null as PageRequest | null,
     }),
-    [api],
+    [api, context, enabled],
   );
-  const [state, setState] = useState<State>(empty);
-  const latest = useRef(state);
-  const replace = useCallback((next: State) => {
-    latest.current = next;
-    setState(next);
-  }, []);
-  const context = JSON.stringify(plan);
+  const [view, setView] = useState({ owner, state: empty });
+  const latest = useRef<State>(empty);
+  const replace = useCallback(
+    (next: State) => {
+      latest.current = next;
+      setView({ owner, state: next });
+    },
+    [owner],
+  );
   const current = (token: number) => owner.active && owner.generation === token;
   useEffect(() => {
-    owner.active = true;
+    owner.active = owner.enabled;
     replace(empty);
     return () => {
       owner.active = false;
@@ -42,17 +47,6 @@ export function useV3Validation(api: HostedApi, plan: PlanSummary | null, enable
       latest.current = empty;
     };
   }, [owner, replace]);
-  useEffect(() => {
-    void context;
-    void enabled;
-    owner.generation++;
-    owner.reading = false;
-    owner.retry = null;
-    replace(empty);
-    return () => {
-      owner.generation++;
-    };
-  }, [owner, context, enabled, replace]);
   function available() {
     return (
       owner.active && enabled && plan?.inspectionValid && plan.observedDestination?.evidenceValid
@@ -145,5 +139,5 @@ export function useV3Validation(api: HostedApi, plan: PlanSummary | null, enable
       return;
     await readPage(retry.offset, limit);
   }
-  return { ...state, validate, readPage, retrySmaller };
+  return { ...(view.owner === owner ? view.state : empty), validate, readPage, retrySmaller };
 }

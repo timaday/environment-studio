@@ -276,3 +276,9 @@ Changing to selected-parts mode with no roots is an ordinary unsubmitted state,
 not an invalid backend request. Explicitly clear previous selection/preview/error
 read state when selection becomes empty; do not issue a preview or fabricate a
 replacement selection. This local reset cannot clear or replace a pending apply.
+
+Validation read callbacks belong to the exact API, plan context and presentation
+lifetime that created them. Leaving/reentering does not reactivate a retained
+callback. A replacement context immediately renders empty validation state,
+including before effects settle; no old summary or rule values appear under the
+replacement plan. New explicit validation and paging remain available.

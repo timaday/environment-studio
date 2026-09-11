@@ -390,3 +390,44 @@ it("preserves displayed validation evidence when an offset exceeds the wire maxi
   expect(result.current.request).toBe(previous.request);
   expect(result.current.error).toBe("INVALID_REQUEST");
 });
+
+it.each(["validate", "readPage"])(
+  "does not reactivate a retired %s callback after leave and reentry",
+  async (operation) => {
+    const { result, transport, rerender } = await setup();
+    await act(() => result.current.validate());
+    const retired = result.current;
+    rerender({ value: plan, enabled: false });
+    rerender({ value: plan, enabled: true });
+    await act(() => result.current.validate());
+    const before = requests(transport).length;
+    await act(() => (operation === "validate" ? retired.validate() : retired.readPage(0)));
+    expect(requests(transport)).toHaveLength(before);
+    expect(result.current.summary).toEqual(summary);
+    expect(result.current.page).toBeNull();
+    await act(() => result.current.readPage(0));
+    expect(result.current.page?.items).toEqual([row(0), row(1), row(2), row(3)]);
+  },
+);
+
+it("never renders old validation values under a replacement plan, including its first render", async () => {
+  const { api, unmount } = await setup();
+  unmount();
+  const frames: { id: string; summary: unknown; page: unknown }[] = [];
+  const hook = renderHook(
+    ({ value }: { value: PlanSummary }) => {
+      const state = useV3Validation(api, value, true);
+      frames.push({ id: value.planId, summary: state.summary, page: state.page });
+      return state;
+    },
+    { initialProps: { value: plan } },
+  );
+  await act(() => hook.result.current.validate());
+  await act(() => hook.result.current.readPage(0));
+  expect(hook.result.current.page?.items).toHaveLength(4);
+  const replacement = { ...plan, planId: "80000000-0000-0000-0000-000000000009" };
+  hook.rerender({ value: replacement });
+  const next = frames.filter((frame) => frame.id === replacement.planId);
+  expect(next.length).toBeGreaterThan(0);
+  expect(next.every((frame) => frame.summary === null && frame.page === null)).toBe(true);
+});
