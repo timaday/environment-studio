@@ -15,7 +15,7 @@ function source(value: unknown): string {
   }
   return value;
 }
-const model = D.object(
+export const profileModel = D.object(
   {
     schemaVersion: D.literal("3"),
     id: D.declaredId,
@@ -56,7 +56,7 @@ const common = {
   projection: D.object(
     {
       kind: D.literal("structurally-valid"),
-      model,
+      model: profileModel,
       contentDigest: D.digest,
       diagnostics: D.array(D.invalid, 0, 0, false),
     },

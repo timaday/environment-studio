@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { type Capabilities, failureMessage, HostedApi, type Session } from "../api/hosted";
+import { useNarrowLayout } from "./useNarrowLayout";
 import { VersionedDefinitions } from "./VersionedDefinitions";
 import { VersionedPlans } from "./VersionedPlans";
 export function HostedWorkspace({ capabilities }: { capabilities: Capabilities }) {
@@ -9,6 +10,11 @@ export function HostedWorkspace({ capabilities }: { capabilities: Capabilities }
   const [view, setView] = useState<"Plans" | "Definitions">("Plans");
   const [version, setVersion] = useState(0);
   const [planVersion, setPlanVersion] = useState("2");
+  const [capturing, setCapturing] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const narrow = useNarrowLayout();
+  const captureActive = view === "Plans" && planVersion === "3" && capturing;
+  const compactMenu = captureActive && narrow;
   const [api] = useState(
     () =>
       new HostedApi(fetch, () => {
@@ -65,7 +71,7 @@ export function HostedWorkspace({ capabilities }: { capabilities: Capabilities }
   }
   return (
     <div
-      className={`hosted-workspace${view === "Definitions" ? " definitions-active" : planVersion === "3" ? " plans-active" : ""}`}
+      className={`hosted-workspace${captureActive ? " capture-active" : ""}${view === "Definitions" ? " definitions-active" : planVersion === "3" ? " plans-active" : ""}`}
     >
       <header className="app-header">
         <img
@@ -74,9 +80,23 @@ export function HostedWorkspace({ capabilities }: { capabilities: Capabilities }
           alt="Environment Studio"
         />
         <span className="badge">Hosted workspace</span>
-        {session && (
+        {session && !compactMenu && (
           <button type="button" onClick={logout}>
             Log out
+          </button>
+        )}
+        {session && compactMenu && (
+          <button
+            type="button"
+            className="capture-menu"
+            aria-label="Workspace menu"
+            aria-expanded={menuOpen}
+            aria-controls="workspace-navigation"
+            onClick={() => setMenuOpen((open) => !open)}
+          >
+            <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true">
+              <path d="M3 5h18M3 12h18M3 19h18" fill="none" stroke="currentColor" strokeWidth="2" />
+            </svg>
           </button>
         )}
       </header>
@@ -84,17 +104,30 @@ export function HostedWorkspace({ capabilities }: { capabilities: Capabilities }
         Skip to workspace
       </a>
       {session && (
-        <nav className="workspace-navigation segmented" aria-label="Workspace views">
+        <nav
+          id="workspace-navigation"
+          className="workspace-navigation segmented"
+          aria-label="Workspace views"
+          hidden={compactMenu && !menuOpen}
+        >
           {(["Plans", "Definitions"] as const).map((name) => (
             <button
               type="button"
               key={name}
               aria-pressed={view === name}
-              onClick={() => setView(name)}
+              onClick={() => {
+                setView(name);
+                setMenuOpen(false);
+              }}
             >
               {name}
             </button>
           ))}
+          {compactMenu && (
+            <button type="button" onClick={logout}>
+              Log out
+            </button>
+          )}
         </nav>
       )}
       <main id="main">
@@ -128,13 +161,25 @@ export function HostedWorkspace({ capabilities }: { capabilities: Capabilities }
                 definitionVersion={version}
                 openDefinitions={() => setView("Definitions")}
                 versionChanged={setPlanVersion}
+                captureChanged={setCapturing}
               />
             </div>
-            <p className="session-note">
-              Session absolute expiry {session.absoluteExpiresAt} · idle timeout{" "}
-              {session.idleTimeoutSeconds / 60} minutes. Background operation polls do not extend
-              it.
-            </p>
+            {captureActive ? (
+              <details className="capture-session">
+                <summary className="capture-session-trigger">Session details</summary>
+                <p>
+                  Session absolute expiry {session.absoluteExpiresAt} · idle timeout{" "}
+                  {session.idleTimeoutSeconds / 60} minutes. Background operation polls do not
+                  extend it.
+                </p>
+              </details>
+            ) : (
+              <p className="session-note">
+                Session absolute expiry {session.absoluteExpiresAt} · idle timeout{" "}
+                {session.idleTimeoutSeconds / 60} minutes. Background operation polls do not extend
+                it.
+              </p>
+            )}
           </>
         )}
         {message && <p role="status">{message}</p>}
