@@ -5,6 +5,7 @@ import { CapturedProfileDetails } from "./CapturedProfileDetails";
 import { type CaptureMapping, CaptureMappingRow } from "./CaptureMappingRow";
 import { captureSummary } from "./captureSummary";
 import { useNarrowLayout } from "./useNarrowLayout";
+import { WorkflowPlanContext } from "./WorkflowPlanContext";
 import "./V3ProfileCapture.css";
 import type { useV3ProfileCapture } from "./useV3ProfileCapture";
 
@@ -126,59 +127,9 @@ export function V3ProfileCapture({
   }, [prepared]);
   const stage = state.saved ? 3 : prepared ? 2 : 1;
   const ready = Boolean(plan?.inspectionValid && plan.observedDestination);
-  const observed = shownPlan?.observedDestination;
-  const databaseName =
-    observed?.engine === "postgresql"
-      ? observed.identity.databaseName
-      : observed?.engine === "oracle"
-        ? observed.identity.conName
-        : null;
   return (
     <section className="capture-workspace" aria-label="Capture profile workspace">
-      {shownPlan && (
-        <section className="capture-context" aria-label="Capture plan context">
-          <div>
-            <strong>
-              {observed?.engine === "postgresql"
-                ? "PostgreSQL"
-                : observed?.engine === "oracle"
-                  ? "Oracle"
-                  : "Observed environment unavailable"}
-            </strong>
-            {databaseName && <span> · {databaseName}</span>}
-            <p>
-              Plan revision {shownPlan.revision} ·{" "}
-              {shownPlan.inspectionValid ? "Inspection valid" : "Inspection required"}
-            </p>
-          </div>
-          {!narrow && (
-            <>
-              <div>
-                <p>Destination: {shownPlan.destinationId}</p>
-                <p>Binding: {shownPlan.bindingId}</p>
-              </div>
-              <div>
-                <p>Definition revision {shownPlan.definition.workspaceRevision}</p>
-              </div>
-            </>
-          )}
-          <details>
-            <summary>Plan details</summary>
-            <dl>
-              <dt>Plan</dt>
-              <dd>{shownPlan.planId}</dd>
-              <dt>Definition</dt>
-              <dd>
-                {shownPlan.definition.objectId} · revision {shownPlan.definition.workspaceRevision}
-              </dd>
-              <dt>Binding</dt>
-              <dd>{shownPlan.bindingId}</dd>
-              <dt>Destination</dt>
-              <dd>{shownPlan.destinationId}</dd>
-            </dl>
-          </details>
-        </section>
-      )}
+      <WorkflowPlanContext plan={shownPlan} label="Capture plan context" />
       <div className="capture-layout">
         <div className="capture-main">
           <p>

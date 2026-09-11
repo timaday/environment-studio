@@ -1,0 +1,45 @@
+{
+  "status": "APPROVED_WITH_EXPLICIT_CORRECTIONS",
+  "scope": "Explicit target preparation prerequisite before selecting a profile; no automatic materialization or successful result shown.",
+  "source": "Actual profiles-v3 browser3 preview response422 INCOMPLETE_TARGET after inspection. Existing reviewed workflow materializes before preview. This is the authorized independently invented test environment.",
+  "images": [
+    {
+      "path": "reuse-prepare-desktop-v1.png",
+      "view": "desktop",
+      "sha256": "fb693e37c421bf57b984302c1c3ce2cc829acdc64569c6241da9ca594fe43440",
+      "pixels": [
+        1504,
+        1046
+      ],
+      "intendedCssViewport": [
+        1440,
+        1000
+      ]
+    },
+    {
+      "path": "reuse-prepare-narrow-v1.png",
+      "view": "narrow",
+      "sha256": "b48a0c9a1b54aab00f48bb7b79bed81a8e15a955404a9a8629883d7d39cfa7b0",
+      "pixels": [
+        894,
+        1759
+      ],
+      "intendedCssViewport": [
+        390,
+        844
+      ]
+    }
+  ],
+  "requiredCorrections": [
+    "Actual SVG and flat committed tokens;14–16 CSS px body and44 CSS px controls.",
+    "Compact narrow header/progress, full-width layout and natural scrolling; exterior padding/excess generated blank height are not product layout.",
+    "Reuse the existing prerequisite panel for missing plan/inspection, with Back to plan and the appropriate prerequisite explanation; never enable target preparation without a valid inspection.",
+    "Target preparation calls the existing materialization API explicitly, then refreshes plan context. A refusal or incomplete result never reveals a successful ready state."
+  ],
+  "outsideFrameCaption": "Design proposal — synthetic test environment.",
+  "approval": {
+    "date": "2026-09-11",
+    "reference": "call_sSYiXztnCmzrY1QGP2KujOKh",
+    "response": "Approve prerequisite with corrections"
+  }
+}

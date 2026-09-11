@@ -6,11 +6,13 @@ export function V3PlanInspection({
   versionSelector,
   openDefinitions,
   captureProfile,
+  reuseProfile,
 }: {
   state: ReturnType<typeof useV3PlanInspection>;
   versionSelector: ReactNode;
   openDefinitions: () => void;
   captureProfile?: () => void;
+  reuseProfile?: () => void;
 }) {
   const plan = state.plan;
   const documents = state.inventory?.documents;
@@ -110,6 +112,11 @@ export function V3PlanInspection({
           )}
           {plan.blockers.length > 0 && <p>Backend blockers: {plan.blockers.join(", ")}</p>}
         </section>
+      )}
+      {reuseProfile && (
+        <button type="button" onClick={reuseProfile}>
+          Reuse profile
+        </button>
       )}
       {captureProfile && (
         <button type="button" onClick={captureProfile}>

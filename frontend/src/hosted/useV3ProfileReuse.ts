@@ -114,6 +114,12 @@ export function useV3ProfileReuse(api: HostedApi, plan: PlanSummary | null, enab
       replace({ ...empty, error: "INVALID_REQUEST" });
     }
   }
+  function clearSelection() {
+    if (!available()) return;
+    owner.generation++;
+    owner.reading = false;
+    replace(empty);
+  }
   async function previewSelection() {
     const input = latest.current.input;
     if (
@@ -268,5 +274,5 @@ export function useV3ProfileReuse(api: HostedApi, plan: PlanSummary | null, enab
   async function retry() {
     if (owner.pending) await execute(owner.pending);
   }
-  return { ...state, configure, previewSelection, apply, retry };
+  return { ...state, configure, clearSelection, previewSelection, apply, retry };
 }

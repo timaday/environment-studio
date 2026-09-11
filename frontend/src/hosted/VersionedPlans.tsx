@@ -5,6 +5,7 @@ import { useV3PlanInspection } from "./useV3PlanInspection";
 import { useV3ProfileCapture } from "./useV3ProfileCapture";
 import { V3PlanInspection } from "./V3PlanInspection";
 import { V3ProfileCapture } from "./V3ProfileCapture";
+import { V3ProfileReuse } from "./V3ProfileReuse";
 export function VersionedPlans({
   api,
   inspectionUiEnabled,
@@ -24,7 +25,9 @@ export function VersionedPlans({
 }) {
   const [version, setVersion] = useState("2");
   const state = useV3PlanInspection(api, active && version === "3");
-  const [captureOpen, setCaptureOpen] = useState(false);
+  const [journey, setJourney] = useState<"capture" | "reuse" | null>(null);
+  const captureOpen = journey === "capture";
+  const reuseOpen = journey === "reuse";
   const capture = useV3ProfileCapture(api, state.plan, active && version === "3" && captureOpen);
   const selector = (
     <label>
@@ -53,25 +56,42 @@ export function VersionedPlans({
         />
       </div>
       {version === "3" && (
-        <div hidden={captureOpen}>
+        <div hidden={journey !== null}>
           <V3PlanInspection
             state={state}
             versionSelector={selector}
             openDefinitions={openDefinitions}
+            reuseProfile={() => {
+              setJourney("reuse");
+              captureChanged?.(true);
+            }}
             captureProfile={() => {
-              setCaptureOpen(true);
+              setJourney("capture");
               captureChanged?.(true);
             }}
           />
         </div>
       )}
+      <div hidden={!reuseOpen || version !== "3"}>
+        <V3ProfileReuse
+          api={api}
+          refreshPlan={state.refresh}
+          plan={state.plan}
+          active={active && version === "3" && reuseOpen}
+          back={() => {
+            setJourney(null);
+            captureChanged?.(false);
+            void state.refresh();
+          }}
+        />
+      </div>
       <div hidden={!captureOpen || version !== "3"}>
         <V3ProfileCapture
           state={capture}
           plan={state.plan}
           active={active && version === "3" && captureOpen}
           back={() => {
-            setCaptureOpen(false);
+            setJourney(null);
             captureChanged?.(false);
           }}
         />

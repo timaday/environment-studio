@@ -74,6 +74,7 @@ public final class HostedBrowserHarness {
         if(!process.waitFor(20,TimeUnit.SECONDS)){process.destroyForcibly();throw new IllegalStateException("MOCK_TLS_TIMEOUT");}if(process.exitValue()!=0)throw new IllegalStateException("MOCK_TLS_UNAVAILABLE");
         var issuer=new MockIssuer();owned.add(issuer::close);issuer.subject="browser-maintainer";
         // Matching invented historical definition; actual compiler/store, no production qualification.
+        if(mode==Mode.PROFILES_V3)owned.add(V3WorkflowHttpTestConfiguration.profiles::clear);
         if(mode==Mode.PROFILES_V3)V3WorkflowStorageFixtures.definition(store,
                 new Owner(issuer.issuer(),"browser-maintainer"),V3WorkflowHttpTestConfiguration.OBJECT);
         var properties=new HashMap<String,Object>();properties.put("studio.mode","hosted");properties.put("spring.profiles.active","oidc-test");properties.put("studio.security.allow-test-http","true");
@@ -103,6 +104,15 @@ public final class HostedBrowserHarness {
             else if(mode==Mode.PROFILES_V3 && path.equals("/control/settled")) {
                 try { V3WorkflowHttpTestConfiguration.awaitRecords(0); }
                 catch(InterruptedException failure) { Thread.currentThread().interrupt();status=500; }
+                catch(Exception | AssertionError failure) { status=500; }
+            }
+            else if(mode==Mode.PROFILES_V3 && path.startsWith("/control/reuse/") && exchange.getRequestMethod().equals("POST")) {
+                String object=path.substring("/control/reuse/".length());
+                try {
+                    if(!UUID.fromString(object).toString().equals(object))throw new IllegalArgumentException("MOCK_OBJECT_REQUIRED");
+                    V3WorkflowHttpTestConfiguration.awaitRecords(0);
+                    V3WorkflowStorageFixtures.publishCapturedProfile(store,new Owner(issuer.issuer(),"browser-maintainer"),object);
+                } catch(InterruptedException failure) { Thread.currentThread().interrupt();status=500; }
                 catch(Exception | AssertionError failure) { status=500; }
             }
             else if(path.equals("/control/checks")){

@@ -253,3 +253,26 @@ A new validation retires any older page read. Only one page is retained; paging
 never changes the scope of backend validation. Future rendering must propagate
 idle session retirement and disclose which page is visible. No new layout,
 accessibility result or design approval is introduced by this state prerequisite.
+
+## Reuse renderer preparation and lifetime
+
+An inspected plan needs a complete target proof before profile preview. The
+operator explicitly prepares it through the existing materialization route;
+selection does not silently materialize. Refresh the plan after the result and
+use that returned context before revealing selection. Incomplete/refused results
+remain prerequisites, never success or export authority.
+
+Bind chained catalogue then current-inventory reads to the initiating API,
+plan context and presentation lifetime. A retired catalogue completion must not
+start another inventory request after reentry. A new explicit load belongs to
+the new context. Keep existing hook retirement and final-summary checks.
+
+Completed preparation diagnostics belong to the initiating context as well.
+Clear them on owner, plan or presentation retirement; preserve them across
+unrelated rerenders of the same context. Never display a prior plan diagnosis
+as evidence about the replacement plan.
+
+Changing to selected-parts mode with no roots is an ordinary unsubmitted state,
+not an invalid backend request. Explicitly clear previous selection/preview/error
+read state when selection becomes empty; do not issue a preview or fabricate a
+replacement selection. This local reset cannot clear or replace a pending apply.

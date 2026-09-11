@@ -4,8 +4,10 @@ const hosted = process.env.ES_HOSTED_BROWSER === "1";
 const planJourney = process.env.ES_HOSTED_BROWSER_MODE === "plans-v3";
 const refusalJourney = process.env.ES_HOSTED_BROWSER_MODE === "definitions-v3-refusal";
 const definitionJourney = process.env.ES_HOSTED_BROWSER_MODE === "definitions-v3" || refusalJourney;
+const reuseRenderer = process.env.ES_HOSTED_BROWSER_MODE === "profiles-v3-reuse";
 const profileRenderer = process.env.ES_HOSTED_BROWSER_MODE === "profiles-v3-renderer";
-const profileJourney = process.env.ES_HOSTED_BROWSER_MODE === "profiles-v3" || profileRenderer;
+const profileJourney =
+  process.env.ES_HOSTED_BROWSER_MODE === "profiles-v3" || profileRenderer || reuseRenderer;
 const hostedOutput = process.env.ES_HOSTED_BROWSER_OUTPUT_DIR;
 if (
   hosted &&
@@ -19,9 +21,11 @@ export default defineConfig({
   outputDir: hosted ? hostedOutput : "test-results",
   testMatch: hosted
     ? profileJourney
-      ? profileRenderer
-        ? "v3-profile-capture-renderer.spec.ts"
-        : "v3-profile-capture.spec.ts"
+      ? reuseRenderer
+        ? "v3-profile-reuse-renderer.spec.ts"
+        : profileRenderer
+          ? "v3-profile-capture-renderer.spec.ts"
+          : "v3-profile-capture.spec.ts"
       : planJourney
         ? "v3-plan-inspection.spec.ts"
         : definitionJourney

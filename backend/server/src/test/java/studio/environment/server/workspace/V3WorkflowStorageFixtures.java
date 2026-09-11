@@ -9,6 +9,19 @@ import static org.junit.jupiter.api.Assertions.*;
 
 /** Invented actual compiler output stored as test-only historical publication, never runtime qualification. */
 public final class V3WorkflowStorageFixtures {
+    /** Explicit browser-test witness on an actual saved capture; never production publication. */
+    public static void publishCapturedProfile(Path directory,Owner owner,String object) {
+        var store=new V3NativeSqliteStore(new SqliteDraftStore(directory));
+        var draft=store.read(owner,object,Optional.of("1"),true);
+        assertTrue(draft.publication().isEmpty());
+        var content=assertInstanceOf(V3NativeRevision.Profile.class,draft.content());
+        var next=new V3NativeRevision(object,"2",draft.format(),draft.source(),draft.sourceDigest(),draft.compilerVersion(),"3",draft.content(),Optional.empty());
+        var publication=new V3NativeRevision.Publication(V3NativeWorkspaceDigests.publication(next,"1",List.of()),"1",List.of());
+        var saved=store.append(owner,new NativeCommand.PublishProfile(object,"1",UUID.randomUUID().toString()),new V3NativeRevision(object,"2",next.format(),next.source(),next.sourceDigest(),next.compilerVersion(),"3",next.content(),Optional.of(publication)));
+        assertEquals(saved,store.read(owner,object,Optional.of("2"),true));
+        studio.environment.server.plan.V3WorkflowHttpTestConfiguration.profiles.put(owner,
+            new studio.environment.core.plan.PlanPorts.PublishedProfile(new NativeCommand.Reference(object,"2"),publication.digest(),content.checked()));
+    }
     public static void definition(Path directory,Owner owner,String object){
         var checked=V3WorkflowHttpWitnesses.definition();
         var content=new V3NativeRevision.Definition(checked,List.of());

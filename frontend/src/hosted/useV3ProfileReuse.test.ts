@@ -282,7 +282,7 @@ it.each(["revision", "definition", "observation", "counts", "missing"])(
     expect(result.current.error).not.toBe("");
   },
 );
-it.each(["configure", "disable", "plan", "unmount"])(
+it.each(["configure", "clear", "disable", "plan", "unmount"])(
   "retires a held preview on %s without subsequent reads",
   async (event) => {
     const { result, transport, rerender, unmount } = await setup();
@@ -300,6 +300,7 @@ it.each(["configure", "disable", "plan", "unmount"])(
     });
     if (event === "configure")
       act(() => result.current.configure({ profile, selection: { kind: "all" } }));
+    else if (event === "clear") act(() => result.current.clearSelection());
     else if (event === "disable") rerender({ value: plan, enabled: false });
     else if (event === "plan") rerender({ value: { ...plan, revision: "3" }, enabled: true });
     else unmount();
@@ -323,6 +324,8 @@ it.each([403, 413, "malformed"])(
         : json({ planId: id }),
     );
     await act(() => result.current.apply(decisions));
+    expect(result.current.pending).toBe(true);
+    act(() => result.current.clearSelection());
     expect(result.current.pending).toBe(true);
     act(() => result.current.configure({ profile, selection: { kind: "all" } }));
     await act(() => result.current.apply(decisions));
