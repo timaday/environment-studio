@@ -441,3 +441,64 @@ it("clears configured selection when preview discovers the session has ended", a
   await act(() => result.current.previewSelection());
   expect(calls(transport, "/profile-previews")).toHaveLength(1);
 });
+
+it.each(["dependencies", "relations", "conflicts"] as const)(
+  "refuses individually valid later %s pages whose total changed",
+  async (section) => {
+    const { result, transport } = await setup();
+    const original = transport.getMockImplementation();
+    if (!original) throw new Error("Missing mock implementation");
+    const items = Array.from({ length: 101 }, (_, n) =>
+      section === "dependencies"
+        ? {
+            slotId: slot((n % 100) + 1),
+            causedBy: slot(0),
+            relationId: `link-${n}`,
+            reason: "required-reference",
+          }
+        : section === "relations"
+          ? { relationId: `link-${n}`, fromSlot: slot(0), toSlot: slot(1) }
+          : { code: "ENTITY_COUNT", slotId: null, relationId: null, ruleId: `rule-${n}` },
+    );
+    transport.mockImplementation(async (path, options) => {
+      if (!String(path).endsWith("/profile-previews")) return original(path, options);
+      const body: PreviewRequest = JSON.parse(String(options?.body));
+      const value = page(body);
+      if (body.section !== section) return json(value);
+      // Each page is valid on its own: only the same-section total changes.
+      return json({
+        ...value,
+        total: body.offset === 0 ? 102 : 101,
+        nextOffset: body.offset === 0 ? 100 : null,
+        items: items.slice(body.offset, body.offset + body.limit),
+      });
+    });
+    act(() => result.current.configure(input));
+    await act(() => result.current.previewSelection());
+    expect(result.current.preview).toBeNull();
+    expect(result.current.error).toContain("CONFLICT");
+    expect(
+      calls(transport, "/profile-previews").filter(
+        ([, options]) => JSON.parse(String(options?.body)).section === section,
+      ),
+    ).toHaveLength(2);
+    await act(() => result.current.apply(decisions));
+    expect(calls(transport, "/commands")).toHaveLength(0);
+  },
+);
+it("refuses a preview whose pages consistently share an observation different from the plan", async () => {
+  const { result, transport } = await setup();
+  const original = transport.getMockImplementation();
+  if (!original) throw new Error("Missing mock implementation");
+  transport.mockImplementation(async (path, options) => {
+    if (!String(path).endsWith("/profile-previews")) return original(path, options);
+    const value = page(JSON.parse(String(options?.body)));
+    return json({ ...value, pins: { ...value.pins, observationFingerprint: "f".repeat(64) } });
+  });
+  act(() => result.current.configure(input));
+  await act(() => result.current.previewSelection());
+  expect(result.current.preview).toBeNull();
+  expect(result.current.error).toContain("CONFLICT");
+  await act(() => result.current.apply(decisions));
+  expect(calls(transport, "/commands")).toHaveLength(0);
+});

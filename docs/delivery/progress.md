@@ -766,3 +766,21 @@ four full unresolved drafts/64 MiB entered values, normal large responses and
 unread deadline/disconnect/logout recovery. Independent review corrected a harness
 cleanup fault and strengthened semantic witnesses. Source/graph/observation-overlap
 combinations remain under investigation; the allocation is not yet qualified.
+
+
+## Review coverage checkpoint — 11 September
+
+Ready: the seven test-only reuse/validation cases close REUSE-COV-001/002 and
+VAL-COV-001/002 against dd4d007; control60 and fresh325frontend/59schema/check
+pass, four compiled faults detected, fixed non-author source review no finding.
+See `docs/evidence/v3-review-coverage.md`. Production guards unchanged.
+
+Awaiting owners: reviewer verified dd4d007 in issue9 comment5632418146;
+combined application G01/G03/G08 awaits a fixed integrated candidate. IDE2
+retains its bounded external native observer assignment. Capture whole-screen
+proposals are being populated from the newly authorized actual synthetic
+workflow, with design approval still required before affected rendering.
+
+Blockers: production publication/client/native/resource and release evidence
+remain incomplete; original d67 legacy visibility failure remains unexplained.
+These test additions neither resolve nor reopen those separate requirements.

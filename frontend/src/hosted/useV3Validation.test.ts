@@ -357,3 +357,36 @@ it("keeps beyond-end emptiness distinct from absent target and rejects invalid c
     await act(() => result.current.readPage(offset, limit));
   expect(requests(transport)).toHaveLength(2);
 });
+
+it.each(["UNAVAILABLE", "REJECTED"])(
+  "clears validation evidence for422 %s instead of offering resource-size recovery",
+  async (code) => {
+    const { result, transport } = await setup();
+    await act(() => result.current.validate());
+    await act(() => result.current.readPage(0));
+    transport.mockResolvedValueOnce(json({ code }, 422));
+    await act(() => result.current.readPage(4));
+    expect(result.current.summary).toBeNull();
+    expect(result.current.page).toBeNull();
+    expect(result.current.request).toBeNull();
+    expect(result.current.error).toBe(code);
+    const count = transport.mock.calls.length;
+    await act(() => result.current.retrySmaller(1));
+    expect(transport.mock.calls).toHaveLength(count);
+    expect(result.current.page).toBeNull();
+  },
+);
+it("preserves displayed validation evidence when an offset exceeds the wire maximum", async () => {
+  const { result, transport } = await setup();
+  await act(() => result.current.validate());
+  await act(() => result.current.readPage(0));
+  const previous = result.current;
+  expect(previous.page?.items).toEqual([row(0), row(1), row(2), row(3)]);
+  const count = transport.mock.calls.length;
+  await act(() => result.current.readPage(2147483648));
+  expect(transport.mock.calls).toHaveLength(count);
+  expect(result.current.summary).toBe(previous.summary);
+  expect(result.current.page).toBe(previous.page);
+  expect(result.current.request).toBe(previous.request);
+  expect(result.current.error).toBe("INVALID_REQUEST");
+});
