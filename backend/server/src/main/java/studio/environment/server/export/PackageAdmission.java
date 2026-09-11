@@ -72,6 +72,30 @@ public final class PackageAdmission {
         if (!required.equals(accepted.execution().versions().mechanisms())) return new Result.Rejected("MECHANISM_MISMATCH");
         return accepted;
     }
+    /** Version-explicit internal pin check only; supplied compiler data is not publication authority. */
+    public Result readPinnedV3(studio.environment.core.definitionv3.NativeCompilationResult.ReadyToPublish definition,
+            String bindingId, byte[] executionJson, byte[] payloadJson) {
+        if (definition == null || !studio.environment.core.definitionv3.NativeMechanisms
+                .required(definition.checked().definition()).equals(definition.checked().mechanisms()))
+            return new Result.Rejected("UNSUPPORTED_MECHANISM");
+        var checked = definition.checked();
+        var binding = checked.definition().bindings().stream().filter(b -> b.id().equals(bindingId)).findFirst();
+        if (binding.isEmpty()) return new Result.Rejected("UNKNOWN_BINDING");
+        var result = read(executionJson, payloadJson);
+        if (!(result instanceof Result.Accepted accepted)) return result;
+        var pins = accepted.execution().binding();
+        if (!pins.id().equals(bindingId) || !pins.logicalDigest().equals(checked.logicalDigest())
+                || !pins.bindingDigest().equals(checked.bindingDigests().get(bindingId))
+                || !accepted.execution().engine().name().equals(binding.orElseThrow().engine().name())
+                || !accepted.execution().storage().equals(binding.orElseThrow().storage().name().toLowerCase(java.util.Locale.ROOT)))
+            return new Result.Rejected("DEFINITION_BINDING_MISMATCH");
+        var required = new TreeMap<String, String>();
+        studio.environment.core.definitionv3.NativeMechanisms.required(binding.orElseThrow())
+                .forEach((key, version) -> required.put(key, version.toString()));
+        required.put("structural-target-v1", "1"); required.put("plan-validation-v3", "1");
+        if (!required.equals(accepted.execution().versions().mechanisms())) return new Result.Rejected("MECHANISM_MISMATCH");
+        return accepted;
+    }
     JsonNode manifest(byte[] json) {
         var tree=PackageJson.parse(json,PackageJson.SMALL,8192);if(!manifestSchema.validate(tree).isEmpty())fail("SCHEMA_VIOLATION");return tree;
     }

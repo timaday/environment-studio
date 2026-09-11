@@ -229,6 +229,36 @@ test("workspace historical mechanism versions remain readable without granting n
 const packageAjv = new Ajv2020({ allErrors: true, strict: true });
 const packageManifest = packageAjv.compile(read("../schemas/guarded-manifest-v1.schema.json"));
 const packagePayload = packageAjv.compile(read("../schemas/guarded-payload-v1.schema.json"));
+test("guarded metadata distinguishes v3 pins without relabelling the v2 family", () => {
+  const manifest = read("../fixtures/guarded-package-v1/manifest.json");
+  const v2 = structuredClone(manifest.execution.mechanisms);
+  manifest.execution.mechanisms = {
+    "native-compiler-v3": "1", "xml-path-v1": "1", "xml-span-v1": "1",
+    "generic-graph-v1": "1", "derived-graph-v1": "1", "structural-target-v1": "1",
+    "plan-validation-v3": "1", "xml-child-property-v1": "1",
+  };
+  assert.equal(packageManifest(manifest), true, JSON.stringify(packageManifest.errors));
+  const v3 = structuredClone(manifest.execution.mechanisms);
+  for (const change of [
+    m => { m["native-compiler-v2"] = "2"; },
+    m => { m["plan-validation-v1"] = "1"; },
+    m => { delete m["derived-graph-v1"]; },
+    m => { delete m["native-compiler-v3"]; },
+    m => { delete m["plan-validation-v3"]; },
+    m => { m["native-compiler-v3"] = "2"; },
+    m => { m["unknown-mechanism"] = "1"; },
+  ]) {
+    manifest.execution.mechanisms = structuredClone(v3);
+    change(manifest.execution.mechanisms);
+    assert.equal(packageManifest(manifest), false);
+  }
+  manifest.execution.mechanisms = v2;
+  assert.equal(packageManifest(manifest), true);
+  for (const key of ["native-compiler-v3", "derived-graph-v1", "plan-validation-v3"]) {
+    manifest.execution.mechanisms = { ...v2, [key]: "1" };
+    assert.equal(packageManifest(manifest), false, key);
+  }
+});
 test("invented guarded package shapes support both engine contexts without granting execution authority", () => {
   const manifest = read("../fixtures/guarded-package-v1/manifest.json");
   const payload = read("../fixtures/guarded-package-v1/payload.json");

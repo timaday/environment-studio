@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://environment-studio.invalid/schemas/guarded-manifest-v1.schema.json",
-  "title": "Closed guarded manifest v1 — planned contract",
+  "title": "Closed guarded manifest v1 \u2014 planned contract",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -104,12 +104,10 @@
           "type": "object",
           "additionalProperties": false,
           "required": [
-            "native-compiler-v2",
             "xml-path-v1",
             "xml-span-v1",
             "generic-graph-v1",
-            "structural-target-v1",
-            "plan-validation-v1"
+            "structural-target-v1"
           ],
           "properties": {
             "native-compiler-v2": {
@@ -132,8 +130,56 @@
             },
             "xml-child-property-v1": {
               "const": "1"
+            },
+            "native-compiler-v3": {
+              "const": "1"
+            },
+            "derived-graph-v1": {
+              "const": "1"
+            },
+            "plan-validation-v3": {
+              "const": "1"
             }
-          }
+          },
+          "oneOf": [
+            {
+              "required": [
+                "native-compiler-v2",
+                "plan-validation-v1"
+              ],
+              "properties": {
+                "native-compiler-v3": false,
+                "derived-graph-v1": false,
+                "plan-validation-v3": false,
+                "native-compiler-v2": {
+                  "const": "2"
+                },
+                "plan-validation-v1": {
+                  "const": "1"
+                }
+              }
+            },
+            {
+              "required": [
+                "native-compiler-v3",
+                "derived-graph-v1",
+                "plan-validation-v3"
+              ],
+              "properties": {
+                "native-compiler-v2": false,
+                "plan-validation-v1": false,
+                "native-compiler-v3": {
+                  "const": "1"
+                },
+                "derived-graph-v1": {
+                  "const": "1"
+                },
+                "plan-validation-v3": {
+                  "const": "1"
+                }
+              }
+            }
+          ]
         },
         "planId": {
           "type": "string",

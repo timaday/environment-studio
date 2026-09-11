@@ -12,7 +12,7 @@ public final class PackageData {
     public enum KeyType { TEXT, INT64; public String token() { return name().toLowerCase(java.util.Locale.ROOT); } }
     public record Client(String family, String version, String platform) { @Override public String toString() { return "Client[redacted]"; } }
     public record Versions(String server, String supervisor, String template, String writer, String parser, Map<String, String> mechanisms) {
-        public Versions { limit(mechanisms.size(), 7); mechanisms = Collections.unmodifiableMap(new TreeMap<>(mechanisms)); }
+        public Versions { limit(mechanisms.size(), 8); mechanisms = Collections.unmodifiableMap(new TreeMap<>(mechanisms)); }
         @Override public String toString() { return "Versions[redacted]"; }
     }
     public record Plan(String id, String revision, String inputFingerprint, String observationFingerprint, String definitionPublicationDigest, List<String> profilePublicationDigests) {

@@ -334,7 +334,7 @@ for the prohibition on transaction control inside an enclosing transaction, and
 for explicit transaction start and first-statement ordering. These rules inform
 the candidate protocol; actual exact-client qualification remains mandatory.
 
-Current packages require compiler mechanism `native-compiler-v2=2`, matching the
+V2 packages require compiler mechanism `native-compiler-v2=2`, matching the
 [current publication registry](native-definition-v2.md#publication-and-digest-authority).
 The strict manifest schema and package admission refuse mechanism revision 1;
 reinspection and a new reviewed/exported artifact are required. Historical workspace
@@ -347,3 +347,37 @@ Definition-pinned package dependency admission refuses missing, extra or wrong
 versions. Mechanical package parsing alone cannot establish these definition
 dependencies, publication eligibility, complete target validation or client
 qualification; those remain separate server-owned export requirements.
+
+## Version-explicit v3 package pins
+
+The closed v1 container may describe exactly one mechanism family. Existing v2
+execution metadata and bytes remain valid without change. V3 metadata requires
+`native-compiler-v3=1`, `derived-graph-v1=1` and `plan-validation-v3=1` instead of
+`native-compiler-v2` and `plan-validation-v1`. Both families require `xml-path-v1`,
+`xml-span-v1`, `generic-graph-v1` and `structural-target-v1`, each at revision1.
+`xml-child-property-v1=1` remains selected-binding-specific. Mixed families,
+missing dependencies, unknown keys and unsupported revisions refuse. The maximum
+mechanism count is eight. Older strict readers reject the new family; do not
+relabel a v3 package as v2 for compatibility.
+
+The separate internal `PackageAdmission.readPinnedV3` takes a v3 compiler
+ReadyToPublish value, selected binding and the existing execution/payload bytes.
+It checks the complete checked definition's declared dependency vector, then the
+selected binding ID, engine/storage, logical/binding digests and exact
+binding-specific vector. Engine/storage disagreement refuses
+`DEFINITION_BINDING_MISMATCH` even if both execution and payload agree with each
+other. Complete table/document membership and target proof remain the future
+plan-to-package assembler's responsibility.
+It never converts an Incomplete compiler result to ReadyToPublish. Mechanical
+admission does not establish that its caller's ReadyToPublish value represents a
+fresh immutable publication, nor that XML is a validated target. Publication,
+complete plan proofs, review, content policy and client qualification remain
+server-owned prerequisites before any export. Actual v3 compilation continues
+to refuse publication; explicit test-only compiler witnesses cannot enable it.
+
+Acceptance: actual compiled independent v3 fixture plus an explicit test witness
+admits its exact selected-binding pins; mismatched digests, wrong binding, mixed
+compiler families and missing/extra child dependencies refuse. Preserve historical
+v2 cases and strict XML/payload checks. Generated transaction candidates remain
+unqualified, the inspector remains unavailable for export, and no hosted export,
+SQL execution or post-commit rollback workflow is added by this prerequisite.
