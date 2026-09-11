@@ -423,3 +423,27 @@ it.each([
   expect(fetcher.mock.calls[3][0]).toBe(sent[0]);
   expect(fetcher.mock.calls[3][1]?.body).toBe(sent[1]?.body);
 });
+
+it("retains the dispatched command when contradictory raw member names would collapse to a refusal", async () => {
+  const { result, fetcher } = await setup();
+  fetcher.mockResolvedValueOnce(
+    new Response(
+      '{"kind":"committed","kind":"rejected","diagnostics":[{"phase":"parse","code":"INVALID_JSON","pointer":"","message":"Invented refusal."}]}',
+      { status: 422 },
+    ),
+  );
+  await act(() => result.current.save());
+  expect(result.current.pending).toBe(true);
+  expect(result.current.error).toBe("RESPONSE_UNAVAILABLE");
+  act(() => result.current.setSource("must not replace an uncertain command"));
+  expect(result.current.source).toBe(source);
+  const sent = fetcher.mock.calls[2];
+  fetcher.mockImplementationOnce(async (path) =>
+    json(document(String(path).split("/").at(-1) ?? "")),
+  );
+  await act(() => result.current.retry());
+  expect(fetcher.mock.calls[3][0]).toBe(sent[0]);
+  expect(fetcher.mock.calls[3][1]?.body).toBe(sent[1]?.body);
+  expect(result.current.pending).toBe(false);
+  expect(result.current.selected?.source).toBe(source);
+});

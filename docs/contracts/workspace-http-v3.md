@@ -156,6 +156,10 @@ definition/profile object route and surfaces REJECTED with its diagnostics.
 That confirmed pre-commit outcome releases a pending draft command while retaining
 editable exact source. A bare422, code-only REJECTED, malformed/incomplete envelope
 or contradictory fields do not establish this outcome and retain uncertain replay.
+Duplicate JSON member names at any object depth also retain uncertainty, including
+escaped spellings that decode to the same name. Detect them from the raw reply
+before semantic refusal classification; ordinary JSON parsing alone loses this
+evidence. Repeated diagnostic array entries remain valid and ordered.
 Do not extend recognition to publication/plan routes or possibly committed403/413.
 
 ## Acceptance

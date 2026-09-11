@@ -14,6 +14,7 @@ async function failure(
   path = `/api/v3/definitions/${id}`,
   method = "PUT",
   status = 422,
+  raw = false,
 ) {
   const transport = vi
     .fn<typeof fetch>()
@@ -28,7 +29,7 @@ async function failure(
         }),
       ),
     )
-    .mockResolvedValueOnce(new Response(JSON.stringify(body), { status }));
+    .mockResolvedValueOnce(new Response(raw ? String(body) : JSON.stringify(body), { status }));
   const api = new HostedApi(transport);
   try {
     await api.session();
@@ -115,4 +116,48 @@ it("does not reclassify other routes, methods or postcommit-capable statuses", a
     [503, "UNAVAILABLE"],
   ] as const)
     expect(await failure({ code }, undefined, "PUT", status)).toMatchObject({ status, code });
+});
+
+const rawDiagnostic = JSON.stringify(diagnostic);
+it.each([
+  `{"kind":"committed","kind":"rejected","diagnostics":[${rawDiagnostic}]}`,
+  `{"kind":"rejected","diagnostics":[],"diagnostics":[${rawDiagnostic}]}`,
+  `{"kind":"rejected","diagnostics":[{"phase":"invalid","phase":"parse","code":"INVALID_SOURCE","pointer":"","message":"Invented refusal."}]}`,
+  String.raw`{"kind":"committed","k\u0069nd":"rejected","diagnostics":[{"phase":"parse","code":"INVALID_SOURCE","pointer":"","message":"Invented refusal."}]}`,
+  String.raw`{"kind":"rejected","diagnostics":[{"phase":"parse","code":"INVALID_SOURCE","pointer":"","message":"first","m\u0065ssage":"second"}]}`,
+  `{"kind":"rejected","kind":"rejected","diagnostics":[${rawDiagnostic}]}`,
+])("keeps duplicate raw JSON members uncertain on both save families %#", async (wire) => {
+  for (const family of ["definitions", "profiles"]) {
+    expect(await failure(wire, `/api/v3/${family}/${id}`, "PUT", 422, true)).toMatchObject({
+      status: 422,
+      code: "RESPONSE_UNAVAILABLE",
+      diagnostics: [],
+    });
+  }
+});
+it("preserves escaped names, JSON-looking diagnostic text, whitespace and repeated ordered entries", async () => {
+  const quoted = {
+    ...diagnostic,
+    pointer: '/a/{"kind":"x"}/𐀀',
+    message: 'Invented: "phase": {"kind":"a","kind":"b"} \\ end 𐀀',
+  };
+  const wire = ` \r\n {"diagnostics" : [${JSON.stringify(quoted)},${JSON.stringify(diagnostic)},${JSON.stringify(quoted)}], "k\\u0069nd" : "rejected"} \t `;
+  expect(await failure(wire, undefined, "PUT", 422, true)).toMatchObject({
+    code: "REJECTED",
+    diagnostics: [quoted, diagnostic, quoted],
+  });
+});
+
+it.each([
+  "",
+  '{"kind":"rejected","diagnostics":',
+  `${JSON.stringify(rejected)} {}`,
+  `${JSON.stringify(rejected)} trailing`,
+  '{"kind":"rejected",,"diagnostics":[]}',
+])("keeps malformed raw JSON uncertain before classification %#", async (wire) => {
+  expect(await failure(wire, undefined, "PUT", 422, true)).toMatchObject({
+    status: 422,
+    code: "RESPONSE_UNAVAILABLE",
+    diagnostics: [],
+  });
 });

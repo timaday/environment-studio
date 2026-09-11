@@ -320,26 +320,27 @@ export class HostedApi {
         throw new ApiFailure(response.status, earlyCode);
       }
       if (response.status === 204) return undefined as T;
+      const semanticSaveRefusal =
+        response.status === 422 &&
+        method === "PUT" &&
+        /^\/api\/v3\/(?:definitions|profiles)\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}(?![\s\S])/u.test(
+          path,
+        );
       let value: unknown;
+      let diagnostics: Diagnostic[] | null = null;
       try {
-        value = await response.json();
+        if (semanticSaveRefusal) diagnostics = workspaceRejection(await response.text());
+        else value = await response.json();
       } catch {
         live();
         throw new ApiFailure(response.status, "RESPONSE_UNAVAILABLE");
       }
       live();
+      if (semanticSaveRefusal) {
+        if (diagnostics === null) throw new ApiFailure(422, "RESPONSE_UNAVAILABLE");
+        throw new ApiFailure(422, "REJECTED", diagnostics);
+      }
       if (!response.ok) {
-        if (
-          response.status === 422 &&
-          method === "PUT" &&
-          /^\/api\/v3\/(?:definitions|profiles)\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}(?![\s\S])/u.test(
-            path,
-          )
-        ) {
-          const diagnostics = workspaceRejection(value);
-          if (diagnostics === null) throw new ApiFailure(422, "RESPONSE_UNAVAILABLE");
-          throw new ApiFailure(422, "REJECTED", diagnostics);
-        }
         const failure = value as { code?: unknown; diagnostics?: Diagnostic[] };
         const code =
           typeof failure.code === "string" && /^[A-Z][A-Z0-9_]{0,95}$/.test(failure.code)

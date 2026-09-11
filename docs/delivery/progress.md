@@ -1,5 +1,28 @@
 # Handoff and capability status
 
+Current lead correction addresses [DEF-QA-002 duplicate raw refusal members](../evidence/v3-duplicate-refusal.md)
+on820837c. Author RED7/53, final318frontend/59schema/check, unchanged-production
+build, four compiled guard faults and fixed non-author source review are complete.
+Independent runtime verification and combined integration remain required.
+
+- Ready: return fixed duplicate-refusal candidate for verification; refine capture
+  prerequisite/full-state designs using existing capture/reuse controllers.
+- Awaiting another owner: remote04a7 reuse then820 validation review; nativeIDE2
+  bounded external side-table observer implementation on unchanged WIP23.
+- Blockers: capture full-state/design approval, Definitions rendered exceptions,
+  unexplained d67 legacy failure, actual publication/native/client/resource
+  qualification and exact combined release evidence.
+
+User published820837c and its a9d/04a7/1522 ancestors; publication blocker resolved.
+Remote a9d actual semantic-refusal recovery and capture/store prerequisite passed
+(report5631906678), with new DEF-QA-002 assigned to lead. Preserve the reported
+invalid syntax-phase mock oracle separately from valid parse/actual-server proof.
+Native observer design v2 passed bounded source assessment; IDE2 alone is assigned
+its fixed two workloads/nine calibrations, no wider campaign or admission change.
+
+Earlier checkpoints below retain their original evidence boundaries; newer status
+above supersedes old publication/review waiting notes.
+
 Latest application candidate adds [paged validation state](../evidence/v3-validation-state.md)
 on04a7f94: complete backend outcomes, fingerprint-bound bounded pages and explicit
 same-offset smaller-page recovery for actual422 RESOURCE_LIMIT. Author26focused,
