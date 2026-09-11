@@ -230,7 +230,9 @@ These current values aid explicit placement only; they never enter the reusable
 profile or trigger matching/plan commands. Unknown inventory remains null. Reads
 are explicit, with no automatic retry or local persistence. Context, presentation,
 API/session replacement and session refusal retire pending reads and clear values;
-late results cannot restore retired content. Rendering and command choice state
+late results cannot restore retired content. Retained load callbacks belong to
+their original context and cannot acquire a replacement owner or start old-scope
+requests after retirement, including leave/reentry to the same plan. Rendering and command choice state
 remain separately owned and subject to approved UX.
 
 ## Browser validation state
