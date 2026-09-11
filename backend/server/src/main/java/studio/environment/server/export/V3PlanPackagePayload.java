@@ -13,6 +13,15 @@ import static studio.environment.server.export.PackageJson.fail;
 
 /** Internal unqualified payload candidate; never export authority. */
 public final class V3PlanPackagePayload {
+    public Result prepare(studio.environment.core.plan.HostedPlanService.ViewAdmission admission, String inputFingerprint) {
+        Objects.requireNonNull(admission);
+        if (inputFingerprint == null || !inputFingerprint.matches("[0-9a-f]{64}")) return new Result.Rejected("INVALID_REQUEST");
+        try {
+            var validation = admission.validationV3();
+            if (!inputFingerprint.equals(validation.inputFingerprint())) return new Result.Rejected("CONFLICT");
+            return admission.read(this::prepare);
+        } catch (PlanRefusal refused) { return new Result.Rejected(refused.code().name()); }
+    }
     public sealed interface Result {
         record Rejected(String code) implements Result { }
         final class Candidate implements Result {

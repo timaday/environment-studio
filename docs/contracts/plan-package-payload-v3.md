@@ -32,6 +32,21 @@ payload into the execution manifest. This adapter cannot establish those facts
 from a ViewSnapshot. Payload generation is not permission to download or execute.
 Actual compiler publication and hosted export remain closed.
 
+The owned preparation overload accepts an already executing, revision-pinned
+`ViewAdmission` and the exact validation input fingerprint the caller reviewed.
+It recomputes V3 validation through that original admission, including fresh
+publication lookup, rejects a fingerprint mismatch, then prepares bytes through
+the admission's cancellable read and final authority check. It never reserves a
+replacement session or silently chooses a newer revision. An expired lease,
+cancelled or changed admission, or changed publication returns a safe refusal.
+The caller retains responsibility for closing the admission.
+
+This overload still returns only an unqualified payload candidate. Matching a
+validation fingerprint does not imply that its required checks passed; in
+particular the client capability can remain UNKNOWN. No candidate may be served
+or executed on this basis. Final export admission and combined memory accounting
+remain required, and a returned candidate carries no continuing live authority.
+
 Acceptance uses actual reviewed mock projection and materialization: an explicit
 environment value changes only its qualified span; payload original/target bytes
 and declared keys/table agree with independent expectations. Verify unchanged
