@@ -2,6 +2,21 @@
 
 ## Current integration checkpoint — 11 September 2026
 
+Latest: remote reviewer owns combined f012956 G01/G02/G03/G08 (issue9/5632973237).
+Seven regression additions independently verified, including four fault oracles.
+TEST-QA-003 accepted after the first G02 run failed the asynchronous upload test;
+the [bounded test correction](../evidence/upload-read-settlement.md) passes local
+326frontend/59schema/check/build and awaits fixed independent verification.
+
+Ready: return that correction, then continue the approved Capture renderer in
+its separate application worktree. The six mapping/review/saved design states
+are approved with explicit accessibility/token/read-only corrections.
+Awaiting owners: remote combined gates; IDE2 acknowledged the accepted diagnostic
+native packet and its next bounded offline retained-allocation attribution task.
+Blockers: exact combined acceptance, pending unseen UX states, native/resource/
+client/publication qualification and release/operator evidence remain incomplete.
+The existing external native handoff and issue9/5632961899 hold its full disposition.
+
 Ready: root173cde2 and reviewed application63423f4 are combined in an isolated
 integration worktree. Only delivery/evidence text conflicted; no production or
 test conflict was resolved by hand. DEF-QA-002 independent verification is
