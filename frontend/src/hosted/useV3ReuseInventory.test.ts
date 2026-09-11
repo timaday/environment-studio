@@ -71,12 +71,18 @@ async function setup() {
   const api = new HostedApi(fetcher);
   owners.push(api);
   await api.session();
+  type Props = { value: PlanSummary | null; enabled: boolean; owner?: HostedApi };
+  const initialProps: Props = { value: plan, enabled: true };
+  const renderedCounts: Array<number | null> = [];
   const hook = renderHook(
-    ({ value, enabled }: { value: PlanSummary | null; enabled: boolean }) =>
-      useV3ReuseInventory(api, value, enabled),
-    { initialProps: { value: plan as PlanSummary | null, enabled: true } },
+    ({ value, enabled, owner }: Props) => {
+      const state = useV3ReuseInventory(owner ?? api, value, enabled);
+      renderedCounts.push(state.items?.length ?? null);
+      return state;
+    },
+    { initialProps },
   );
-  return { ...hook, fetcher, api };
+  return { ...hook, fetcher, api, renderedCounts };
 }
 it("explicitly loads all pages, retains field distinctions and verifies freshness without mutation", async () => {
   const { result, fetcher } = await setup();
@@ -249,4 +255,50 @@ it("does not start a second load while a page is held and retires on unmount", a
     await reading;
   });
   expect(fetcher).toHaveBeenCalledTimes(2);
+});
+
+it.each(["plan", "presentation", "api", "session", "unmount"])(
+  "retains no authority in saved load callbacks after %s retirement",
+  async (kind) => {
+    const { result, rerender, fetcher, api, unmount } = await setup();
+    const retiredLoad = result.current.load;
+    if (kind === "plan") {
+      rerender({ value: { ...plan, revision: "3", inspectionValid: false }, enabled: true });
+    } else if (kind === "presentation") {
+      rerender({ value: plan, enabled: false });
+      rerender({ value: plan, enabled: true });
+    } else if (kind === "api") {
+      const replacement = new HostedApi(fetcher);
+      owners.push(replacement);
+      await replacement.session();
+      rerender({ value: plan, enabled: true, owner: replacement });
+    } else if (kind === "session") api.clear();
+    else unmount();
+    const before = fetcher.mock.calls.length;
+    await act(() => retiredLoad());
+    expect(fetcher).toHaveBeenCalledTimes(before);
+    expect(result.current.items).toBeNull();
+    if (kind === "plan") {
+      await act(() => result.current.load());
+      expect(fetcher).toHaveBeenCalledTimes(before);
+      rerender({ value: plan, enabled: true });
+      await act(() => retiredLoad());
+      expect(fetcher).toHaveBeenCalledTimes(before);
+    }
+    if (kind !== "session" && kind !== "unmount") {
+      await act(() => result.current.load());
+      expect(result.current.items).toEqual(rows);
+      expect(fetcher).toHaveBeenCalledTimes(before + 3);
+    }
+  },
+);
+
+it("does not expose previous rows during the replacement render before effects clear state", async () => {
+  const { result, rerender, renderedCounts } = await setup();
+  await act(() => result.current.load());
+  expect(result.current.items).toEqual(rows);
+  const before = renderedCounts.length;
+  rerender({ value: { ...plan, revision: "3", inspectionValid: false }, enabled: true });
+  expect(renderedCounts.slice(before).length).toBeGreaterThan(0);
+  expect(renderedCounts.slice(before).every((count) => count === null)).toBe(true);
 });
