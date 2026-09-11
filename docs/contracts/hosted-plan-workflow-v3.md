@@ -216,6 +216,23 @@ Session termination/unmount retires owned state. Future rendering must connect
 session retirement and display receipt ownership explicitly. No rendered capture
 or reuse design is approved by this nonvisual prerequisite.
 
+## Browser reuse inventory
+
+Placement uses an explicitly loaded current physical inventory under the selected
+plan. The browser reads every bounded page, verifies original plan/side/revision,
+consistent total within the20000 physical bound, unique existing handles, and the
+count declared by the initiating plan. Before exposing any rows it re-reads the
+full plan summary and requires the initiating context to match. A partial, stale,
+duplicate or refused collection is unavailable, never an empty successful list.
+
+Keep the backend field distinction between absent, empty, masked and concrete.
+These current values aid explicit placement only; they never enter the reusable
+profile or trigger matching/plan commands. Unknown inventory remains null. Reads
+are explicit, with no automatic retry or local persistence. Context, presentation,
+API/session replacement and session refusal retire pending reads and clear values;
+late results cannot restore retired content. Rendering and command choice state
+remain separately owned and subject to approved UX.
+
 ## Browser validation state
 
 Explicit validation loads the complete summary without automatically fetching all
