@@ -2281,6 +2281,97 @@
           }
         }
       }
+    },
+    "/api/v3/plans/{planId}/reviews": {
+      "post": {
+        "operationId": "acknowledgePlanReviewV3",
+        "summary": "Acknowledge exact checked v3 plan inputs without granting export",
+        "description": "See plan-review-v3.md. Original V3 lease/view and shared semantic transfer precede input. Closed 16 KiB body under original 10-second deadline; 32 KiB acknowledgement under original 30-second output deadline. Fresh publication and complete XML proof bind exact fingerprint, destination and protected-self-contained intent. Shared 256-entry replay is checked before current revision pinning and never reactivates review. Original async abort is atomically ordered before commit; response loss after commit preserves the historical receipt. Review and immutable whole-document policy checks do not qualify client capability or authorize export.",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "planId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Uuid"
+            }
+          },
+          {
+            "name": "X-CSRF-TOKEN",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "../../schemas/plan-review-v3.schema.json#/$defs/request"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Original unchanged-revision receipt; no operationId or export authority",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "../../schemas/plan-review-v3.schema.json#/$defs/response"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error500"
+          }
+        }
+      }
     }
   },
   "components": {

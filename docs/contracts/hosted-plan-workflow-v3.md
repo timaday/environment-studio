@@ -91,7 +91,8 @@ admission, fresh publication and full original/retained-target proof. It never
 calls legacy validation, materializes a target, changes a revision or grants
 export. Missing target is distinct from complete empty target; invalid inspection
 refuses. Preserve all ten RequiredCheck outcomes in declared order, all physical
-count rules sorted by ID, existing UNKNOWN client/content/review categories and
+count rules sorted by ID, client capability UNKNOWN, review/content-policy outcomes defined in
+`plan-review-v3.md`, and
 the ES-PLAN-INPUT-3 fingerprint. Pagination affects only presentation.
 
 The closed request union is:
@@ -172,3 +173,48 @@ ports must remain absent from production composition, whose compiler still refus
 Qualify combined retained proofs, complete validation evaluation and bounded
 selected-page encoding before operational availability. No new maximum-resource,
 browser, native-client, export or release qualification is asserted by this API.
+
+## Browser reuse state
+
+The nonvisual reuse controller accepts an explicit immutable profile revision and
+whole/selected roots. Entry/configuration never mutates the plan. Preview reads
+all four sections to completion, including empty ones; it exposes no partial
+collection. All pages must share pins, digest and affected derivations, each
+section must retain its total, and the observation fingerprint and final fresh
+plan summary must still match the original context. A failed or retired read
+clears the preview. Unknown inventory is not an empty successful preview.
+
+Apply is a separate explicit action with one create/use-existing/cancel decision
+per included slot. The command uses only returned normalized roots/digest/profile
+and the original revision; no inferred mapping, donor value or replace-draft
+command is generated. Java remains responsible for composition, conflict
+resolution, publication, sibling preservation and materialization. A complete
+preview does not authorize export or establish publication readiness.
+
+A dispatched command is detached and retained with its original plan ID until a
+valid acknowledgement or confirmed pre-commit refusal. Network, malformed reply
+and possibly committed403/413 preserve exact retry; configuration/context changes
+must not replace it or replay against another plan. An acknowledgement is an
+original command receipt, never a fresh summary or target-completeness assertion.
+Session termination/unmount retires owned state. Future rendering must connect
+session retirement and display receipt ownership explicitly. No rendered capture
+or reuse design is approved by this nonvisual prerequisite.
+
+## Browser validation state
+
+Explicit validation loads the complete summary without automatically fetching all
+computed rules. Retain all backend outcomes and null versus zero rule counts;
+never derive export permission. Publish a summary or page only after a fresh full
+plan summary matches the initiating context. Reads retire on context, presentation,
+owner or session changes; no partial or previous page remains visible as current.
+
+Rule navigation requests one bounded page, default limit4, at an explicit offset.
+It verifies revision, fingerprint, complete count and page arithmetic against the
+retained validation summary. A RESOURCE_LIMIT refusal retains that summary and
+the failed offset/limit for explicit retry at the same offset with a smaller
+limit down to1. It clears the old page, never advances offset or silently changes
+the page size. Other failures clear validation evidence and require revalidation.
+A new validation retires any older page read. Only one page is retained; paging
+never changes the scope of backend validation. Future rendering must propagate
+idle session retirement and disclose which page is visible. No new layout,
+accessibility result or design approval is introduced by this state prerequisite.

@@ -16,6 +16,28 @@ import static studio.environment.core.plan.PlanRefusal.Code.*;
 public final class HostedPlanService {
     public record Ack(String planId, String revision, Optional<String> operationId) { }
     public record Mutation(String expectedRevision, String requestId) { }
+    public enum ArtifactIntent { PROTECTED_SELF_CONTAINED }
+    public record ReviewCommand(Mutation mutation,String inputFingerprint,String destinationId,ArtifactIntent artifactIntent) {
+        public ReviewCommand {
+            if(mutation==null || inputFingerprint==null || !inputFingerprint.matches("[0-9a-f]{64}")
+                    || destinationId==null || !destinationId.matches("[a-z][a-z0-9.-]{0,63}") || artifactIntent==null)throw new PlanRefusal(INVALID_REQUEST);
+        }
+        @Override public String toString(){return "PlanReviewCommand[redacted]";}
+    }
+    public Ack reviewV3(SessionLedger.Lease lease,String planId,ReviewCommand command) {
+        try(var admission=reserveView(lease,planId,PlanDefinition.Version.V3)) {
+            return admission.run(()->admission.reviewV3(command));
+        }
+    }
+    /** Content adapters report failed retained source/projection evidence distinctly from request errors. */
+    private <T> T readContent(Plan plan,Supplier<T> action) {
+        try {return action.get();}
+        catch(PlanRefusal failure) {
+            if(failure.code()==PROJECTION_REFUSED && plan.definition.model() instanceof PlanDefinition.V3)clearReview(plan);
+            throw failure;
+        }
+    }
+    private void clearReview(Plan plan) {synchronized(lock){plan.review=null;}}
     public record Summary(String planId, String revision, boolean inspectionValid, boolean targetComplete,
             int documents, int entities, boolean exportAvailable) { }
     public record Counts(int documents,int entities,int relations) { }
@@ -71,6 +93,8 @@ public final class HostedPlanService {
     public enum Cleanup { COMPLETE, IN_PROGRESS, INCONCLUSIVE }
     public record Status(String operationId, String planId, Phase phase, String code, Cleanup cleanup, Optional<String> installedRevision) { }
     private record Replay(String identity, Ack acknowledgement) { }
+    private record Review(String revision,long generation,String inputFingerprint,String destinationId,ArtifactIntent artifactIntent) { }
+
     private static final class LeaseState {
         final SessionLedger.Lease lease;
         final Map<String,Replay> replay = new LinkedHashMap<>();
@@ -101,6 +125,7 @@ public final class HostedPlanService {
         Content current;
         Content target;
         Draft draft = Draft.empty();
+        Review review;
         Operation active;
         long retainedBytes;
         long enteredBytes;
@@ -249,7 +274,7 @@ public final class HostedPlanService {
             };
             if(reservation instanceof ObservationPort.Reservation.Refused refused) throw new PlanRefusal(refused.code()==ObservationResult.Code.CAPACITY?CAPACITY:OBSERVATION_REFUSED);
             var operation=new Operation(plan,monotonic.getAsLong(),((ObservationPort.Reservation.Admitted)reservation).permit());
-            observationScratch++; plan.active=operation; state.operations.put(operation.id,operation);
+            observationScratch++; plan.review=null; plan.active=operation; state.operations.put(operation.id,operation);
             var acknowledgement=new Ack(plan.id,plan.revision.toString(),Optional.of(operation.id));
             state.replay.put(mutation.requestId(),new Replay(identity,acknowledgement));
             return acknowledgement;
@@ -462,7 +487,7 @@ public final class HostedPlanService {
     private void clearRetired(Plan plan) {
         if(plan==null || !plan.retired || plan.active!=null || plan.rendering || plan.readers>0) return;
         retainedBytes-=plan.retainedBytes; enteredBytes-=plan.enteredBytes;
-        plan.retainedBytes=0; plan.enteredBytes=0; plan.current=null; plan.target=null; plan.draft=Draft.empty(); plan.profiles.clear(); plan.observationFingerprint=null; plan.observedDestination=null;
+        plan.review=null; plan.retainedBytes=0; plan.enteredBytes=0; plan.current=null; plan.target=null; plan.draft=Draft.empty(); plan.profiles.clear(); plan.observationFingerprint=null; plan.observedDestination=null;
         plan.handles.clear(); plan.originals.clear();
         leases.values().forEach(state->{ if(state.plan==plan) state.plan=null; });
     }
@@ -507,7 +532,7 @@ public final class HostedPlanService {
             localWork=state.commandReaders>0 || state.plan!=null && (state.plan.rendering || state.plan.readers>0);
             if(viewScratch!=null && viewScratch.state==state) viewScratch.cancellation.cancel();
             if(state.plan!=null) {
-                state.plan.retired=true; state.plan.inspectionValid=false;
+                state.plan.review=null; state.plan.retired=true; state.plan.inspectionValid=false;
                 if(state.plan.workCancellation!=null) state.plan.workCancellation.cancel();
                 if(state.plan.active!=null) cancelOperation(state.plan.active);
                 clearRetired(state.plan);
@@ -561,8 +586,10 @@ public final class HostedPlanService {
         });
     }
     public final class ViewAdmission implements AutoCloseable {
+        private enum ReviewState { OPEN,CANCELLED,COMMITTED }
         private final SessionLedger.Lease lease; private final String planId; private final LeaseState state;
         private final ObservationPort.Cancellation cancellation=new ObservationPort.Cancellation();
+        private final java.util.concurrent.atomic.AtomicReference<ReviewState> reviewState=new java.util.concurrent.atomic.AtomicReference<>(ReviewState.OPEN);
         private boolean used,executing,closed,released; private Plan pinned; private String revision; private long generation; private boolean inspection; private Operation active;
         private ViewAdmission(SessionLedger.Lease lease,String planId,LeaseState state) {this.lease=lease;this.planId=planId;this.state=state;}
         public boolean live() { return authority.guard(lease,()->{synchronized(lock){return !closed;}}).orElse(false); }
@@ -589,15 +616,55 @@ public final class HostedPlanService {
         /** Trusted presentation read under this original admission; snapshots confer no authority. */
         public <T> T read(java.util.function.BiFunction<ViewSnapshot,ObservationPort.Cancellation,T> reader) {
             Objects.requireNonNull(reader);var selected=snapshot();
-            var result=reader.apply(selected,cancellation);verify();return result;
+            var result=readContent(pinned,()->reader.apply(selected,cancellation));verify();return result;
         }
         public studio.environment.core.graph.ObservedGraph.Key observed(String handle) {
             return guarded(lease,()->{check();var ref=pinned.originals.get(handle);if(ref==null)throw new PlanRefusal(INVALID_REQUEST);return ref.key();});
         }
         public Materialization materialize() {verify();var result=HostedPlanService.this.materialize(lease,planId,revision,this);verify();return result;}
         public Validation validation() {verify();var result=validate(lease,planId,revision);verify();return result;}
+        /** Original transfer abort signal; worker retains resource cleanup ownership. */
+        public void abortReview() {
+            if(reviewState.compareAndSet(ReviewState.OPEN,ReviewState.CANCELLED) || reviewState.get()==ReviewState.CANCELLED)cancellation.cancel();
+        }
+        public void verifyReview() {
+            guarded(lease,()->{
+                if(closed || !executing || cancellation.cancelled() || reviewState.get()==ReviewState.CANCELLED)throw new PlanRefusal(CANCELLED);
+                if(ownedState(lease,planId).ownedPlans.get(planId)!=PlanDefinition.Version.V3)throw new PlanRefusal(NOT_FOUND);
+                if(pinned!=null)check();return true;
+            });
+        }
+        public Ack reviewV3(ReviewCommand command) {
+            if(command==null)throw new PlanRefusal(INVALID_REQUEST);
+            String identity=identity(lease,planId,command.mutation(),"review-v3",Map.of(
+                    "inputFingerprint",command.inputFingerprint(),"destinationId",command.destinationId(),"artifactIntent",command.artifactIntent().name()));
+            var previous=guarded(lease,()->{
+                if(closed || !executing || pinned!=null)throw new PlanRefusal(INVALID_REQUEST);
+                if(reviewState.get()!=ReviewState.OPEN || cancellation.cancelled())throw new PlanRefusal(CANCELLED);
+                var owned=ownedState(lease,planId);
+                if(owned.ownedPlans.get(planId)!=PlanDefinition.Version.V3)throw new PlanRefusal(NOT_FOUND);
+                return replay(owned,command.mutation().requestId(),identity);
+            });
+            if(previous.isPresent())return previous.orElseThrow();
+            pin(command.mutation().expectedRevision());
+            var validation=validationV3();
+            if(!validation.targetComplete())throw new PlanRefusal(INCOMPLETE_TARGET);
+            return guarded(lease,()->{
+                check();current(pinned,command.mutation());inspected(pinned);
+                var repeated=replay(state,command.mutation().requestId(),identity);
+                if(repeated.isPresent())return repeated.orElseThrow();
+                if(!command.inputFingerprint().equals(validation.inputFingerprint()) || !command.destinationId().equals(pinned.destination.id()))throw new PlanRefusal(CONFLICT);
+                var acknowledgement=pinned.ack();
+                var reviewed=new Review(revision,generation,validation.inputFingerprint(),pinned.destination.id(),command.artifactIntent());
+                var receipt=new Replay(identity,acknowledgement);
+                if(!reviewState.compareAndSet(ReviewState.OPEN,ReviewState.COMMITTED))throw new PlanRefusal(CANCELLED);
+                state.replay.put(command.mutation().requestId(),receipt);
+                pinned.review=reviewed;
+                return acknowledgement;
+            });
+        }
         public V3Validation validationV3() {
-            return read((snapshot,control)->{
+            try { return read((snapshot,control)->{
                 var context=guarded(lease,()->{
                     check();inspected(pinned);
                     if(!(snapshot.definition().model() instanceof PlanDefinition.V3))throw new PlanRefusal(UNSUPPORTED_DEFINITION);
@@ -609,19 +676,30 @@ public final class HostedPlanService {
                 if(!snapshot.definition().equals(publication))throw new PlanRefusal(UNSUPPORTED_DEFINITION);
                 content.verifyV3(snapshot,snapshot.target().isPresent(),control);
                 verify();
-                return PlanValidationV3.evaluate(context,snapshot,control);
-            });
+                var result=PlanValidationV3.evaluate(context,snapshot,control);
+                var review=guarded(lease,()->{check();return Optional.ofNullable(pinned.review);});
+                if(result.targetComplete() && review.filter(value->value.generation()==generation && value.revision().equals(revision)
+                        && value.inputFingerprint().equals(result.inputFingerprint()) && value.destinationId().equals(context.destinationId())
+                        && value.artifactIntent()==ArtifactIntent.PROTECTED_SELF_CONTAINED).isPresent()) {
+                    var policy=PlanReviewV3.contentPolicy(snapshot,control);
+                    return PlanReviewV3.reviewed(result,policy);
+                }
+                return result;
+            }); } catch(RuntimeException failure) {
+                synchronized(lock) {if(pinned!=null)pinned.review=null;}
+                throw failure;
+            }
         }
         public DocumentView document(boolean targetSide,String documentId,ViewMode mode,boolean disclosed) {
             if(!disclosed)throw new PlanRefusal(DISCLOSURE_REQUIRED);
             var snap=snapshot();
-            var result=content.compare(snap,targetSide,documentId,mode,cancellation);verify();return result;
+            var result=readContent(pinned,()->content.compare(snap,targetSide,documentId,mode,cancellation));verify();return result;
         }
         public CapturedProfile capture(studio.environment.core.profile.ProfileCapture.Command command) {
             var snap=snapshot();guarded(lease,()->{check();inspected(pinned);if(pinned.active!=null || pinned.rendering)throw new PlanRefusal(PLAN_BUSY);return true;});
-            var result=snap.definition().model() instanceof PlanDefinition.V3
+            var result=readContent(pinned,()->snap.definition().model() instanceof PlanDefinition.V3
                     ?content.captureV3(snap.definition(),snap.v3Pins().orElseThrow(()->new PlanRefusal(PROJECTION_REFUSED)).original(),snap.selected(false),command,cancellation)
-                    :content.capture(snap.definition(),snap.binding(),snap.selected(false),command);
+                    :content.capture(snap.definition(),snap.binding(),snap.selected(false),command));
             if(utf8(result.source())>MIB)throw new PlanRefusal(RESOURCE_LIMIT);verify();return new CapturedProfile(result,snap.definition().reference());
         }
         public CompositionPreview preview(NativeCommand.Reference reference,List<String> roots) {
@@ -873,6 +951,7 @@ public final class HostedPlanService {
         if(!plan.inspectionValid || plan.current==null) throw new PlanRefusal(INSPECTION_REQUIRED);
     }
     private void dropTarget(Plan plan) {
+        plan.review=null;
         if(plan.target!=null) {
             long bytes=sourceBytes(plan.target); plan.retainedBytes-=bytes; retainedBytes-=bytes; plan.target=null;
         }
@@ -966,9 +1045,9 @@ public final class HostedPlanService {
             return rendering(plan,revision);
         });
         try {
-            var captured=snapshot.plan.definition.model() instanceof PlanDefinition.V3
+            var captured=readContent(snapshot.plan,()->snapshot.plan.definition.model() instanceof PlanDefinition.V3
                     ?content.captureV3(snapshot.plan.definition,v3Pin(snapshot,snapshot.observationFingerprint),snapshot.current,command,snapshot.cancellation)
-                    :content.capture(snapshot.plan.definition,snapshot.plan.binding,snapshot.current,command);
+                    :content.capture(snapshot.plan.definition,snapshot.plan.binding,snapshot.current,command));
             if(utf8(captured.source())>MIB) throw new PlanRefusal(RESOURCE_LIMIT);
             return guarded(lease,()-> {
                 if(snapshot.plan.retired || !snapshot.plan.inspectionValid || snapshot.cancellation.cancelled() || snapshot.generation!=snapshot.plan.generation || !revision.equals(snapshot.plan.revision.toString())) throw new PlanRefusal(CONFLICT);
@@ -1024,7 +1103,8 @@ public final class HostedPlanService {
         if(snapshot.cancellation.cancelled()) throw new PlanRefusal(CONFLICT);
         PublishedProfile result;
         if(snapshot.plan.definition.model() instanceof PlanDefinition.V3) {
-            content.verifyV3(snapshot.view,true,snapshot.cancellation);
+            try {content.verifyV3(snapshot.view,true,snapshot.cancellation);}
+            catch(RuntimeException failure){clearReview(snapshot.plan);throw failure;}
             result=workspace.profileV3(owner,reference,snapshot.plan.definition);
         } else result=workspace.profile(owner,reference,snapshot.plan.definition);
         if(snapshot.cancellation.cancelled()) throw new PlanRefusal(CONFLICT);
@@ -1186,7 +1266,7 @@ public final class HostedPlanService {
             return new ComparisonWork(plan,snapshot(plan),plan.generation,plan.inspectionValid,plan.active,plan.workCancellation);
         });
         try {
-            var display=content.compare(work.snapshot,target,documentId,mode,work.cancellation);
+            var display=readContent(work.plan,()->content.compare(work.snapshot,target,documentId,mode,work.cancellation));
             return guarded(lease,()-> {
                 if(work.plan.retired || work.cancellation.cancelled() || work.plan.inspectionValid!=work.inspection || work.plan.active!=work.active || !work.plan.revision.toString().equals(revision) || work.plan.generation!=work.generation) throw new PlanRefusal(CONFLICT);
                 return display;

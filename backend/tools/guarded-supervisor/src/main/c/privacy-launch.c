@@ -199,11 +199,13 @@ es_launch_result es_launch_cancel(es_launch *p){
   pthread_mutex_lock(&p->mutex);--p->signals;if(r)fail(p,r);pthread_cond_broadcast(&p->changed);pthread_mutex_unlock(&p->mutex);}
  settle(p);return r;
 }
-es_launch_cleanup es_launch_close(es_launch *p,uint64_t left){
+static es_launch_cleanup close_launch(es_launch *p,uint64_t limit,int absolute){
  if(!valid(p))return ES_LAUNCH_CLOSE_INVALID;
  pthread_mutex_lock(&p->mutex);
  if(p->closing==ES_LAUNCH_CLOSE_SETTLED){es_launch_cleanup r=p->inconclusive?ES_LAUNCH_CLOSED_INCONCLUSIVE:ES_LAUNCH_CLOSED_COMPLETE;pthread_mutex_unlock(&p->mutex);return r;}
- uint64_t n=now();int ok=n&&left&&left<=NS10&&left<=UINT64_MAX-n;uint64_t d=ok?n+left:n;
+ uint64_t n=now(),d=limit;int ok;
+ if(absolute){ok=n&&d>n&&d-n<=NS10;if(!n||(d>n&&d-n>NS10))d=n;}
+ else{ok=n&&limit&&limit<=NS10&&limit<=UINT64_MAX-n;d=ok?n+limit:n;}
  if(!ok)p->inconclusive=1;
  if(p->closing==ES_LAUNCH_CLOSE_NONE){p->closing=ES_LAUNCH_CLOSE_REQUESTED;p->cleanup_deadline=d;}else if(d<p->cleanup_deadline)p->cleanup_deadline=d;
  pthread_cond_broadcast(&p->changed);pthread_mutex_unlock(&p->mutex);
@@ -213,6 +215,8 @@ es_launch_cleanup es_launch_close(es_launch *p,uint64_t left){
  es_launch_cleanup r=p->closing==ES_LAUNCH_CLOSE_SETTLED&&!p->inconclusive?ES_LAUNCH_CLOSED_COMPLETE:ES_LAUNCH_CLOSED_INCONCLUSIVE;
  pthread_mutex_unlock(&p->mutex);return r;
 }
+es_launch_cleanup es_launch_close(es_launch *p,uint64_t remaining){return close_launch(p,remaining,0);}
+es_launch_cleanup es_launch_close_until(es_launch *p,uint64_t deadline){return close_launch(p,deadline,1);}
 
 static es_launch_result maps_result(es_maps_result result){
  switch(result){

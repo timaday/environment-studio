@@ -54,14 +54,19 @@ final class V3PlanTransport {
         private final SessionLedger.Lease lease;
         private final String planId;
         private final HostedPlanService.ViewAdmission admission;
+        private final boolean review;
         private boolean pinned;
         ViewScope(SessionLedger.Lease lease,String planId,HostedPlanService.ViewAdmission admission){
-            this.lease=lease;this.planId=planId;this.admission=admission;
+            this(lease,planId,admission,false);
+        }
+        ViewScope(SessionLedger.Lease lease,String planId,HostedPlanService.ViewAdmission admission,boolean review){
+            this.lease=lease;this.planId=planId;this.admission=admission;this.review=review;
         }
         void run(Runnable transfer){admission.run(()->{transfer.run();return true;});}
         void verify(){
             service.requireOwned(lease,planId,studio.environment.core.plan.PlanDefinition.Version.V3);
-            if(pinned)admission.verify();
+            if(review)admission.verifyReview();
+            else if(pinned)admission.verify();
             else if(!admission.live())throw new PlanRefusal(PlanRefusal.Code.CANCELLED);
         }
         private PlanViewRequest request(PlanViewRequest.Route route,OwnedServletBody body){
@@ -73,6 +78,8 @@ final class V3PlanTransport {
             return new V3PlanReply.Materialized(planId,request.revision(),admission.materialize());
         }
         V3PlanReply workflow(V3PlanWorkflowReader.Route route,OwnedServletBody body){
+            if(route==V3PlanWorkflowReader.Route.REVIEW)
+                return new V3PlanReply.Acknowledgement(admission.reviewV3(new PlanMetadataReader().review(body)));
             if(route==V3PlanWorkflowReader.Route.VALIDATION){
                 var request=new V3PlanWorkflowReader().validation(body);
                 admission.pin(request.revision());pinned=true;
@@ -162,8 +169,8 @@ final class V3PlanTransport {
     }
     void workflowBody(SessionLedger.Lease lease,String planId,HttpServletRequest request,HttpServletResponse response,
             V3PlanTransfers.Operation operation,HostedPlanService.ViewAdmission admission,V3PlanWorkflowReader.Route route){
-        var scope=new ViewScope(lease,planId,admission);
-        start(lease,request,response,operation,200,route==V3PlanWorkflowReader.Route.VALIDATION?BodyMode.SMALL:BodyMode.COLLECTION,
+        var scope=new ViewScope(lease,planId,admission,route==V3PlanWorkflowReader.Route.REVIEW);
+        start(lease,request,response,operation,200,route==V3PlanWorkflowReader.Route.VALIDATION || route==V3PlanWorkflowReader.Route.REVIEW?BodyMode.SMALL:BodyMode.COLLECTION,
                 admission,()->!admission.live(),body->scope.workflow(route,body.orElseThrow()),Optional.of(scope));
     }
     private void check(SessionLedger.Lease lease,V3PlanTransfers.Operation operation){
@@ -177,7 +184,7 @@ final class V3PlanTransport {
         try {
             check(lease,operation);if(mode!=BodyMode.NONE)requireJson(request);
             asyncAttempted=true;var context=request.startAsync();context.setTimeout(30_000);
-            completion=new OwnedAsyncCompletion(context,outcome->operation.settlement(cleanupUncertain.get()?OwnedAsyncCompletion.Outcome.INCONCLUSIVE:outcome,sessions));
+            completion=new OwnedAsyncCompletion(context,outcome->operation.settlement(cleanupUncertain.get()?OwnedAsyncCompletion.Outcome.INCONCLUSIVE:outcome,sessions),scope.filter(value->value.review).map(value->value.admission));
             context.setTimeout(0);var owner=completion;check(lease,operation);owner.checkActive();
             if(mode!=BodyMode.NONE){
                 long deadline=System.nanoTime()+mode.nanos;
@@ -223,7 +230,7 @@ final class V3PlanTransport {
         long deadline=clock.getAsLong()+30_000_000_000L;var outputAttempted=new AtomicBoolean();
         Runnable authority=outputAuthority(lease,operation,completion,deadline,scope);
         Runnable verify=()->{authority.run();reply.verify(service,lease);};
-        try {write(response,status,reply.wire(),verify,deadline,outputAttempted,scope.isPresent()?ResponseMode.VIEW:ResponseMode.SMALL);}
+        try {write(response,status,reply.wire(),verify,deadline,outputAttempted,responseMode(scope));}
         catch(RuntimeException failure){
             if(!outputAttempted.get() && !response.isCommitted())sendFailure(response,failure,lease,operation,completion,deadline,scope);
             else LOG.warn("V3_PLAN_RESPONSE_ABORTED");
@@ -235,9 +242,10 @@ final class V3PlanTransport {
         try {
             verify.run();response.resetBuffer();response.setHeader("Content-Length",null);
             if(refusal.closeConnection())response.setHeader("Connection","close");
-            write(response,refusal.status(),Map.of("code",refusal.code()),verify,deadline,new AtomicBoolean(),scope.isPresent()?ResponseMode.VIEW:ResponseMode.SMALL);
+            write(response,refusal.status(),Map.of("code",refusal.code()),verify,deadline,new AtomicBoolean(),responseMode(scope));
         } catch(IOException|RuntimeException denied){LOG.warn("V3_PLAN_RESPONSE_ABORTED");}
     }
+    private static ResponseMode responseMode(Optional<ViewScope> scope){return scope.filter(value->!value.review).isPresent()?ResponseMode.VIEW:ResponseMode.SMALL;}
     private void write(HttpServletResponse response,int status,Object value,Runnable verify,long deadline,AtomicBoolean outputAttempted,ResponseMode mode)throws IOException {
         try(var encoded=new PlanViewEncoding(mode.bytes,verify)){
             encoded.encode(value);verify.run();outputAttempted.set(true);

@@ -49,7 +49,7 @@ class V3ProfileBoundaryTest {
             assertEquals(200, result.status());
             assertEquals("{\"profiles\":[]}", result.body());
         } finally {
-            assertEquals(204, client.request("POST", "/api/v1/session/logout", "", true).status());
+            logoutAfterWorkspaceSettles(client);
         }
     }
 
@@ -79,8 +79,8 @@ class V3ProfileBoundaryTest {
         var other = login("profile-foreign-" + UUID.randomUUID());
         assertEquals(404, other.get(path).status());
         assertEquals(404, other.request("PUT", "/api/v3/profiles/" + UUID.randomUUID(), body, true).status());
-        assertEquals(204, other.request("POST", "/api/v1/session/logout", "", true).status());
-        assertEquals(204, client.request("POST", "/api/v1/session/logout", "", true).status());
+        logoutAfterWorkspaceSettles(other);
+        logoutAfterWorkspaceSettles(client);
         assertEquals(401, client.get(path).status());
         assertFalse(output.getAll().contains("INVENTED-PROFILE-HTTP-CANARY"));
         assertFalse(output.getAll().contains("mock-platform-secret"));
@@ -97,7 +97,7 @@ class V3ProfileBoundaryTest {
         }
         awaitCount(0);
         var again = login(subject); assertEquals(200, again.get("/api/v3/profiles").status());
-        assertEquals(204, again.request("POST", "/api/v1/session/logout", "", true).status());
+        logoutAfterWorkspaceSettles(again);
     }
     @Test void definitionsAndProfilesShareFourBlockedTransfersAndRecovery() throws Exception {
         String subject = "profile-shared-" + UUID.randomUUID(); var client = login(subject);
@@ -122,7 +122,7 @@ class V3ProfileBoundaryTest {
         awaitCount(0);
         assertEquals(200, client.get("/api/v3/profiles").status());
         assertEquals(200, client.get("/api/v3/definitions").status());
-        assertEquals(204, client.request("POST", "/api/v1/session/logout", "", true).status());
+        logoutAfterWorkspaceSettles(client);
     }
     @Test void profileRoutesRequireApprovedHostOriginAndAuthentication() throws Exception {
         assertEquals(401, new PlanHttpSocketClient(port).get("/api/v3/profiles").status());
@@ -134,6 +134,13 @@ class V3ProfileBoundaryTest {
             String response = new String(socket.getInputStream().readNBytes(4096), java.nio.charset.StandardCharsets.US_ASCII);
             assertTrue(response.startsWith("HTTP/1.1 403")); assertTrue(response.contains("REQUEST_ORIGIN_DENIED"));
         }
+    }
+    private void logoutAfterWorkspaceSettles(PlanHttpSocketClient client) {
+        // A complete HTTP response can precede removal of its original workspace record.
+        // assertAll still attempts logout and retains both failures if settlement times out.
+        assertAll("settled profile logout",
+                () -> awaitCount(0),
+                () -> assertEquals(204, client.request("POST", "/api/v1/session/logout", "", true).status()));
     }
     private void awaitCount(int expected) throws Exception {
         long deadline = System.nanoTime() + 5_000_000_000L;

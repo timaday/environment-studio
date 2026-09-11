@@ -27,6 +27,19 @@ duplicate/unknown keys, trailing input, JSON/YAML format and source1 MiB/wrapper
 is separate; v1/v2 source rejects without persistence. Exact successful replay
 precedes compilation and returns its original immutable historical result.
 
+The typed browser save facade prepares a detached immutable pair of destination
+objectId and this exact command. It accepts canonical expectedRevision0 for an
+initial save and preserves JSON/YAML source exactly, without parsing or rewriting
+the native model. Validate the closed pair again before its one PUT; reject
+malformed scalar Unicode and source over1 MiB before transport. Response loss
+permits an explicit replay of that same pair, never an automatic retry or a new
+request ID. A successful result must be a draft for the same object with identical
+source and format. The existing complete DefinitionRevision decoder applies;
+historical replay need not match the latest current revision. The caller owns
+the prepared pair in memory; the facade adds no cache or persistence. Requests
+retain the existing HostedApi session revocation and late-response checks.
+This adds no route, publication permission or browser storage.
+
 Capture the original session lease before reading the request. Recheck it after
 read/parse and after service execution; the final SQLite commit must use the
 existing authenticated commit admission. Expiry/revocation during body reads,
@@ -133,6 +146,21 @@ object/revision capacity429 and unavailable store503 stay distinct. More than256
 compiler Rejected diagnostics returns413 without truncation; larger Incomplete
 history remains subject to snapshot budgets. No source, projection, owner or
 credential canary may appear in logs/errors.
+
+The semantic save422 envelope is exactly `{kind:"rejected",diagnostics:[...]}`;
+it has no top-level code. Diagnostics contain exactly phase, code, pointer and
+message: phases parse/shape/semantic/publication, safe uppercase code1–128
+characters, scalar string pointer/message, and1–256 entries in returned order.
+The browser recognizes this complete envelope only for PUT to an exact v3
+definition/profile object route and surfaces REJECTED with its diagnostics.
+That confirmed pre-commit outcome releases a pending draft command while retaining
+editable exact source. A bare422, code-only REJECTED, malformed/incomplete envelope
+or contradictory fields do not establish this outcome and retain uncertain replay.
+Duplicate JSON member names at any object depth also retain uncertainty, including
+escaped spellings that decode to the same name. Detect them from the raw reply
+before semantic refusal classification; ordinary JSON parsing alone loses this
+evidence. Repeated diagnostic array entries remain valid and ordered.
+Do not extend recognition to publication/plan routes or possibly committed403/413.
 
 ## Acceptance
 

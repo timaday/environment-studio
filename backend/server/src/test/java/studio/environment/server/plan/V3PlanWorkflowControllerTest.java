@@ -16,7 +16,7 @@ class V3PlanWorkflowControllerTest {
             @Override public ServletInputStream getInputStream(){throw new AssertionError("WRONG_VERSION_INPUT");}
         };request.setContentType("application/json");request.setAttribute(HostedSessions.REQUEST_LEASE,f.core.lease);
         var response=new MockHttpServletResponse();
-        for(Runnable call:List.<Runnable>of(()->controller.capture(plan.planId(),request,response),()->controller.preview(plan.planId(),request,response),()->controller.validation(plan.planId(),request,response)))
+        for(Runnable call:List.<Runnable>of(()->controller.capture(plan.planId(),request,response),()->controller.preview(plan.planId(),request,response),()->controller.validation(plan.planId(),request,response),()->controller.review(plan.planId(),request,response)))
             assertEquals(PlanRefusal.Code.NOT_FOUND,assertThrows(PlanRefusal.class,call::run).code());
         assertFalse(f.runtime.awaitingCleanupWork(f.core.lease));
     }

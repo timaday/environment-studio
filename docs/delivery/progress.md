@@ -1,5 +1,94 @@
 # Handoff and capability status
 
+## Current integration checkpoint — 11 September 2026
+
+Ready: root173cde2 and reviewed application63423f4 are combined in an isolated
+integration worktree. Only delivery/evidence text conflicted; no production or
+test conflict was resolved by hand. DEF-QA-002 independent verification is
+accepted on exactdd4d007 (issue9/5632418146). Seven added regression cases pass
+325frontend/59schema/check and fixed non-author review on63423f4. The merged
+candidate is not accepted until its exact required gates pass.
+
+Awaiting owners: remote reviewer receives the frozen, fetchable combined
+candidate for full G01/G03/G08, including evidence for the original d67 legacy
+visibility failure. IDE2 retains bounded external native observer work. Capture
+mapping/review/saved screen proposals use newly authorized actual mock results;
+affected rendering awaits design approval, with visual corrections disclosed.
+
+Blockers: production publication, native/client/resource qualification, operator
+rehearsal and release evidence remain incomplete. Test-only publication and
+observation witnesses grant no production readiness. Root checkout remains
+unchanged; all integration edits are isolated. No extra writer is assigned.
+
+Earlier checkpoints below retain their historical scope. This current block
+supersedes obsolete publication/queue statuses without discarding failed evidence.
+
+
+Current lead correction addresses [DEF-QA-002 duplicate raw refusal members](../evidence/v3-duplicate-refusal.md)
+on820837c. Author RED7/53, final318frontend/59schema/check, unchanged-production
+build, four compiled guard faults and fixed non-author source review are complete.
+Independent runtime verification and combined integration remain required.
+
+- Ready: return fixed duplicate-refusal candidate for verification; refine capture
+  prerequisite/full-state designs using existing capture/reuse controllers.
+- Awaiting another owner: remote04a7 reuse then820 validation review; nativeIDE2
+  bounded external side-table observer implementation on unchanged WIP23.
+- Blockers: capture full-state/design approval, Definitions rendered exceptions,
+  unexplained d67 legacy failure, actual publication/native/client/resource
+  qualification and exact combined release evidence.
+
+User published820837c and its a9d/04a7/1522 ancestors; publication blocker resolved.
+Remote a9d actual semantic-refusal recovery and capture/store prerequisite passed
+(report5631906678), with new DEF-QA-002 assigned to lead. Preserve the reported
+invalid syntax-phase mock oracle separately from valid parse/actual-server proof.
+Native observer design v2 passed bounded source assessment; IDE2 alone is assigned
+its fixed two workloads/nine calibrations, no wider campaign or admission change.
+
+Earlier checkpoints below retain their original evidence boundaries; newer status
+above supersedes old publication/review waiting notes.
+
+Latest application candidate adds [paged validation state](../evidence/v3-validation-state.md)
+on04a7f94: complete backend outcomes, fingerprint-bound bounded pages and explicit
+same-offset smaller-page recovery for actual422 RESOURCE_LIMIT. Author26focused,
+303frontend/59schema/check/build, six compiled guard faults and fixed non-author
+source review pass. No renderer or release claim. Next ready work connects the
+capture/reuse operator journey through the required image approval workflow.
+
+Latest application candidate adds [nonvisual whole/partial reuse state](../evidence/v3-profile-reuse-state.md)
+on a9d165e. Complete four-section preview, explicit mapping decisions and original-
+plan replay pass27 focused cases; full277frontend/59schema, types/format/build,
+six compiled guard faults and fixed non-author review support the slice. No renderer
+or release availability is claimed. Next ready work is paged validation state.
+
+Latest lead slice is the [semantic workspace-refusal correction](../evidence/v3-workspace-refusal-integration.md).
+The isolated correction is 61e22d27aaabefd85d91a0a8fb03124c32a7b6ba on bc6dfe8;
+eb045ad carries it onto the current 1522cc5 application stack, preserving upload
+and capture tests. Actual malformed-definition HTTP422 now permits correction;
+malformed refusal envelopes and potentially committed403/413 retain exact replay.
+Final local checks pass 250 frontend/59 schema tests, types, formatting and build.
+Fresh desktop/narrow actual HTTPS journeys pass with bounded canary checks and
+complete cleanup. Fixed non-author integration review found no confirmed defect;
+remote correction acceptance remains pending. Root stays173cde2/application30446e2.
+
+- Ready: publish prepared correction/reuse candidates and implement paged validation
+  state/rendering approval. Capture persistence prerequisite1522cc5 is locally reviewed.
+- Awaiting another owner: remote de0ce25 and fetchable correction acceptance;
+  IDE2 is preparing the next bounded external allocator-observer design.
+- Blockers: pending Definitions rendered exceptions; combined integration gates,
+  actual publication/native/client/resource qualification and release evidence.
+
+Remote review resolved READBACK-QA-001 on exact78f2b1a (353 core tests and bounded
+independent regression/mutation evidence). Definitions upload8d87311 has no new
+product finding; inherited DEF-QA-001 is addressed by the current correction.
+Plans d67df44 has no new confirmed defect, but its first legacy visibility failure
+remains unexplained despite a later pass; combined G03 must retain a safe failed
+step/location for triage. The upload exact1MiB positive boundary was covered only by an independent added probe;
+its v3 browser runs did not sample the final log/PKCE control. Preserve those
+limits. The current correction adds that finite sampled check, without claiming
+universal disclosure protection. User-published78f2/8d/d67/de0 are fetch-confirmed;
+new correction and1522 candidates still need publication. Remote18443/18444 and
+full/OCI ownership remain reserved; local focused browser checks use18445/18446.
+
 Updated: 10 September 2026. See [starter evidence](../evidence/starter-verification.md)
 and [D01a integration](../evidence/d01a-integration.md) for actual commands and
 results; the table below reports capability, not test count.
@@ -14,6 +103,70 @@ source boundaries. Both independent UI findings have reproduced RED/GREEN and
 fixed source acceptance. [Queue handoff5624883396](https://github.com/timaday/environment-studio/issues/9#issuecomment-5624883396)
 awaits branch publication; this is not accepted root application integration.
 Corrected upload designs are approved; rendered exceptions remain pending.
+
+The [nonvisual capture-to-draft candidate](../evidence/v3-profile-capture-state.md)
+loads complete physical mappings and separates value-free capture from exact
+draft save/replay. Independent review found retained mappings after terminal
+session failure; actual RED/GREEN and fixed review now accept the correction.
+Author221frontend/59schema/check/build pass. No new rendering or actual browser
+capture/save is claimed; session lifecycle integration remains required.
+
+The [Plans resume/inspection candidate](../evidence/v3-plan-inspection-ui.md)
+adds explicit v3 current lookup and consent-controlled Raw/Formatted Current/Target
+reads. Fixed non-author review accepted the reproduced clear-selection correction.
+Author 198 frontend/59 schema tests, check/build, actual desktop/narrow Plans and
+four legacy journeys pass. Definitions viewport checks pass with separately owned
+fresh workspaces; the shared-workspace precondition failure is preserved in evidence.
+This remains candidate work, not accepted root integration or release.
+
+All five original approved Midnight images are now accessible and inspected.
+[Reference reconciliation](../ux/midnight-reference-reconciliation.md) preserves
+their scope and records token/rendering conflicts. Plans no-plan desktop/narrow
+approvals remain applicable. Visual fidelity is DIFFERENCES_REMAIN; the pending
+Definitions images remain unapproved. Full document navigation, Placeholders and
+the concrete binding rail remain required.
+
+The [Definitions upload UI candidate](../evidence/v3-definitions-upload-ui.md)
+on `implementation/definitions-upload-design-20260910`, basebc6dfe8,
+implements explicit v3 selection, JSON/YAML file upload, exact save/replay and
+acknowledged Model/Source/Diagnostics. Both independent review findings have
+actual RED/GREEN corrections and fixed source acceptance. Final184frontend/
+59schema/check/build, actual desktop/narrow v3 HTTPS journeys and four existing
+v2 journeys pass at their recorded source boundaries. Corrected upload designs
+are approved; concrete residual rendering exceptions await approval. This is
+implemented/reviewed candidate work, not accepted root integration or release.
+
+- Ready: capture-state candidate handoff; reuse existing workflow fixtures for
+  the actual owned-workspace browser prerequisite, followed by approved rendering.
+- Awaiting another owner: remote41c8/e338/5d/bc6d verification; IDE2 native closure.
+- Blockers: rendered-exception approval, required combined integration/OCI and
+  actual native/client/resource qualification before release availability.
+
+The [shared remote review queue](https://github.com/timaday/environment-studio/issues/9)
+is active. Accepted JNI-QA-001 and its confirmed duration-handoff extension are
+corrected in local IDE2 candidate `3a84c2c432aec05d256b0f5e85cfd4636ee789b8`
+(parent01b6485), with author51 focused checks. Closure WIP remains preserved and
+assigned only to IDE2. The lead corrected OBS-QA-001 cancellation publication as
+`2d185bd0a88ae83a5788340d8fde2f9b8c5753bb` and PostgreSQL OBS-QA-002 redundant
+uniqueness as `a6291d2605b87d3730b2166e36f5aa7e03d253d7`; their combined local
+branch passes72 focused Java checks. Oracle redundancy is not a reproduced defect.
+Physical/computed/definition clients are frozen as59fef10/06b0888/954ded6;
+the final stack passes125 frontend/58 schema/check/build. All these candidates
+remain unreviewed and unintegrated. Automatic approval review rejected Git push
+because approval is required while AskForApproval is Never. The user has been
+asked to publish the three branch heads listed in issue9; no alternate upload or
+unfetchable test assignment is used. V3 review/content-policy candidate
+`32499697b263c63e22ad928fb9616928e9645938` is now locally implemented and source-reviewed:
+one proof-invalidation P2 was reproduced/corrected and independently verified;
+99 focused Java checks and ten compiled guard mutations pass. It remains
+unpublished/unintegrated, with full Maven/OCI verification pending. Its
+typed review browser client is frozen as
+`6e3acf6ec2fbc60256feb13ada90ec053dccad9f` on the combined client/server review base:
+136 frontend/59 schema/check/build and seven compiled guard mutations pass;
+non-author source review found no confirmed defect. It is not root-integrated.
+IDE2's frozen26-file symbol/version WIP3 has a bounded non-author source review
+with no confirmed finding; remaining closure work stays exclusively with IDE2.
+Two writers and remote read-only review remain.
 
 The next lead worktree `/home/tim/.tmp/es-v3-plan-inspection-20260910`, branch
 `implementation/v3-plan-inspection-journey-20260910`, starts at exact 8d87311.
@@ -868,3 +1021,21 @@ four full unresolved drafts/64 MiB entered values, normal large responses and
 unread deadline/disconnect/logout recovery. Independent review corrected a harness
 cleanup fault and strengthened semantic witnesses. Source/graph/observation-overlap
 combinations remain under investigation; the allocation is not yet qualified.
+
+
+## Review coverage checkpoint — 11 September
+
+Ready: the seven test-only reuse/validation cases close REUSE-COV-001/002 and
+VAL-COV-001/002 against dd4d007; control60 and fresh325frontend/59schema/check
+pass, four compiled faults detected, fixed non-author source review no finding.
+See `docs/evidence/v3-review-coverage.md`. Production guards unchanged.
+
+Awaiting owners: reviewer verified dd4d007 in issue9 comment5632418146;
+combined application G01/G03/G08 awaits a fixed integrated candidate. IDE2
+retains its bounded external native observer assignment. Capture whole-screen
+proposals are being populated from the newly authorized actual synthetic
+workflow, with design approval still required before affected rendering.
+
+Blockers: production publication/client/native/resource and release evidence
+remain incomplete; original d67 legacy visibility failure remains unexplained.
+These test additions neither resolve nor reopen those separate requirements.

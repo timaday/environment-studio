@@ -38,6 +38,19 @@ exactly deny or protected-self-contained. Preserve every submitted entry for the
 application's complete coverage/duplicate checks; never deduplicate or infer
 policies. The existing NativeCommand ordering preserves exact command identity.
 
+The typed definition-publication browser facade prepares a detached immutable
+objectId/command pair and validates that closed pair again before one POST.
+It preserves all submitted policies and their order, including duplicates, for
+the backend's authoritative coverage checks. It never inserts default policies
+or derives permission from historical-ready data. Successful replies must decode
+as the same object's published DefinitionRevision, with sourceRevision equal to
+the submitted expectedRevision and policies exactly equal to the submitted list
+after stable bindingId/documentId ordering, including content and multiplicity.
+The complete existing history decoder still enforces published policy coverage.
+Explicit replay after response uncertainty retains the original destination,
+request ID and body even after newer history; no automatic retry or persistence.
+Existing HostedApi session, CSRF and late-response revocation checks apply.
+
 Reject duplicate/unknown keys at all levels, wrong shapes/types, malformed or
 non-scalar Unicode, trailing JSON and overflow. Use strict UTF-8 and the shared
 8 MiB wrapper cap; wipe mutable decoding bytes on every outcome. Body I/O,

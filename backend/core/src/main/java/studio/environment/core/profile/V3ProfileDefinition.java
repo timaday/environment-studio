@@ -1,6 +1,5 @@
 package studio.environment.core.profile;
 
-import studio.environment.core.definitionv3.NativeCompilationResult;
 import studio.environment.core.definitionv3.NativeCompilationResult.Checked;
 import studio.environment.core.definitionv3.NativeDefinitionCompiler;
 import studio.environment.core.definitionv2.NativeDefinition.Logical;
@@ -11,9 +10,7 @@ final class V3ProfileDefinition {
     static boolean eligible(Checked definition) {
         if (definition == null) return false;
         var result = new NativeDefinitionCompiler().compile(definition.definition());
-        return result instanceof NativeCompilationResult.Incomplete incomplete
-                && incomplete.checked().equals(definition)
-                && incomplete.diagnostics().stream().allMatch(d -> d.code().equals("MECHANISM_UNQUALIFIED"));
+        return result.isCompatibleWith(definition);
     }
     static Logical physical(Checked definition) {
         var logical = definition.definition().logical();

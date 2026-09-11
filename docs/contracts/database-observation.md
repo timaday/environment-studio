@@ -54,6 +54,9 @@ Initially require an ordinary local base table with no inheritance/partitioning,
 views, synonyms, foreign/external table, enabled DML triggers or unqualified
 storage behavior. Verify exact built-in key type (`text` or int64 as declared)
 and XML storage (`text` or `CLOB`), nullability and a qualified unique key.
+For PostgreSQL, one or more fully qualified immediate primary/unique constraints
+on the same declared single key establish uniqueness. Redundant qualifying
+constraints do not invalidate it; zero qualifying constraints still refuses.
 PostgreSQL keys use `text` or `bigint`; Oracle keys use `VARCHAR2` with sufficient
 declared character capacity or `NUMBER(19,0)` respectively. Enforce the native
 text/code-point and signed-int64 value bounds while reading; numeric column
@@ -201,6 +204,11 @@ path. Roll back the read transaction. Cancellation, abort and close are separate
 steps: a requested cancel is not confirmed cleanup. If work/cleanup cannot be
 confirmed within the bound, return INCONCLUSIVE and retain the session's resource
 reservation/quarantine; no observation or later export authority survives it.
+At the final completed-work result check, recheck the original cancellation
+flag, including cancellation during rollback or connection close. With no earlier
+latched terminal reason, an observed cancellation selects `CANCELLED`; it cannot
+publish a complete observation. Keep the actual cleanup outcome independent: cancellation
+does not make cleanup complete, renew a deadline or release a quarantined permit.
 Successful driver close/rollback behavior must be checked against actual backend
 session disappearance in disposable tests. Do not claim guaranteed remote cleanup
 during network partitions. No background task may continue with unowned secrets.

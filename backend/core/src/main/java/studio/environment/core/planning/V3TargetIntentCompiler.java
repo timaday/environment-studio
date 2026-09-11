@@ -15,8 +15,7 @@ public final class V3TargetIntentCompiler {
     public TargetCompilationResult compile(NativeCompilationResult.Checked definition, GraphValidationResult.Accepted observation, TargetIntent intent) {
         if (definition == null || observation == null || intent == null) return TargetCompilationResult.reject("INVALID_INPUT");
         var compiled = new NativeDefinitionCompiler().compile(definition.definition());
-        if (!(compiled instanceof NativeCompilationResult.Incomplete checked) || !checked.checked().equals(definition)
-                || checked.diagnostics().stream().anyMatch(d -> !d.code().equals("MECHANISM_UNQUALIFIED")))
+        if (!compiled.isCompatibleWith(definition))
             return TargetCompilationResult.reject("INVALID_DEFINITION");
         var logical = definition.definition().logical();
         var physical = new studio.environment.core.definitionv2.NativeDefinition.Logical(logical.entityTypes(), logical.relations(),

@@ -1,6 +1,10 @@
 import { defineConfig, devices } from "@playwright/test";
 
 const hosted = process.env.ES_HOSTED_BROWSER === "1";
+const planJourney = process.env.ES_HOSTED_BROWSER_MODE === "plans-v3";
+const refusalJourney = process.env.ES_HOSTED_BROWSER_MODE === "definitions-v3-refusal";
+const definitionJourney = process.env.ES_HOSTED_BROWSER_MODE === "definitions-v3" || refusalJourney;
+const profileJourney = process.env.ES_HOSTED_BROWSER_MODE === "profiles-v3";
 const hostedOutput = process.env.ES_HOSTED_BROWSER_OUTPUT_DIR;
 if (
   hosted &&
@@ -12,14 +16,26 @@ if (hosted) process.env.PLAYWRIGHT_NO_COPY_PROMPT = "1";
 export default defineConfig({
   testDir: "./e2e",
   outputDir: hosted ? hostedOutput : "test-results",
-  testMatch: hosted ? "hosted-workflow.spec.ts" : "definition-review.spec.ts",
+  testMatch: hosted
+    ? profileJourney
+      ? "v3-profile-capture.spec.ts"
+      : planJourney
+        ? "v3-plan-inspection.spec.ts"
+        : definitionJourney
+          ? "v3-definitions.spec.ts"
+          : "hosted-workflow.spec.ts"
+    : "definition-review.spec.ts",
   fullyParallel: false,
   forbidOnly: true,
   retries: 0,
   workers: 1,
   reporter: "list",
   use: {
-    baseURL: hosted ? "https://localhost:18443" : "http://127.0.0.1:4173",
+    baseURL: hosted
+      ? profileJourney || refusalJourney
+        ? "https://localhost:18445"
+        : "https://localhost:18443"
+      : "http://127.0.0.1:4173",
     trace: "off",
     screenshot: "off",
     video: "off",

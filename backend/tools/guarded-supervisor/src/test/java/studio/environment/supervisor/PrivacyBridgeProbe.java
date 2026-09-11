@@ -22,6 +22,9 @@ public final class PrivacyBridgeProbe {
     static native void refusalAllocationFault(Throwable failure);
     static native int eventAllocationFault();
     static native int eventAllocationObserved(long token);
+    static native void nativeOpenFault(int mode,boolean expired);
+    static native int nativeOpenOutcome(int failure);
+    static native void holdNativeClose(boolean mutex);
     static native long heldToken();
     static native void releaseAllocation();
     static native int unpublishedOutcome(long token);
@@ -53,6 +56,20 @@ public final class PrivacyBridgeProbe {
     }
     static void delayedOpen(long allowance,long holdMillis,boolean expired)throws Exception{
         delayedOpen(allowance,holdMillis,expired,false);
+    }
+    static void failedNativeOpen(int fault,boolean expired,long allowance)throws Exception{
+        failedNativeOpen(fault,expired,allowance,false);
+    }
+    static void failedNativeOpen(int fault,boolean expired,long allowance,boolean failResult)throws Exception{
+        var expected=fault==1?PrivacyBridge.Failure.DEADLINE:fault==3?PrivacyBridge.Failure.PLATFORM:PrivacyBridge.Failure.RESOURCE;
+        nativeOpenFault(fault,expired);
+        if(failResult){allocationFault(1);boolean thrown=false;try{PrivacyBridge.openLaunch(1,allowance);}catch(OutOfMemoryError failure){thrown=true;}check(thrown,"NATIVE_FAILURE_RESULT_ALLOCATION");}
+        else check(PrivacyBridge.openLaunch(1,allowance).equals(new PrivacyBridge.OpenFailed(expected)),"ORIGINAL_NATIVE_OPEN_FAILURE");
+        check(nativeOpenOutcome(fault)==0,"ORIGINAL_NATIVE_CLEANUP_ALLOWANCE");
+        var recovered=new ArrayList<PrivacyBridge.Opened>();
+        for(int i=0;i<4;i++)recovered.add(opened());
+        check(PrivacyBridge.openLaunch(1,3_000_000_000L).equals(new PrivacyBridge.OpenFailed(PrivacyBridge.Failure.RESOURCE)),"RECOVERED_NATIVE_OPEN_LIMIT");
+        for(var open:recovered)complete(open);
     }
     static void coordinatorAllocation(String child)throws Exception{
         var open=opened();check(eventAllocationFault()==0,"EVENT_FAULT_SETUP");
@@ -134,6 +151,19 @@ public final class PrivacyBridgeProbe {
             case "startup-expired-publication" -> delayedOpen(12_000_000_000L,10_250,true);
             case "expired-refusal-allocation" -> delayedOpen(100_000_000L,250,true,true);
             case "event-allocation" -> coordinatorAllocation(args[2]);
+            case "native-path-expired" -> failedNativeOpen(1,true,100_000_000L);
+            case "native-path-refusal-allocation" -> failedNativeOpen(1,true,100_000_000L,true);
+            case "native-preinit-expired" -> {delayRecord();check(PrivacyBridge.openLaunch(1,1_000_000L).equals(new PrivacyBridge.OpenFailed(PrivacyBridge.Failure.DEADLINE)),"EXPIRED_BEFORE_ALLOCATION");check(nativeOpenOutcome(0)==0,"NO_UNINITIALIZED_RESOURCE_OWNERSHIP");complete(opened());}
+            case "native-startup-expired" -> failedNativeOpen(1,true,12_000_000_000L);
+            case "native-entropy-expired" -> failedNativeOpen(2,true,100_000_000L);
+            case "native-listener-expired" -> failedNativeOpen(3,true,100_000_000L);
+            case "native-event-expired" -> failedNativeOpen(4,true,100_000_000L);
+            case "native-entropy-unexpired" -> failedNativeOpen(2,false,3_000_000_000L);
+            case "native-handoff-expired" -> {holdNativeClose(false);failedNativeOpen(2,false,100_000_000L);}
+            case "native-handoff-listener" -> {holdNativeClose(false);failedNativeOpen(3,false,100_000_000L);}
+            case "native-handoff-owner-mutex" -> {holdNativeClose(true);failedNativeOpen(2,false,100_000_000L);}
+            case "native-listener-unexpired" -> failedNativeOpen(3,false,3_000_000_000L);
+            case "native-event-unexpired" -> failedNativeOpen(4,false,3_000_000_000L);
             case "arm-allocation" -> {var open=opened();var delegate=new PrivacyLaunchCoordinator(open);var port=new PrivacyLaunchOwner.CapturePort(){
                 public PrivacyBridge.ForkResult arm(){allocationFault(2);return delegate.arm();}
                 public PrivacyLaunchOwner.Step register(long pid){return delegate.register(pid);}

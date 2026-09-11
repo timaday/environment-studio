@@ -9,7 +9,6 @@
 #include <time.h>
 #include <unistd.h>
 #define LIMIT 256U
-#define NS10 10000000000ULL
 struct es_registry_entry {
  es_launch owner;
  unsigned refs,published,retired,finally_owed,arm_called,arm_done,arm_no_window,disarm_called,coordinator_bound,event_entered,event_active;
@@ -78,7 +77,11 @@ es_registry_ref es_registry_open(int ordinal,int64_t left,uint64_t entered,char 
  unsigned index=invocation.issued++;invocation.live++;es_registry_entry *p=&entries[index];p->refs=1;p->failure=ES_BRIDGE_NONE;p->token=((uint64_t)(index+1)<<9)|(index+1);
  ref.entry=p;ref.token=p->token;int parent=invocation.parent;const char *path=invocation.mechanism->parent_path;pthread_mutex_unlock(&invocation.mutex);
  ref.failure=mapped(es_launch_open_started(&p->owner,parent,path,(uint64_t)left,entered,out));
- if(ref.failure!=ES_BRIDGE_NONE){pthread_mutex_lock(&invocation.mutex);latch(p,ref.failure);pthread_mutex_unlock(&invocation.mutex);(void)es_registry_close(&ref,left>(int64_t)NS10?(int64_t)NS10:left);}
+ if(ref.failure!=ES_BRIDGE_NONE){
+  pthread_mutex_lock(&invocation.mutex);latch(p,ref.failure);pthread_mutex_unlock(&invocation.mutex);
+  /* Native construction consumed the original allowance before JNI has a result. */
+  es_registry_unpublished(&ref);
+ }
  return ref;
 }
 es_registry_ref es_registry_acquire(int64_t token){
@@ -157,21 +160,21 @@ es_bridge_result es_registry_status(es_registry_ref *ref){
  es_bridge_result out={.failure=ref->failure,.closed=ref->retired};es_registry_entry *p=ref->entry;if(!p)return out;
  pthread_mutex_lock(&invocation.mutex);out.failure=p->failure;out.closed=p->settled;pthread_mutex_unlock(&invocation.mutex);return out;
 }
-unsigned es_registry_close(es_registry_ref *ref,int64_t remaining){
+static unsigned close_owner(es_registry_ref *ref,int64_t remaining,int unpublished){
  if(ref->retired)return ref->complete;
  es_registry_entry *p=ref->entry;if(!p)return 0;
  if(!p->owner.initialized){pthread_mutex_lock(&invocation.mutex);p->settled=1;pthread_mutex_unlock(&invocation.mutex);return 1;}
  pthread_mutex_lock(&invocation.mutex);latch(p,ES_BRIDGE_CANCELLED);pthread_mutex_unlock(&invocation.mutex);
- es_launch_cleanup result=es_launch_close(&p->owner,remaining>0?(uint64_t)remaining:0);
+ es_launch_cleanup result=unpublished?es_launch_close_until(&p->owner,p->owner.startup_deadline)
+  :es_launch_close(&p->owner,remaining>0?(uint64_t)remaining:0);
  for(;;){pthread_mutex_lock(&invocation.mutex);unsigned owed=p->finally_owed;pthread_mutex_unlock(&invocation.mutex);if(!owed)break;
   uint64_t deadline;pthread_mutex_lock(&p->owner.mutex);deadline=p->owner.cleanup_deadline;pthread_mutex_unlock(&p->owner.mutex);
   uint64_t n=es_registry_now();if(!n||n>=deadline){result=ES_LAUNCH_CLOSED_INCONCLUSIVE;break;}struct timespec delay={0,1000000};(void)nanosleep(&delay,NULL);
  }
  pthread_mutex_lock(&invocation.mutex);if(result!=ES_LAUNCH_CLOSED_COMPLETE)p->uncertain=1;unsigned complete=result==ES_LAUNCH_CLOSED_COMPLETE&&!p->uncertain;pthread_mutex_unlock(&invocation.mutex);return complete;
 }
+unsigned es_registry_close(es_registry_ref *ref,int64_t remaining){return close_owner(ref,remaining,0);}
 
 void es_registry_unpublished(es_registry_ref *ref){
- if(!ref->entry)return;
- uint64_t deadline=ref->entry->owner.startup_deadline,n=es_registry_now();
- (void)es_registry_close(ref,deadline>n&&n?(int64_t)(deadline-n):0);
+ (void)close_owner(ref,0,1);
 }

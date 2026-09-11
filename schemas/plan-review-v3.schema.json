@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://environment.studio/schemas/plan-review-v3",
+  "title": "Closed v3 review receipt; no export authority",
+  "anyOf": [
+    {
+      "$ref": "#/$defs/request"
+    },
+    {
+      "$ref": "#/$defs/response"
+    }
+  ],
+  "$defs": {
+    "request": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "expectedRevision",
+        "requestId",
+        "inputFingerprint",
+        "destinationId",
+        "artifactIntent"
+      ],
+      "properties": {
+        "expectedRevision": {
+          "$ref": "https://environment.studio/schemas/plan-command-v1#/$defs/revision"
+        },
+        "requestId": {
+          "$ref": "https://environment.studio/schemas/plan-command-v1#/$defs/uuid"
+        },
+        "inputFingerprint": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}(?![\\s\\S])"
+        },
+        "destinationId": {
+          "$ref": "https://environment.studio/schemas/plan-command-v1#/$defs/id"
+        },
+        "artifactIntent": {
+          "const": "protected-self-contained"
+        }
+      }
+    },
+    "response": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "planId",
+        "revision"
+      ],
+      "properties": {
+        "planId": {
+          "$ref": "https://environment.studio/schemas/plan-command-v1#/$defs/uuid"
+        },
+        "revision": {
+          "$ref": "https://environment.studio/schemas/plan-command-v1#/$defs/revision"
+        }
+      }
+    }
+  }
+}

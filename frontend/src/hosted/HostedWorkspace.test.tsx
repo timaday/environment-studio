@@ -47,3 +47,83 @@ it("retains an uncertain definition command across workspace navigation", async 
   expect(screen.getByRole("button", { name: "Retry original command" })).toBeVisible();
   expect(put).toHaveBeenCalledOnce();
 });
+
+it("offers explicit v3 file upload without sending source before Save draft", async () => {
+  vi.spyOn(HostedApi.prototype, "session").mockResolvedValue({
+    authenticated: true,
+    csrfHeaderName: "X-CSRF",
+    csrfToken: "mock-token",
+    idleTimeoutSeconds: 1800,
+    absoluteExpiresAt: new Date(Date.now() + 28_800_000).toISOString(),
+  });
+  const get = vi
+    .spyOn(HostedApi.prototype, "get")
+    .mockImplementation(async <T,>(path: string): Promise<T> => {
+      if (path === "/api/v2/definitions") return { definitions: [], canPublish: false } as T;
+      if (path === "/api/v3/definitions") return { definitions: [] } as T;
+      if (path === "/api/v1/destinations") return { destinations: [] } as T;
+      throw new ApiFailure(404, "NOT_FOUND");
+    });
+  const put = vi.spyOn(HostedApi.prototype, "put");
+  const user = userEvent.setup();
+  render(
+    <HostedWorkspace
+      capabilities={{
+        mode: "hosted",
+        definitionWorkspaceEnabled: true,
+        inspectionEnabled: false,
+        inspectionUiEnabled: false,
+        inspectionApiConfigured: false,
+        exportEnabled: false,
+        blockers: [],
+      }}
+    />,
+  );
+  await user.click(await screen.findByRole("button", { name: "Definitions" }));
+  expect(get).not.toHaveBeenCalledWith("/api/v3/definitions");
+  await user.selectOptions(screen.getByRole("combobox", { name: "Model version" }), "3");
+  expect(await screen.findByText("No saved definitions for this model version.")).toBeVisible();
+  const file = new File(["{}"], "invented.JSON", { type: "application/json" });
+  await user.upload(screen.getByLabelText("Upload definition", { exact: true }), file);
+  expect(await screen.findByRole("textbox", { name: /^Source$/ })).toHaveValue("{}");
+  expect(screen.getByRole("button", { name: /^Save draft$/ })).toBeEnabled();
+  expect(put).not.toHaveBeenCalled();
+});
+
+it("explicitly resumes v3 without falling back to legacy plans after absence", async () => {
+  vi.spyOn(HostedApi.prototype, "session").mockResolvedValue({
+    authenticated: true,
+    csrfHeaderName: "X-CSRF",
+    csrfToken: "mock-token",
+    idleTimeoutSeconds: 1800,
+    absoluteExpiresAt: new Date(Date.now() + 28_800_000).toISOString(),
+  });
+  const get = vi
+    .spyOn(HostedApi.prototype, "get")
+    .mockImplementation(async <T,>(path: string): Promise<T> => {
+      if (path === "/api/v2/definitions") return { definitions: [], canPublish: false } as T;
+      if (path === "/api/v1/destinations") return { destinations: [] } as T;
+      throw new ApiFailure(404, "NOT_FOUND");
+    });
+  render(
+    <HostedWorkspace
+      capabilities={{
+        mode: "hosted",
+        definitionWorkspaceEnabled: true,
+        inspectionEnabled: false,
+        inspectionUiEnabled: false,
+        inspectionApiConfigured: false,
+        exportEnabled: false,
+        blockers: [],
+      }}
+    />,
+  );
+  await screen.findByRole("heading", { name: "Plans" });
+  expect(get).not.toHaveBeenCalledWith("/api/v3/plans/current");
+  get.mockClear();
+  await userEvent
+    .setup()
+    .selectOptions(screen.getByRole("combobox", { name: "Model version" }), "3");
+  expect(await screen.findByText("No current Native v3 plan in this session.")).toBeVisible();
+  expect(get.mock.calls.map(([path]) => path)).toEqual(["/api/v3/plans/current"]);
+});

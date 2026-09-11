@@ -23,6 +23,7 @@ public class V3WorkflowHttpTestConfiguration {
     public static final Map<String, SessionLedger.Lease> leases = new java.util.concurrent.ConcurrentHashMap<>();
     public static final Map<Owner,Boolean> largeOwners=new java.util.concurrent.ConcurrentHashMap<>();
     public static final Map<Owner,PlanPorts.PublishedProfile> profiles=new java.util.concurrent.ConcurrentHashMap<>();
+    public static final Map<String,List<NativeCommand.Policy>> reviewPolicies=new java.util.concurrent.ConcurrentHashMap<>();
     public static volatile HostedPlanService service;
     public static volatile PlanRuntime runtime;
 
@@ -47,6 +48,7 @@ public class V3WorkflowHttpTestConfiguration {
                 return real.definition(owner, reference);
             }
             public PlanPorts.PublishedDefinition definitionV3(Owner owner, NativeCommand.Reference reference) {
+                if(reference.equals(witness.reference()) && reviewPolicies.containsKey(owner.subject()))return new PlanPorts.PublishedDefinition(reference,witness.publicationDigest(),witness.model(),reviewPolicies.get(owner.subject()));
                 if(reference.equals(witness.reference()) && largeOwners.containsKey(owner))return new PlanPorts.PublishedDefinition(reference,"explicit-large-mock-publication",new PlanDefinition.V3(studio.environment.server.planning.V3WorkflowLargeHttpWitnesses.definition(largeOwners.get(owner))),List.of());
                 return reference.equals(witness.reference()) ? witness : real.definitionV3(owner, reference);
             }

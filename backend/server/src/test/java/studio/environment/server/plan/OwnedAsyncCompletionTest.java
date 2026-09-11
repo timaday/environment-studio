@@ -7,9 +7,9 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 class OwnedAsyncCompletionTest {
  static final class Context {
-  AsyncListener listener;final AtomicInteger calls=new AtomicInteger();volatile boolean errorReturned;Runnable completion=()->{};
+  AsyncListener listener;final AtomicInteger calls=new AtomicInteger();volatile boolean errorReturned;Runnable completion=()->{},registered=()->{};
   final AsyncContext context=(AsyncContext)Proxy.newProxyInstance(AsyncContext.class.getClassLoader(),new Class<?>[]{AsyncContext.class},(proxy,method,args)->{
-   if(method.getName().equals("addListener")){listener=(AsyncListener)args[0];return null;}
+   if(method.getName().equals("addListener")){listener=(AsyncListener)args[0];registered.run();return null;}
    if(method.getName().equals("complete")){calls.incrementAndGet();if(errorReturned)throw new IllegalStateException("invented-container-detail");completion.run();return null;}
    if(method.getName().equals("toString"))return "MockAsyncContext";
    throw new AssertionError("UNEXPECTED_CONTEXT_ACCESS");

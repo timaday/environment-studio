@@ -2,7 +2,12 @@ import { readFile } from "node:fs/promises";
 import AxeBuilder from "@axe-core/playwright";
 import { expect, type Page, test } from "@playwright/test";
 
-async function loseFirstAcknowledgement(page: Page, path: string, method: string) {
+async function loseFirstAcknowledgement(
+  page: Page,
+  path: string,
+  method: string,
+  forbiddenAfterCommit = false,
+) {
   const requests: string[] = [];
   await page.route(path, async (route) => {
     if (route.request().method() !== method) return route.continue();
@@ -10,7 +15,14 @@ async function loseFirstAcknowledgement(page: Page, path: string, method: string
     if (requests.length === 1) {
       const response = await route.fetch();
       expect(response.ok()).toBe(true);
-      await route.abort("failed");
+      // Real server operation has succeeded; inject only the lost acknowledgement.
+      if (forbiddenAfterCommit)
+        await route.fulfill({
+          status: 403,
+          contentType: "application/json",
+          body: JSON.stringify({ code: "WORKSPACE_FORBIDDEN" }),
+        });
+      else await route.abort("failed");
     } else await route.continue();
   });
   return requests;
@@ -40,7 +52,7 @@ test("maintainer saves, publishes, inspects and reviews an owned session plan", 
   invented.logical.entityTypes[0].label = "Browser-Source-Canary";
   const source = JSON.stringify(invented);
   await page.getByLabel("Native definition source", { exact: true }).fill(source);
-  const saves = await loseFirstAcknowledgement(page, "**/api/v2/definitions/*", "PUT");
+  const saves = await loseFirstAcknowledgement(page, "**/api/v2/definitions/*", "PUT", true);
   await page.getByRole("button", { name: "Save immutable draft" }).click();
   await expect(page.getByRole("button", { name: "Retry original command" })).toBeVisible();
   await page.getByRole("button", { name: "Plans", exact: true }).click();
@@ -64,7 +76,20 @@ test("maintainer saves, publishes, inspects and reviews an owned session plan", 
   await page
     .getByLabel("I reviewed complete-document disclosure and every document policy.")
     .check();
+  const publications = await loseFirstAcknowledgement(
+    page,
+    "**/api/v2/definitions/*/publish",
+    "POST",
+    true,
+  );
   await page.getByRole("button", { name: "Publish definition", exact: true }).click();
+  await expect(page.getByRole("button", { name: "Retry original command" })).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Publish definition", exact: true }),
+  ).toBeDisabled();
+  await page.getByRole("button", { name: "Retry original command" }).click();
+  expect(publications).toHaveLength(2);
+  expect(publications[1]).toBe(publications[0]);
   await expect(page.getByText(/workspace revision 2 · published/)).toBeVisible();
   await page.getByRole("button", { name: "Plans", exact: true }).click();
   await page.getByLabel("Published definition", { exact: true }).selectOption(publishedObject);

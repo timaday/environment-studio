@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import java.nio.file.*;
 import java.nio.file.attribute.PosixFilePermissions;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.*;
 
 /** Production JNI/registry and real owned FORK; only fixture records are substituted. */
@@ -19,7 +20,7 @@ class PrivacyBridgeTest {
             var command=new ArrayList<>(List.of("/usr/bin/cc","-std=c17","-O2","-Wall","-Wextra","-Werror","-pthread","-fstack-protector-strong","-D_FORTIFY_SOURCE=3","-fPIC","-shared","-Wl,-z,relro,-z,now,-z,defs","-Isrc/main/c","-I"+System.getProperty("java.home")+"/include","-I"+System.getProperty("java.home")+"/include/linux"));
             for(String name:COMPONENTS)command.add("src/main/c/privacy-"+name+".c");
             command.add("src/main/c/privacy-jni.c");
-            if(mock)command.addAll(List.of("-DES_FIXTURE_PARENT=\""+parent+"\"","-DES_FIXTURE_JAVA=\""+System.getProperty("java.runtime.version")+"\"","src/test/c/privacy-compiled-fixture.c","src/test/c/privacy-registry-fixture.c","-Wl,--wrap=es_root_disarm,--wrap=es_root_arm,--wrap=es_compiled_find_chain,--wrap=es_registry_event,--wrap=close"));
+            if(mock)command.addAll(List.of("-DES_FIXTURE_PARENT=\""+parent+"\"","-DES_FIXTURE_JAVA=\""+System.getProperty("java.runtime.version")+"\"","src/test/c/privacy-compiled-fixture.c","src/test/c/privacy-registry-fixture.c","-Wl,--wrap=es_root_disarm,--wrap=es_root_arm,--wrap=es_compiled_find_chain,--wrap=es_registry_event,--wrap=close,--wrap=es_listener_path,--wrap=es_listener_open,--wrap=getrandom,--wrap=eventfd,--wrap=es_launch_close,--wrap=es_launch_close_until"));
             else command.addAll(List.of("src/main/c/privacy-compiled.c","src/main/c/privacy-registry.c"));
             command.addAll(List.of("-lcrypto","-o",(mock?fixture:production).toString()));
             assertEquals(0,PrivacyConnectionTest.run(command));
@@ -31,11 +32,34 @@ class PrivacyBridgeTest {
     }
     static void mode(String mode) throws Exception {
         String classes=Path.of("target/test-classes").toAbsolutePath()+java.io.File.pathSeparator+Path.of("target/classes").toAbsolutePath();
-        assertEquals(0,PrivacyConnectionTest.run(List.of("/usr/bin/env","LANG=C.UTF-8","LC_ALL=C.UTF-8",Path.of(System.getProperty("java.home"),"bin","java").toString(),"-Djdk.lang.Process.launchMechanism=FORK","-XX:ErrorFile=/dev/null","-XX:-CreateCoredumpOnCrash","-XX:-HeapDumpOnOutOfMemoryError","-cp",classes,PrivacyBridgeProbe.class.getName(),(mode.equals("empty")?production:fixture).toString(),mode,child.toString(),production.toString())),mode);
+        var command=List.of("/usr/bin/env","LANG=C.UTF-8","LC_ALL=C.UTF-8",Path.of(System.getProperty("java.home"),"bin","java").toString(),"-Djdk.lang.Process.launchMechanism=FORK","-XX:ErrorFile=/dev/null","-XX:-CreateCoredumpOnCrash","-XX:-HeapDumpOnOutOfMemoryError","-cp",classes,PrivacyBridgeProbe.class.getName(),(mode.equals("empty")?production:fixture).toString(),mode,child.toString(),production.toString());
+        assertEquals(0,mode.startsWith("native-")?nativeMode(command):PrivacyConnectionTest.run(command),mode);
         // Actual subprocess exit releases invocation-owned base FD; successful
         // launch modes must have removed their own endpoints before that exit.
-        if(!mode.equals("disarm-fault")&&!mode.equals("expired-publication")&&!mode.equals("startup-expired-publication")&&!mode.equals("expired-refusal-allocation"))try(var entries=Files.list(parent)){assertEquals(0,entries.count(),"launch namespace leaked");}
+        if(!mode.equals("disarm-fault")&&!mode.equals("expired-publication")&&!mode.equals("startup-expired-publication")&&!mode.equals("expired-refusal-allocation")&&!Set.of("native-path-expired","native-startup-expired","native-listener-expired","native-path-refusal-allocation","native-handoff-listener").contains(mode))try(var entries=Files.list(parent)){assertEquals(0,entries.count(),"launch namespace leaked");}
     }
+    static int nativeMode(List<String> command)throws Exception{
+        var builder=new ProcessBuilder(command).redirectErrorStream(true);builder.environment().clear();builder.environment().put("PATH","/usr/bin:/bin");
+        var process=builder.start();
+        try{
+            assertTrue(process.waitFor(20,TimeUnit.SECONDS),"native construction fault bound");
+            byte[] output=process.getInputStream().readNBytes(8193);assertTrue(output.length<=8192,"bounded invented diagnostic");
+            System.out.print(new String(output,java.nio.charset.StandardCharsets.US_ASCII));return process.exitValue();
+        }finally{if(process.isAlive()){process.destroyForcibly();process.waitFor(5,TimeUnit.SECONDS);}}
+    }
+    @Test void failedNativeConstructionConsumesOnlyOriginalCleanupAllowance()throws Exception{
+        for(String name:List.of("native-path-expired","native-listener-expired"))expiredMode(name);
+        mode("native-entropy-expired");mode("native-event-expired");
+    }
+    @Test void unexpiredNativeConstructionFailureUsesOnlyTimeStillRemaining()throws Exception{
+        for(String name:List.of("native-entropy-unexpired","native-listener-unexpired","native-event-unexpired"))mode(name);
+    }
+    @Test void failedStartupCannotBorrowFromLongerOperationClock()throws Exception{expiredMode("native-startup-expired");}
+    @Test void nativeFailureResultAllocationRetainsOriginalRefusalAndCleanup()throws Exception{expiredMode("native-path-refusal-allocation");}
+    @Test void expiryBeforeNativeInitializationDoesNotInventResourceOwnership()throws Exception{mode("native-preinit-expired");}
+    @Test void failedOpenCleanupCannotRenewAllowanceDuringHandoff()throws Exception{mode("native-handoff-expired");}
+    @Test void partialListenerCannotCompleteWithStaleCleanupDuration()throws Exception{expiredMode("native-handoff-listener");}
+    @Test void ownerMutexContentionCannotRenewUnpublishedCleanup()throws Exception{mode("native-handoff-owner-mutex");}
     @Test void malformedLinkageCannotLeavePartiallyRegisteredMethods() throws Exception {
         Path scratch=Files.createDirectory(directory.resolve("linkage"));
         try {

@@ -223,3 +223,35 @@ it("cannot deliver a late empty-body refusal after the original session was clea
   await expect(pending).rejects.toMatchObject({ code: "SESSION_REQUIRED" });
   expect(transport.mock.calls[1][1]?.signal?.aborted).toBe(true);
 });
+
+it.each(["completed", "failed"])(
+  "retires a %s semantic refusal body with its original session",
+  async (outcome) => {
+    let finish!: (body: string) => void;
+    let fail!: (reason: Error) => void;
+    const response = new Response(null, { status: 422 });
+    const read = vi.spyOn(response, "text").mockReturnValueOnce(
+      new Promise<string>((resolve, reject) => {
+        finish = resolve;
+        fail = reject;
+      }),
+    );
+    const transport = vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(sessionResponse())
+      .mockResolvedValueOnce(response);
+    const api = new HostedApi(transport);
+    await api.session();
+    const pending = api.put("/api/v3/definitions/00000000-0000-4000-8000-000000000919", {});
+    const retired = expect(pending).rejects.toMatchObject({ code: "SESSION_REQUIRED" });
+    await vi.waitFor(() => expect(read).toHaveBeenCalledOnce());
+    api.clear();
+    if (outcome === "completed")
+      finish(
+        '{"kind":"rejected","diagnostics":[{"phase":"parse","code":"INVALID_JSON","pointer":"","message":"Invented refusal."}]}',
+      );
+    else fail(new Error("Invented body failure"));
+    await retired;
+    expect(transport.mock.calls[1][1]?.signal?.aborted).toBe(true);
+  },
+);

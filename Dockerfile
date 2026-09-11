@@ -24,15 +24,15 @@ WORKDIR /build
 # These packages build and exercise the invented native/PTY tests; none enter runtime.
 RUN apt-get update -qq && apt-get install -y --no-install-recommends \
     gcc=4:13.2.0-7ubuntu1 \
-    libc6-dev=2.39-0ubuntu8.8 \
+    libc6-dev=2.39-0ubuntu8.9 \
     libssl-dev=3.0.13-0ubuntu3.15 \
     libssl3t64=3.0.13-0ubuntu3.15 \
     python3=3.12.3-0ubuntu2.1 \
     python3-minimal=3.12.3-0ubuntu2.1 \
-    python3.12=3.12.3-1ubuntu0.16 \
-    python3.12-minimal=3.12.3-1ubuntu0.16 \
-    libpython3.12-stdlib=3.12.3-1ubuntu0.16 \
-    libpython3.12-minimal=3.12.3-1ubuntu0.16 && \
+    python3.12=3.12.3-1ubuntu0.17 \
+    python3.12-minimal=3.12.3-1ubuntu0.17 \
+    libpython3.12-stdlib=3.12.3-1ubuntu0.17 \
+    libpython3.12-minimal=3.12.3-1ubuntu0.17 && \
     test ! -e /usr/bin/java && ln -s /opt/java/openjdk/bin/java /usr/bin/java
 COPY backend/ ./backend/
 COPY schemas/ ./schemas/
