@@ -11,3 +11,32 @@ The closed transport adds a semantic-body mode, not arbitrary caller-supplied li
 The sole async completion owner receives workerClosed only after body, exact CommandAdmission and encoded/output buffers are actually closed/wiped. Listener/setup/closure/completion uncertainty follows hosted-plan-http-v3 and plan-transfers-v3. Pre-transfer refusals use the existing no-body safe-code header branch. Owned failures use the same bounded closed JSON response; do not renew an output deadline, reread credentials or append a second response after output acquisition. Existing core session cleanup and mixed-family retry guards remain.
 
 Acceptance: actual shared-v3-service command changes and exact replay; wrong-version/foreign/revoked before admission/body; busy full scratch and busy semantic HTTP record before request input; malformed request leaves the plan unchanged; late original lease loss refuses mutation/output; successful worker retains scratch through response then releases it exactly once; actual partial-body HTTP cancellation/recovery and real MockOIDC/CSRF. Independent mock XML controls verify an explicit PUBLIC field change materializes and recomputes groups, while v2 historical behavior and retained replay remain unchanged. This route does not introduce comparison, capture/reuse, validation, export or readback endpoints.
+
+## Browser explicit target values
+
+The nonvisual target-value controller submits only the existing bind-field
+command. Its caller supplies an explicit entity reference, declared field ID and
+one closed state: entered text (including empty text), keep-observed, absent or
+unresolved. No state is inferred from a blank field or selected automatically.
+Capture a detached immutable command at explicit submission with the initiating
+plan/revision and a fresh request ID. Require a valid inspection context before a
+new submission. Do not materialize, validate or authorize export automatically.
+
+Only one command may be outstanding. Retain its exact original plan and command
+on uncertain delivery; presentation/plan changes must not retarget it or admit a
+replacement. Retry is explicit in the original session, without a current-plan
+freshness read that would prevent replay of an already committed command. The
+backend decides command eligibility and returns the original acknowledgement.
+Known typed pre-mutation refusals400 INVALID_REQUEST,404 NOT_FOUND,409 CONFLICT/
+STALE_PREVIEW and429 CAPACITY release the pending command. Other transport/server
+failures or malformed acknowledgements remain uncertain. SESSION_REQUIRED, API
+owner replacement and unmount retire all local values/replay material; late work
+cannot restore them. Inactive presentation prevents submit/retry, but retains an
+uncertain command for explicit reentry. Clearing a displayed result cannot clear
+an outstanding command. Acknowledgement is separate from refreshed target proof.
+
+Keep input and retained commands in memory only. No browser storage, logging,
+credentials, SQL execution, automatic retry or inferred application vocabulary.
+The controller adds no Values renderer or new image approval. Its future renderer
+must provide the approved entered/submitted/uncertain/acknowledged distinctions
+and preserve the host's passive session retirement behavior.
