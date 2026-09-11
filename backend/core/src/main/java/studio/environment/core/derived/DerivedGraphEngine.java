@@ -21,6 +21,7 @@ public final class DerivedGraphEngine {
             .thenComparing(Key::derivation, DerivedGraphEngine::text).thenComparing(Key::value, DerivedGraphEngine::text);
     private record MemberKey(String relation, DerivedInput.Ref physical, Key computed) { }
     private record PairKey(String relation, Key source, Key target) { }
+    private record NodeContributors(Key key, List<Contributor> contributors) { }
     private static final Comparator<MemberKey> MEMBERS = Comparator.comparing(MemberKey::relation, DerivedGraphEngine::text)
             .thenComparing(MemberKey::physical, DerivedGraphEngine::reference).thenComparing(MemberKey::computed, KEYS);
     private static final Comparator<PairKey> PAIRS = Comparator.comparing(PairKey::relation, DerivedGraphEngine::text)
@@ -43,7 +44,7 @@ public final class DerivedGraphEngine {
     }
 
     private DerivedResult compute(Checked definition, DerivedInput input, BooleanSupplier cancelled) {
-        var nodes = new TreeMap<Key, List<Contributor>>(KEYS);
+        var nodes = new TreeMap<Key, NodeContributors>(KEYS);
         var members = new TreeMap<MemberKey, List<Contributor>>(MEMBERS);
         var pairs = new TreeMap<PairKey, List<Contributor>>(PAIRS);
         var budget = new Budget(input.entities().size(), input.edges().size());
@@ -57,6 +58,7 @@ public final class DerivedGraphEngine {
         for (var entity : entities) {
             cancellation(cancelled);
             var selected = new TreeMap<String, Key>();
+            var fieldContributors = new TreeMap<String, Contributor>();
             for (var derivation : derivations) {
                 cancellation(cancelled);
                 if (!derivation.sourceType().equals(entity.reference().type())) continue;
@@ -64,16 +66,20 @@ public final class DerivedGraphEngine {
                 if (!(state instanceof DerivedInput.FieldState.Present present)) continue;
                 long bytes = bytes(present.text(), cancelled);
                 var key = new Key(derivation.computedType(), derivation.id(), present.text());
-                var contributors = nodes.get(key);
-                if (contributors == null) {
+                var node = nodes.get(key);
+                if (node == null) {
                     budget.node(bytes);
-                    contributors = new ArrayList<>();
-                    nodes.put(key, contributors);
+                    node = new NodeContributors(key, new ArrayList<>());
+                    nodes.put(key, node);
                 }
+                key = node.key();
                 budget.edge();
                 budget.links(2);
-                var contributor = new Contributor(entity.reference(), List.of(new FieldRole(derivation.sourceField(), present.proof())));
-                contributors.add(contributor);
+                // Equal immutable field evidence is shared only within this entity/evaluation.
+                // Logical contributor links and their limits still count every occurrence.
+                var contributor = fieldContributors.computeIfAbsent(derivation.sourceField(),
+                        field -> new Contributor(entity.reference(), List.of(new FieldRole(field, present.proof()))));
+                node.contributors().add(contributor);
                 var member = new MemberKey(derivation.membershipRelation(), entity.reference(), key);
                 if (members.putIfAbsent(member, List.of(contributor)) != null) fail("DUPLICATE_CONTRIBUTOR");
                 selected.put(derivation.id(), key);
@@ -102,7 +108,7 @@ public final class DerivedGraphEngine {
         var resultNodes = new ArrayList<Node>();
         for (var entry : nodes.entrySet()) {
             cancellation(cancelled);
-            resultNodes.add(new Node(entry.getKey(), entry.getValue()));
+            resultNodes.add(new Node(entry.getKey(), entry.getValue().contributors()));
         }
         var resultMembers = new ArrayList<Membership>();
         for (var entry : members.entrySet()) {
@@ -122,7 +128,7 @@ public final class DerivedGraphEngine {
         return result;
     }
 
-    private static List<DerivedResult.RuleCheck> rules(Checked definition, Map<Key, List<Contributor>> nodes,
+    private static List<DerivedResult.RuleCheck> rules(Checked definition, Map<Key, NodeContributors> nodes,
             Map<PairKey, List<Contributor>> pairs, BooleanSupplier cancelled) {
         var result = new ArrayList<DerivedResult.RuleCheck>();
         var counts = new TreeMap<String, BigInteger>();
@@ -178,6 +184,7 @@ public final class DerivedGraphEngine {
     }
     /** Scalar-value ordering equals unsigned UTF-8 ordering after strict validation. */
     private static int text(String left, String right) {
+        if (left == right) return 0;
         int a = 0, b = 0;
         while (a < left.length() && b < right.length()) {
             int x = left.codePointAt(a), y = right.codePointAt(b);

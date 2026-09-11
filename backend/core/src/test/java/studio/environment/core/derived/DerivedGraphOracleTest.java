@@ -53,8 +53,12 @@ class DerivedGraphOracleTest {
         var definition = DerivedGraphEngineTest.definition(); var pin = DerivedGraphEngineTest.pin(definition);
         var input = DerivedGraphEngineTest.input(definition, new String[][] {{"same", "same"}});
         var result = assertInstanceOf(DerivedResult.Complete.class, new DerivedGraphEngine().evaluate(definition, pin, input, () -> false));
-        assertEquals(List.of(key("finishes", "by-finish", "same"), key("tones", "by-tone", "same")),
-                result.graph().nodes().stream().map(Node::key).toList());
+        var finish = contributor("slot-0", role("finish", "same"));
+        var tone = contributor("slot-0", role("tone", "same"));
+        assertEquals(List.of(new Node(key("finishes", "by-finish", "same"), List.of(finish)),
+                new Node(key("tones", "by-tone", "same"), List.of(tone))), result.graph().nodes());
+        assertEquals(List.of(new Membership("has-finish", ref("slot-0"), key("finishes", "by-finish", "same"), List.of(finish)),
+                new Membership("has-tone", ref("slot-0"), key("tones", "by-tone", "same"), List.of(tone))), result.graph().memberships());
         assertEquals(key("tones", "by-tone", "same"), result.graph().cooccurrences().getFirst().source());
         assertEquals(key("finishes", "by-finish", "same"), result.graph().cooccurrences().getFirst().target());
     }
