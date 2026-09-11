@@ -176,6 +176,22 @@ browser, native-client, export or release qualification is asserted by this API.
 
 ## Browser reuse state
 
+The profile picker explicitly loads the owned v3 catalogue and reads the exact
+immutable workspace revision selected from that catalogue. Unknown/unloaded or
+failed catalogue is distinct from a successful empty list. No automatic profile
+selection, publication, preview or plan command follows from loading or selecting.
+Before exposing a selected model, compare its object/revision, native identity,
+source/content digests, stored state and definition reference with the selected
+catalogue entry. Any mismatch fails closed. Drafts remain inspectable; a stored
+publication is historical state, never current runtime qualification.
+
+Reload, another selection, inactive presentation, API/session replacement or
+session termination retires pending reads and clears selected content. Late
+responses cannot restore retired state. Selection inputs are copied from the
+owned catalogue, not retained from mutable caller objects. Explicit retry is a
+new read; there is no automatic request retry or browser persistence. Rendering
+and whole/partial selection reuse their separately approved designs/contracts.
+
 The nonvisual reuse controller accepts an explicit immutable profile revision and
 whole/selected roots. Entry/configuration never mutates the plan. Preview reads
 all four sections to completion, including empty ones; it exposes no partial
