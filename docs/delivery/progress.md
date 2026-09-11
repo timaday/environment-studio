@@ -1,5 +1,11 @@
 # Handoff and capability status
 
+Latest application candidate adds [nonvisual whole/partial reuse state](../evidence/v3-profile-reuse-state.md)
+on a9d165e. Complete four-section preview, explicit mapping decisions and original-
+plan replay pass27 focused cases; full277frontend/59schema, types/format/build,
+six compiled guard faults and fixed non-author review support the slice. No renderer
+or release availability is claimed. Next ready work is paged validation state.
+
 Latest lead slice is the [semantic workspace-refusal correction](../evidence/v3-workspace-refusal-integration.md).
 The isolated correction is 61e22d27aaabefd85d91a0a8fb03124c32a7b6ba on bc6dfe8;
 eb045ad carries it onto the current 1522cc5 application stack, preserving upload
@@ -10,17 +16,19 @@ Fresh desktop/narrow actual HTTPS journeys pass with bounded canary checks and
 complete cleanup. Fixed non-author integration review found no confirmed defect;
 remote correction acceptance remains pending. Root stays173cde2/application30446e2.
 
-- Ready: finish the correction handoff, then implement nonvisual whole/partial
-  reuse state. Capture persistence prerequisite 1522cc5 is locally reviewed.
-- Awaiting another owner: remote d67df44 review followed by de0ce25; IDE2 native
-  allocation/stack packet is now in read-only independent review.
+- Ready: publish prepared correction/reuse candidates and implement paged validation
+  state. Capture persistence prerequisite1522cc5 is locally reviewed.
+- Awaiting another owner: remote de0ce25 and fetchable correction acceptance;
+  IDE2 is preparing the next bounded external allocator-observer design.
 - Blockers: pending Definitions rendered exceptions; combined integration gates,
   actual publication/native/client/resource qualification and release evidence.
 
 Remote review resolved READBACK-QA-001 on exact78f2b1a (353 core tests and bounded
 independent regression/mutation evidence). Definitions upload8d87311 has no new
 product finding; inherited DEF-QA-001 is addressed by the current correction.
-Its exact1MiB positive boundary was covered only by an independent added probe;
+Plans d67df44 has no new confirmed defect, but its first legacy visibility failure
+remains unexplained despite a later pass; combined G03 must retain a safe failed
+step/location for triage. The upload exact1MiB positive boundary was covered only by an independent added probe;
 its v3 browser runs did not sample the final log/PKCE control. Preserve those
 limits. The current correction adds that finite sampled check, without claiming
 universal disclosure protection. User-published78f2/8d/d67/de0 are fetch-confirmed;

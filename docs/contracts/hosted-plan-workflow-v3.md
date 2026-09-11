@@ -173,3 +173,29 @@ ports must remain absent from production composition, whose compiler still refus
 Qualify combined retained proofs, complete validation evaluation and bounded
 selected-page encoding before operational availability. No new maximum-resource,
 browser, native-client, export or release qualification is asserted by this API.
+
+## Browser reuse state
+
+The nonvisual reuse controller accepts an explicit immutable profile revision and
+whole/selected roots. Entry/configuration never mutates the plan. Preview reads
+all four sections to completion, including empty ones; it exposes no partial
+collection. All pages must share pins, digest and affected derivations, each
+section must retain its total, and the observation fingerprint and final fresh
+plan summary must still match the original context. A failed or retired read
+clears the preview. Unknown inventory is not an empty successful preview.
+
+Apply is a separate explicit action with one create/use-existing/cancel decision
+per included slot. The command uses only returned normalized roots/digest/profile
+and the original revision; no inferred mapping, donor value or replace-draft
+command is generated. Java remains responsible for composition, conflict
+resolution, publication, sibling preservation and materialization. A complete
+preview does not authorize export or establish publication readiness.
+
+A dispatched command is detached and retained with its original plan ID until a
+valid acknowledgement or confirmed pre-commit refusal. Network, malformed reply
+and possibly committed403/413 preserve exact retry; configuration/context changes
+must not replace it or replay against another plan. An acknowledgement is an
+original command receipt, never a fresh summary or target-completeness assertion.
+Session termination/unmount retires owned state. Future rendering must connect
+session retirement and display receipt ownership explicitly. No rendered capture
+or reuse design is approved by this nonvisual prerequisite.
