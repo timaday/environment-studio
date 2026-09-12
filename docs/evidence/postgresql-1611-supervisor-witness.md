@@ -64,6 +64,19 @@ Default invocation:
 Result: BUILD SUCCESS. Tests run: 2, failures: 0, errors: 0, skipped: 2. Finished
 2026-09-12 17:13:52 Europe/London.
 
+Integrated backend gate after the post-COMMIT witness update:
+
+```sh
+/home/tim/.tmp/es-toolchain-20260909/apache-maven-3.9.16/bin/mvn -B -ntp \
+  -f backend/pom.xml verify
+```
+
+Result: BUILD SUCCESS. Module totals: 335 core tests, 7 qualified XML parser
+tests, 1,047 server tests and 346 guarded-supervisor tests, with the three
+Docker-gated witness cases skipped in the normal run. Finished 2026-09-12
+17:26:12 Europe/London. The known recycled-response diagnostic noise appeared
+during existing hosted boundary tests, but no test failed.
+
 ## Remaining limits
 
 Production PostgreSQL execution still requires its own approved definition,
