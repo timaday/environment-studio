@@ -73,33 +73,36 @@ bundle hashes are unchanged.
 
 ## Exact candidate result
 
-Source `551ddc2aca9431af00b79f4d62e21c8bc530f5f6` was built from Git archive
+Source `a96517c91fe539a8067aa1bec08f62e545a4b5cd` was built from Git archive
 with no untracked inputs. Full OCI runtime build passes, including the Docker
 Maven run, container smoke, supervisor artifact build and 29 supervisor checksum
 verification. Local image:
-`sha256:011646bb41ac6b3572d39e02859755bbd7031e4b26b7d94e8d4e8dc9590e72f9`.
-Result: `/home/tim/.tmp/es-package-read-oci-20260912/results.json`; SHA256
-`1a05681957b26ecfa0eabb7f21f7ecc611ec9c86281b1b392b1c622dcc777b5d`.
+`sha256:1622d20b50f6292af05b75aedbaa2467aae91af39c929dcc6bd2ceec36ecd1e1`.
+Result: `/home/tim/.tmp/es-package-read-oci2-20260912/results.json`; SHA256
+`077c1401d4120d9de65c4dbc21d2a6db801107c42df5fcabce20ad8711c1f5b3`.
 Build log SHA256:
-`a2d96974d22797693247514609b0f43c7730e2a91e9474fcc0f13d8cb2dbd97f`.
+`174e905016a488fea331bcab1e898d0f85718f6469194e1daa6bceefcd5039f9`.
 
 The exact packaged image, with no classpath overlay, passes the same admission
 resource probe:
 
-- small: 2.091 seconds, exit 0, no OOM, container removed, log SHA256
-  `e76e2fb6cb10da0c1e48dd6ae228b6519997f1856424390ea522942ea729a8d4`;
-- large: 158.112 seconds, exit 0, no OOM, container removed, log SHA256
-  `084a71e726584909580ff6d25ebb6da7e6b5f331926be26bd5a438e7d6e0db24`.
+- small: 2.075 seconds, exit 0, no OOM, container removed, log SHA256
+  `cde2983ee0db0c37656d491365fd5f65814de10cc47c106e9d46281d584eab55`;
+- large: 160.106 seconds, exit 0, no OOM, container removed, log SHA256
+  `e28d15d67ff272c41ea840e529252cfa3d58dc13e98008ada3e24d2fe8df3592`.
 
 The exact-image large run reaches `PACKAGE_ADMISSION_VERIFIED`, reports
 `PAYLOAD_BYTES=67121255 qualified=false exactCanonical=true`, rechecks all four
 plans and completes final cleanup. Result:
-`/home/tim/.tmp/es-package-read-image-admission2-20260912/result.json`; SHA256
-`5bed23e118a7ed339b788653fc3efa7c9d9c02332feb7a186f4412ce86eb0432`.
+`/home/tim/.tmp/es-package-read-image-admission3-20260912/result.json`; SHA256
+`170d5f69399edbfe9a22996804eef7c54440b77e37f5e19b8a1c20d8b2270d21`.
 
 An earlier exact-image probe artifact failed before product behavior because its
 harness omitted `/probe/execution-template.json`; that preserved setup failure is
 `/home/tim/.tmp/es-package-read-image-admission-20260912/result.json`.
+The first exact run for `551ddc2` also passed before the evidence amend changed
+the candidate identity; it is preserved under `/home/tim/.tmp/es-package-read-oci-20260912/`
+and `/home/tim/.tmp/es-package-read-image-admission2-20260912/`.
 
 ## Qualification limits
 

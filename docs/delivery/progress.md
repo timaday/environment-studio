@@ -3,14 +3,15 @@
 ## Current lead checkpoint — 12 September 2026, 11:55 UTC
 
 Lead owns application/native/integration; reviewers and IDE2 remain retired.
-Current source `551ddc2aca9431af00b79f4d62e21c8bc530f5f6`, worktree
+Current tested implementation candidate `a96517c91fe539a8067aa1bec08f62e545a4b5cd`,
+worktree
 `/home/tim/.tmp/es-v3-package-read-resource-20260911`, branch
 `implementation/v3-package-read-resource-20260911`. Package admission readback now
 validates UTF-8 through a bounded reader and avoids the extra full decoded payload
 string. Focused53 selected Java checks pass. Exact OCI runtime build, smoke,
 supervisor artifact build and 29 supervisor checksums pass. Exact image
-`sha256:011646bb41ac6b3572d39e02859755bbd7031e4b26b7d94e8d4e8dc9590e72f9`
-passes the four-owner admission resource probe: small2.091s, large158.112s, no
+`sha256:1622d20b50f6292af05b75aedbaa2467aae91af39c929dcc6bd2ceec36ecd1e1`
+passes the four-owner admission resource probe: small2.075s, large160.106s, no
 OOM, package admission verified, 67,121,255 payload bytes exact, all four plans
 rechecked and cleanup complete. [Evidence](../evidence/v3-package-read-resource.md).
 
