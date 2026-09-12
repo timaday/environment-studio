@@ -131,3 +131,21 @@ Result: BUILD SUCCESS. Reactor modules all passed, including server and
 guarded-supervisor. Module summaries reported 1,049 server tests and 346
 guarded-supervisor tests, with the three PostgreSQL 16.11 Docker witness cases
 skipped by default. Finished 2026-09-12 18:33:01 Europe/London.
+
+## Review correction — TEST-QA-014
+
+A follow-up independent review found that the TEST-QA-012 cleanup correction still used an ambiguous oracle: Docker `inspect` exit code 1 can mean the resource is absent, but it can also mean the daemon, permission or transport path failed. The witness now accepts absence only when Docker reports an exact `No such container` or `No such volume` diagnostic containing the owned resource name. Present resources, daemon/transport failures and diagnostics for a different resource fail the cleanup assertion.
+
+Focused checks on 12 September 2026 20:20 Europe/London:
+
+```sh
+/home/tim/.tmp/es-toolchain-20260909/apache-maven-3.9.16/bin/mvn -B -ntp \
+  -f backend/tools/guarded-supervisor/pom.xml -Dtest=Postgres16ClientWitnessCleanupOracleTest test
+/home/tim/.tmp/es-toolchain-20260909/apache-maven-3.9.16/bin/mvn -B -ntp \
+  -f backend/tools/guarded-supervisor/pom.xml -Dtest=Postgres16ClientWitnessTest test
+ES_POSTGRES16_CLIENT_WITNESS=true ES_POSTGRES16_IMAGE=postgres:16.11-bookworm \
+  /home/tim/.tmp/es-toolchain-20260909/apache-maven-3.9.16/bin/mvn -B -ntp \
+  -f backend/tools/guarded-supervisor/pom.xml -Dtest=Postgres16ClientWitnessTest test
+```
+
+Results: cleanup-oracle PASS, 4 tests; default witness PASS with 3 skipped; explicit PostgreSQL 16.11 witness PASS, 3 tests. Full backend Maven verify also PASS: guarded-supervisor 350 tests with the three Docker-gated witness cases skipped by default, finished 2026-09-12 20:26:10 Europe/London. This remains local invented-environment evidence only.

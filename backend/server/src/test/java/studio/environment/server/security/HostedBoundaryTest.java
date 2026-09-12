@@ -353,14 +353,17 @@ class HostedBoundaryTest {
         assertTrue(relations.get("items").toString().contains("fresh"));
         var validation=json.readTree(client.request("POST","/api/v1/plans/"+plan.planId+"/validations","{\"revision\":\"3\"}",true).body());assertEquals(10,validation.get("checks").size());assertEquals(2,validation.get("applicationRules").size());assertFalse(validation.get("exportAvailable").asBoolean());
         assertEquals(200,client.request("POST","/api/v1/plans/"+plan.planId+"/materializations","{\"revision\":\"3\"}",true).status());
-        // Socket receipt precedes possible Work.close; this replay is intentionally sequential.
-        try { studio.environment.server.plan.PlanHttpTestConfiguration.awaitViewScratch(false); }
-        catch(Exception | AssertionError unsettled) {
+        // Socket receipt can precede the worker closing the retained application scratch.
+        // The sequential conflict assertion starts only after the original replay has settled.
+        try {
+            studio.environment.server.plan.PlanHttpTestConfiguration.awaitViewScratch(false);
+            assertEquals(changed.body(),client.request("POST",commands,body,true).body());
+            studio.environment.server.plan.PlanHttpTestConfiguration.awaitCommandScratch(false);
+        } catch(Exception | AssertionError unsettled) {
             try { assertEquals(204,client.request("POST","/api/v1/session/logout","{}",true).status()); }
             catch(Exception | AssertionError cleanupFailure) { unsettled.addSuppressed(cleanupFailure); }
             throw unsettled;
         }
-        assertEquals(changed.body(),client.request("POST",commands,body,true).body());
         assertEquals(409,client.request("POST",commands,json.writeValueAsString(Map.of("kind","discard","expectedRevision","2","requestId",requestId)),true).status());
         var foreign=socketLogin("foreign-plan-"+java.util.UUID.randomUUID());
         assertEquals(404,foreign.get("/api/v1/plans/"+plan.planId).status());

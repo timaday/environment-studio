@@ -35,6 +35,13 @@ public class PlanHttpTestConfiguration {
         while(System.nanoTime()<end){synchronized(lockField.get(installed)){Object admission=scratchField.get(installed);if(!reading && admission==null || reading && admission!=null && pinnedField.get(admission)==null && executingField.getBoolean(admission))return;}Thread.sleep(5);}
         throw new AssertionError("MOCK_VIEW_READER_STATE_TIMEOUT");
     }
+    public static void awaitCommandScratch(boolean running)throws Exception {
+        var lockField=HostedPlanService.class.getDeclaredField("lock");lockField.setAccessible(true);var scratchField=HostedPlanService.class.getDeclaredField("commandScratch");scratchField.setAccessible(true);var materializationField=HostedPlanService.class.getDeclaredField("materializationScratch");materializationField.setAccessible(true);
+        var executingField=HostedPlanService.CommandAdmission.class.getDeclaredField("executing");executingField.setAccessible(true);
+        long end=System.nanoTime()+2_000_000_000L;
+        while(System.nanoTime()<end){synchronized(lockField.get(installed)){Object admission=scratchField.get(installed);boolean materializing=materializationField.getBoolean(installed);if(!running && admission==null && !materializing)return;if(running && admission!=null && executingField.getBoolean(admission))return;}Thread.sleep(5);}
+        throw new AssertionError(running?"MOCK_COMMAND_READER_STATE_TIMEOUT":"MOCK_COMMAND_SETTLEMENT_TIMEOUT");
+    }
     public static Map<String,Object> mockObservationEvidence() {
         var identity=Map.of("systemIdentifier","731","databaseOid","19","databaseName","invented_db");
         return Map.of("engine","postgresql","cleanup","complete",

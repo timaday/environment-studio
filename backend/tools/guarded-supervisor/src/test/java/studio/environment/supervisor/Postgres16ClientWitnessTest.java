@@ -32,9 +32,12 @@ class Postgres16ClientWitnessTest {
         if (container != null) {
             recordVolumes();
             run(Duration.ofSeconds(20), "docker", "rm", "-f", "-v", container);
-            assertEquals(1, run(Duration.ofSeconds(5), false, "docker", "container", "inspect", container).code);
-            for (String volume : volumes)
-                assertEquals(1, run(Duration.ofSeconds(5), false, "docker", "volume", "inspect", volume).code);
+            var inspectedContainer = run(Duration.ofSeconds(5), false, "docker", "container", "inspect", container);
+            requireMissingDockerResource("container", container, inspectedContainer.code, inspectedContainer.stdout);
+            for (String volume : volumes) {
+                var inspectedVolume = run(Duration.ofSeconds(5), false, "docker", "volume", "inspect", volume);
+                requireMissingDockerResource("volume", volume, inspectedVolume.code, inspectedVolume.stdout);
+            }
         }
     }
 
@@ -165,11 +168,19 @@ class Postgres16ClientWitnessTest {
         if (container == null) return;
         var inspected = run(Duration.ofSeconds(5), false, "docker", "inspect", "--format",
                 "{{range .Mounts}}{{if eq .Type \"volume\"}}{{.Name}}{{\"\\n\"}}{{end}}{{end}}", container);
-        if (inspected.code != 0) return;
+        if (inspected.code != 0) fail("DOCKER_VOLUME_DISCOVERY_UNCERTAIN: " + inspected.stdout);
         for (String line : inspected.stdout.lines().toList()) {
             var name = line.strip();
             if (!name.isEmpty()) volumes.add(name);
         }
+    }
+
+    static void requireMissingDockerResource(String kind, String name, int code, String output) {
+        if (code == 0) fail("DOCKER_" + kind.toUpperCase(Locale.ROOT) + "_STILL_PRESENT: " + name);
+        var text = output == null ? "" : output;
+        var lower = text.toLowerCase(Locale.ROOT);
+        if (code == 1 && lower.contains("no such " + kind.toLowerCase(Locale.ROOT)) && text.contains(name)) return;
+        fail("DOCKER_" + kind.toUpperCase(Locale.ROOT) + "_ABSENCE_UNCERTAIN: " + text);
     }
 
     private void setupTable(String value) throws Exception {
