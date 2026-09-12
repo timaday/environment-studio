@@ -1,6 +1,7 @@
 package studio.environment.server.export;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.HexFormat;
@@ -35,11 +36,37 @@ public final class PackageAdmission {
     public sealed interface Result {
         final class Accepted implements Result {
             private final Execution execution;private final Payload payload;private final Counts counts;private final String payloadDigest,programDigest;
-            private final JsonNode executionTree,payloadTree;
-            private Accepted(Execution execution,Payload payload,Counts counts,String payloadDigest,String programDigest,JsonNode executionTree,JsonNode payloadTree){this.execution=execution;this.payload=payload;this.counts=counts;this.payloadDigest=payloadDigest;this.programDigest=programDigest;this.executionTree=executionTree;this.payloadTree=payloadTree;}
+            private final JsonNode executionTree;
+            private Accepted(Execution execution,Payload payload,Counts counts,String payloadDigest,String programDigest,JsonNode executionTree){this.execution=execution;this.payload=payload;this.counts=counts;this.payloadDigest=payloadDigest;this.programDigest=programDigest;this.executionTree=executionTree;}
             public Execution execution(){return execution;}public Payload payload(){return payload;}public Counts counts(){return counts;}public String payloadDigest(){return payloadDigest;}public String programDigest(){return programDigest;}
-            public byte[] canonicalExecution(){return PackageJson.canonical(executionTree,PackageJson.SMALL);}public byte[] canonicalPayload(){return PackageJson.canonical(payloadTree,PackageJson.LARGE);}
+            public byte[] canonicalExecution(){return PackageJson.canonical(executionTree,PackageJson.SMALL);}
+            public byte[] canonicalPayload(){var out=new PackageJson.Bounded(PackageJson.LARGE);writePayload(out);out.allocate();writePayload(out);return out.bytes();}
+            PackageJson.Metrics canonicalPayloadMetrics(){var out=PackageJson.Bounded.metrics(PackageJson.LARGE);writePayload(out);return out.metrics();}
+            void writeCanonicalPayload(OutputStream output){writePayload(PackageJson.Bounded.stream(PackageJson.LARGE,output));}
             JsonNode executionTree(){return executionTree.deepCopy();}
+            Accepted withCanonicalPayloadDigest(String payloadDigest){return new Accepted(execution,payload,counts,payloadDigest,PackageJson.executionDigest(executionTree,payloadDigest),executionTree);}
+            private void writePayload(PackageJson.Bounded out) {
+                out.add("{");field("bindingId",payload.bindingId(),out);out.add(",");
+                field("engine",payload.engine().token(),out);out.add(",\"records\":[");
+                boolean first=true;for(var record:payload.records()){if(!first)out.add(",");first=false;record(record,out);}
+                out.add("],");field("schemaVersion","1",out);out.add(",");
+                field("storage",payload.storage(),out);out.add(",\"table\":{");
+                field("keyColumn",payload.table().keyColumn(),out);out.add(",");
+                field("keyType",payload.table().keyType().token(),out);out.add(",");
+                field("name",payload.table().name(),out);out.add(",");
+                field("schema",payload.table().schema(),out);out.add(",");
+                field("xmlColumn",payload.table().xmlColumn(),out);out.add("}}");
+            }
+            private static void record(Document record,PackageJson.Bounded out) {
+                out.add("{");field("documentId",record.documentId(),out);out.add(",\"key\":{");
+                field("type",record.key().type().token(),out);out.add(",");
+                field("value",record.key().value(),out);out.add("},");
+                field("originalHex",record.originalHex(),out);out.add(",");
+                field("targetHex",record.targetHex(),out);out.add("}");
+            }
+            private static void field(String name,String value,PackageJson.Bounded out) {
+                PackageJson.string(name,out);out.add(":");PackageJson.string(value,out);
+            }
             @Override public String toString(){return "MechanicallyAdmittedPackageInputs[redacted,unqualified]";}
         }
         record Rejected(String code) implements Result { }
@@ -50,7 +77,7 @@ public final class PackageAdmission {
             if(!executionSchema.validate(execution).isEmpty() || !payloadSchema.validate(payload).isEmpty())fail("SCHEMA_VIOLATION");
             var decodedExecution=execution(execution);var decodedPayload=payload(payload);var counts=validate(decodedExecution,decodedPayload);
             String payloadDigest=PackageJson.sha256(payloadJson),programDigest=PackageJson.executionDigest(execution,payloadDigest);
-            return new Result.Accepted(decodedExecution,decodedPayload,counts,payloadDigest,programDigest,execution,payload);
+            return new Result.Accepted(decodedExecution,decodedPayload,counts,payloadDigest,programDigest,execution);
         }catch(PackageJson.Refusal refused){return new Result.Rejected(refused.code);}
     }
     /** Internal definition-pin check, additional to mechanical inspection; never export authority. */

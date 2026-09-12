@@ -2,6 +2,7 @@ package studio.environment.server.export;
 
 import java.io.OutputStream;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.io.ByteArrayOutputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -19,12 +20,15 @@ public final class StrictPackageZip {
     public static final class Member {
         private final String name;private final byte[]bytes;
         public Member(String name,byte[] bytes){this(name,bytes,false);}
+        static Member owned(String name,byte[] bytes){return new Member(name,bytes,true);}
         private Member(String name,byte[] bytes,boolean owned){if(bytes.length>PackageJson.LARGE)throw new IllegalArgumentException("PACKAGE_RESOURCE_LIMIT");this.name=name;this.bytes=owned?bytes:bytes.clone();}
         public String name(){return name;}public byte[]bytes(){return bytes.clone();}
+        int size(){return bytes.length;}byte[] rawBytes(){return bytes;}
         @Override public String toString(){return "PackageMember[redacted]";}
     }
     public sealed interface WriteResult { record Written(long bytes,String sha256)implements WriteResult{} record Rejected(String code)implements WriteResult{} }
     public sealed interface ReadResult { record Decoded(List<Member> members)implements ReadResult { public Decoded{if(members.size()>4)throw new IllegalArgumentException("PACKAGE_RESOURCE_LIMIT");members=List.copyOf(members);}@Override public String toString(){return "DecodedZip[redacted,unqualified]";} } record Rejected(String code)implements ReadResult{} }
+    record StreamMember(String name,long bytes,long crc32,Writer writer) { interface Writer { void write(OutputStream output) throws IOException; } }
     private static final long MAX_TOTAL=160L*1024*1024;
     public WriteResult write(List<Member> members,OutputStream output){
         try {
@@ -42,6 +46,24 @@ public final class StrictPackageZip {
             long centralBytes=sink.count-central;sink.u32(0x06054b50);sink.u16(0);sink.u16(0);sink.u16(4);sink.u16(4);sink.u32(centralBytes);sink.u32(central);sink.u16(0);
             return new WriteResult.Written(sink.count,HexFormat.of().formatHex(sink.digest.digest()));
         }catch(PackageJson.Refusal refused){return new WriteResult.Rejected(refused.code);}catch(IOException failure){return new WriteResult.Rejected("OUTPUT_FAILURE");}
+    }
+    WriteResult writeStreaming(List<StreamMember> members,OutputStream output){
+        try {
+            if(members==null||output==null)fail("INVALID_INPUT");if(members.size()!=4)fail("ZIP_STRUCTURE");
+            var snapshot=new ArrayList<StreamMember>();for(int i=0;i<4;i++){var member=members.get(i);if(member==null)fail("INVALID_INPUT");snapshot.add(member);}members=List.copyOf(snapshot);
+            long total=0;for(int i=0;i<4;i++){var member=members.get(i);if(!NAMES.get(i).equals(member.name))fail("ZIP_STRUCTURE");checkSize(i,member.bytes);total+=member.bytes;}if(total>MAX_TOTAL)fail("RESOURCE_LIMIT");
+            var sink=new Sink(output);long[]offsets=new long[4];
+            for(int i=0;i<4;i++){var member=members.get(i);byte[]name=member.name.getBytes(StandardCharsets.US_ASCII);offsets[i]=sink.count;
+                sink.u32(0x04034b50);sink.u16(20);sink.u16(0x0800);sink.u16(0);sink.u16(0);sink.u16(33);sink.u32(member.crc32);sink.u32(member.bytes);sink.u32(member.bytes);sink.u16(name.length);sink.u16(0);sink.bytes(name);
+                long before=sink.count;member.writer.write(sink);if(sink.count-before!=member.bytes)fail("ZIP_STRUCTURE");
+            }
+            long central=sink.count;
+            for(int i=0;i<4;i++){var member=members.get(i);byte[]name=member.name.getBytes(StandardCharsets.US_ASCII);
+                sink.u32(0x02014b50);sink.u16(0x0314);sink.u16(20);sink.u16(0x0800);sink.u16(0);sink.u16(0);sink.u16(33);sink.u32(member.crc32);sink.u32(member.bytes);sink.u32(member.bytes);sink.u16(name.length);sink.u16(0);sink.u16(0);sink.u16(0);sink.u16(0);sink.u32(0100600L<<16);sink.u32(offsets[i]);sink.bytes(name);
+            }
+            long centralBytes=sink.count-central;sink.u32(0x06054b50);sink.u16(0);sink.u16(0);sink.u16(4);sink.u16(4);sink.u32(centralBytes);sink.u32(central);sink.u16(0);
+            return new WriteResult.Written(sink.count,HexFormat.of().formatHex(sink.digest.digest()));
+        }catch(PackageJson.Refusal refused){return new WriteResult.Rejected(refused.code);}catch(IOException|UncheckedIOException failure){return new WriteResult.Rejected("OUTPUT_FAILURE");}
     }
     public ReadResult read(byte[] archive){
         try {
@@ -62,9 +84,11 @@ public final class StrictPackageZip {
         void expect32(long expected){if(u32()!=expected)fail("ZIP_STRUCTURE");}void expect16(int expected){if(u16()!=expected)fail("ZIP_STRUCTURE");}
         void name(String expected){for(byte value:expected.getBytes(StandardCharsets.US_ASCII)){int start=position;skip(1);if(bytes[start]!=value)fail("ZIP_STRUCTURE");}}
     }
-    private static final class Sink {
+    private static final class Sink extends OutputStream {
         final OutputStream output;final MessageDigest digest;long count;
         Sink(OutputStream output){this.output=output;try{digest=MessageDigest.getInstance("SHA-256");}catch(NoSuchAlgorithmException unavailable){throw new IllegalStateException("SHA256_UNAVAILABLE");}}
+        @Override public void write(int value)throws IOException{bytes(new byte[]{(byte)value});}
+        @Override public void write(byte[]bytes,int offset,int length)throws IOException{output.write(bytes,offset,length);digest.update(bytes,offset,length);count+=length;}
         void bytes(byte[]bytes)throws IOException{output.write(bytes);digest.update(bytes);count+=bytes.length;}
         void u16(int value)throws IOException{bytes(new byte[]{(byte)value,(byte)(value>>>8)});}void u32(long value)throws IOException{bytes(new byte[]{(byte)value,(byte)(value>>>8),(byte)(value>>>16),(byte)(value>>>24)});}
     }

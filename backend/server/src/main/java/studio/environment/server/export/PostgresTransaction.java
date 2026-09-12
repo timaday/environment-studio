@@ -5,8 +5,19 @@ import static studio.environment.server.export.TransactionTemplates.*;
 final class PostgresTransaction {
     private PostgresTransaction() { }
     static TransactionTemplates.Result.Candidate generate(PackageAdmission.Result.Accepted input) {
+        var measure=Source.counter(); write(input,measure);
+        var s=measure.allocate(); write(input,s);
+        byte[]bytes=s.bytes();return new TransactionTemplates.Result.Candidate(bytes,java.util.List.of(new TransactionTemplates.Block(0,bytes.length)));
+    }
+    static TransactionTemplates.Metrics metrics(PackageAdmission.Result.Accepted input) {
+        var s=Source.metricsSource(); write(input,s); return s.snapshotMetrics();
+    }
+    static void write(PackageAdmission.Result.Accepted input, java.io.OutputStream output) {
+        write(input,Source.stream(output));
+    }
+    private static void write(PackageAdmission.Result.Accepted input, Source s) {
         boolean version16 = input.execution().versions().template().equals("postgresql16-text-v1");
-        var s=new Source();var table=input.payload().table();String target=id(table.schema())+"."+id(table.name());String xml=id(table.xmlColumn());
+        var table=input.payload().table();String target=id(table.schema())+"."+id(table.name());String xml=id(table.xmlColumn());
         var identity=(PackageData.PhysicalIdentity.Postgres)input.execution().destination().expectedPhysicalIdentity();
         s.line("DO $es$\nDECLARE\n  es_oid oid;\n  es_count bigint;");
         values(s,input,false);values(s,input,true);s.line("BEGIN");
@@ -35,7 +46,6 @@ final class PostgresTransaction {
         for(int i=0;i<input.payload().records().size();i++){var d=input.payload().records().get(i);compare(s,target,xml,key(table,d.key()),"es_target["+(i+1)+"]","ES_TARGET_MISMATCH");}
         s.line("  PERFORM pg_catalog.set_config('environment_studio.program_digest','"+input.programDigest()+"',true);");
         s.line("EXCEPTION WHEN OTHERS THEN\n  RAISE EXCEPTION 'ES_GUARDED_TRANSACTION_FAILED';\nEND;\n$es$;");
-        byte[]bytes=s.bytes();return new TransactionTemplates.Result.Candidate(bytes,java.util.List.of(new TransactionTemplates.Block(0,bytes.length)));
     }
     private static void guard(Source s,String condition,String code){s.line("  IF "+condition+" THEN RAISE EXCEPTION '"+code+"'; END IF;");}
     private static String key(PackageData.Table t,PackageData.Key k){return k.type()==PackageData.KeyType.INT64?id(t.keyColumn())+"='"+k.value()+"'::bigint":"pg_catalog.convert_to("+id(t.keyColumn())+",'UTF8')=pg_catalog.decode('"+hex(k.value())+"','hex')";}
@@ -43,6 +53,6 @@ final class PostgresTransaction {
     private static void compare(Source s,String table,String xml,String key,String value,String code){guard(s,"(SELECT count(*) FROM "+table+" WHERE "+key+" AND "+xml+" IS NOT NULL AND pg_catalog.convert_to("+xml+",'UTF8')="+value+")<>1",code);}
     private static void values(Source s,PackageAdmission.Result.Accepted input,boolean target) {
         s.line("  "+(target?"es_target":"es_original")+" bytea[] := ARRAY[");
-        for(int i=0;i<input.payload().records().size();i++){var d=input.payload().records().get(i);s.line("    pg_catalog.decode('"+(target?d.targetHex():d.originalHex())+"','hex')"+(i+1<input.payload().records().size()?",":"];") );}
+        for(int i=0;i<input.payload().records().size();i++){var d=input.payload().records().get(i);s.add("    pg_catalog.decode('");s.add(target?d.targetHex():d.originalHex());s.add("','hex')");s.line(i+1<input.payload().records().size()?",":"];");}
     }
 }

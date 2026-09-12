@@ -2,7 +2,9 @@ package studio.environment.server.export;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.UncheckedIOException;
 import java.util.List;
+import java.util.zip.CRC32;
 import studio.environment.core.observation.ObservationPort.Cancellation;
 import tools.jackson.databind.node.JsonNodeFactory;
 
@@ -19,17 +21,21 @@ public final class GuardedPackageAssembler {
         if (input == null || output == null || cancellation == null) return new Result.Rejected("INVALID_INPUT");
         try {
             live(cancellation);
-            // Rebind the program to the exact canonical payload that the archive carries.
-            var admission = new PackageAdmission();
-            var read = admission.read(input.canonicalExecution(), input.canonicalPayload());
-            if (read instanceof PackageAdmission.Result.Rejected refused) return new Result.Rejected(refused.code());
-            var canonical = (PackageAdmission.Result.Accepted) read;
+            var payloadMetrics = input.canonicalPayloadMetrics();
+            // Rebind the program digest to the exact canonical payload that the archive carries.
+            var canonical = input.withCanonicalPayloadDigest(payloadMetrics.sha256());
             live(cancellation);
-            var generated = new TransactionTemplates().generate(canonical);
-            if (generated instanceof TransactionTemplates.Result.Rejected refused) return new Result.Rejected(refused.code());
-            var sql = ((TransactionTemplates.Result.Candidate) generated).bytes();
+            var engine = TransactionTemplates.route(canonical);
+            TransactionTemplates.Metrics sqlMetrics = null; byte[] sql = null; byte[] payload = null;
+            if (engine == PackageData.Engine.POSTGRESQL) sqlMetrics = PostgresTransaction.metrics(canonical);
+            else {
+                payload = input.canonicalPayload();
+                var generated = new TransactionTemplates().generate(canonical);
+                if (generated instanceof TransactionTemplates.Result.Rejected refused) return new Result.Rejected(refused.code());
+                sql = ((TransactionTemplates.Result.Candidate) generated).rawBytes();
+            }
             live(cancellation);
-            var payload = canonical.canonicalPayload(); var instructions = PackageInstructions.bytes();
+            var instructions = PackageInstructions.bytes();
             var manifest = JsonNodeFactory.instance.objectNode();
             manifest.put("format", "es-guarded-package-v1"); manifest.set("execution", canonical.executionTree());
             manifest.put("programDigest", canonical.programDigest());
@@ -37,17 +43,16 @@ public final class GuardedPackageAssembler {
             counts.put("records", actual.records()); counts.put("changedRecords", actual.changedRecords());
             counts.put("originalBytes", actual.originalBytes()); counts.put("targetBytes", actual.targetBytes());
             var members = manifest.putObject("members");
-            var data = List.of(new StrictPackageZip.Member("payload.json", payload),
-                    new StrictPackageZip.Member("transaction.sql", sql), new StrictPackageZip.Member("instructions.txt", instructions));
-            for (var member : data) {
-                live(cancellation); var bytes = member.bytes();
-                members.putObject(member.name()).put("bytes", bytes.length).put("sha256", PackageJson.sha256(bytes));
-            }
+            members.putObject("payload.json")
+                    .put("bytes", engine == PackageData.Engine.POSTGRESQL ? payloadMetrics.bytes() : payload.length)
+                    .put("sha256", engine == PackageData.Engine.POSTGRESQL ? payloadMetrics.sha256() : PackageJson.sha256(payload));
+            members.putObject("transaction.sql").put("bytes", engine == PackageData.Engine.POSTGRESQL ? sqlMetrics.bytes() : sql.length)
+                    .put("sha256", engine == PackageData.Engine.POSTGRESQL ? sqlMetrics.sha256() : PackageJson.sha256(sql));
+            members.putObject("instructions.txt").put("bytes", instructions.length).put("sha256", PackageJson.sha256(instructions));
             var encoded = PackageJson.canonical(manifest, PackageJson.SMALL);
-            admission.manifest(encoded);
+            new PackageAdmission().manifest(encoded);
             live(cancellation);
-            var result = new StrictPackageZip().write(List.of(new StrictPackageZip.Member("manifest.json", encoded),
-                    data.get(0), data.get(1), data.get(2)), new OutputStream() {
+            var guarded = new OutputStream() {
                 @Override public void write(int value) throws IOException {
                     live(cancellation); output.write(value); live(cancellation);
                 }
@@ -58,12 +63,35 @@ public final class GuardedPackageAssembler {
                     }
                     live(cancellation);
                 }
-            });
+            };
+            var result = engine == PackageData.Engine.POSTGRESQL
+                ? writePostgres(encoded, payloadMetrics, sqlMetrics, instructions, guarded, canonical, input, cancellation)
+                : new StrictPackageZip().write(List.of(StrictPackageZip.Member.owned("manifest.json", encoded),
+                    StrictPackageZip.Member.owned("payload.json", payload), StrictPackageZip.Member.owned("transaction.sql", sql),
+                    StrictPackageZip.Member.owned("instructions.txt", instructions)), guarded);
             live(cancellation);
             if (result instanceof StrictPackageZip.WriteResult.Rejected refused) return new Result.Rejected(refused.code());
             var written = (StrictPackageZip.WriteResult.Written) result;
             return new Result.Candidate(written.bytes(), written.sha256());
         } catch (PackageJson.Refusal refused) { return new Result.Rejected(refused.code); }
+        catch (UncheckedIOException failure) { return new Result.Rejected("OUTPUT_FAILURE"); }
+    }
+    private static StrictPackageZip.WriteResult writePostgres(byte[] manifest, PackageJson.Metrics payload,
+            TransactionTemplates.Metrics sql, byte[] instructions, OutputStream output,
+            PackageAdmission.Result.Accepted canonical, PackageAdmission.Result.Accepted source, Cancellation cancellation) {
+        var zip = new StrictPackageZip();
+        return zip.writeStreaming(List.of(member("manifest.json", manifest),
+                new StrictPackageZip.StreamMember("payload.json", payload.bytes(), payload.crc32(), sink -> {
+                    source.writeCanonicalPayload(sink); live(cancellation);
+                }),
+                new StrictPackageZip.StreamMember("transaction.sql", sql.bytes(), sql.crc32(), sink -> {
+                    try { PostgresTransaction.write(canonical, sink); } catch (UncheckedIOException failure) { throw failure.getCause(); }
+                    live(cancellation);
+                }), member("instructions.txt", instructions)), output);
+    }
+    private static StrictPackageZip.StreamMember member(String name, byte[] bytes) {
+        var crc = new CRC32(); crc.update(bytes);
+        return new StrictPackageZip.StreamMember(name, bytes.length, crc.getValue(), sink -> sink.write(bytes));
     }
     private static void live(Cancellation cancellation) { if (cancellation.cancelled()) PackageJson.fail("CANCELLED"); }
 }

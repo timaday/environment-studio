@@ -1,3 +1,5 @@
+Ready: guarded package assembly resource correction passes local focused package tests and the constrained large assembly probe with current overlaid classes. Commit, repository content gates, exact-image rebuild and review remain required before acceptance. Reviewer was reactivated on issue9 for fetchable package-read head 6b5e223.
+
 # Handoff and capability status
 
 ## Current lead checkpoint — 12 September 2026, 11:55 UTC

@@ -3,7 +3,9 @@ package studio.environment.server.export;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.Reader;
+import java.io.UncheckedIOException;
 import java.nio.ByteBuffer;
 import java.nio.charset.CodingErrorAction;
 import java.nio.charset.CharacterCodingException;
@@ -13,6 +15,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HexFormat;
+import java.util.zip.CRC32;
 import tools.jackson.core.*;
 import tools.jackson.core.exc.StreamConstraintsException;
 import tools.jackson.core.exc.StreamReadException;
@@ -70,6 +73,7 @@ final class PackageJson {
         };
     }
     static String sha256(byte[] bytes) { var digest=digest();return HexFormat.of().formatHex(digest.digest(bytes)); }
+    record Metrics(long bytes, long crc32, String sha256) { }
     static String executionDigest(JsonNode execution,String payloadDigest) {
         var digest=digest(); digest.update("ES-EXECUTION-1\0".getBytes(StandardCharsets.US_ASCII));
         var root=NODES.objectNode();root.set("execution",execution);root.put("payloadDigest",payloadDigest);frame(root,digest);return HexFormat.of().formatHex(digest.digest());
@@ -91,6 +95,14 @@ final class PackageJson {
         write(node,output);
         return output.bytes();
     }
+    static Metrics canonicalMetrics(JsonNode node,int maximum) {
+        var output=Bounded.metrics(maximum);
+        write(node,output);
+        return output.metrics();
+    }
+    static void writeCanonical(JsonNode node,int maximum,OutputStream stream) {
+        write(node,Bounded.stream(maximum,stream));
+    }
     private static void write(JsonNode node,Bounded out) {
         if(node.isString())string(node.asString(),out);
         else if(node.isIntegralNumber() || node.isBoolean() || node.isNull())out.add(node.toString());
@@ -98,28 +110,46 @@ final class PackageJson {
         else if(node.isObject()){out.add("{");boolean first=true;for(String key:node.propertyNames().stream().sorted(UTF8).toList()){if(!first)out.add(",");first=false;string(key,out);out.add(":");write(node.get(key),out);}out.add("}");}
         else fail("INVALID_JSON");
     }
-    private static void string(String value,Bounded out) {
+    static void string(String value,Bounded out) {
         unicode(value);out.add("\"");int start=0;
-        for(int i=0;i<value.length();i++){char c=value.charAt(i);if(c=='"'||c=='\\'||c<32){out.add(value.substring(start,i));out.add(switch(c){case '"'->"\\\"";case '\\'->"\\\\";case '\b'->"\\b";case '\f'->"\\f";case '\n'->"\\n";case '\r'->"\\r";case '\t'->"\\t";default->String.format(java.util.Locale.ROOT,"\\u%04x",(int)c);});start=i+1;}}
-        out.add(value.substring(start));out.add("\"");
+        for(int i=0;i<value.length();i++){char c=value.charAt(i);if(c=='"'||c=='\\'||c<32){out.add(value,start,i);out.add(switch(c){case '"'->"\\\"";case '\\'->"\\\\";case '\b'->"\\b";case '\f'->"\\f";case '\n'->"\\n";case '\r'->"\\r";case '\t'->"\\t";default->String.format(java.util.Locale.ROOT,"\\u%04x",(int)c);});start=i+1;}}
+        out.add(value,start,value.length());out.add("\"");
     }
     static final class Bounded {
         private final int maximum;
         private int size;
         private byte[] output;
+        private OutputStream stream;
+        private MessageDigest digest;
+        private CRC32 crc;
         Bounded(int maximum){this.maximum=maximum;}
-        void add(String text){
-            if((long)size+text.length()>maximum)fail("RESOURCE_LIMIT");
-            byte[] bytes=text.getBytes(StandardCharsets.UTF_8);
-            if((long)size+bytes.length>maximum)fail("RESOURCE_LIMIT");
-            if(output!=null){
-                if(bytes.length>output.length-size)fail("RESOURCE_LIMIT");
-                System.arraycopy(bytes,0,output,size,bytes.length);
+        static Bounded metrics(int maximum) {
+            var output=new Bounded(maximum);output.digest=digest();output.crc=new CRC32();return output;
+        }
+        static Bounded stream(int maximum,OutputStream stream) {
+            var output=new Bounded(maximum);output.stream=stream;return output;
+        }
+        void add(String text){add(text,0,text.length());}
+        void add(String text,int from,int to){
+            if((long)size+(to-from)>maximum)fail("RESOURCE_LIMIT");
+            for(int i=from;i<to;) {
+                int next=Math.min(to,i+8192);
+                if(next<to && Character.isHighSurrogate(text.charAt(next-1))) next--;
+                if(next==i)fail("INVALID_UNICODE");
+                byte[] bytes=text.substring(i,next).getBytes(StandardCharsets.UTF_8);
+                if((long)size+bytes.length>maximum)fail("RESOURCE_LIMIT");
+                if(output!=null){
+                    if(bytes.length>output.length-size)fail("RESOURCE_LIMIT");
+                    System.arraycopy(bytes,0,output,size,bytes.length);
+                }
+                if(digest!=null)digest.update(bytes); if(crc!=null)crc.update(bytes);
+                if(stream!=null)try{stream.write(bytes);}catch(IOException failure){throw new UncheckedIOException(failure);}
+                size+=bytes.length;i=next;
             }
-            size+=bytes.length;
         }
         // Measure first, then allocate exactly once: no geometric growth or final full copy.
         void allocate(){output=new byte[size];size=0;}
         byte[] bytes(){if(size!=output.length)fail("INVALID_JSON");return output;}
+        Metrics metrics(){if(digest==null||crc==null)fail("INVALID_JSON");return new Metrics(size,crc.getValue(),HexFormat.of().formatHex(digest.digest()));}
     }
 }

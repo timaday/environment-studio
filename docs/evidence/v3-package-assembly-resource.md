@@ -1,0 +1,90 @@
+# Guarded package assembly resource settlement
+
+Status: local correction accepted within bounded PostgreSQL package assembly scope.
+This is not independent review, production publication, operational execution or
+release readiness.
+
+Base branch: `implementation/v3-package-read-resource-20260911`.
+Prior reviewed head for package-read evidence: `6b5e2237be64c27274f06c7952e675a2deb9634c`.
+
+## Behavior and scope
+
+Guarded package assembly must write the exact self-contained archive members and
+manifest digests while staying within the same constrained runtime envelope used
+for package admission. PostgreSQL assembly now measures and streams large
+`payload.json` and `transaction.sql` members instead of materializing both as full
+byte arrays during archive writing. Oracle assembly retains the existing bounded
+candidate path.
+
+The accepted package keeps the execution JSON tree for manifest embedding, but
+canonical payload output is derived from the decoded admitted payload model. This
+removes the retained parsed payload tree after schema and mechanical admission.
+Canonical JSON string writing uses bounded ranges so large unescaped strings do
+not create full substring copies before UTF-8 output.
+
+No schema, SQL semantics, package member names, package inspection authority,
+export authority or generated SQL execution behavior changes.
+
+Acceptance examples:
+
+- existing small package assembly remains deterministic and inspectable;
+- invalid inputs, cancellation and output failures still refuse without returning
+a candidate;
+- the manifest records the same member sizes and SHA-256 digests as the bytes
+written to the archive;
+- PostgreSQL 16.11 package SQL stays unqualified and transactional;
+- the large four-owner package assembly probe writes the package under the same
+1 GiB container, 65% heap, 1 CPU, 256 PID and no-network envelope that previously
+failed at `PACKAGE_ASSEMBLY_BEGIN`.
+
+## RED evidence
+
+The package-read exact image passed package admission, then failed during full
+archive assembly. Probe directory:
+`/home/tim/.tmp/es-package-assembly-capacity-20260912/`.
+
+- small: exit 0;
+- large: exit 3 after approximately 106 seconds;
+- Docker reported no kernel OOM kill and the container was removed;
+- last product stage: `PACKAGE_ASSEMBLY_BEGIN`;
+- large log SHA256:
+  `c28c3dbf1344d2fa1137b7bf381b9290d7a28af509042f8696f5aa8a68f8ff6b`.
+
+Intermediate overlays that streamed only SQL or still retained/copy-created the
+canonical payload remained failing at `PACKAGE_ASSEMBLY_BEGIN`; their result files
+are preserved under `/home/tim/.tmp/es-package-assembly-capacity-overlay-20260912/`
+and `/home/tim/.tmp/es-package-assembly-capacity-overlay4-20260912/`.
+
+## Focused verification
+
+Focused server/package tests passed after the final no-copy canonical payload
+change:
+
+```sh
+/home/tim/.tmp/es-toolchain-20260909/apache-maven-3.9.16/bin/mvn -B -ntp -f backend/pom.xml -pl server -am '-Dtest=DerivedGraphOracleTest,MinimalRuntimeTest,PackageJsonEncodingTest,*Package*Test,TransactionTemplatesTest,Postgres16TemplateTest' test > /home/tim/.tmp/es-package-assembly-focused9-20260912.log 2>&1
+```
+
+Result: PASS. The run includes 1 parser smoke test and 50 selected server export
+and planning tests. Log: `/home/tim/.tmp/es-package-assembly-focused9-20260912.log`.
+
+## Resource result
+
+The same bounded package assembly probe with the corrected classes first on the
+classpath passes both shapes:
+
+- small: 2.080 seconds, exit 0, no OOM, container removed, log SHA256
+  `6f13f154119875f9056314fa1ec247935ab9b28ec1ff240e1de358e7344f3d22`;
+- large: 167.113 seconds, exit 0, no OOM, container removed, log SHA256
+  `d2d35b00169307325e6e96f9da0aa0702ebc9fae244f8168d16760dc5f5b09d8`.
+
+Result file: `/home/tim/.tmp/es-package-assembly-capacity-overlay4-20260912/result.json`.
+The probe uses exact image
+`sha256:1622d20b50f6292af05b75aedbaa2467aae91af39c929dcc6bd2ceec36ecd1e1`
+with current corrected export classes overlaid. It does not prove full HTTP,
+native client, database or production export readiness.
+
+## Remaining checks
+
+Before this correction can become an immutable candidate it still needs the
+standard diff/content/script checks, commit from a clean eligible diff, exact-image
+rebuild from that commit, and independent review if reviewer tokens are available.

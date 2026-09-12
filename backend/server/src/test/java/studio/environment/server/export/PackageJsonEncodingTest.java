@@ -1,7 +1,11 @@
 package studio.environment.server.export;
 
 import static org.junit.jupiter.api.Assertions.*;
+import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.util.HexFormat;
+import java.util.zip.CRC32;
 import org.junit.jupiter.api.Test;
 import tools.jackson.databind.node.JsonNodeFactory;
 
@@ -48,5 +52,20 @@ class PackageJsonEncodingTest {
                 () -> PackageJson.parse(incomplete, incomplete.length, 8)).code);
         assertEquals("INVALID_JSON", assertThrows(PackageJson.Refusal.class,
                 () -> PackageJson.parse("\ufeff{}".getBytes(StandardCharsets.UTF_8), 32, 8)).code);
+    }
+
+    @Test void streamsCanonicalJsonWithTheSameDigestAndCrcAsAllocatedBytes() throws Exception {
+        var root = JsonNodeFactory.instance.objectNode();
+        root.put("z", "x".repeat(9000) + "\ud83d\ude03");
+        root.put("a", "line\nquote\"");
+        byte[] canonical = PackageJson.canonical(root, PackageJson.SMALL);
+        var crc = new CRC32(); crc.update(canonical);
+        var metrics = PackageJson.canonicalMetrics(root, PackageJson.SMALL);
+        assertEquals(canonical.length, metrics.bytes());
+        assertEquals(crc.getValue(), metrics.crc32());
+        assertEquals(HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(canonical)), metrics.sha256());
+        var streamed = new ByteArrayOutputStream();
+        PackageJson.writeCanonical(root, PackageJson.SMALL, streamed);
+        assertArrayEquals(canonical, streamed.toByteArray());
     }
 }
