@@ -61,12 +61,39 @@ A focused package-route run then passed 45 Java tests:
 Result: BUILD SUCCESS. Tests run: 45, failures: 0, errors: 0, skipped: 0. Finished
 2026-09-12 14:32:50 Europe/London.
 
+## Exact image result
+
+Committed candidate `83b7afd522660359e844f2cecf7a522234d5959b` was built from a
+fresh `git archive` with no untracked inputs. The runtime Docker build passed the
+image's frontend/schema checks, full Java verification and supervisor distribution
+checksum verification. The protected container smoke then passed startup, static
+UI, health, demo capability, mutation-denial, private workspace initialization,
+schema 2 offline upgrade/refusal and schema 3 upgrade/fresh-init/refusal checks.
+
+Local image: `sha256:4a8308265e0db8ed3becfdb7bf350591c6d24f59532653a43cb33d659268f075`.
+Tag: `environment-studio:pg16-route-83b7afd52266`.
+Result file: `/home/tim/.tmp/es-pg16-route-oci-result-83b7afd52266.json`.
+Build log SHA256: `c0462c610caf5690921020518c576cd31418f69e13ceaa66826c82b5db8e9688`.
+Smoke log SHA256: `45222001bbf6ae154f65907b4a7ae509fbbea3cb9f92222837a341726644261b`.
+
+The build log records the in-image Maven reactor as 335 core tests, 7 qualified
+XML parser tests, 1,047 server tests and 343 guarded-supervisor tests with no
+failures or errors. Total build time: 5:16 minutes. Finished 2026-09-12
+15:57:39 UTC.
+
+The same archived source also exported the `supervisor-artifacts` target. The
+distribution ZIP and all 29 entries in `SHA256SUMS` verified successfully. Result
+file: `/home/tim/.tmp/es-pg16-route-supervisor-artifacts-result-83b7afd52266.json`.
+Artifact log SHA256: `96be34686c06be12e805845282ac5e00a2a3064aa0eb5f880db11d5d7dd31871`.
+
 ## Limits and remaining checks
 
 This result uses only independently invented repository mock fixtures and test
 configuration. It does not prove production definition publication, real database
-connectivity, real TLS/client behavior, native supervisor execution, COMMIT/rollback
-qualification, OCI packaging or GHCR/HiveForge release readiness. Full repository checks and repository-content checks have passed for the working candidate before commit; see below.
+connectivity, real TLS/client behavior, native supervisor execution against a live
+PostgreSQL target, COMMIT/rollback execution qualification, GHCR publication or
+HiveForge release readiness. Full repository checks and repository-content checks
+have passed for the working candidate before commit; see below.
 
 ## Repository checks
 

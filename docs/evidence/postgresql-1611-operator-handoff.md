@@ -1,0 +1,74 @@
+# PostgreSQL 16.11 guarded package operator handoff
+
+Status: local reviewed-candidate handoff for the narrowed 12 September delivery.
+This is not production export qualification, GHCR publication, HiveForge deployment
+or proof of live database execution.
+
+Candidate source: `83b7afd522660359e844f2cecf7a522234d5959b` on branch
+`implementation/v3-postgres16-guarded-package-route-20260912`. Local evidence
+amendment: `20f6dc5a177d3017c44ff58a11eb137fedd57c52` records exact-image and
+supervisor-artifact checks and must be pushed before a remote reviewer can fetch
+that documentation update.
+
+## Supported today
+
+Environment Studio can prepare an **unqualified guarded package candidate** for a
+hosted V3 plan whose trusted server-side destination configuration is exactly
+PostgreSQL `16.11`, psql `16.11`, linux-amd64 and template
+`postgresql16-text-v1`. The plan must already have a current inspection, complete
+target values and a validation result whose input fingerprint matches the request.
+The application does not take destination, client, server, template, binding,
+policy or publication fields from the browser request.
+
+The downloaded ZIP contains the deterministic `es-guarded-package-v1` members:
+`manifest.json`, `payload.json`, `transaction.sql` and `instructions.txt`. The SQL
+is generated from the admitted package execution context, includes the PostgreSQL
+16.11 guard and does not contain `COMMIT` or `ROLLBACK`; transaction control remains
+owned by the separately qualified supervisor workflow.
+
+## Operator request shape
+
+Use the application session's normal authenticated HTTP client and CSRF handling.
+The request body is closed JSON with only the pinned plan revision and current
+validation fingerprint:
+
+```http
+POST /api/v3/plans/{planId}/package-candidates/guarded
+Content-Type: application/json
+Accept: application/zip
+
+{"revision":"{pinnedRevision}","inputFingerprint":"{validationInputFingerprint}"}
+```
+
+A successful response has `Content-Type: application/zip`, `Cache-Control: no-store`,
+`X-Environment-Studio-Qualified: false` and downloads the package as an attachment.
+Record the independently reviewed archive SHA-256 outside the package before any
+separate supervisor trial.
+
+## Required refusal examples
+
+The route refuses before streaming when any required authority is missing or stale:
+wrong owner, V2/nonexistent plan, stale revision, missing inspection, incomplete
+target, mismatched validation fingerprint, destination physical-identity mismatch,
+unsupported client tuple, protected-document policy denial or package-admission
+failure. The application keeps `exportAvailable=false` after package download.
+
+## Evidence available
+
+- Focused route/package checks: 45 Java tests pass.
+- Full backend Maven verification: 1,732 tests pass.
+- Exact-source runtime image from fresh `git archive` passes G08 build and protected
+  container smoke. Local image:
+  `sha256:4a8308265e0db8ed3becfdb7bf350591c6d24f59532653a43cb33d659268f075`.
+- Supervisor artifact export from the same archived source verifies the ZIP and all
+  29 `SHA256SUMS` entries.
+- Detailed evidence: [v3 PostgreSQL 16 guarded package route](v3-postgres16-guarded-package-route.md).
+
+## Still required before production use
+
+Independent reviewer disposition for the exact candidate remains pending in issue
+#9. Live PostgreSQL client execution, TLS/client identity, supervisor commit and
+rollback fault behavior, GHCR publication, HiveForge deployment and production
+definition qualification remain separate evidence gates. Do not describe this
+candidate as release-ready or production-qualified until those gates pass for the
+same source and image.
