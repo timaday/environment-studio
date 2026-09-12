@@ -89,7 +89,7 @@ Independent review of effective source `0f81c0c9d5ee1657ab4671d3c4f1c2721a9aadd6
 
 TEST-QA-014 showed that the PostgreSQL 16.11 witness cleanup oracle treated broad Docker `inspect` exit-code-1 output as absence evidence. The witness now accepts absence only when the same Docker diagnostic exactly names the owned missing container or owned missing volume. It rejects daemon, permission and transport failures, prefix resource names such as `owned-different`, and diagnostics where the owned name appears in unrelated context while the missing diagnostic names another resource. A non-Docker unit test covers those cases.
 
-TEST-QA-015 showed a test-lifecycle race in `PrivacyLaunchOwnerTest#repeatedCleanupShortensTheAlreadyRunningBudget`: the test observed a latch signalled inside `disarm()` before the original launcher had fully returned and released the process-wide launch window. The test now releases the held port, waits for the original launch-owner result to leave `IN_PROGRESS`, and joins the cleanup thread before allowing the next launch-owner test to start. This preserves the shortened-cleanup and concurrent-window resource assertions while preventing cross-test leakage.
+TEST-QA-015 showed a test-lifecycle race in `PrivacyLaunchOwnerTest#repeatedCleanupShortensTheAlreadyRunningBudget`: the test observed a latch signalled inside `disarm()` before the original launcher had fully returned and released the process-wide launch window. The first correction waited for the launch-owner result to leave `IN_PROGRESS`; independent review showed that a terminal startup-deadline result can appear before the launcher thread itself has returned. The follow-up correction now releases the held port, waits for `disarm()` to signal, joins the actual launcher platform thread recorded by the blocked port, and then joins the cleanup thread before allowing the next launch-owner test to start. This preserves the shortened-cleanup and concurrent-window resource assertions while preventing cross-test leakage.
 
 Focused correction checks on 12 September 2026 21:29 Europe/London:
 
@@ -104,7 +104,7 @@ ES_POSTGRES16_CLIENT_WITNESS=true ES_POSTGRES16_IMAGE=postgres:16.11-bookworm \
   -f backend/tools/guarded-supervisor/pom.xml -Dtest=Postgres16ClientWitnessTest test
 ```
 
-Results: cleanup-oracle and launch-owner focused tests PASS, 22 tests; default witness PASS with 3 skipped; explicit PostgreSQL 16.11 witness PASS, 3 tests. `git diff --check`, repository content/integrity checks and Python script unittests PASS. Full backend Maven verify PASS: core 335, qualified XML parser 7, server 1,049 and guarded-supervisor 352 tests; the three Docker-gated PostgreSQL witness cases are skipped in the default full run. Finished 2026-09-12 21:29:07 Europe/London. Independent review is pending for the corrected candidate.
+Results: cleanup-oracle and launch-owner focused tests PASS, 22 tests. Full backend Maven verify on the final launch-thread-join correction PASSed with core 335, qualified XML parser 7, server 1,049 and guarded-supervisor 352 tests; the three Docker-gated PostgreSQL witness cases were skipped in the default full run. Finished 2026-09-12 21:47:53 Europe/London. Independent review is pending for the final TEST-QA-015 correction candidate.
 
 ## Exact image result
 

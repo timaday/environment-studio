@@ -40,6 +40,11 @@ class PrivacyLaunchOwnerTest {
     }
 
     static void released(CountDownLatch latch){try {assertTrue(latch.await(3,TimeUnit.SECONDS));}catch(InterruptedException e){Thread.currentThread().interrupt();throw new AssertionError();}}
+    static void joined(Thread thread,String message){
+        assertNotNull(thread,message);
+        try {thread.join(1000);}catch(InterruptedException e){Thread.currentThread().interrupt();throw new AssertionError(message,e);}
+        assertFalse(thread.isAlive(),message);
+    }
     static class BlockedPort extends Port {
         final CountDownLatch entered=new CountDownLatch(1),release=new CountDownLatch(1),done=new CountDownLatch(1);
         final boolean blockRegister;
@@ -156,7 +161,8 @@ class PrivacyLaunchOwnerTest {
         }finally{
             port.release.countDown();
             released(port.done);
-            assertNotEquals(PrivacyLaunchOwner.State.IN_PROGRESS, owned.await().state(), "launcher must settle before this test releases the shared window");
+            joined(port.disarmed, "launcher thread must settle before this test releases the shared window");
+            assertNotEquals(PrivacyLaunchOwner.State.IN_PROGRESS, owned.await().state(), "launcher result must settle before the next launch-owner test");
             first.join(1000);
             assertFalse(first.isAlive(), "cleanup thread must settle before the next launch-owner test");
         }

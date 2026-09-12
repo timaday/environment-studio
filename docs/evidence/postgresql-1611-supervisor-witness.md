@@ -149,4 +149,4 @@ ES_POSTGRES16_CLIENT_WITNESS=true ES_POSTGRES16_IMAGE=postgres:16.11-bookworm \
   -f backend/tools/guarded-supervisor/pom.xml -Dtest=Postgres16ClientWitnessTest test
 ```
 
-Results: cleanup-oracle plus launch-owner focused tests PASS, 22 tests; default witness PASS with 3 skipped; explicit PostgreSQL 16.11 witness PASS, 3 tests. Full backend Maven verify also PASS: guarded-supervisor 352 tests with the three Docker-gated witness cases skipped by default, finished 2026-09-12 21:29:07 Europe/London. This remains local invented-environment evidence only.
+Results: cleanup-oracle plus launch-owner focused tests PASS, 22 tests. Full backend Maven verify on the final launch-thread-join correction PASSed with guarded-supervisor 352 tests and the three Docker-gated witness cases skipped by default, finished 2026-09-12 21:47:53 Europe/London. This remains local invented-environment evidence only.
