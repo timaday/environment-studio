@@ -83,6 +83,14 @@ The probe uses exact image
 with current corrected export classes overlaid. It does not prove full HTTP,
 native client, database or production export readiness.
 
+## Reviewable probe bundle
+
+The generic probe sources and exact-image run scripts used for the package-read
+and package-assembly resource observations are recorded under
+`docs/evidence/probes/package-capacity/`. The bundle contains independently
+invented mock definitions, observation/publication ports and command metadata
+only; full extracted image bundles remain local build artifacts.
+
 ## Remaining checks
 
 Committed candidate `87183a176fbd7c4fa41efb3955a6bad05770b511` was built from Git archive with no untracked inputs. Exact OCI runtime build passes:
