@@ -85,6 +85,29 @@ native client, database or production export readiness.
 
 ## Remaining checks
 
-Before this correction can become an immutable candidate it still needs the
-standard diff/content/script checks, commit from a clean eligible diff, exact-image
-rebuild from that commit, and independent review if reviewer tokens are available.
+Committed candidate `87183a176fbd7c4fa41efb3955a6bad05770b511` was built from Git archive with no untracked inputs. Exact OCI runtime build passes:
+
+- runtime Docker build: 316.458 seconds, log SHA256
+  `eb16b759e62c75988d2f6aa7ed17265b705cbc4e922c4f25a32d1d95cbd5b082`;
+- container smoke: 13.953 seconds, log SHA256
+  `45222001bbf6ae154f65907b4a7ae509fbbea3cb9f92222837a341726644261b`;
+- supervisor artifact build: 0.696 seconds, log SHA256
+  `369f690de2611aee0c9e515fca0547965bc043e21215131ca16b011d46b3aa6e`;
+- supervisor checksum verification: 0.005 seconds, log SHA256
+  `10ccaf2afb6ca322c5168d5cbe505c10740f3466878271318ceaba06dafd772f`.
+
+Exact image: `sha256:08e31b2a5d5245b753a024a330c28009b13f3926063b92e5aea331cbc0072952`.
+Result file: `/home/tim/.tmp/es-package-assembly-oci-20260912/results.json`.
+
+The exact image, with no classpath overlay, passes the same package assembly
+capacity probe:
+
+- small: 2.074 seconds, exit 0, no OOM, container removed, log SHA256
+  `c3e9b1256958d5c998855846dd935028546d581cd6b8ccf71b72b04edce8fc96`;
+- large: 178.107 seconds, exit 0, no OOM, container removed, log SHA256
+  `1c6e2bfb259e70b01eb8181967382f9865644a716b37f29b793fabce1fe12f46`.
+
+Result file: `/home/tim/.tmp/es-package-assembly-image-20260912b/result.json`.
+
+Remaining before integration acceptance: independent review if reviewer tokens are
+available, then integration into the operator candidate with affected gates.

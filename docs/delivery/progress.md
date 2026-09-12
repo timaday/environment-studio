@@ -1,4 +1,4 @@
-Ready: guarded package assembly resource correction passes local focused package tests and the constrained large assembly probe with current overlaid classes. Commit, repository content gates, exact-image rebuild and review remain required before acceptance. Reviewer was reactivated on issue9 for fetchable package-read head 6b5e223.
+Ready: guarded package assembly resource candidate 87183a1 passes local focused package tests, standard repository checks, exact OCI build/smoke/supervisor checksum gates and exact-image constrained large assembly probe. Push is currently blocked by this session approval guard; reviewer issue9 has fetchable package-read head 6b5e223 and needs the newer assembly commit once publishable.
 
 # Handoff and capability status
 
