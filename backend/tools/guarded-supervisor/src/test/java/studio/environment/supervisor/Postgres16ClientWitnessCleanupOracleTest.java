@@ -29,4 +29,20 @@ class Postgres16ClientWitnessCleanupOracleTest {
                 "volume", "es-owned-volume", 1, "Error response from daemon: No such volume: other-volume\n"));
         assertTrue(failure.getMessage().contains("ABSENCE_UNCERTAIN"));
     }
+
+    @Test void prefixResourceNameDoesNotProveOwnedResourceAbsence() {
+        var volume = assertThrows(AssertionError.class, () -> Postgres16ClientWitnessTest.requireMissingDockerResource(
+                "volume", "independent-mock-volume", 1, "Error response from daemon: get independent-mock-volume-different: no such volume\n"));
+        assertTrue(volume.getMessage().contains("ABSENCE_UNCERTAIN"));
+        var container = assertThrows(AssertionError.class, () -> Postgres16ClientWitnessTest.requireMissingDockerResource(
+                "container", "independent-mock-container", 1, "Error response from daemon: No such container: independent-mock-container-different\n"));
+        assertTrue(container.getMessage().contains("ABSENCE_UNCERTAIN"));
+    }
+
+    @Test void ownedNameMentionedOutsideMissingDiagnosticDoesNotProveAbsence() {
+        var failure = assertThrows(AssertionError.class, () -> Postgres16ClientWitnessTest.requireMissingDockerResource(
+                "volume", "independent-mock-volume", 1,
+                "cleanup target independent-mock-volume\nError response from daemon: No such volume: other-volume\n"));
+        assertTrue(failure.getMessage().contains("ABSENCE_UNCERTAIN"));
+    }
 }

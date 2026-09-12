@@ -153,7 +153,13 @@ class PrivacyLaunchOwnerTest {
             owned.close(System.nanoTime()+TimeUnit.MILLISECONDS.toNanos(30));
             assertTrue(nativeClosed.await(400,TimeUnit.MILLISECONDS),"cleanup wait must observe shortened budget");
             assertEquals(PrivacyLaunchOwner.Cleanup.INCONCLUSIVE,owned.close(deadline()));
-        }finally{port.release.countDown();released(port.done);first.join(1000);}
+        }finally{
+            port.release.countDown();
+            released(port.done);
+            assertNotEquals(PrivacyLaunchOwner.State.IN_PROGRESS, owned.await().state(), "launcher must settle before this test releases the shared window");
+            first.join(1000);
+            assertFalse(first.isAlive(), "cleanup thread must settle before the next launch-owner test");
+        }
     }
     @Test void virtualCallerStillUsesDedicatedPlatformLauncher() throws Exception {
         Port port=new Port();var future=new CompletableFuture<PrivacyLaunchOwner>();

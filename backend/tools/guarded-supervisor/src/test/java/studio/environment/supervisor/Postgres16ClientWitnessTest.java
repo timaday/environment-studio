@@ -178,9 +178,20 @@ class Postgres16ClientWitnessTest {
     static void requireMissingDockerResource(String kind, String name, int code, String output) {
         if (code == 0) fail("DOCKER_" + kind.toUpperCase(Locale.ROOT) + "_STILL_PRESENT: " + name);
         var text = output == null ? "" : output;
-        var lower = text.toLowerCase(Locale.ROOT);
-        if (code == 1 && lower.contains("no such " + kind.toLowerCase(Locale.ROOT)) && text.contains(name)) return;
+        if (code == 1 && exactMissingDockerResource(kind, name, text)) return;
         fail("DOCKER_" + kind.toUpperCase(Locale.ROOT) + "_ABSENCE_UNCERTAIN: " + text);
+    }
+
+    private static boolean exactMissingDockerResource(String kind, String name, String output) {
+        var quoted = java.util.regex.Pattern.quote(name);
+        if ("container".equals(kind))
+            return java.util.regex.Pattern.compile("(?im)^.*no such container:\\s*" + quoted + "\\s*$").matcher(output).find();
+        if ("volume".equals(kind)) {
+            var direct = java.util.regex.Pattern.compile("(?im)^.*no such volume:\\s*" + quoted + "\\s*$").matcher(output).find();
+            var get = java.util.regex.Pattern.compile("(?im)^.*get\\s+" + quoted + ":\\s*no such volume\\s*$").matcher(output).find();
+            return direct || get;
+        }
+        return false;
     }
 
     private void setupTable(String value) throws Exception {

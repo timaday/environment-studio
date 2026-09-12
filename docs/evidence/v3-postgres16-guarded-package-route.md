@@ -83,20 +83,20 @@ passes 446 Vitest tests and the 61 contract tests. The first local schema-test
 attempt was blocked by missing `frontend/node_modules`; after `npm ci --prefix
 frontend`, the intended RED and final GREEN were observed.
 
-## Review corrections — TEST-QA-013 and TEST-QA-014
+## Review corrections — TEST-QA-013, TEST-QA-014 and TEST-QA-015
 
-Independent review of effective source `0f81c0c9d5ee1657ab4671d3c4f1c2721a9aadd6` verified PKG-QA-001 fixed and found two P2 test/evidence defects. TEST-QA-013 showed that the hosted boundary replay test asserted the next sequential conflict too soon: response bytes from the first replay can arrive before the command worker has closed and released its scratch, so 429 is still legal until command settlement. The test now waits on the actual `CommandAdmission`/materialization scratch becoming clear before requiring the following stale replay to return 409. This changes only test synchronization; contention 429 behavior remains covered while scratch is genuinely held.
+Independent review of effective source `0f81c0c9d5ee1657ab4671d3c4f1c2721a9aadd6` verified PKG-QA-001 fixed and found two P2 test/evidence defects. TEST-QA-013 showed that the hosted boundary replay test asserted the next sequential conflict too soon: response bytes from the first replay can arrive before the command worker has closed and released its scratch, so 429 is still legal until command settlement. The test now waits on the actual `CommandAdmission`/materialization scratch becoming clear before requiring the following stale replay to return 409. This changes only test synchronization; contention 429 behavior remains covered while scratch is genuinely held. The reviewer later verified this correction fixed TEST-QA-013.
 
-TEST-QA-014 showed that the PostgreSQL 16.11 witness cleanup oracle treated any Docker inspect exit code 1 as absence evidence. The witness now accepts only exact missing-resource diagnostics for the owned container or owned volume name, and fails daemon, permission or transport errors as cleanup uncertainty. A non-Docker unit test covers exact missing container/volume acceptance, present-resource rejection, daemon-unavailable rejection and wrong-resource rejection.
+TEST-QA-014 showed that the PostgreSQL 16.11 witness cleanup oracle treated broad Docker `inspect` exit-code-1 output as absence evidence. The witness now accepts absence only when the same Docker diagnostic exactly names the owned missing container or owned missing volume. It rejects daemon, permission and transport failures, prefix resource names such as `owned-different`, and diagnostics where the owned name appears in unrelated context while the missing diagnostic names another resource. A non-Docker unit test covers those cases.
 
-Focused correction checks on 12 September 2026 20:20 Europe/London:
+TEST-QA-015 showed a test-lifecycle race in `PrivacyLaunchOwnerTest#repeatedCleanupShortensTheAlreadyRunningBudget`: the test observed a latch signalled inside `disarm()` before the original launcher had fully returned and released the process-wide launch window. The test now releases the held port, waits for the original launch-owner result to leave `IN_PROGRESS`, and joins the cleanup thread before allowing the next launch-owner test to start. This preserves the shortened-cleanup and concurrent-window resource assertions while preventing cross-test leakage.
+
+Focused correction checks on 12 September 2026 21:29 Europe/London:
 
 ```sh
 /home/tim/.tmp/es-toolchain-20260909/apache-maven-3.9.16/bin/mvn -B -ntp \
-  -f backend/server/pom.xml \
-  -Dtest=HostedBoundaryTest#actualHttpOneToTwoCrossDocumentTargetReplayForeignBodyAndFailedInspection test
-/home/tim/.tmp/es-toolchain-20260909/apache-maven-3.9.16/bin/mvn -B -ntp \
-  -f backend/tools/guarded-supervisor/pom.xml -Dtest=Postgres16ClientWitnessCleanupOracleTest test
+  -f backend/tools/guarded-supervisor/pom.xml \
+  -Dtest=Postgres16ClientWitnessCleanupOracleTest,PrivacyLaunchOwnerTest test
 /home/tim/.tmp/es-toolchain-20260909/apache-maven-3.9.16/bin/mvn -B -ntp \
   -f backend/tools/guarded-supervisor/pom.xml -Dtest=Postgres16ClientWitnessTest test
 ES_POSTGRES16_CLIENT_WITNESS=true ES_POSTGRES16_IMAGE=postgres:16.11-bookworm \
@@ -104,7 +104,7 @@ ES_POSTGRES16_CLIENT_WITNESS=true ES_POSTGRES16_IMAGE=postgres:16.11-bookworm \
   -f backend/tools/guarded-supervisor/pom.xml -Dtest=Postgres16ClientWitnessTest test
 ```
 
-Results: hosted replay test PASS; cleanup-oracle tests PASS, 4 tests; default witness PASS with 3 skipped; explicit PostgreSQL 16.11 witness PASS, 3 tests. `git diff --check`, repository content/integrity checks and Python script unittests PASS. Full backend Maven verify PASS: core 335, qualified XML parser 7, server 1,049 and guarded-supervisor 350 tests; the three Docker-gated PostgreSQL witness cases are skipped in the default full run. Finished 2026-09-12 20:26:10 Europe/London. Independent review is pending for the corrected candidate.
+Results: cleanup-oracle and launch-owner focused tests PASS, 22 tests; default witness PASS with 3 skipped; explicit PostgreSQL 16.11 witness PASS, 3 tests. `git diff --check`, repository content/integrity checks and Python script unittests PASS. Full backend Maven verify PASS: core 335, qualified XML parser 7, server 1,049 and guarded-supervisor 352 tests; the three Docker-gated PostgreSQL witness cases are skipped in the default full run. Finished 2026-09-12 21:29:07 Europe/London. Independent review is pending for the corrected candidate.
 
 ## Exact image result
 
