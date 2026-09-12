@@ -4,11 +4,11 @@ Status: local reviewed-candidate handoff for the narrowed 12 September delivery.
 This is not production export qualification, GHCR publication, HiveForge deployment
 or proof of live database execution.
 
-Candidate source: `73175091ba34104bb0b7ec252a6b2e996161c908` on branch
-`implementation/v3-postgres16-guarded-package-route-20260912`. Runtime route code
-was introduced by `83b7afd522660359e844f2cecf7a522234d5959b`; `7317509` adds the
-OpenAPI route contract, final evidence and this handoff. The branch is currently
-ahead of the remote until the final amendment is pushed.
+Candidate branch: `implementation/v3-postgres16-guarded-package-route-20260912`.
+Runtime route code was introduced by `83b7afd522660359e844f2cecf7a522234d5959b`;
+later amendments add the OpenAPI route contract, local exact-image evidence, this
+handoff and the opt-in local PostgreSQL 16.11 supervisor/client witness. Exact
+published heads are tracked in issue #9.
 
 ## Supported today
 
@@ -63,6 +63,16 @@ failure. The application keeps `exportAvailable=false` after package download.
 - Supervisor artifact export from the same final archived source verifies the ZIP
   and all 29 `SHA256SUMS` entries.
 - Detailed evidence: [v3 PostgreSQL 16 guarded package route](v3-postgres16-guarded-package-route.md).
+
+## Local supervisor/client witness
+
+A separate opt-in local witness now exercises the generated PostgreSQL 16.11
+transaction through the guarded-supervisor Java `ClientProtocol` and real `psql`
+16.11 inside `postgres:16.11-bookworm`. It proves the invented C/UTF-8 disposable
+database path for commit acknowledgement and pre-program rollback acknowledgement;
+see [PostgreSQL 16.11 guarded supervisor client witness](postgresql-1611-supervisor-witness.md).
+This does not qualify production TLS, a production client installation or a live
+customer database.
 
 ## Still required before production use
 
