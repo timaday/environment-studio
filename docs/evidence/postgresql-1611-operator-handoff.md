@@ -76,8 +76,15 @@ customer database.
 
 ## Still required before production use
 
-Independent reviewer disposition for the exact candidate remains pending in issue
-#9. Live PostgreSQL client execution, TLS/client identity, supervisor commit and
+Independent review found PKG-QA-001 against effective code candidate
+`4a824555ed8988fee9508c04af8f764b3cc78ac5`; the package transfer failed to keep
+`ViewScope` in pinned-authority mode after parsing the package request. The lead
+accepted the finding in issue #9 and corrected it locally with focused
+regressions for invalidation before output bytes and after the first output
+write. The corrected immutable candidate still requires independent verification
+before merge or release use.
+
+Live PostgreSQL client execution, TLS/client identity, supervisor commit and
 rollback fault behavior, GHCR publication, HiveForge deployment and production
 definition qualification remain separate evidence gates. Do not describe this
 candidate as release-ready or production-qualified until those gates pass for the

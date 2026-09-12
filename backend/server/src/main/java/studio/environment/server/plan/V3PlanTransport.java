@@ -72,9 +72,10 @@ final class V3PlanTransport {
             else if(pinned)admission.verify();
             else if(!admission.live())throw new PlanRefusal(PlanRefusal.Code.CANCELLED);
         }
+        void pin(String revision){admission.pin(revision);pinned=true;}
         private PlanViewRequest request(PlanViewRequest.Route route,OwnedServletBody body){
             var request=new PlanViewReader().read(route,body);
-            admission.pin(request.revision());pinned=true;return request;
+            pin(request.revision());return request;
         }
         V3PlanReply materialize(OwnedServletBody body){
             var request=request(PlanViewRequest.Route.MATERIALIZATION,body);
@@ -85,7 +86,7 @@ final class V3PlanTransport {
                 return new V3PlanReply.Acknowledgement(admission.reviewV3(new PlanMetadataReader().review(body)));
             if(route==V3PlanWorkflowReader.Route.VALIDATION){
                 var request=new V3PlanWorkflowReader().validation(body);
-                admission.pin(request.revision());pinned=true;
+                pin(request.revision());
                 return new V3PlanReply.Workflow(planId,V3PlanWorkflowEncoding.validation(request,admission.validationV3(),this::verify));
             }
             var request=request(route==V3PlanWorkflowReader.Route.CAPTURE?PlanViewRequest.Route.CAPTURE:PlanViewRequest.Route.PREVIEW,body);
@@ -96,7 +97,7 @@ final class V3PlanTransport {
         }
         V3PlanReply computed(V3PlanComputedReader.Route route,OwnedServletBody body){
             var request=new V3PlanComputedReader().read(route,body);
-            admission.pin(request.revision());pinned=true;
+            pin(request.revision());
             var result=switch(route){
                 case NODES -> V3PlanComputedViews.nodes(admission,request.target(),request.offset(),request.limit());
                 case MEMBERSHIPS -> V3PlanComputedViews.memberships(admission,request.target(),request.offset(),request.limit());
@@ -206,7 +207,7 @@ final class V3PlanTransport {
                         try {
                             check(lease,operation);owner.checkActive();
                             var parsed=new V3PlanPackageReader().read(ownedBody.orElseThrow());
-                            scope.admission.pin(parsed.revision());
+                            scope.pin(parsed.revision());
                             prepared=new V3GuardedPackageCandidate().prepare(scope.admission,target,parsed.inputFingerprint());
                         } catch(RuntimeException failure) { sendFailure(response,failure,lease,operation,owner,deadline,Optional.of(scope)); return; }
                         if(prepared instanceof V3GuardedPackageCandidate.Result.Rejected refused) {

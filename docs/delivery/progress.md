@@ -1205,3 +1205,21 @@ workflow, with design approval still required before affected rendering.
 Blockers: production publication/client/native/resource and release evidence
 remain incomplete; original d67 legacy visibility failure remains unexplained.
 These test additions neither resolve nor reopen those separate requirements.
+
+## Review correction checkpoint — 12 September
+
+Ready: PKG-QA-001 from issue #9 is accepted and corrected locally. The package
+route now activates `ViewScope` pinned authority when parsing the guarded package
+request, so output acquisition, write, flush and final checks revalidate the
+original revision, generation, inspection state and active operation. Focused
+RED reproduced complete archive bytes after inspection invalidation; focused
+GREEN passes `IndependentV3PlanTransportTest` and the hosted package download
+HTTP control.
+
+Awaiting owners: independent verification of the corrected immutable candidate
+remains required before merge/release claims. Production PostgreSQL/TLS/client
+identity, external definition qualification, GHCR and HiveForge evidence remain
+separate.
+
+Blockers: none for the local PKG-QA-001 correction; release readiness remains
+blocked on the unchanged production qualification gates above.

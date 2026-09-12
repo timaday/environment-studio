@@ -127,6 +127,55 @@ The final source also exported the `supervisor-artifacts` target and verified al
 `/home/tim/.tmp/es-pg16-route-final-supervisor-artifacts-result-73175091ba34.json`.
 Final artifact log SHA256: `f88f896551a3723d7715e6a10e7d88066b897ab4e8b8bd56509d1eaadf0ad887`.
 
+## Review correction — PKG-QA-001
+
+Independent review of effective code candidate
+`4a824555ed8988fee9508c04af8f764b3cc78ac5` found PKG-QA-001, a P1
+transport-authority defect in the package route. The route pinned the
+requested revision on `HostedPlanService.ViewAdmission` but did not activate
+`V3PlanTransport.ViewScope`'s pinned verification state. Repeated output
+authority checks could therefore use live lease/open checks instead of the
+original pinned revision, generation, inspection and active-operation checks.
+
+The correction routes package-body pinning through the same `ViewScope.pin`
+method used by other pinned V3 transfers. Focused regression coverage now
+reproduces both reviewer schedules with independently invented V3 data and
+protected document policies:
+
+- invalidation at output-stream acquisition exposes zero archive bytes and no
+  flush;
+- invalidation after the first package write produces only an incomplete
+  partial stream, not the complete four-member package.
+
+Author RED: before the fix, `IndependentV3PlanTransportTest` failed because
+invalidation at output acquisition still returned 12,827 package bytes and the
+after-first-write case still parsed as a complete archive.
+
+Author GREEN after the fix:
+
+```sh
+/home/tim/.tmp/es-toolchain-20260909/apache-maven-3.9.16/bin/mvn -B -ntp \
+  -f backend/server/pom.xml -Dtest=IndependentV3PlanTransportTest test
+```
+
+Result: BUILD SUCCESS. Tests run: 5, failures: 0, errors: 0, skipped: 0.
+Finished 2026-09-12 17:49:50 Europe/London. The expected
+`V3_PLAN_RESPONSE_ABORTED` warnings appear for abort-path tests.
+
+The normal hosted package download path still passes after the correction:
+
+```sh
+/home/tim/.tmp/es-toolchain-20260909/apache-maven-3.9.16/bin/mvn -B -ntp \
+  -f backend/server/pom.xml \
+  -Dtest=V3PlanWorkflowHttpBoundaryTest#guardedPackageCandidateDownloadsPostgres16ArchiveWithoutAdvertisingExportAvailability test
+```
+
+Result: BUILD SUCCESS. Tests run: 1, failures: 0, errors: 0, skipped: 0.
+Finished 2026-09-12 17:50:00 Europe/London.
+
+This is a local author correction pending independent verification of the new
+immutable candidate. It does not add production export qualification.
+
 ## Limits and remaining checks
 
 This result uses only independently invented repository mock fixtures and test
