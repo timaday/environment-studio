@@ -69,7 +69,7 @@ failure. The application keeps `exportAvailable=false` after package download.
 A separate opt-in local witness now exercises the generated PostgreSQL 16.11
 transaction through the guarded-supervisor Java `ClientProtocol` and real `psql`
 16.11 inside `postgres:16.11-bookworm`. It proves the invented C/UTF-8 disposable
-database path for commit acknowledgement and pre-program rollback acknowledgement;
+database path for commit acknowledgement, pre-program rollback acknowledgement and post-COMMIT unknown classification;
 see [PostgreSQL 16.11 guarded supervisor client witness](postgresql-1611-supervisor-witness.md).
 This does not qualify production TLS, a production client installation or a live
 customer database.

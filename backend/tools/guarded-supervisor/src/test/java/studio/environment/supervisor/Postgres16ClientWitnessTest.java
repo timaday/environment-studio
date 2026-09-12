@@ -44,17 +44,29 @@ class Postgres16ClientWitnessTest {
         startContainer();
         setupTable(ORIGINAL);
         var input = packageForLiveDatabase();
-        var outcome = new SessionEngine().execute(protocol(input, "program"));
+        var outcome = new SessionEngine().execute(protocol(input, Fault.PROGRAM_WRITE));
         assertEquals(new SessionEngine.Outcome(SessionEngine.Status.NOT_APPLIED, SessionEngine.Cleanup.COMPLETE), outcome);
         assertEquals(ORIGINAL, scalar("SELECT xml_data FROM \"MockSchema\".\"CanvasRows\" WHERE slot='01';"));
     }
 
-    private SessionEngine.Wire protocol(PackageCheck.Regenerated input, String failOnWritePrefix) throws Exception {
+    @Test void postgres16PsqlPostCommitAcknowledgementLossStaysUnknownWithoutRollbackClaim() throws Exception {
+        startContainer();
+        setupTable(ORIGINAL);
+        var input = packageForLiveDatabase();
+        var outcome = new SessionEngine().execute(protocol(input, Fault.COMMITTED_FRAME_READ));
+        assertEquals(new SessionEngine.Outcome(SessionEngine.Status.UNKNOWN, SessionEngine.Cleanup.INCONCLUSIVE), outcome);
+        assertEquals(TARGET, scalar("SELECT xml_data FROM \"MockSchema\".\"CanvasRows\" WHERE slot='01';"));
+    }
+
+    private enum Fault { PROGRAM_WRITE, COMMITTED_FRAME_READ }
+
+    private SessionEngine.Wire protocol(PackageCheck.Regenerated input, Fault fault) throws Exception {
         var command = List.of("/usr/bin/docker", "exec", "-i", container,
                 "psql", "-X", "-W", "-A", "-t", "-q", "-v", "ON_ERROR_STOP=on", "-v", "ON_ERROR_ROLLBACK=off", "-P", "pager=off",
                 "-U", "postgres", "-d", DATABASE);
         NativeProcess child = new OwnedNativeProcess(Path.of("/usr/bin/setsid"), command, Map.of("LANG", "C.UTF-8", "LC_ALL", "C.UTF-8"), directory);
-        if (failOnWritePrefix != null) child = failOnProgramWrite(child);
+        if (fault == Fault.PROGRAM_WRITE) child = failOnProgramWrite(child);
+        if (fault == Fault.COMMITTED_FRAME_READ) child = loseCommittedFrame(child);
         var secret = BoundedSecret.read(new ByteArrayInputStream((PASSWORD + "\n").getBytes(StandardCharsets.UTF_8)));
         return new ClientProtocol(child, input, "0123456789abcdef0123456789abcdef", "postgres", secret, "");
     }
@@ -68,6 +80,27 @@ class Postgres16ClientWitnessTest {
                 owned.write(bytes, deadline);
             }
             @Override public int read(long deadline) { return owned.read(deadline); }
+            @Override public int exit(long deadline) { return owned.exit(deadline); }
+            @Override public boolean alive() { return owned.alive(); }
+            @Override public void terminate() { owned.terminate(); }
+            @Override public void close() { owned.close(); }
+        };
+    }
+
+
+    private NativeProcess loseCommittedFrame(NativeProcess owned) {
+        return new NativeProcess() {
+            final StringBuilder seen = new StringBuilder();
+            @Override public void write(byte[] bytes, long deadline) { owned.write(bytes, deadline); }
+            @Override public int read(long deadline) {
+                int b = owned.read(deadline);
+                if (b >= 0 && b < 128) {
+                    seen.append((char) b);
+                    if (seen.length() > 128) seen.delete(0, seen.length() - 128);
+                    if (seen.toString().contains("ES_COMMITTED|")) throw new Refusal("INJECTED_COMMITTED_FRAME_LOSS");
+                }
+                return b;
+            }
             @Override public int exit(long deadline) { return owned.exit(deadline); }
             @Override public boolean alive() { return owned.alive(); }
             @Override public void terminate() { owned.terminate(); }

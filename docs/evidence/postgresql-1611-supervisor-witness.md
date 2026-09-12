@@ -28,6 +28,8 @@ It proves only the bounded local combination named above.
 - a supervisor-side refusal before the program write sends ROLLBACK to the still
   usable client, receives the rollback frame, exits cleanly and leaves the row
   unchanged;
+- a lost committed-frame read after real `psql` returns the committed marker remains
+  `UNKNOWN`, makes no rollback claim and leaves the row committed;
 - the witness remains skipped by default so routine Java gates do not require
   Docker or a database daemon.
 
@@ -49,8 +51,8 @@ ES_POSTGRES16_CLIENT_WITNESS=true ES_POSTGRES16_IMAGE=postgres:16.11-bookworm \
   -f backend/tools/guarded-supervisor/pom.xml -Dtest=Postgres16ClientWitnessTest test
 ```
 
-Result: BUILD SUCCESS. Tests run: 2, failures: 0, errors: 0, skipped: 0. Finished
-2026-09-12 17:14:22 Europe/London.
+Result: BUILD SUCCESS. Tests run: 3, failures: 0, errors: 0, skipped: 0. Finished
+2026-09-12 17:18:44 Europe/London.
 
 Default invocation:
 
@@ -69,4 +71,4 @@ operator-selected archive digest, destination maintenance approval, exact client
 installation identity, TLS configuration, and DBA/application-owner witness. This
 local evidence also does not cover Oracle, non-C collations, partitioned tables,
 row security, triggers, generated columns, unsupported types, multi-table
-packages, interrupted terminal entry or unknown-after-COMMIT faults.
+packages or interrupted terminal entry.
