@@ -1223,3 +1223,18 @@ separate.
 
 Blockers: none for the local PKG-QA-001 correction; release readiness remains
 blocked on the unchanged production qualification gates above.
+
+## Native witness cleanup checkpoint — 12 September
+
+Ready: TEST-QA-012 from issue #9 is accepted and corrected locally. The opt-in
+PostgreSQL 16.11 witness records owned anonymous Docker volume names, removes
+the container with its volumes and verifies the exact owned container and volumes
+are absent after each test. Default skipped witness and explicit Docker witness
+both pass after the correction.
+
+Awaiting owners: independent verification of the combined corrected candidate
+remains required before merge/release claims.
+
+Blockers: none for the local TEST-QA-012 correction. The unchanged G01
+expected409/observed429 full-gate failure still needs focused reproduction before
+it can be classified as a product regression or flaky settlement issue.

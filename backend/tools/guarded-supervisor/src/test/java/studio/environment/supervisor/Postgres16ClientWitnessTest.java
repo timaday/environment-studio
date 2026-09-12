@@ -25,10 +25,17 @@ class Postgres16ClientWitnessTest {
     private static final String ORIGINAL = "<tile value=\"old\"/>";
     private static final String TARGET = "<tile value=\"new\"/>";
     private String container;
+    private final Set<String> volumes = new TreeSet<>();
     @TempDir Path directory;
 
     @AfterEach void cleanup() throws Exception {
-        if (container != null) run(Duration.ofSeconds(20), "docker", "rm", "-f", container);
+        if (container != null) {
+            recordVolumes();
+            run(Duration.ofSeconds(20), "docker", "rm", "-f", "-v", container);
+            assertEquals(1, run(Duration.ofSeconds(5), false, "docker", "container", "inspect", container).code);
+            for (String volume : volumes)
+                assertEquals(1, run(Duration.ofSeconds(5), false, "docker", "volume", "inspect", volume).code);
+        }
     }
 
     @Test void postgres16PsqlAppliesGeneratedProgramOnlyAfterSupervisorCommitAcknowledgement() throws Exception {
@@ -144,6 +151,7 @@ class Postgres16ClientWitnessTest {
         run(Duration.ofSeconds(30), "docker", "run", "-d", "--name", container,
                 "-e", "POSTGRES_PASSWORD=" + PASSWORD, "-e", "POSTGRES_DB=" + DATABASE,
                 "-e", "POSTGRES_INITDB_ARGS=--locale=C --encoding=UTF8", IMAGE);
+        recordVolumes();
         long deadline = System.nanoTime() + Duration.ofSeconds(60).toNanos();
         while (System.nanoTime() < deadline) {
             var ready = run(Duration.ofSeconds(5), false, "docker", "exec", container, "pg_isready", "-U", "postgres", "-d", DATABASE);
@@ -151,6 +159,17 @@ class Postgres16ClientWitnessTest {
             Thread.sleep(1000);
         }
         fail("POSTGRES16_WITNESS_NOT_READY");
+    }
+
+    private void recordVolumes() throws Exception {
+        if (container == null) return;
+        var inspected = run(Duration.ofSeconds(5), false, "docker", "inspect", "--format",
+                "{{range .Mounts}}{{if eq .Type \"volume\"}}{{.Name}}{{\"\\n\"}}{{end}}{{end}}", container);
+        if (inspected.code != 0) return;
+        for (String line : inspected.stdout.lines().toList()) {
+            var name = line.strip();
+            if (!name.isEmpty()) volumes.add(name);
+        }
     }
 
     private void setupTable(String value) throws Exception {

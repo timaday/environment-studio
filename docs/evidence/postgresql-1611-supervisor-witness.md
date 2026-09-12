@@ -85,3 +85,37 @@ installation identity, TLS configuration, and DBA/application-owner witness. Thi
 local evidence also does not cover Oracle, non-C collations, partitioned tables,
 row security, triggers, generated columns, unsupported types, multi-table
 packages or interrupted terminal entry.
+
+## Review correction — TEST-QA-012
+
+Independent review of effective candidate `4a824555ed8988fee9508c04af8f764b3cc78ac5`
+found TEST-QA-012, a P2 test-resource cleanup defect: the opt-in PostgreSQL
+witness removed each container but left the image's anonymous PGDATA volume
+behind. This was test infrastructure leakage only; the reviewer cleaned the
+three observed volumes from that run.
+
+The witness now records exact owned Docker volume names from the started
+container, removes the container with `docker rm -f -v`, and verifies both the
+container and every recorded owned volume are absent after each test. It does
+not use global prune and does not remove resources it did not create.
+
+Default compile/skip path after the correction:
+
+```sh
+/home/tim/.tmp/es-toolchain-20260909/apache-maven-3.9.16/bin/mvn -B -ntp \
+  -f backend/tools/guarded-supervisor/pom.xml -Dtest=Postgres16ClientWitnessTest test
+```
+
+Result: BUILD SUCCESS. Tests run: 3, failures: 0, errors: 0, skipped: 3.
+Finished 2026-09-12 18:26:26 Europe/London.
+
+Explicit local Docker witness after the correction:
+
+```sh
+ES_POSTGRES16_CLIENT_WITNESS=true ES_POSTGRES16_IMAGE=postgres:16.11-bookworm \
+  /home/tim/.tmp/es-toolchain-20260909/apache-maven-3.9.16/bin/mvn -B -ntp \
+  -f backend/tools/guarded-supervisor/pom.xml -Dtest=Postgres16ClientWitnessTest test
+```
+
+Result: BUILD SUCCESS. Tests run: 3, failures: 0, errors: 0, skipped: 0.
+Finished 2026-09-12 18:26:38 Europe/London.
