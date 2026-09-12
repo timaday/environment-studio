@@ -127,6 +127,29 @@ The final source also exported the `supervisor-artifacts` target and verified al
 `/home/tim/.tmp/es-pg16-route-final-supervisor-artifacts-result-73175091ba34.json`.
 Final artifact log SHA256: `f88f896551a3723d7715e6a10e7d88066b897ab4e8b8bd56509d1eaadf0ad887`.
 
+
+## Exact image result after review corrections
+
+Corrected candidate `0f81c0c9d5ee1657ab4671d3c4f1c2721a9aadd6` was built from a
+fresh `git archive` with `SOURCE_REVISION` set to that SHA. The Docker runtime
+build passed the image's backend Maven verification and supervisor distribution
+checksum verification. The protected container smoke then passed startup, static
+UI, health, demo capability, mutation-denial, private workspace initialization,
+schema 2 offline upgrade/refusal and schema 3 upgrade/fresh-init/refusal checks.
+
+Corrected local image: `sha256:a333641de0567e70f90ff74fef406451155bec60ab1e6ef5887d241332c9db0f`.
+Corrected tag: `environment-studio:pg16-route-0f81c0c9d5ee`.
+Corrected image result: `/home/tim/.tmp/es-pg16-route-oci-result-0f81c0c9d5ee.json`.
+Corrected build log SHA256: `13d2f72e52fd007af36cd0607bcf06818ba8bfaae9016db533b5c851ec94b535`.
+Corrected smoke log SHA256: `45222001bbf6ae154f65907b4a7ae509fbbea3cb9f92222837a341726644261b`.
+
+The same archived source exported the `supervisor-artifacts` target and verified
+all 29 `SHA256SUMS` entries. Corrected artifact result:
+`/home/tim/.tmp/es-pg16-route-supervisor-artifacts-result-0f81c0c9d5ee.json`.
+Corrected artifact log SHA256: `2ad09a3fd99f42c82cd9cb7987cc142936f70c05c20e5f86769eb70c155d2dbe`.
+Corrected supervisor ZIP SHA256:
+`7e47aea26110db349981f22b56ee31dc951423b11552211ad4fbd8f233fea576`.
+
 ## Review correction — PKG-QA-001
 
 Independent review of effective code candidate

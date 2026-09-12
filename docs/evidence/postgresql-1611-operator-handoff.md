@@ -56,12 +56,13 @@ failure. The application keeps `exportAvailable=false` after package download.
 ## Evidence available
 
 - Focused route/package checks: 45 Java tests pass.
-- Full backend Maven verification: 1,732 tests pass.
+- Full backend Maven verification passes on corrected candidate `0f81c0c9d5ee1657ab4671d3c4f1c2721a9aadd6`.
 - Exact-source runtime image from fresh `git archive` passes G08 build and protected
   container smoke. Local image:
-  `sha256:d55e30a9c1dc799f6f02c418281122d6525ad1273f410a34a867254efeace3b2`.
+  `sha256:a333641de0567e70f90ff74fef406451155bec60ab1e6ef5887d241332c9db0f`.
 - Supervisor artifact export from the same final archived source verifies the ZIP
-  and all 29 `SHA256SUMS` entries.
+  and all 29 `SHA256SUMS` entries. ZIP SHA256:
+  `7e47aea26110db349981f22b56ee31dc951423b11552211ad4fbd8f233fea576`.
 - Detailed evidence: [v3 PostgreSQL 16 guarded package route](v3-postgres16-guarded-package-route.md).
 
 ## Local supervisor/client witness
@@ -81,8 +82,10 @@ Independent review found PKG-QA-001 against effective code candidate
 `ViewScope` in pinned-authority mode after parsing the package request. The lead
 accepted the finding in issue #9 and corrected it locally with focused
 regressions for invalidation before output bytes and after the first output
-write. The corrected immutable candidate still requires independent verification
-before merge or release use.
+write. The TEST-QA-012 witness cleanup correction records owned Docker volumes,
+removes each witness container with volumes and verifies owned resources are
+absent. The corrected immutable candidate `0f81c0c9d5ee1657ab4671d3c4f1c2721a9aadd6`
+still requires independent verification before merge or release use.
 
 Live PostgreSQL client execution, TLS/client identity, supervisor commit and
 rollback fault behavior, GHCR publication, HiveForge deployment and production
