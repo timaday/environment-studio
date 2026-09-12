@@ -279,3 +279,7 @@ Result: BUILD SUCCESS. Reactor totals from module summaries: core 335 tests,
 qualified XML parser 7 tests, server 1,047 tests and guarded-supervisor 343 tests;
 1,732 tests total, no failures or errors. Finished 2026-09-12 14:38:34
 Europe/London.
+
+Results before the case-identity follow-up: cleanup-oracle plus launch-owner focused tests PASS, 22 tests. Full backend Maven verify on the final launch-thread-join correction PASSed with guarded-supervisor 352 tests and the three Docker-gated witness cases skipped by default, finished 2026-09-12 21:47:53 Europe/London.
+
+A later reviewer counterexample showed that the same TEST-QA-014 cleanup oracle still case-folded the quoted Docker resource name. The correction now keeps Docker diagnostic prose case-flexible but matches the owned resource name exactly. Focused checks on 12 September 2026 21:55 Europe/London pass: `Postgres16ClientWitnessCleanupOracleTest` 8 tests, including different-case resource names and diagnostic-prose case variation; `PrivacyLaunchOwnerTest` 16 tests; default `Postgres16ClientWitnessTest` 3 skipped; explicit PostgreSQL 16.11 witness 3 tests. Repository/content/script checks also pass. Full backend Maven verify also passed on this correction at 2026-09-12 22:01:14 Europe/London: core 335 tests, qualified XML parser 7 tests, server 1,049 tests and guarded-supervisor 354 tests, with the three Docker-gated witness cases skipped by default. This remains local invented-environment evidence only.

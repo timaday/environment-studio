@@ -185,10 +185,10 @@ class Postgres16ClientWitnessTest {
     private static boolean exactMissingDockerResource(String kind, String name, String output) {
         var quoted = java.util.regex.Pattern.quote(name);
         if ("container".equals(kind))
-            return java.util.regex.Pattern.compile("(?im)^.*no such container:\\s*" + quoted + "\\s*$").matcher(output).find();
+            return java.util.regex.Pattern.compile("(?m)^.*(?i:no such container:)\\s*" + quoted + "\\s*$").matcher(output).find();
         if ("volume".equals(kind)) {
-            var direct = java.util.regex.Pattern.compile("(?im)^.*no such volume:\\s*" + quoted + "\\s*$").matcher(output).find();
-            var get = java.util.regex.Pattern.compile("(?im)^.*get\\s+" + quoted + ":\\s*no such volume\\s*$").matcher(output).find();
+            var direct = java.util.regex.Pattern.compile("(?m)^.*(?i:no such volume:)\\s*" + quoted + "\\s*$").matcher(output).find();
+            var get = java.util.regex.Pattern.compile("(?m)^.*(?i:get)\\s+" + quoted + ":\\s*(?i:no such volume)\\s*$").matcher(output).find();
             return direct || get;
         }
         return false;
