@@ -30,4 +30,23 @@ class PackageJsonEncodingTest {
                     () -> PackageJson.canonical(invalid, 1024)).code);
         }
     }
+
+    @Test void decodesSupplementaryTextAcrossBufferBoundariesAndPreservesUtf8ErrorPrecedence() {
+        String text = "x".repeat(8182) + "\ud83d\ude03\u00e9";
+        byte[] encoded = ("{\"text\":\"" + text + "\"}").getBytes(StandardCharsets.UTF_8);
+        assertEquals(text, PackageJson.parse(encoded, encoded.length, 8).get("text").asString());
+        byte[] malformed = new byte[20_000];
+        java.util.Arrays.fill(malformed, (byte)' ');
+        malformed[0] = '!'; // Invalid JSON precedes the invalid UTF-8 in the input.
+        malformed[malformed.length - 1] = (byte)0xc0;
+        assertEquals("INVALID_UTF8", assertThrows(PackageJson.Refusal.class,
+                () -> PackageJson.parse(malformed, malformed.length, 8)).code);
+        byte[] truncated = ("{\"text\":\"" + "x".repeat(8182) + "\ud83d\ude03").getBytes(StandardCharsets.UTF_8);
+        truncated = java.util.Arrays.copyOf(truncated, truncated.length - 1);
+        byte[] incomplete = truncated;
+        assertEquals("INVALID_UTF8", assertThrows(PackageJson.Refusal.class,
+                () -> PackageJson.parse(incomplete, incomplete.length, 8)).code);
+        assertEquals("INVALID_JSON", assertThrows(PackageJson.Refusal.class,
+                () -> PackageJson.parse("\ufeff{}".getBytes(StandardCharsets.UTF_8), 32, 8)).code);
+    }
 }

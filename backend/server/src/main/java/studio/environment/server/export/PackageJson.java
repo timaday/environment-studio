@@ -1,5 +1,9 @@
 package studio.environment.server.export;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.nio.ByteBuffer;
 import java.nio.charset.CodingErrorAction;
 import java.nio.charset.CharacterCodingException;
@@ -35,12 +39,23 @@ final class PackageJson {
     }
     static JsonNode parse(byte[] bytes,int maximum,int nodes) {
         if(bytes==null) { fail("INVALID_INPUT"); return null; } if(bytes.length>maximum)fail("RESOURCE_LIMIT");
-        try(var parser=JSON.createParser(utf8(bytes))) {
+        validateUtf8(bytes);
+        try(var reader=utf8Reader(bytes);var parser=JSON.createParser(reader)) {
             var budget=new int[]{nodes}; var result=read(parser,parser.nextToken(),budget);
             if(!result.isObject() || parser.nextToken()!=null)fail("INVALID_JSON"); return result;
         } catch(StreamConstraintsException invalid) { fail("RESOURCE_LIMIT"); }
         catch(StreamReadException invalid) { fail("INVALID_JSON"); }
+        catch(IOException invalid) { fail("INVALID_UTF8"); }
         return null;
+    }
+    private static void validateUtf8(byte[] bytes) {
+        try(var reader=utf8Reader(bytes)) {
+            char[] buffer=new char[8192]; while(reader.read(buffer)!=-1) { }
+        } catch(IOException invalid) { fail("INVALID_UTF8"); }
+    }
+    private static Reader utf8Reader(byte[] bytes) {
+        return new InputStreamReader(new ByteArrayInputStream(bytes),StandardCharsets.UTF_8.newDecoder()
+            .onMalformedInput(CodingErrorAction.REPORT).onUnmappableCharacter(CodingErrorAction.REPORT));
     }
     private static JsonNode read(JsonParser parser,JsonToken token,int[] budget) {
         if(--budget[0]<0)fail("RESOURCE_LIMIT"); if(token==null)fail("INVALID_JSON");
