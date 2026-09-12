@@ -119,3 +119,15 @@ ES_POSTGRES16_CLIENT_WITNESS=true ES_POSTGRES16_IMAGE=postgres:16.11-bookworm \
 
 Result: BUILD SUCCESS. Tests run: 3, failures: 0, errors: 0, skipped: 0.
 Finished 2026-09-12 18:26:38 Europe/London.
+
+Integrated backend gate after the owned-volume cleanup correction:
+
+```sh
+/home/tim/.tmp/es-toolchain-20260909/apache-maven-3.9.16/bin/mvn -B -ntp \
+  -f backend/pom.xml verify
+```
+
+Result: BUILD SUCCESS. Reactor modules all passed, including server and
+guarded-supervisor. Module summaries reported 1,049 server tests and 346
+guarded-supervisor tests, with the three PostgreSQL 16.11 Docker witness cases
+skipped by default. Finished 2026-09-12 18:33:01 Europe/London.

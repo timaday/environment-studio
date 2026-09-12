@@ -1235,6 +1235,9 @@ both pass after the correction.
 Awaiting owners: independent verification of the combined corrected candidate
 remains required before merge/release claims.
 
-Blockers: none for the local TEST-QA-012 correction. The unchanged G01
-expected409/observed429 full-gate failure still needs focused reproduction before
-it can be classified as a product regression or flaky settlement issue.
+Blockers: none for the local TEST-QA-012 correction. The G01 reviewer failure
+was not reproduced locally on the corrected candidate: the exact focused hosted
+boundary test passed, and the full backend Maven gate passed across core,
+qualified XML parser, server and guarded-supervisor modules. This supports
+classifying the reviewer result as a transient settlement observation unless
+new evidence reproduces it on the same candidate/environment.

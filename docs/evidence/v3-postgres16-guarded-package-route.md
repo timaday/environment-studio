@@ -176,6 +176,30 @@ Finished 2026-09-12 17:50:00 Europe/London.
 This is a local author correction pending independent verification of the new
 immutable candidate. It does not add production export qualification.
 
+Full backend verification after PKG-QA-001 and TEST-QA-012 corrections:
+
+```sh
+/home/tim/.tmp/es-toolchain-20260909/apache-maven-3.9.16/bin/mvn -B -ntp \
+  -f backend/pom.xml verify
+```
+
+Result: BUILD SUCCESS. Reactor modules all passed: core, qualified XML parser,
+server and guarded-supervisor. Module summaries reported 1,049 server tests and
+346 guarded-supervisor tests, with the three Docker-gated PostgreSQL witness
+cases skipped in the normal run. Finished 2026-09-12 18:33:01 Europe/London.
+
+The reviewer's G01 full-gate failure did not reproduce in the focused local
+check on the corrected candidate:
+
+```sh
+/home/tim/.tmp/es-toolchain-20260909/apache-maven-3.9.16/bin/mvn -B -ntp \
+  -f backend/server/pom.xml \
+  -Dtest=HostedBoundaryTest#actualHttpOneToTwoCrossDocumentTargetReplayForeignBodyAndFailedInspection test
+```
+
+Result: BUILD SUCCESS. Tests run: 1, failures: 0, errors: 0, skipped: 0.
+Finished 2026-09-12 18:28:10 Europe/London.
+
 ## Limits and remaining checks
 
 This result uses only independently invented repository mock fixtures and test
