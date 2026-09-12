@@ -13,7 +13,7 @@ for shape in ['small','large']:
           '--entrypoint','java',manifest['image'],'-XX:MaxRAMPercentage=65','-XX:+ExitOnOutOfMemoryError',
           '-Djava.io.tmpdir=/tmp','-Dorg.sqlite.lib.path=/opt/studio/native','-cp','/probe/probe:/probe/classes:/probe/lib/*',
           '-Des.probe.large='+str(shape=='large').lower(),'CapacityAssemblyShapeProbe']
- run={'shape':shape,'command':command};start=time.monotonic()
+ run={'shape':shape,'command':command,'timedOut':False};start=time.monotonic()
  try:
   with (out/f'{shape}.log').open('w') as log:
    process=subprocess.Popen(command,stdout=log,stderr=subprocess.STDOUT)
@@ -25,6 +25,7 @@ for shape in ['small','large']:
     time.sleep(1)
    run['exit']=process.wait()
   inspected=subprocess.run(['docker','inspect',name,'--format','{{json .State}}'],capture_output=True,text=True)
+  run['inspectExit']=inspected.returncode
   if inspected.returncode==0:
    state=json.loads(inspected.stdout);run['containerExit']=state['ExitCode'];run['oomKilled']=state['OOMKilled'];run['running']=state['Running']
  finally:
@@ -39,5 +40,9 @@ for shape in ['small','large']:
  if run.get('exit')!=0:break
 result['bundleUnchanged']=all(hashlib.sha256((out/'bundle'/p).read_bytes()).hexdigest()==h for p,h in manifest['bundleHashes'].items())
 (out/'result.json').write_text(json.dumps(result,indent=2)+'\n')
+def accepted(run):
+ return (run.get('exit')==0 and run.get('containerExit')==0 and run.get('oomKilled') is False
+         and run.get('running') is False and run.get('containerRemoved') is True
+         and run.get('inspectExit')==0 and run.get('timedOut') is False)
 assert result['bundleUnchanged']
-assert len(result['runs'])==2 and all(r.get('exit')==0 and r['containerRemoved'] and not r.get('oomKilled') for r in result['runs'])
+assert len(result['runs'])==2 and all(accepted(r) for r in result['runs'])

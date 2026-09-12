@@ -409,12 +409,15 @@ SQL execution or post-commit rollback workflow is added by this prerequisite.
 
 ## Internal candidate assembly
 
-The internal assembler accepts mechanically admitted inputs and writes the exact
-four-member archive to a caller-owned output stream. It canonicalizes and
-re-admits execution/payload before generating SQL so programDigest binds the
-exact payload bytes emitted. It derives all member lengths/hashes/counts from
-those actual bytes and emits the fixed instructions; callers cannot supply SQL,
-manifests or instructions. Identical admitted content produces identical bytes.
+The internal assembler accepts only mechanically admitted immutable inputs and
+writes the exact four-member archive to a caller-owned output stream. It computes
+canonical payload metrics from the exact payload bytes to be emitted, rebinds the
+private admitted input to that payload digest, and generates SQL from the rebound
+execution context so programDigest binds the exact emitted payload. The admission
+boundary remains `PackageAdmission`; callers cannot construct an accepted package
+or supply SQL, manifests or instructions. The assembler derives all member
+lengths/hashes/counts from the actual bytes it emits. Identical admitted content
+produces identical bytes.
 
 Success is explicitly an unqualified candidate with total bytes and archive
 SHA256; it is never publication, review, download or execution authority.
