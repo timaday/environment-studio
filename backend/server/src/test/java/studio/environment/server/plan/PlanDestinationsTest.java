@@ -82,6 +82,27 @@ class PlanDestinationsTest {
         for(String[] mutation:new String[][]{{"expected-physical-identity.databaseOid","01"},{"expected-physical-identity.extra","1"},{"transport-identity","A".repeat(64)},{"operation-policy-version","unknown"},{"owners[0].issuer","http://mock-issuer.invalid"},{"owners[0].subject","control\nvalue"},{"host","host.invalid/path"}})
             assertSafeRefusal(configured().withProperty(prefix+mutation[0],mutation[1]));
     }
+
+    @Test void exportClientConfigurationIsClosedAndVersionPinned() {
+        String prefix="studio.plans.destinations[0].export-client.";
+        var destinations=new PlanDestinations(configured()
+            .withProperty(prefix+"server-version","16.11")
+            .withProperty(prefix+"family","psql")
+            .withProperty(prefix+"version","16.11")
+            .withProperty(prefix+"platform","linux-amd64")
+            .withProperty(prefix+"template-version","postgresql16-text-v1"));
+        var client=destinations.configured().getFirst().exportClient();
+        assertEquals("16.11",client.serverVersion());
+        assertEquals("psql",client.family());
+        assertEquals("postgresql16-text-v1",client.templateVersion());
+        assertSafeRefusal(configured().withProperty(prefix+"server-version","16.10")
+            .withProperty(prefix+"family","psql")
+            .withProperty(prefix+"version","16.10")
+            .withProperty(prefix+"platform","linux-amd64")
+            .withProperty(prefix+"template-version","postgresql16-text-v1"));
+        assertSafeRefusal(configured().withProperty(prefix+"family","psql"));
+    }
+
     @Test void retiredAccountPolicyCannotSilentlyCertifyOperationPolicy() {
         assertSafeRefusal(configured().withProperty("studio.plans.destinations[0].account-policy-version", "postgresql-read-only-v1"));
         assertSafeRefusal(configured().withProperty("studio.plans.destinations[0].operation-policy-version", "postgresql-read-only-v1"));

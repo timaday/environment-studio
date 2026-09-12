@@ -2,10 +2,12 @@ package studio.environment.server.security;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.io.ByteArrayInputStream;
 import java.net.URI;
 import java.net.http.*;
 import java.nio.file.*;
 import java.util.*;
+import java.util.zip.ZipInputStream;
 import org.junit.jupiter.api.*;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.system.CapturedOutput;
@@ -240,6 +242,52 @@ class V3PlanWorkflowHttpBoundaryTest {
             var foreign=login("mock-workflow-foreign-"+UUID.randomUUID());assertEquals(404,foreign.get(profilePath).status());early(sequentialRequest(foreign,"POST","/api/v3/plans/"+plan+"/profile-previews","{",true),404,"NOT_FOUND");
             ok(sequentialRequest(client,"POST","/api/v3/plans/"+plan+"/commands",JSON.writeValueAsString(Map.of("expectedRevision",whole?"6":"4","requestId",UUID.randomUUID().toString(),"kind","discard")),true));
         }
+    }
+
+    @Test void guardedPackageCandidateDownloadsPostgres16ArchiveWithoutAdvertisingExportAvailability()throws Exception {
+        String subject="mock-workflow-package-"+UUID.randomUUID();
+        V3WorkflowHttpTestConfiguration.reviewPolicies.put(subject,List.of(
+                new studio.environment.core.workspace.NativeCommand.Policy("mock-pg","sheet","protected-self-contained"),
+                new studio.environment.core.workspace.NativeCommand.Policy("mock-pg","tail","protected-self-contained")));
+        try {
+            var client=login(subject);String plan=create(client);inspect(client,plan);
+            ok(sequentialRequest(client,"POST","/api/v3/plans/"+plan+"/materializations",revision("2"),true));
+            var validation=ok(sequentialRequest(client,"POST","/api/v3/plans/"+plan+"/validations",revision("2"),true));
+            assertTrue(validation.get("targetComplete").asBoolean());assertFalse(validation.get("exportAvailable").asBoolean());
+            String request=JSON.writeValueAsString(Map.of("revision","2","inputFingerprint",validation.get("inputFingerprint").asString()));
+            var stale=sequentialRequest(client,"POST","/api/v3/plans/"+plan+"/package-candidates/guarded",
+                    JSON.writeValueAsString(Map.of("revision","1","inputFingerprint",validation.get("inputFingerprint").asString())),true);
+            assertEquals(409,stale.status());assertEquals("CONFLICT",JSON.readTree(stale.body()).get("code").asString());
+            V3WorkflowHttpTestConfiguration.awaitRecords(0);
+            V3WorkflowHttpSocketClient.RawResponse response;
+            try(var pending=client.begin("POST","/api/v3/plans/"+plan+"/package-candidates/guarded",request.getBytes(java.nio.charset.StandardCharsets.UTF_8).length,true)) {
+                pending.write(request.getBytes(java.nio.charset.StandardCharsets.UTF_8));response=pending.rawResponse();
+            }
+            assertEquals(200,response.status(),new String(response.body(),java.nio.charset.StandardCharsets.UTF_8));assertEquals("no-store",response.headers().get("cache-control"));
+            assertEquals("false",response.headers().get("x-environment-studio-qualified"));
+            assertTrue(response.headers().get("content-type").startsWith("application/zip"));
+            var members=new LinkedHashMap<String,byte[]>();
+            try(var zip=new ZipInputStream(new ByteArrayInputStream(response.body()))) {
+                for(var entry=zip.getNextEntry();entry!=null;entry=zip.getNextEntry())members.put(entry.getName(),zip.readAllBytes());
+            }
+            assertEquals(List.of("manifest.json","payload.json","transaction.sql","instructions.txt"),new ArrayList<>(members.keySet()));
+            var manifest=JSON.readTree(members.get("manifest.json"));
+            assertEquals("es-guarded-package-v1",manifest.get("format").asString());
+            assertEquals(plan,manifest.at("/execution/planId").asString());
+            assertEquals("2",manifest.at("/execution/planRevision").asString());
+            assertEquals(validation.get("inputFingerprint").asString(),manifest.at("/execution/planInputFingerprint").asString());
+            assertEquals("16.11",manifest.at("/execution/serverVersion").asString());
+            assertEquals("psql",manifest.at("/execution/client/family").asString());
+            assertEquals("16.11",manifest.at("/execution/client/version").asString());
+            assertEquals("postgresql16-text-v1",manifest.at("/execution/templateVersion").asString());
+            assertEquals("mock-destination",manifest.at("/execution/destination/id").asString());
+            assertEquals("731",manifest.at("/execution/destination/expectedPhysicalIdentity/systemIdentifier").asString());
+            assertEquals(2,JSON.readTree(members.get("payload.json")).get("records").size());
+            String sql=new String(members.get("transaction.sql"),java.nio.charset.StandardCharsets.US_ASCII);
+            assertTrue(sql.contains("160011"));assertTrue(sql.contains("BEGIN"));assertFalse(sql.contains("COMMIT"));assertFalse(sql.contains("ROLLBACK"));
+            var after=ok(sequentialRequest(client,"POST","/api/v3/plans/"+plan+"/validations",revision("2"),true));
+            assertFalse(after.get("exportAvailable").asBoolean());
+        } finally {V3WorkflowHttpTestConfiguration.reviewPolicies.remove(subject);}
     }
 
     @Test void workflowOwnershipCsrfAndStalledBodyKeepTheOriginalScratch()throws Exception {

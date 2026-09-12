@@ -43,6 +43,12 @@ public final class HostedPlanService {
     public record Counts(int documents,int entities,int relations) { }
     public record View(String planId,String revision,NativeCommand.Reference definition,String bindingId,String destinationId,
             Optional<PlanObservedDestination> observedDestination,Counts currentCounts,Counts targetCounts,boolean inspectionValid,boolean targetComplete,boolean exportAvailable,List<String> blockers,Optional<String> activeOperationId) { }
+    /** Package candidate context is server-owned evidence only; it is not export approval. */
+    public record PackageContext(String planId,String revision,String bindingId,String destinationId,String logicalDigest,String bindingDigest,
+            String definitionPublicationDigest,List<String> profilePublicationDigests,PlanObservedDestination observedDestination) {
+        public PackageContext { profilePublicationDigests=List.copyOf(profilePublicationDigests);Objects.requireNonNull(observedDestination); }
+        @Override public String toString(){return "PackageContext[redacted]";}
+    }
     public record ComputedCounts(int nodes,int memberships,int cooccurrences) { }
     public record V3View(View summary,Optional<ComputedCounts> currentComputedCounts,Optional<ComputedCounts> targetComputedCounts) {
         public V3View { Objects.requireNonNull(summary);Objects.requireNonNull(currentComputedCounts);Objects.requireNonNull(targetComputedCounts); }
@@ -611,6 +617,18 @@ public final class HostedPlanService {
         public ViewSnapshot snapshot() {
             return guarded(lease,()->{
                 check();return HostedPlanService.snapshot(pinned);
+            });
+        }
+        public PackageContext packageContext() {
+            return guarded(lease,()->{
+                check();inspected(pinned);
+                if(pinned.target==null)throw new PlanRefusal(INCOMPLETE_TARGET);
+                if(!(pinned.definition.model() instanceof PlanDefinition.V3 model))throw new PlanRefusal(UNSUPPORTED_DEFINITION);
+                var observed=Optional.ofNullable(pinned.observedDestination).filter(PlanObservedDestination::evidenceValid).orElseThrow(()->new PlanRefusal(INSPECTION_REQUIRED));
+                var bindingDigest=model.bindingDigests().get(pinned.binding);
+                if(bindingDigest==null)throw new PlanRefusal(PROJECTION_REFUSED);
+                return new PackageContext(planId,revision,pinned.binding,pinned.destination.id(),model.logicalDigest(),bindingDigest,
+                        pinned.definition.publicationDigest(),List.copyOf(pinned.profiles),observed);
             });
         }
         /** Trusted presentation read under this original admission; snapshots confer no authority. */

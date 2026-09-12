@@ -10,6 +10,7 @@ import studio.environment.core.plan.*;
 import studio.environment.core.session.Owner;
 import studio.environment.core.session.SessionLedger;
 import studio.environment.server.observation.JdbcObservation;
+import studio.environment.server.export.V3GuardedPackageCandidate;
 import studio.environment.server.security.RuntimeConfiguration.RuntimeMode;
 import studio.environment.server.session.HostedSessions;
 import studio.environment.server.workspace.*;
@@ -21,11 +22,20 @@ public final class PlanRuntime {
     private final V3PlanTransfers transfers=new V3PlanTransfers();
     V3PlanTransfers transfers(){return transfers;}
     private final List<PlanDestinations.Display> destinations;
+    private final Map<String,V3GuardedPackageCandidate.Target> packageTargets;
     private final BiPredicate<Owner,String> allowed;
     @Autowired
     public PlanRuntime(Environment environment,RuntimeMode mode,WorkspaceRuntime workspace,ObjectProvider<HostedSessions> sessions) {
         var configuration=new PlanDestinations(environment);
         destinations=configuration.configured().stream().map(entry->{var d=entry.destination(); return new PlanDestinations.Display(d.id(),d.engine().name().toLowerCase(Locale.ROOT),d.host(),d.port(),d.database());}).toList();
+        var targets=new LinkedHashMap<String,V3GuardedPackageCandidate.Target>();
+        for(var entry:configuration.configured()) if(entry.exportClient()!=null) {
+            var d=entry.destination(); var c=entry.exportClient();
+            targets.put(d.id(),new V3GuardedPackageCandidate.Target(d.id(),d.engine().name().toLowerCase(Locale.ROOT),d.host(),d.port(),d.database(),
+                    d.transport().name().toLowerCase(Locale.ROOT).replace('_','-'),d.transportIdentity(),d.provisioningPolicyVersion(),d.expectedPhysicalIdentity(),
+                    c.serverVersion(),c.family(),c.version(),c.platform(),c.templateVersion()));
+        }
+        packageTargets=Collections.unmodifiableMap(targets);
         allowed=configuration::allows;
         if(mode!=RuntimeMode.HOSTED || !workspace.enabled() || destinations.isEmpty()) {service=Optional.empty();return;}
         var ports=new LinkedHashMap<String,PlanPorts.Destination>();
@@ -35,9 +45,17 @@ public final class PlanRuntime {
     }
     /** Explicit independently invented test composition; never selected by a runtime property. */
     PlanRuntime(HostedPlanService service,List<PlanDestinations.Display> destinations,BiPredicate<Owner,String> allowed) {
-        this.service=Optional.of(service); this.destinations=List.copyOf(destinations); this.allowed=allowed;
+        this(service,destinations,Map.of(),allowed);
+    }
+    PlanRuntime(HostedPlanService service,List<PlanDestinations.Display> destinations,Map<String,V3GuardedPackageCandidate.Target> packageTargets,BiPredicate<Owner,String> allowed) {
+        this.service=Optional.of(service); this.destinations=List.copyOf(destinations); this.packageTargets=Collections.unmodifiableMap(new LinkedHashMap<>(packageTargets)); this.allowed=allowed;
     }
     HostedPlanService service() { return service.orElseThrow(Unavailable::new); }
+    V3GuardedPackageCandidate.Target packageTarget(Owner owner,String id) {
+        if(!allowed.test(owner,id)) throw new DestinationDenied();
+        var target=packageTargets.get(id); if(target==null) throw new PlanRefusal(PlanRefusal.Code.EXPORT_UNAVAILABLE);
+        return target;
+    }
     /** Configuration diagnostic only; every operation still enforces its own admission. */
     public boolean inspectionApiConfigured() { return service.isPresent(); }
     List<PlanDestinations.Display> visible(Owner owner) {service();return destinations.stream().filter(d->allowed.test(owner,d.id())).toList();}

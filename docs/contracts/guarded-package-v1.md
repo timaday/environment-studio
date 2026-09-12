@@ -45,6 +45,28 @@ and [payload v1](../../schemas/guarded-payload-v1.schema.json). Their example fa
 is deliberately shape-only and is not an executable package. Semantic checks
 below remain mandatory after schema acceptance.
 
+## Hosted package candidate route
+
+The hosted application may expose `POST /api/v3/plans/{planId}/package-candidates/guarded`
+as an operator download route for an unqualified guarded package candidate. The
+request body is a closed JSON object with `revision` and `inputFingerprint` only.
+The caller cannot provide destination, server, client, template, policy, binding
+or publication fields. Those fields are read from the pinned plan admission and
+trusted destination configuration after the server revalidates current ownership,
+revision, inspection evidence, complete target materialization, definition
+publication equality, protected document-content policy and the supplied input
+fingerprint. Unsupported or unconfigured client tuples refuse before any package
+bytes are written.
+
+A successful response is `application/zip` with `Cache-Control: no-store`,
+`Content-Disposition: attachment; filename="environment-studio-guarded-package.zip"`
+and `X-Environment-Studio-Qualified: false`. The archive itself remains the
+only self-contained payload: operators still select and record the reviewed
+archive SHA-256 independently from the downloaded bytes. Refusals before the
+stream begins return the normal plan refusal code. This route does not make
+`exportAvailable` true, does not persist a package, does not execute SQL and
+does not qualify a production client/runtime.
+
 The closed manifest pins format version, engine/storage, exact server and client
 versions, platform, supervisor/template/writer versions, immutable plan revision,
 plan input fingerprint, complete observation fingerprint, definition publication

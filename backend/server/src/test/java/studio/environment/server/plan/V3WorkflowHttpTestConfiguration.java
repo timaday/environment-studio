@@ -11,6 +11,7 @@ import studio.environment.core.plan.*;
 import studio.environment.core.session.*;
 import studio.environment.core.workspace.NativeCommand;
 import studio.environment.server.planning.V3WorkflowHttpWitnesses;
+import studio.environment.server.export.V3GuardedPackageCandidate;
 import studio.environment.server.session.HostedSessions;
 import studio.environment.server.workspace.*;
 
@@ -42,14 +43,14 @@ public class V3WorkflowHttpTestConfiguration {
     @Bean @Primary PlanRuntime mockV3WorkflowHttpRuntime(HostedSessions sessions, WorkspaceRuntime storage) {
         var real = new VersionedPlanWorkspace(new PlanWorkspaceBridge(storage), new V3PlanWorkspaceBridge(storage));
         var witness = new PlanPorts.PublishedDefinition(new NativeCommand.Reference(OBJECT, "2"),
-                "explicit-http-mock-publication", new PlanDefinition.V3(V3WorkflowHttpWitnesses.definition()), List.of());
+                "d".repeat(64), new PlanDefinition.V3(V3WorkflowHttpWitnesses.definition()), List.of());
         var workspace = new PlanPorts.Workspace() {
             public PlanPorts.PublishedDefinition definition(Owner owner, NativeCommand.Reference reference) {
                 return real.definition(owner, reference);
             }
             public PlanPorts.PublishedDefinition definitionV3(Owner owner, NativeCommand.Reference reference) {
                 if(reference.equals(witness.reference()) && reviewPolicies.containsKey(owner.subject()))return new PlanPorts.PublishedDefinition(reference,witness.publicationDigest(),witness.model(),reviewPolicies.get(owner.subject()));
-                if(reference.equals(witness.reference()) && largeOwners.containsKey(owner))return new PlanPorts.PublishedDefinition(reference,"explicit-large-mock-publication",new PlanDefinition.V3(studio.environment.server.planning.V3WorkflowLargeHttpWitnesses.definition(largeOwners.get(owner))),List.of());
+                if(reference.equals(witness.reference()) && largeOwners.containsKey(owner))return new PlanPorts.PublishedDefinition(reference,"e".repeat(64),new PlanDefinition.V3(studio.environment.server.planning.V3WorkflowLargeHttpWitnesses.definition(largeOwners.get(owner))),List.of());
                 return reference.equals(witness.reference()) ? witness : real.definitionV3(owner, reference);
             }
             public PlanPorts.PublishedProfile profileV3(Owner owner, NativeCommand.Reference reference, PlanPorts.PublishedDefinition definition) {
@@ -88,7 +89,10 @@ public class V3WorkflowHttpTestConfiguration {
             }
         }, workspace, Map.of("mock-destination", new PlanPorts.Destination("mock-destination", Engine.POSTGRESQL, port)),
                 new PlanContentAdapter(), System::nanoTime);
+        var identity = Map.of("systemIdentifier", "731", "databaseOid", "19", "databaseName", "invented_db");
         runtime = new PlanRuntime(service, List.of(new PlanDestinations.Display("mock-destination", "postgresql", "invented.invalid", 5432, "invented_db")),
+                Map.of("mock-destination", new V3GuardedPackageCandidate.Target("mock-destination", "postgresql", "invented.invalid", 5432, "invented_db",
+                        "verified-tls", "c".repeat(64), "mock-v1", identity, "16.11", "psql", "16.11", "linux-amd64", "postgresql16-text-v1")),
                 (owner, id) -> id.equals("mock-destination"));
         return runtime;
     }

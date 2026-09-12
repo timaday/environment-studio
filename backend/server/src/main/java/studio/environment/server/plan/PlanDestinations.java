@@ -17,13 +17,16 @@ import studio.environment.server.observation.ObservationDestination;
 /** Trusted immutable configuration. Certificate/mount policy is independent of observed database evidence. */
 final class PlanDestinations {
     record Display(String id,String engine,String host,int port,String database) { }
-    record Configured(ObservationDestination destination,Set<Owner> owners) {
+    record Configured(ObservationDestination destination,Set<Owner> owners,ExportClient exportClient) {
         Configured { owners=Set.copyOf(owners); }
         @Override public String toString() { return "ConfiguredDestination[redacted]"; }
     }
     record Entry(String id,String engine,String host,Integer port,String database,String trustMaterial,String transportIdentity,
-            Map<String,String> expectedPhysicalIdentity,String provisioningPolicyVersion,String operationPolicyVersion,List<Identity> owners) {
+            Map<String,String> expectedPhysicalIdentity,String provisioningPolicyVersion,String operationPolicyVersion,ExportClient exportClient,List<Identity> owners) {
         @Override public String toString() { return "DestinationEntry[redacted]"; }
+    }
+    record ExportClient(String serverVersion,String family,String version,String platform,String templateVersion) {
+        @Override public String toString() { return "ExportClient[redacted]"; }
     }
     record Identity(String issuer,String subject) { @Override public String toString() { return "DestinationOwner[redacted]"; } }
     private final List<Configured> entries;
@@ -40,6 +43,7 @@ final class PlanDestinations {
                 String policy=entry.operationPolicyVersion();
                 if(policy==null || !(engine==Engine.POSTGRESQL?policy.equals("postgresql-read-operation-v1"):policy.equals("oracle-read-operation-v1"))) invalid();
                 physicalIdentity(engine,entry.expectedPhysicalIdentity());
+                if(entry.exportClient()!=null) exportClient(engine,entry.exportClient());
                 trust(engine,entry.trustMaterial());
                 if(entry.owners()==null || entry.owners().isEmpty() || entry.owners().size()>64) invalid();
                 var owners=new HashSet<Owner>();
@@ -50,7 +54,7 @@ final class PlanDestinations {
                             || !owners.add(new Owner(identity.issuer(),identity.subject()))) invalid();
                 }
                 configured.add(new Configured(new ObservationDestination(entry.id(),engine,entry.host(),entry.port(),entry.database(),ObservationDestination.Transport.VERIFIED_TLS,
-                        entry.trustMaterial(),entry.transportIdentity(),entry.expectedPhysicalIdentity(),entry.provisioningPolicyVersion(),policy),owners));
+                        entry.trustMaterial(),entry.transportIdentity(),entry.expectedPhysicalIdentity(),entry.provisioningPolicyVersion(),policy),owners,entry.exportClient()));
             }
             entries=List.copyOf(configured);
         } catch(Exception failure) { throw new IllegalStateException("INVALID_PLAN_DESTINATIONS"); }
@@ -63,6 +67,16 @@ final class PlanDestinations {
         }).toList();
     }
     boolean allows(Owner owner,String id) { return entries.stream().anyMatch(entry->entry.destination().id().equals(id) && entry.owners().contains(owner)); }
+    private static void exportClient(Engine engine,ExportClient client) {
+        if(client.serverVersion()==null || client.family()==null || client.version()==null || client.platform()==null || client.templateVersion()==null) invalid();
+        boolean postgresql16=engine==Engine.POSTGRESQL && client.serverVersion().equals("16.11") && client.family().equals("psql")
+                && client.version().equals("16.11") && client.platform().equals("linux-amd64") && client.templateVersion().equals("postgresql16-text-v1");
+        boolean postgresql18=engine==Engine.POSTGRESQL && client.serverVersion().equals("18.6") && client.family().equals("psql")
+                && client.version().equals("18.6") && client.platform().equals("linux-amd64") && client.templateVersion().equals("postgresql-text-v1");
+        boolean oracle=engine==Engine.ORACLE && client.serverVersion().equals("23.26.3.0.0") && client.family().equals("sqlplus")
+                && client.version().equals("23.26.3.0.0") && client.platform().equals("linux-amd64") && client.templateVersion().equals("oracle-clob-v1");
+        if(!(postgresql16 || postgresql18 || oracle)) invalid();
+    }
     private static void physicalIdentity(Engine engine,Map<String,String> identity) {
         var numeric=engine==Engine.POSTGRESQL?Set.of("systemIdentifier","databaseOid"):Set.of("dbid","conId","conUid");
         var names=engine==Engine.POSTGRESQL?Set.of("databaseName"):Set.of("dbUniqueName","conName");

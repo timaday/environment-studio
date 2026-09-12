@@ -10,6 +10,11 @@ public final class V3WorkflowHttpSocketClient {
     public record Response(int status,Map<String,String> headers,String body) {
         @Override public String toString(){return "MockHttpResponse[redacted]";}
     }
+    public record RawResponse(int status,Map<String,String> headers,byte[] body) {
+        public RawResponse { body=body.clone(); }
+        @Override public byte[] body(){return body.clone();}
+        @Override public String toString(){return "MockRawHttpResponse[redacted]";}
+    }
     private final int port;
     private String cookie;
     private String csrfHeader,csrfValue;
@@ -54,6 +59,9 @@ public final class V3WorkflowHttpSocketClient {
             V3WorkflowWireAssertions.verify(path,response.status(),response.body());
             return response;
         }
+        public RawResponse rawResponse() throws IOException {
+            return readRawResponse();
+        }
         /** A cancelled transfer is checked as an abort, never counted as a schema-valid success. */
         public Response responseAfterCancellation() throws IOException {
             var response=readResponse();
@@ -62,6 +70,10 @@ public final class V3WorkflowHttpSocketClient {
             return response;
         }
         private Response readResponse() throws IOException {
+            var raw=readRawResponse();
+            return new Response(raw.status(),raw.headers(),new String(raw.body(),StandardCharsets.UTF_8));
+        }
+        private RawResponse readRawResponse() throws IOException {
             var input=socket.getInputStream();String first=line(input);String[] status=first.split(" ",3);
             if(status.length<2) throw new IOException("MOCK_HTTP_STATUS_UNAVAILABLE");
             var headers=new LinkedHashMap<String,String>();String header;
@@ -83,8 +95,7 @@ public final class V3WorkflowHttpSocketClient {
             } else if(headers.containsKey("content-length")) {
                 int size=Integer.parseInt(headers.get("content-length"));if(size>4_194_304)throw new IOException("MOCK_RESPONSE_LIMIT");byte[] bytes=input.readNBytes(size);if(bytes.length!=size)throw new IOException("MOCK_RESPONSE_TRUNCATED");body.write(bytes);
             } else {body.write(input.readNBytes(4_194_305));if(body.size()>4_194_304)throw new IOException("MOCK_RESPONSE_LIMIT");}
-            String text=body.toString(StandardCharsets.UTF_8);int code=Integer.parseInt(status[1]);
-            return new Response(code,Map.copyOf(headers),text);
+            return new RawResponse(Integer.parseInt(status[1]),Map.copyOf(headers),body.toByteArray());
         }
         public void close() throws IOException {socket.close();}
     }

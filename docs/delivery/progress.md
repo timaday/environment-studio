@@ -1,6 +1,12 @@
-Ready: guarded package assembly resource candidate 87183a1 passes local focused package tests, standard repository checks, exact OCI build/smoke/supervisor checksum gates and exact-image constrained large assembly probe. Push is currently blocked by this session approval guard; reviewer issue9 has fetchable package-read head 6b5e223 and needs the newer assembly commit once publishable.
+Ready: PostgreSQL 16.11 guarded package candidate route is implemented locally on `implementation/v3-postgres16-guarded-package-route-20260912`; focused package, admission, template, destination-config and HTTP download checks pass 45 tests; standard repository/content checks and full backend Maven verify pass. Exact candidate publication remains next. Full MVP/release qualification remains open; today's viable deliverable is the unqualified guarded package download route for the reviewed mock workflow.
 
 # Handoff and capability status
+
+## Current lead checkpoint — 12 September 2026, 13:33 UTC
+
+Lead owns application/native/integration; reviewers and IDE2 remain retired unless re-onboarded through issue #9. Current worktree `/home/tim/.tmp/es-v3-package-read-resource-20260911`, branch `implementation/v3-postgres16-guarded-package-route-20260912`, base `f28e30f35aace1b3107e67d1d8d84f5b705caae1`. The candidate adds the hosted unqualified V3 guarded package download route for configured PostgreSQL 16.11/psql 16.11/linux-amd64 targets. It rechecks plan ownership, pinned revision, inspection, complete target, validation fingerprint, destination identity, protected document policies and package admission before streaming a deterministic ZIP; it keeps `exportAvailable=false` and does not execute SQL or persist packages. Focused author run passes 45 tests, standard repository/content checks pass and full backend Maven verify passes 1,732 tests; [evidence](../evidence/v3-postgres16-guarded-package-route.md).
+
+Ready: commit, push and post issue #9 review handoff. Awaiting external evidence: independent review, OCI/release gates, real production definition publication evidence and native/client execution qualification. Genuine blockers for full MVP today remain native supervisor/client/TLS/commit qualification, full hosted release evidence and remaining operator UI/release journeys.
 
 ## Current lead checkpoint — 12 September 2026, 11:55 UTC
 
