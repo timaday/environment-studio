@@ -1238,12 +1238,18 @@ the container with its volumes and verifies the exact owned container and volume
 are absent after each test. Default skipped witness and explicit Docker witness
 both pass after the correction.
 
-Awaiting owners: independent verification of the combined corrected candidate
-remains required before merge/release claims.
+Awaiting owners: none. Tim retired the separate reviewer to preserve remaining
+tokens, so subsequent verification is lead-owned author/integration evidence and
+not independent non-author acceptance. Production PostgreSQL/TLS/client identity,
+external definition qualification, COMMIT/rollback execution qualification, GHCR
+and HiveForge evidence remain separate release gates.
 
-Blockers: none for the local TEST-QA-012 correction. The G01 reviewer failure
-was not reproduced locally on the corrected candidate: the exact focused hosted
-boundary test passed, and the full backend Maven gate passed across core,
-qualified XML parser, server and guarded-supervisor modules. This supports
-classifying the reviewer result as a transient settlement observation unless
-new evidence reproduces it on the same candidate/environment.
+Blockers: none for the local TEST-QA-012/G01 correction path. The retired
+reviewer reported a G01 full-backend failure on candidate `b3baa3d`, led by a
+`HostedBoundaryTest` publisher `CAPACITY` cascade. The hosted boundary harness
+now allocates exact per-test publisher subjects while preserving same-owner
+quarantine checks inside each test. Focused `HostedBoundaryTest` and full backend
+Maven verify pass on the corrected working tree: core 335, XML parser 7, server
+1,049 and guarded-supervisor 354 tests; the default PostgreSQL witness keeps its
+three Docker-gated cases skipped. This is local invented-environment evidence
+only.

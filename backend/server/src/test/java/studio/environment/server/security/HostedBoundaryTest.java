@@ -36,11 +36,32 @@ class HostedBoundaryTest {
         } catch (java.io.IOException failure) { throw new IllegalStateException("MOCK_WORKSPACE_UNAVAILABLE"); }
     }
 
-    @DynamicPropertySource static void properties(DynamicPropertyRegistry properties) { properties.add("studio.security.issuer", issuer::issuer); properties.add("studio.workspace.directory", () -> workspace.toString()); properties.add("studio.workspace.definition-publishers[0].issuer", issuer::issuer); properties.add("studio.workspace.definition-publishers[0].subject", () -> "workspace-maintainer");
-        properties.add("studio.workspace.definition-publishers[1].issuer", issuer::issuer);properties.add("studio.workspace.definition-publishers[1].subject",()->"plan-maintainer");
-        properties.add("studio.workspace.definition-publishers[2].issuer", issuer::issuer);properties.add("studio.workspace.definition-publishers[2].subject",()->"transport-maintainer");
-        properties.add("studio.workspace.definition-publishers[3].issuer",issuer::issuer);properties.add("studio.workspace.definition-publishers[3].subject",()->"view-maintainer");
-        properties.add("studio.workspace.definition-publishers[4].issuer",issuer::issuer);properties.add("studio.workspace.definition-publishers[4].subject",()->"binding-maintainer"); }
+    static final java.util.List<String> publisherSubjects = publisherSubjects();
+    static final java.util.concurrent.ConcurrentHashMap<String, java.util.concurrent.atomic.AtomicInteger> publisherSequences = new java.util.concurrent.ConcurrentHashMap<>();
+    static java.util.List<String> publisherSubjects() {
+        var subjects = new java.util.ArrayList<String>();
+        subjects.add("workspace-maintainer");
+        for (var entry : publisherLimits().entrySet())
+            for (int index = 0; index < entry.getValue(); index++) subjects.add(entry.getKey() + "-" + index);
+        return java.util.List.copyOf(subjects);
+    }
+    static java.util.Map<String, Integer> publisherLimits() {
+        return java.util.Map.of("view-maintainer", 32, "plan-maintainer", 12, "transport-maintainer", 10, "binding-maintainer", 9);
+    }
+    static String publisherSubject(String role) {
+        if (role.equals("workspace-maintainer")) return role;
+        int index = publisherSequences.computeIfAbsent(role, ignored -> new java.util.concurrent.atomic.AtomicInteger()).getAndIncrement();
+        assertTrue(index < publisherLimits().getOrDefault(role, 0), "No isolated publisher subject remains for " + role);
+        return role + "-" + index;
+    }
+    @DynamicPropertySource static void properties(DynamicPropertyRegistry properties) {
+        properties.add("studio.security.issuer", issuer::issuer); properties.add("studio.workspace.directory", () -> workspace.toString());
+        for (int index = 0; index < publisherSubjects.size(); index++) {
+            String subject = publisherSubjects.get(index);
+            properties.add("studio.workspace.definition-publishers[" + index + "].issuer", issuer::issuer);
+            properties.add("studio.workspace.definition-publishers[" + index + "].subject", () -> subject);
+        }
+    }
     @org.springframework.boot.test.web.server.LocalServerPort int port;
     @Autowired WebApplicationContext context;
     @Autowired CleanupProbe cleanupProbe;
@@ -107,9 +128,10 @@ class HostedBoundaryTest {
         String token=tree.get("csrfToken").asString();csrfCanaries.add(token);client.csrf(tree.get("csrfHeaderName").asString(),token);
         return client;
     }
-    record SocketPlan(studio.environment.server.plan.PlanHttpSocketClient client,String planId) { }
+    record SocketPlan(studio.environment.server.plan.PlanHttpSocketClient client,String planId,String owner) { }
     SocketPlan socketPlan(String owner) throws Exception {return socketPlan(owner,java.nio.file.Files.readString(java.nio.file.Path.of("../../fixtures/native-v2/definition.json")));}
     SocketPlan socketPlan(String owner,String source) throws Exception {
+        owner = publisherSubject(owner);
         var client=socketLogin(owner);var json=tools.jackson.databind.json.JsonMapper.builder().build();
         String objectId=java.util.UUID.randomUUID().toString(),path="/api/v2/definitions/"+objectId;
         var saved=client.request("PUT",path,json.writeValueAsString(Map.of("expectedRevision","0","requestId",java.util.UUID.randomUUID().toString(),"format","JSON","source",source)),true);
@@ -118,7 +140,7 @@ class HostedBoundaryTest {
         for(var binding:definition.get("projection").get("model").get("bindings"))for(var document:binding.get("documents"))policies.add(Map.of("bindingId",binding.get("id").asString(),"documentId",document.get("id").asString(),"content","deny"));
         assertEquals(200,client.request("POST",path+"/publish",json.writeValueAsString(Map.of("expectedRevision","1","requestId",java.util.UUID.randomUUID().toString(),"exportPolicies",policies)),true).status());
         var created=client.request("POST","/api/v1/plans",json.writeValueAsString(Map.of("expectedRevision","0","requestId",java.util.UUID.randomUUID().toString(),"definition",Map.of("objectId",objectId,"workspaceRevision","2"),"bindingId","mock-pg","destinationId","mock-destination")),true);
-        assertEquals(201,created.status());return new SocketPlan(client,json.readTree(created.body()).get("planId").asString());
+        assertEquals(201,created.status());return new SocketPlan(client,json.readTree(created.body()).get("planId").asString(),owner);
     }
     String reserve(SocketPlan plan,String revision) throws Exception {
         var json=tools.jackson.databind.json.JsonMapper.builder().build();
@@ -173,7 +195,7 @@ class HostedBoundaryTest {
     @Test void independentSummaryRevocationBeforeSerializationMustNotEmitObservedIdentity() throws Exception {
         var plan=socketPlan("view-maintainer");
         assertEquals(200,plan.client().request("POST","/api/v1/operations/"+reserve(plan,"1")+"/credentials",mockCredentials(),true).status());
-        var lease=studio.environment.server.plan.PlanHttpTestConfiguration.leases.get("view-maintainer");assertNotNull(lease);
+        var lease=studio.environment.server.plan.PlanHttpTestConfiguration.leases.get(plan.owner());assertNotNull(lease);
         var request=new org.springframework.mock.web.MockHttpServletRequest();request.setAttribute(studio.environment.server.session.HostedSessions.REQUEST_LEASE,lease);
         var revoked=new java.util.concurrent.atomic.AtomicBoolean();
         var response=new org.springframework.mock.web.MockHttpServletResponse(){
@@ -196,7 +218,7 @@ class HostedBoundaryTest {
     void independentRevocationDuringSummaryWriteClearsOrAborts(boolean committed) throws Exception {
         var plan=socketPlan("view-maintainer");
         assertEquals(200,plan.client().request("POST","/api/v1/operations/"+reserve(plan,"1")+"/credentials",mockCredentials(),true).status());
-        var lease=studio.environment.server.plan.PlanHttpTestConfiguration.leases.get("view-maintainer");
+        var lease=studio.environment.server.plan.PlanHttpTestConfiguration.leases.get(plan.owner());
         var request=new org.springframework.mock.web.MockHttpServletRequest();request.setAttribute(studio.environment.server.session.HostedSessions.REQUEST_LEASE,lease);
         var revoked=new java.util.concurrent.atomic.AtomicBoolean();
         var lengthCleared=new java.util.concurrent.atomic.AtomicBoolean();
@@ -263,7 +285,7 @@ class HostedBoundaryTest {
                 while(status==429 && System.nanoTime()<deadline){Thread.sleep(100);status=observer.client().request("POST",observerPath+"/views/documents","{\"revision\":\"2\"}",true).status();}
                 assertEquals(200,status,"Stopped response must release shared view capacity after "+trigger);
                 if(trigger.equals("logout")) {
-                    var recovered=socketLogin("view-maintainer");
+                    var recovered=socketLogin(plan.owner());
                     assertEquals(404,recovered.get(path).status(),"Fresh lease must not regain the retired plan");
                     assertEquals(204,recovered.request("POST","/api/v1/session/logout","{}",true).status());
                 }
@@ -326,7 +348,7 @@ class HostedBoundaryTest {
 
 
         var service=studio.environment.server.plan.PlanHttpTestConfiguration.installed;
-        var lease=studio.environment.server.plan.PlanHttpTestConfiguration.leases.get("plan-maintainer");
+        var lease=studio.environment.server.plan.PlanHttpTestConfiguration.leases.get(plan.owner());
         String alpha=service.entities(lease,plan.planId,"2",false,0,100).entities().stream().filter(e->e.type().equals("glyph") && e.fields().stream().anyMatch(f->f.field().equals("tag") && f.value().orElse("").equals("alpha"))).findFirst().orElseThrow().handle();
         String paletteSource=java.nio.file.Files.readString(java.nio.file.Path.of("../../fixtures/structural-target/palettes.xml"));
         String parentDigest=((studio.environment.server.xml.XmlResult.Accepted)new studio.environment.server.xml.LosslessXmlAdapter().project(paletteSource)).document().digest();
@@ -420,7 +442,7 @@ class HostedBoundaryTest {
         long deadline=System.nanoTime()+3_000_000_000L;
         while(Thread.getAllStackTraces().keySet().stream().anyMatch(t->t.getName().equals("hosted-plan-body")) && System.nanoTime()<deadline)Thread.sleep(5);
         assertFalse(Thread.getAllStackTraces().keySet().stream().anyMatch(t->t.getName().equals("hosted-plan-body")),"Revoked binding reader did not finish");
-        var lease=studio.environment.server.plan.PlanHttpTestConfiguration.leases.get("binding-maintainer");var sessions=context.getBean(studio.environment.server.session.HostedSessions.class);
+        var lease=studio.environment.server.plan.PlanHttpTestConfiguration.leases.get(plan.owner());var sessions=context.getBean(studio.environment.server.session.HostedSessions.class);
         var quarantine=sessions.cleanupReports().stream().filter(r->r.sessionId().equals(lease.id())).findFirst();
         if(quarantine.isPresent())assertEquals(studio.environment.core.session.SessionLedger.CleanupState.COMPLETE,sessions.retryCleanup(lease.id()).orElseThrow().state());
     }
@@ -443,7 +465,7 @@ class HostedBoundaryTest {
         for(var field:draft.get("items").get(0).get("fields"))if(field.get("fieldId").asString().equals("tone")){assertEquals("entered",field.get("kind").asString());assertTrue(field.get("masked").asBoolean());assertTrue(field.get("value").isNull());}
         assertFalse(draft.toString().contains("Hidden-View-Canary"));
         assertEquals(200,client.request("POST",path+"/commands",json.writeValueAsString(Map.of("kind","bind-field","expectedRevision","3","requestId",java.util.UUID.randomUUID().toString(),"entity",ref,"fieldId","tag","state",keep)),true).status());
-        var service=studio.environment.server.plan.PlanHttpTestConfiguration.installed;var lease=studio.environment.server.plan.PlanHttpTestConfiguration.leases.get("view-maintainer");
+        var service=studio.environment.server.plan.PlanHttpTestConfiguration.installed;var lease=studio.environment.server.plan.PlanHttpTestConfiguration.leases.get(plan.owner());
         try(var admission=service.reserveView(lease,plan.planId)){admission.run(()->{admission.pin("4");var target=admission.snapshot().selected(true);assertTrue(target.graph().entities().stream().anyMatch(e->e.key().identity().equals("alpha") && "Hidden-View-Canary".equals(e.fields().get("tone"))),"Unmentioned masked value was not preserved");return true;});}
         for(String mode:java.util.List.of("raw","formatted","placeholders")){var response=client.request("POST",views+"document",json.writeValueAsString(Map.of("revision","4","side","target","documentId","glyph-sheet","mode",mode,"completeDocumentDisclosure",true)),true);assertEquals(200,response.status());assertEquals(!mode.equals("placeholders"),response.body().contains("Hidden-View-Canary"));}
         studio.environment.server.plan.PlanHttpTestConfiguration.awaitViewScratch(false);
@@ -462,10 +484,10 @@ class HostedBoundaryTest {
         var quarantine=hostedSessions.cleanupReports().stream().filter(report->report.sessionId().equals(lease.id())).findFirst();
         if(quarantine.isPresent()){
             assertEquals(studio.environment.core.session.SessionLedger.CleanupState.INCONCLUSIVE,quarantine.get().state());assertEquals(1,quarantine.get().attempts());
-            socketLogin("view-maintainer",403);
+            socketLogin(plan.owner(),403);
             assertEquals(studio.environment.core.session.SessionLedger.CleanupState.COMPLETE,hostedSessions.retryCleanup(lease.id()).orElseThrow().state());
         }
-        var fresh=socketLogin("view-maintainer");assertEquals(404,fresh.request("POST",views+"documents","{\"revision\":\"4\"}",true).status());assertEquals(204,fresh.request("POST","/api/v1/session/logout","{}",true).status());
+        var fresh=socketLogin(plan.owner());assertEquals(404,fresh.request("POST",views+"documents","{\"revision\":\"4\"}",true).status());assertEquals(204,fresh.request("POST","/api/v1/session/logout","{}",true).status());
     }
     private void awaitViewCapacity(studio.environment.server.plan.PlanHttpSocketClient client,String views,String revision)throws Exception {
         studio.environment.server.plan.PlanHttpTestConfiguration.awaitViewScratch(true);
@@ -531,15 +553,15 @@ class HostedBoundaryTest {
         deadline=System.nanoTime()+3_000_000_000L;
         while(Thread.getAllStackTraces().keySet().stream().anyMatch(thread->thread.getName().equals("hosted-plan-body")) && System.nanoTime()<deadline)Thread.sleep(10);
         assertFalse(Thread.getAllStackTraces().keySet().stream().anyMatch(thread->thread.getName().equals("hosted-plan-body")),"Expired owned reader did not finish");
-        var lease=studio.environment.server.plan.PlanHttpTestConfiguration.leases.get("transport-maintainer");
+        var lease=studio.environment.server.plan.PlanHttpTestConfiguration.leases.get(plan.owner());
         var hostedSessions=context.getBean(studio.environment.server.session.HostedSessions.class);
         var quarantine=hostedSessions.cleanupReports().stream().filter(report->report.sessionId().equals(lease.id())).findFirst();
         if(quarantine.isPresent()){
             assertEquals(studio.environment.core.session.SessionLedger.CleanupState.INCONCLUSIVE,quarantine.get().state());assertEquals(1,quarantine.get().attempts());
-            socketLogin("transport-maintainer",403);
+            socketLogin(plan.owner(),403);
             assertEquals(studio.environment.core.session.SessionLedger.CleanupState.COMPLETE,hostedSessions.retryCleanup(lease.id()).orElseThrow().state());
         }
-        var renewed=socketLogin("transport-maintainer");assertEquals(404,renewed.get("/api/v1/operations/"+expired).status());
+        var renewed=socketLogin(plan.owner());assertEquals(404,renewed.get("/api/v1/operations/"+expired).status());
         assertEquals(204,renewed.request("POST","/api/v1/session/logout","{}",true).status());
     }
     void awaitPhase(studio.environment.server.plan.PlanHttpSocketClient client,String operation,String phase) throws Exception {

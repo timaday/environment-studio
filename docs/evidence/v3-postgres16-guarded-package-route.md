@@ -283,3 +283,89 @@ Europe/London.
 Results before the case-identity follow-up: cleanup-oracle plus launch-owner focused tests PASS, 22 tests. Full backend Maven verify on the final launch-thread-join correction PASSed with guarded-supervisor 352 tests and the three Docker-gated witness cases skipped by default, finished 2026-09-12 21:47:53 Europe/London.
 
 A later reviewer counterexample showed that the same TEST-QA-014 cleanup oracle still case-folded the quoted Docker resource name. The correction now keeps Docker diagnostic prose case-flexible but matches the owned resource name exactly. Focused checks on 12 September 2026 21:55 Europe/London pass: `Postgres16ClientWitnessCleanupOracleTest` 8 tests, including different-case resource names and diagnostic-prose case variation; `PrivacyLaunchOwnerTest` 16 tests; default `Postgres16ClientWitnessTest` 3 skipped; explicit PostgreSQL 16.11 witness 3 tests. Repository/content/script checks also pass. Full backend Maven verify also passed on this correction at 2026-09-12 22:01:14 Europe/London: core 335 tests, qualified XML parser 7 tests, server 1,049 tests and guarded-supervisor 354 tests, with the three Docker-gated witness cases skipped by default. This remains local invented-environment evidence only.
+
+
+## Lead G01 settlement after reviewer retirement — 12 September 2026
+
+The separate reviewer was retired by Tim to preserve remaining tokens. The
+following results are lead-owned author/integration evidence only; they are not
+independent non-author acceptance.
+
+The retired reviewer reported a G01 `backend/pom.xml verify` failure on
+`b3baa3d1ab583df07c7c696f17a160b7c003e7d4`, led by a `HostedBoundaryTest`
+`CAPACITY` error and follow-on same-owner login refusals. The harness now gives
+each socket-plan test an isolated authorized publisher subject while preserving
+same-owner quarantine/retry assertions within each test. Production code is
+unchanged.
+
+Focused check before the correction had already passed locally on the exact
+reviewed candidate, which indicated environment/order sensitivity rather than a
+deterministic production failure:
+
+```sh
+/home/tim/.tmp/es-toolchain-20260909/apache-maven-3.9.16/bin/mvn -B -ntp \
+  -f backend/server/pom.xml -Dtest=HostedBoundaryTest test
+```
+
+Result before correction: BUILD SUCCESS. Tests run: 34, failures: 0, errors: 0,
+skipped: 0. Finished 2026-09-12 22:36:15 Europe/London.
+
+Focused check after the harness isolation correction:
+
+```sh
+/home/tim/.tmp/es-toolchain-20260909/apache-maven-3.9.16/bin/mvn -B -ntp \
+  -f backend/server/pom.xml -Dtest=HostedBoundaryTest test
+```
+
+Result: BUILD SUCCESS. Tests run: 34, failures: 0, errors: 0, skipped: 0.
+Finished 2026-09-12 22:40:04 Europe/London.
+
+Full backend reactor after the correction:
+
+```sh
+/home/tim/.tmp/es-toolchain-20260909/apache-maven-3.9.16/bin/mvn -B -ntp \
+  -f backend/pom.xml verify
+```
+
+Result: BUILD SUCCESS. Reactor summaries: core 335 tests, qualified XML parser
+7 tests, server 1,049 tests and guarded-supervisor 354 tests with the three
+Docker-gated PostgreSQL witness cases skipped in the default run. Finished
+2026-09-12 22:44:55 Europe/London.
+
+Repository guards after the correction:
+
+```sh
+git diff --check
+python3 scripts/check_repository_content.py
+python3 scripts/check_repository.py
+python3 -m unittest discover -s scripts -p 'test_*.py'
+```
+
+Results: diff check clean; repository content PASS with the known-pattern
+provenance warning; repository integrity PASS; 14 script tests pass. Finished
+2026-09-12 22:46 Europe/London.
+
+The opt-in PostgreSQL 16.11 witness also passed on the same corrected candidate:
+
+```sh
+ES_POSTGRES16_CLIENT_WITNESS=true ES_POSTGRES16_IMAGE=postgres:16.11-bookworm \
+  /home/tim/.tmp/es-toolchain-20260909/apache-maven-3.9.16/bin/mvn -B -ntp \
+  -f backend/tools/guarded-supervisor/pom.xml \
+  -Dtest=Postgres16ClientWitnessTest test
+```
+
+Result: BUILD SUCCESS. Tests run: 3, failures: 0, errors: 0, skipped: 0.
+Finished 2026-09-12 22:46:48 Europe/London.
+
+Local release-readiness bookkeeping remains blocked, which preserves the full-MVP
+release gate distinction from this narrower PostgreSQL 16.11 package witness:
+
+```sh
+python3 scripts/release_readiness.py
+```
+
+Result: exit 1. Blockers reported source-fingerprint mismatch and NOT_RUN for
+full release gates: definitions, profile-reuse, structural-plan, XML fidelity,
+Oracle client, PostgreSQL client, privacy/auth, UX RST, mutation, readback and
+HiveForge. This candidate therefore has bounded PostgreSQL 16.11 invented-witness
+evidence only; it is not a full release-qualified Environment Studio build.
