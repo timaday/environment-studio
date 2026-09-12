@@ -2,8 +2,8 @@
   "openapi": "3.1.0",
   "info": {
     "title": "Environment Studio hosted v3 plans",
-    "version": "0.3.0",
-    "description": "Twenty-three fixed-v3 routes including semantic commands, explicit materialization, document inventory, physical entities, structural decisions, binding pages, document comparison, complete locations and computed groups/contributors. Actual compiler publication remains incomplete; test publication witnesses do not qualify runtime availability. See hosted-plan-http-v3.md, hosted-plan-commands-v3.md, hosted-plan-materialization-v3.md hosted-plan-physical-views-v3.md hosted-plan-structural-views-v3.md hosted-plan-document-views-v3.md and hosted-plan-computed-views-v3.md for original session authority, shared admission, bounded transfers and early no-body controller refusals. No export or readback endpoint is provided."
+    "version": "0.3.1",
+    "description": "Twenty-four fixed-v3 routes including semantic commands, explicit materialization, document inventory, physical entities, structural decisions, binding pages, document comparison, complete locations and computed groups/contributors. Actual compiler publication remains incomplete; test publication witnesses do not qualify runtime availability. See hosted-plan-http-v3.md, hosted-plan-commands-v3.md, hosted-plan-materialization-v3.md hosted-plan-physical-views-v3.md hosted-plan-structural-views-v3.md hosted-plan-document-views-v3.md and hosted-plan-computed-views-v3.md for original session authority, shared admission, bounded transfers and early no-body controller refusals. The guarded package candidate endpoint provides an unqualified ZIP download only; no production export or readback endpoint is provided."
   },
   "paths": {
     "/api/v3/plans": {
@@ -2282,6 +2282,110 @@
         }
       }
     },
+    "/api/v3/plans/{planId}/package-candidates/guarded": {
+      "post": {
+        "operationId": "downloadGuardedPackageCandidateV3",
+        "summary": "Download an unqualified PostgreSQL 16.11 guarded package candidate",
+        "description": "See guarded-package-v1.md. Original V3 owner, pinned revision, inspection evidence, complete target materialization, validation input fingerprint, destination physical identity, binding engine/storage, protected document policies and package admission are rechecked before bytes are streamed. Destination, server, client, template, policy, binding and publication metadata are trusted server-side configuration and cannot be supplied by the caller. Successful downloads remain unqualified, keep exportAvailable false, do not persist a package and do not execute SQL.",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "planId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Uuid"
+            }
+          },
+          {
+            "name": "X-CSRF-TOKEN",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PackageCandidateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Deterministic unqualified guarded package candidate ZIP; export authority remains unavailable",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              },
+              "Content-Disposition": {
+                "schema": {
+                  "type": "string",
+                  "const": "attachment; filename=\"environment-studio-guarded-package.zip\""
+                }
+              },
+              "X-Environment-Studio-Qualified": {
+                "schema": {
+                  "type": "string",
+                  "const": "false"
+                }
+              }
+            },
+            "content": {
+              "application/zip": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error500"
+          }
+        }
+      }
+    },
     "/api/v3/plans/{planId}/reviews": {
       "post": {
         "operationId": "acknowledgePlanReviewV3",
@@ -2459,6 +2563,22 @@
           },
           "discardDraftOnSuccess": {
             "const": true
+          }
+        }
+      },
+      "PackageCandidateRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "revision",
+          "inputFingerprint"
+        ],
+        "properties": {
+          "revision": {
+            "$ref": "#/components/schemas/Revision"
+          },
+          "inputFingerprint": {
+            "$ref": "#/components/schemas/Sha256"
           }
         }
       },

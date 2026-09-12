@@ -679,9 +679,9 @@ test("v3 small replies preserve common v1 revision and optional-field wire contr
   assert.equal(operation({ ...status, installedRevision: null }), false);
   assert.equal(operation({ ...status, cleanup: "complete-anyway" }), false);
 });
-test("v3 exposes exactly twenty-seven authenticated routes and documents early empty controller refusals", () => {
+test("v3 exposes exactly twenty-eight authenticated routes and documents early empty controller refusals", () => {
   const paths = ["/api/v3/plans", "/api/v3/plans/current", "/api/v3/plans/{planId}", "/api/v3/plans/{planId}/inspections",
-    "/api/v3/operations/{operationId}/credentials", "/api/v3/operations/{operationId}", "/api/v3/operations/{operationId}/cancel", "/api/v3/plans/{planId}/commands", "/api/v3/plans/{planId}/materializations", "/api/v3/plans/{planId}/views/documents", "/api/v3/plans/{planId}/views/entities", "/api/v3/plans/{planId}/views/relations", "/api/v3/plans/{planId}/views/draft", "/api/v3/plans/{planId}/views/containment", "/api/v3/plans/{planId}/views/placements", "/api/v3/plans/{planId}/views/bindings", "/api/v3/plans/{planId}/views/document", "/api/v3/plans/{planId}/views/binding-locations", "/api/v3/plans/{planId}/views/computed/nodes", "/api/v3/plans/{planId}/views/computed/memberships", "/api/v3/plans/{planId}/views/computed/cooccurrences", "/api/v3/plans/{planId}/views/computed/rules", "/api/v3/plans/{planId}/views/computed/contributors", "/api/v3/plans/{planId}/profile-captures", "/api/v3/plans/{planId}/profile-previews", "/api/v3/plans/{planId}/validations", "/api/v3/plans/{planId}/reviews"];
+    "/api/v3/operations/{operationId}/credentials", "/api/v3/operations/{operationId}", "/api/v3/operations/{operationId}/cancel", "/api/v3/plans/{planId}/commands", "/api/v3/plans/{planId}/materializations", "/api/v3/plans/{planId}/package-candidates/guarded", "/api/v3/plans/{planId}/views/documents", "/api/v3/plans/{planId}/views/entities", "/api/v3/plans/{planId}/views/relations", "/api/v3/plans/{planId}/views/draft", "/api/v3/plans/{planId}/views/containment", "/api/v3/plans/{planId}/views/placements", "/api/v3/plans/{planId}/views/bindings", "/api/v3/plans/{planId}/views/document", "/api/v3/plans/{planId}/views/binding-locations", "/api/v3/plans/{planId}/views/computed/nodes", "/api/v3/plans/{planId}/views/computed/memberships", "/api/v3/plans/{planId}/views/computed/cooccurrences", "/api/v3/plans/{planId}/views/computed/rules", "/api/v3/plans/{planId}/views/computed/contributors", "/api/v3/plans/{planId}/profile-captures", "/api/v3/plans/{planId}/profile-previews", "/api/v3/plans/{planId}/validations", "/api/v3/plans/{planId}/reviews"];
   assert.deepEqual(Object.keys(planV3Api.paths).sort(), paths.sort());
   for (const item of Object.values(planV3Api.paths)) for (const [method, route] of Object.entries(item)) {
     assert.deepEqual(route.security, [{ sessionCookie: [] }]);
@@ -700,6 +700,16 @@ test("v3 exposes exactly twenty-seven authenticated routes and documents early e
   }
   const aggregate = readFileSync(new URL("../docs/contracts/openapi.yaml", import.meta.url), "utf8");
   for (const path of paths) assert.ok(aggregate.includes(`./openapi-plans-v3.json#/paths/${path.replaceAll("/", "~1")}`));
+  const packageRoute = planV3Api.paths["/api/v3/plans/{planId}/package-candidates/guarded"].post;
+  assert.equal(packageRoute.responses["200"].content["application/zip"].schema.format, "binary");
+  assert.deepEqual(packageRoute.responses["200"].headers["X-Environment-Studio-Qualified"].schema, { type: "string", const: "false" });
+  assert.deepEqual(packageRoute.responses["200"].headers["Cache-Control"].schema, { type: "string", const: "no-store" });
+  const packageRequest = planV3Schema("PackageCandidateRequest");
+  const request = { revision: "2", inputFingerprint: "a".repeat(64) };
+  assert.equal(packageRequest(request), true, JSON.stringify(packageRequest.errors));
+  for (const field of ["destinationId", "serverVersion", "clientVersion", "templateVersion", "qualified", "credentials", "exportAvailable"]) {
+    assert.equal(packageRequest({ ...request, [field]: "caller-cannot-select" }), false, field);
+  }
 });
 test("v3 create and one-shot credentials refuse caller-supplied model or admission authority", () => {
   const creation = planV3Schema("CreatePlan");

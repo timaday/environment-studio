@@ -4,11 +4,11 @@ Status: local reviewed-candidate handoff for the narrowed 12 September delivery.
 This is not production export qualification, GHCR publication, HiveForge deployment
 or proof of live database execution.
 
-Candidate source: `83b7afd522660359e844f2cecf7a522234d5959b` on branch
-`implementation/v3-postgres16-guarded-package-route-20260912`. Local evidence
-amendment: `20f6dc5a177d3017c44ff58a11eb137fedd57c52` records exact-image and
-supervisor-artifact checks and must be pushed before a remote reviewer can fetch
-that documentation update.
+Candidate source: `73175091ba34104bb0b7ec252a6b2e996161c908` on branch
+`implementation/v3-postgres16-guarded-package-route-20260912`. Runtime route code
+was introduced by `83b7afd522660359e844f2cecf7a522234d5959b`; `7317509` adds the
+OpenAPI route contract, final evidence and this handoff. The branch is currently
+ahead of the remote until the final amendment is pushed.
 
 ## Supported today
 
@@ -59,9 +59,9 @@ failure. The application keeps `exportAvailable=false` after package download.
 - Full backend Maven verification: 1,732 tests pass.
 - Exact-source runtime image from fresh `git archive` passes G08 build and protected
   container smoke. Local image:
-  `sha256:4a8308265e0db8ed3becfdb7bf350591c6d24f59532653a43cb33d659268f075`.
-- Supervisor artifact export from the same archived source verifies the ZIP and all
-  29 `SHA256SUMS` entries.
+  `sha256:d55e30a9c1dc799f6f02c418281122d6525ad1273f410a34a867254efeace3b2`.
+- Supervisor artifact export from the same final archived source verifies the ZIP
+  and all 29 `SHA256SUMS` entries.
 - Detailed evidence: [v3 PostgreSQL 16 guarded package route](v3-postgres16-guarded-package-route.md).
 
 ## Still required before production use

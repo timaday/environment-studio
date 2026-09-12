@@ -61,6 +61,28 @@ A focused package-route run then passed 45 Java tests:
 Result: BUILD SUCCESS. Tests run: 45, failures: 0, errors: 0, skipped: 0. Finished
 2026-09-12 14:32:50 Europe/London.
 
+## Machine-readable contract correction
+
+After the route implementation was published, the prose contract existed but the
+machine-readable OpenAPI v3 plan contract still enumerated 27 routes and omitted
+`POST /api/v3/plans/{planId}/package-candidates/guarded`. The contract test
+failed for that intended reason when the path was added without updating the
+route-count oracle.
+
+`docs/contracts/openapi-plans-v3.json` now declares the route, its closed
+`PackageCandidateRequest` body, `application/zip` response, `no-store` cache
+header and `X-Environment-Studio-Qualified: false` header. The aggregate
+`docs/contracts/openapi.yaml` references the same path. The schema test now
+asserts 28 authenticated v3 routes and verifies that caller-supplied destination,
+client, template, credential, qualification and export fields are refused by the
+request schema.
+
+Verification after the correction: `node --test scripts/schema.test.mjs` passes
+61 tests; `npm run check --prefix frontend` passes; `npm test --prefix frontend`
+passes 446 Vitest tests and the 61 contract tests. The first local schema-test
+attempt was blocked by missing `frontend/node_modules`; after `npm ci --prefix
+frontend`, the intended RED and final GREEN were observed.
+
 ## Exact image result
 
 Committed candidate `83b7afd522660359e844f2cecf7a522234d5959b` was built from a
@@ -85,6 +107,25 @@ The same archived source also exported the `supervisor-artifacts` target. The
 distribution ZIP and all 29 entries in `SHA256SUMS` verified successfully. Result
 file: `/home/tim/.tmp/es-pg16-route-supervisor-artifacts-result-83b7afd52266.json`.
 Artifact log SHA256: `96be34686c06be12e805845282ac5e00a2a3064aa0eb5f880db11d5d7dd31871`.
+
+After the OpenAPI and operator-handoff documentation correction, final source
+`73175091ba34104bb0b7ec252a6b2e996161c908` was built from a fresh `git archive`
+with `SOURCE_REVISION` set to that SHA. The frontend/schema layer reran and
+passed 446 Vitest tests plus 61 schema tests; unchanged Java verification and
+supervisor layers were reused from the prior exact backend build. The final
+protected container smoke passed the same startup, static UI, health, demo
+capability, mutation-denial and workspace initialization/upgrade/refusal checks.
+
+Final local image: `sha256:d55e30a9c1dc799f6f02c418281122d6525ad1273f410a34a867254efeace3b2`.
+Final tag: `environment-studio:pg16-route-final-73175091ba34`.
+Final image result: `/home/tim/.tmp/es-pg16-route-final-oci-result-73175091ba34.json`.
+Final build log SHA256: `add3c4df72e4d39b679fd92f8b5bf72f7be90f24af4f2e03fdec25e368a5503a`.
+Final smoke log SHA256: `45222001bbf6ae154f65907b4a7ae509fbbea3cb9f92222837a341726644261b`.
+
+The final source also exported the `supervisor-artifacts` target and verified all
+29 `SHA256SUMS` entries. Final artifact result:
+`/home/tim/.tmp/es-pg16-route-final-supervisor-artifacts-result-73175091ba34.json`.
+Final artifact log SHA256: `f88f896551a3723d7715e6a10e7d88066b897ab4e8b8bd56509d1eaadf0ad887`.
 
 ## Limits and remaining checks
 
