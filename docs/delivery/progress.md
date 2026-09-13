@@ -1272,3 +1272,23 @@ Blockers: release readiness remains blocked by the existing full production gate
 for definitions, full profile/reuse UI, external database/client qualification,
 GHCR and HiveForge. This branch should close the narrowed PostgreSQL 16.11
 package/read-resource path after repository guards, commit, push and PR checks.
+
+## Midnight operator UI branch checkpoint — 13 September
+
+Ready: UI branch `implementation/midnight-operator-ui-20260913` was created in
+`/home/tim/.tmp/es-midnight-operator-ui-20260913` from local parent candidate
+`56457455df46d18f7319cc1ff4f3d2a78fc89509`. Approved Capture/Reuse renderer
+states were verified against the real hosted v3 workflow. Capture and Reuse e2e
+specs now support desktop+narrow in one hosted harness by using per-project
+invented profile IDs; the test harness control check now accepts combined profile
+observations while preserving canary and cleanup checks. Frontend check/test/build
+pass, backend test-compile/classpath pass, and hosted Capture/Re-use renderer
+browser gates pass for both viewports.
+
+Awaiting owners: PR #10 parent push still requires a human `git push` because the
+current Codex session rejects Git push under `AskForApproval=Never`. The reviewer
+is retired, so this UI checkpoint is self-reviewed lead evidence.
+
+Blockers: Values/Validation approval remains pending in the checked-in approval
+record, and full release qualification remains blocked by the established
+production gates.
