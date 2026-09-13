@@ -1,0 +1,23 @@
+- name: Check Environment Studio Compose template
+  ansible.builtin.stat:
+    path: "{{ environment_studio_compose_template }}"
+  register: environment_studio_compose_template_stat
+
+- name: Require Environment Studio Compose template
+  ansible.builtin.assert:
+    that:
+      - environment_studio_compose_template_stat.stat.exists
+      - environment_studio_compose_template_stat.stat.isreg
+    fail_msg: "Environment Studio Compose template is missing: {{ environment_studio_compose_template }}"
+
+- name: Ensure Environment Studio HiveForge runtime directory exists
+  ansible.builtin.file:
+    path: "{{ environment_studio_runtime_dir }}"
+    state: directory
+    mode: "0755"
+
+- name: Render Environment Studio Compose file
+  ansible.builtin.template:
+    src: "{{ environment_studio_compose_template }}"
+    dest: "{{ environment_studio_compose_file }}"
+    mode: "0644"

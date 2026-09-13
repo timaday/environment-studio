@@ -1,0 +1,48 @@
+- name: Require Environment Studio HiveForge profile
+  ansible.builtin.assert:
+    that:
+      - environment_studio_hiveforge_profile | length > 0
+      - environment_studio_hiveforge_profile in ['docker-single-postgres16-local-operator']
+    fail_msg: "HIVEFORGE_PROFILE must be docker-single-postgres16-local-operator for this PostgreSQL 16.11 no-OIDC pilot."
+
+- name: Require Environment Studio image reference
+  ansible.builtin.assert:
+    that:
+      - lookup('ansible.builtin.env', 'STUDIO_IMAGE') | length > 0
+    fail_msg: "STUDIO_IMAGE must be an immutable ghcr.io/timaday/environment-studio@sha256:... reference for HiveForge deployment."
+
+- name: Require HTTPS public origin outside localhost
+  ansible.builtin.assert:
+    that:
+      - lookup('ansible.builtin.env', 'STUDIO_SECURITY_PUBLIC_ORIGIN') is match('^https://.+') or lookup('ansible.builtin.env', 'STUDIO_SECURITY_PUBLIC_ORIGIN') is match('^http://(localhost|127\\.0\\.0\\.1)(:[0-9]+)?$')
+    fail_msg: "STUDIO_SECURITY_PUBLIC_ORIGIN must be HTTPS except for localhost/127.0.0.1 rehearsal."
+
+- name: Require secure cookies for non-loopback origin
+  ansible.builtin.assert:
+    that:
+      - lookup('ansible.builtin.env', 'STUDIO_SESSION_COOKIE_SECURE') | default('true', true) | lower == 'true' or lookup('ansible.builtin.env', 'STUDIO_SECURITY_PUBLIC_ORIGIN') is match('^http://(localhost|127\\.0\\.0\\.1)(:[0-9]+)?$')
+    fail_msg: "STUDIO_SESSION_COOKIE_SECURE must remain true for non-loopback HiveForge origins."
+
+- name: Require local-operator secret supplied by environment
+  ansible.builtin.assert:
+    that:
+      - lookup('ansible.builtin.env', 'STUDIO_SECURITY_LOCAL_OPERATOR_PASSWORD') | length > 0
+    fail_msg: "STUDIO_SECURITY_LOCAL_OPERATOR_PASSWORD must be supplied through HiveForge/target secret handling."
+
+- name: Require PostgreSQL destination facts
+  ansible.builtin.assert:
+    that:
+      - lookup('ansible.builtin.env', 'STUDIO_PG_HOST') | length > 0
+      - lookup('ansible.builtin.env', 'STUDIO_PG_PORT') is match('^[1-9][0-9]{0,4}$')
+      - lookup('ansible.builtin.env', 'STUDIO_PG_DATABASE') | length > 0
+      - lookup('ansible.builtin.env', 'STUDIO_PG_TRANSPORT_IDENTITY_SHA256') is match('^[0-9a-f]{64}$')
+      - lookup('ansible.builtin.env', 'STUDIO_PG_SYSTEM_IDENTIFIER') is match('^[1-9][0-9]{0,19}$')
+      - lookup('ansible.builtin.env', 'STUDIO_PG_DATABASE_OID') is match('^[1-9][0-9]{0,19}$')
+    fail_msg: "PostgreSQL 16.11 destination host, port, database, 64-hex transport identity, system identifier and database oid are required."
+
+- name: Require mounted workspace and trust-material paths
+  ansible.builtin.assert:
+    that:
+      - lookup('ansible.builtin.env', 'STUDIO_WORKSPACE_HOST_PATH') | length > 0
+      - lookup('ansible.builtin.env', 'STUDIO_PG_TRUST_MATERIAL_HOST_PATH') | length > 0
+    fail_msg: "STUDIO_WORKSPACE_HOST_PATH and STUDIO_PG_TRUST_MATERIAL_HOST_PATH must be explicit host paths."

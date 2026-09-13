@@ -41,29 +41,59 @@ read:packages with access to the package, following the account's SSO policy.
 
 ## HiveForge handoff
 
-The actual HiveForge deployment format/API is not available in this repository.
-Public projects sharing its name are not evidence of the user's platform.
-Use these standard OCI settings in its existing deployment UI/template:
+The repository now includes a HiveForge project manifest (`hiveforge.yaml`) and
+one managed component manifest (`environment-studio-service.hiveforge.yaml`) for
+the PostgreSQL 16.11 no-OIDC pilot. The component uses HiveForge's Ansible
+adapter to render `deploy/hiveforge/templates/docker-compose.yml.j2`, initialize
+the private schema3 workspace when needed, start the container and wait for the
+container health check. The deploy action uses privilege only to create/stat the
+private workspace directory as UID/GID 10001; Docker commands still run through
+the target's configured Docker access.
 
-1. Container image = the exact emitted `ghcr.io/...@sha256:...` reference.
-2. Registry = ghcr.io; use platform-managed pull identity if the package is private.
-3. Architecture = linux/amd64; container HTTP port = 8080, public URL routed by
-   the platform. Keep origin access private behind the chosen ingress.
-4. Runtime mode = hosted; provide local-operator or OIDC authentication, schema3
-   workspace volume and PostgreSQL 16.11 destination settings below. Start with
-   one replica and one private durable workspace volume.
-5. Apply TLS and the platform's normal access boundary. Do not expose the service
-   without configured local-operator or identity-provider authentication and
-   origin checks. Do not enable Oracle or any PostgreSQL version/client tuple
-   other than 16.11 for this pilot.
-6. Deploy, observe probes and the capability endpoint, then record digest,
-   platform version, routing settings and observed results for G10.
+Use the `docker-single-postgres16-local-operator` profile. It deploys one
+linux/amd64 service from an exact GHCR image reference, keeps the container root
+filesystem read-only, runs as UID/GID 10001, requires a private bind-mounted
+workspace, and mounts the PostgreSQL CA bundle read-only. The deployment accepts
+local-operator Basic sign-in instead of OIDC, but the public origin remains
+strict: HTTPS is required outside localhost/127.0.0.1 rehearsals, and secure
+session cookies remain enabled outside loopback.
 
-`compose.yaml` is a real **standard Docker Compose** hosted PostgreSQL pilot
-example. If HiveForge supports Compose imports, import it and provide the listed
-environment variables; that capability must be confirmed rather than assumed.
-Otherwise map the same settings to its container deployment form/API. Do not
-invent a `hiveforge.yaml` dialect or an unauthenticated deployment webhook.
+HiveForge must supply these values through its target environment or secret
+handling. Do not commit them to the repository or bake them into the image:
+
+- `HIVEFORGE_PROFILE=docker-single-postgres16-local-operator`
+- `STUDIO_IMAGE=ghcr.io/timaday/environment-studio@sha256:...`
+- `STUDIO_SECURITY_PUBLIC_ORIGIN`
+- `STUDIO_SECURITY_LOCAL_OPERATOR_PASSWORD`
+- `STUDIO_WORKSPACE_HOST_PATH`
+- `STUDIO_PG_TRUST_MATERIAL_HOST_PATH`
+- `STUDIO_PG_HOST`, `STUDIO_PG_PORT`, `STUDIO_PG_DATABASE`
+- `STUDIO_PG_TRANSPORT_IDENTITY_SHA256`
+- `STUDIO_PG_SYSTEM_IDENTIFIER`, `STUDIO_PG_DATABASE_OID` as observed numeric PostgreSQL identifiers
+
+The deployment template pins the only supported pilot export client tuple:
+PostgreSQL server `16.11`, `psql` client `16.11`, `linux-amd64`, template
+`postgresql16-text-v1`. Do not override it for this pilot.
+
+Optional values include `STUDIO_HOST_PORT`, `STUDIO_BIND_ADDRESS`,
+`STUDIO_SECURITY_LOCAL_OPERATOR_USERNAME`, `STUDIO_COMPOSE_PROJECT`,
+`HIVEFORGE_RUNTIME_DIR`, `STUDIO_PULL_BEFORE_DEPLOY`, and matching owner or
+definition-publisher issuer/subject overrides. The default local operator user is
+`operator`; the password must come from secret handling.
+
+The HiveForge actions are:
+
+- `deploy`: validate environment, render Compose, initialize the workspace if
+  absent, optionally pull the image, start the service and wait for health.
+- `update`: validate environment, render Compose, optionally pull, reconcile the
+  service and wait for health.
+- `remove`: stop the service without deleting the bind-mounted workspace or trust
+  material.
+
+A local HiveForge-manifest rehearsal validates the manifests and the rendered
+Compose shape. Actual HiveForge platform deployment, registry pull identity, TLS
+routing and target-host evidence must still be recorded from the deployment
+environment before claiming HiveForge release qualification.
 
 A manual hosted rehearsal with Docker:
 

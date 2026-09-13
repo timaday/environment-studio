@@ -1,0 +1,24 @@
+kind: project
+project:
+  name: environment-studio
+  repository: https://github.com/timaday/environment-studio.git
+  actions:
+    - deploy
+    - remove
+    - update
+  vars:
+    imageRepository.project: ghcr.io/timaday/environment-studio
+    extRepository.ghcr: ghcr.io
+    extRepository.docker: docker.io
+  profiles:
+    - id: docker-single-postgres16-local-operator
+      runtime: docker-single
+      serviceSet: postgres16-local-operator
+      requires:
+        managedRoot:
+          required: true
+          shared: false
+          node: local-docker
+components:
+  - name: service
+    manifest: environment-studio-service.hiveforge.yaml

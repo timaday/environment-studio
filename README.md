@@ -196,10 +196,12 @@ The browser gate builds the frontend and checks definition review at desktop
 and narrow widths using Playwright keyboard actions and axe. Run it locally with
 `docker build --target browser-check -t environment-studio:browser-check .`.
 
-The actual HiveForge manifest/API has not been supplied. [The deployment
-contract](deploy/README.md) and Compose example expose standard OCI settings for
-a hosted PostgreSQL 16.11 pilot without claiming an invented HiveForge
-integration. No automatic deployment to an existing environment is configured.
+HiveForge deployment files are included for the PostgreSQL 16.11 no-OIDC pilot:
+`hiveforge.yaml`, `environment-studio-service.hiveforge.yaml` and the
+Ansible-rendered Compose template under `deploy/hiveforge/`. See the
+[deployment contract](deploy/README.md) for required environment and secret
+inputs. Local manifest and Compose smoke checks do not replace actual HiveForge
+platform deployment evidence.
 
 ## Delivery constraint
 

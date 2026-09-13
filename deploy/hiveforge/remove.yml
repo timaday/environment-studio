@@ -1,0 +1,32 @@
+- name: Remove Environment Studio PostgreSQL 16.11 no-OIDC pilot service
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  vars:
+    environment_studio_repo_root: "{{ playbook_dir }}/../.."
+    environment_studio_runtime_dir: "{{ lookup('ansible.builtin.env', 'HIVEFORGE_RUNTIME_DIR') | default(environment_studio_repo_root + '/.hiveforge', true) }}"
+    environment_studio_compose_template: "{{ playbook_dir }}/templates/docker-compose.yml.j2"
+    environment_studio_compose_file: "{{ environment_studio_runtime_dir }}/docker-compose.yml"
+    environment_studio_compose_project: "{{ lookup('ansible.builtin.env', 'STUDIO_COMPOSE_PROJECT') | default('environment-studio-pilot', true) }}"
+    environment_studio_hiveforge_profile: "{{ lookup('ansible.builtin.env', 'HIVEFORGE_PROFILE') }}"
+  tasks:
+    - name: Validate Environment Studio HiveForge requirements
+      ansible.builtin.import_tasks: tasks/validate.yml
+
+    - name: Check Docker CLI access
+      ansible.builtin.command:
+        cmd: docker version --format '{{ "{{" }}.Server.Version{{ "}}" }}'
+      changed_when: false
+
+    - name: Check Docker Compose plugin
+      ansible.builtin.command:
+        cmd: docker compose version
+      changed_when: false
+
+    - name: Render Environment Studio Compose file
+      ansible.builtin.import_tasks: tasks/render-compose.yml
+
+    - name: Remove Environment Studio service without deleting bind-mounted workspace or trust material
+      ansible.builtin.command:
+        cmd: docker compose --project-name {{ environment_studio_compose_project }} -f {{ environment_studio_compose_file }} down --remove-orphans
+        chdir: "{{ environment_studio_runtime_dir }}"

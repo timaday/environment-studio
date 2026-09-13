@@ -17,7 +17,7 @@ evidence; never fill the matrix from driver availability.
 | Private draft workspace | SQLite JDBC 3.53.4.0, one replica | Owner isolation/integrity, immutable replay, quotas, process-crash journal recovery and protected-image initializer; deployment fsync/power loss/freshness separate | LOCAL CHECKS PASS |
 | Value-free v2 profiles | Capture/import/serialization and explicit whole/partial composition | [233-test integration](../evidence/d05a-integration.md), independent digest, portable bounds, canaries, eight guard mutants and closed architecture finding; publication/hosted plans separate | MECHANISM CHECKS PASS |
 | XSD import | Dialect/features not selected | Supported subset into draft, no semantic guessing | NOT IMPLEMENTED |
-| HiveForge | Platform/config unknown; OCI linux/amd64 candidate | Actual registry pull, TLS/identity/probes/restart | NOT RUN |
+| HiveForge | PostgreSQL 16.11 no-OIDC pilot manifests and Ansible-rendered Compose candidate | Local manifest/schema and Compose rehearsal; actual registry pull, TLS routing, target identity, probes and restart must be observed on HiveForge | LOCAL MANIFEST/COMPOSE CHECKS ONLY |
 
 Record engine, server/client/JDBC/parser/writer/definition versions, encoding,
 identity strategy, row/byte/depth limits, operations, lock semantics, test data

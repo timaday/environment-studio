@@ -1,0 +1,70 @@
+- name: Deploy Environment Studio PostgreSQL 16.11 no-OIDC pilot
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  vars:
+    environment_studio_repo_root: "{{ playbook_dir }}/../.."
+    environment_studio_runtime_dir: "{{ lookup('ansible.builtin.env', 'HIVEFORGE_RUNTIME_DIR') | default(environment_studio_repo_root + '/.hiveforge', true) }}"
+    environment_studio_compose_template: "{{ playbook_dir }}/templates/docker-compose.yml.j2"
+    environment_studio_compose_file: "{{ environment_studio_runtime_dir }}/docker-compose.yml"
+    environment_studio_compose_project: "{{ lookup('ansible.builtin.env', 'STUDIO_COMPOSE_PROJECT') | default('environment-studio-pilot', true) }}"
+    environment_studio_hiveforge_profile: "{{ lookup('ansible.builtin.env', 'HIVEFORGE_PROFILE') }}"
+    environment_studio_pull_before_deploy: "{{ lookup('ansible.builtin.env', 'STUDIO_PULL_BEFORE_DEPLOY') | default('true', true) | lower != 'false' }}"
+    environment_studio_workspace_db: "{{ lookup('ansible.builtin.env', 'STUDIO_WORKSPACE_HOST_PATH') }}/studio-workspace.db"
+  tasks:
+    - name: Validate Environment Studio HiveForge requirements
+      ansible.builtin.import_tasks: tasks/validate.yml
+
+    - name: Check Docker CLI access
+      ansible.builtin.command:
+        cmd: docker version --format '{{ "{{" }}.Server.Version{{ "}}" }}'
+      changed_when: false
+
+    - name: Check Docker Compose plugin
+      ansible.builtin.command:
+        cmd: docker compose version
+      changed_when: false
+
+    - name: Render Environment Studio Compose file
+      ansible.builtin.import_tasks: tasks/render-compose.yml
+
+    - name: Ensure private workspace directory exists
+      become: true
+      ansible.builtin.file:
+        path: "{{ lookup('ansible.builtin.env', 'STUDIO_WORKSPACE_HOST_PATH') }}"
+        state: directory
+        owner: "10001"
+        group: "10001"
+        mode: "0700"
+
+    - name: Check schema3 workspace store
+      become: true
+      ansible.builtin.stat:
+        path: "{{ environment_studio_workspace_db }}"
+      register: environment_studio_workspace_db_stat
+
+    - name: Initialize schema3 workspace store when absent
+      ansible.builtin.command:
+        cmd: docker compose --project-name {{ environment_studio_compose_project }} -f {{ environment_studio_compose_file }} --profile init run --rm environment-studio-workspace-init
+        chdir: "{{ environment_studio_runtime_dir }}"
+      when: not environment_studio_workspace_db_stat.stat.exists
+
+    - name: Pull Environment Studio image
+      ansible.builtin.command:
+        cmd: docker compose --project-name {{ environment_studio_compose_project }} -f {{ environment_studio_compose_file }} pull environment-studio
+        chdir: "{{ environment_studio_runtime_dir }}"
+      when: environment_studio_pull_before_deploy
+
+    - name: Start Environment Studio service
+      ansible.builtin.command:
+        cmd: docker compose --project-name {{ environment_studio_compose_project }} -f {{ environment_studio_compose_file }} up -d --remove-orphans environment-studio
+        chdir: "{{ environment_studio_runtime_dir }}"
+
+    - name: Wait for Environment Studio container health
+      ansible.builtin.command:
+        cmd: docker inspect --format '{{ "{{" }}.State.Health.Status{{ "}}" }}' {{ environment_studio_compose_project }}-environment-studio-1
+      register: environment_studio_health
+      retries: 60
+      delay: 2
+      until: environment_studio_health.stdout == 'healthy'
+      changed_when: false

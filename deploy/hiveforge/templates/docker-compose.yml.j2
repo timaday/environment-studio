@@ -1,4 +1,5 @@
-# Hosted PostgreSQL pilot Compose example, not an assumed HiveForge-specific manifest.
+# Rendered by HiveForge for the Environment Studio PostgreSQL 16.11 no-OIDC pilot.
+# Secret values are interpolated from the HiveForge/target runtime environment and are not stored here.
 services:
   environment-studio-workspace-init:
     image: ${STUDIO_IMAGE:?Set STUDIO_IMAGE to the published ghcr.io image digest}
@@ -13,7 +14,7 @@ services:
       - /tmp:rw,noexec,nosuid,size=128m
     volumes:
       - type: bind
-        source: ${STUDIO_WORKSPACE_HOST_PATH:?Set STUDIO_WORKSPACE_HOST_PATH to an initialized private host directory owned by uid/gid 10001}
+        source: ${STUDIO_WORKSPACE_HOST_PATH:?Set STUDIO_WORKSPACE_HOST_PATH to a private host directory owned by uid/gid 10001}
         target: /workspace
 
   environment-studio:
@@ -21,17 +22,17 @@ services:
     platform: linux/amd64
     restart: unless-stopped
     ports:
-      - "127.0.0.1:${STUDIO_HOST_PORT:-18181}:8080"
+      - "${STUDIO_BIND_ADDRESS:-127.0.0.1}:${STUDIO_HOST_PORT:-18181}:8080"
     environment:
       STUDIO_MODE: hosted
-      STUDIO_SECURITY_PUBLIC_ORIGIN: ${STUDIO_SECURITY_PUBLIC_ORIGIN:-http://localhost:18181}
+      STUDIO_SECURITY_PUBLIC_ORIGIN: ${STUDIO_SECURITY_PUBLIC_ORIGIN:?Set the exact public origin}
       STUDIO_SECURITY_LOCAL_OPERATOR_ENABLED: "true"
       STUDIO_SECURITY_LOCAL_OPERATOR_USERNAME: ${STUDIO_SECURITY_LOCAL_OPERATOR_USERNAME:-operator}
-      STUDIO_SECURITY_LOCAL_OPERATOR_PASSWORD: ${STUDIO_SECURITY_LOCAL_OPERATOR_PASSWORD:?Set a local operator password through your secret facility; do not commit it}
+      STUDIO_SECURITY_LOCAL_OPERATOR_PASSWORD: ${STUDIO_SECURITY_LOCAL_OPERATOR_PASSWORD:?Set through HiveForge secret handling}
       STUDIO_SECURITY_LOCAL_OPERATOR_ISSUER: ${STUDIO_SECURITY_LOCAL_OPERATOR_ISSUER:-https://local-operator.environment-studio.invalid}
       STUDIO_SECURITY_LOCAL_OPERATOR_SUBJECT: ${STUDIO_SECURITY_LOCAL_OPERATOR_SUBJECT:-operator}
       STUDIO_WORKSPACE_DIRECTORY: /workspace
-      SERVER_SERVLET_SESSION_COOKIE_SECURE: ${STUDIO_SESSION_COOKIE_SECURE:-false}
+      SERVER_SERVLET_SESSION_COOKIE_SECURE: ${STUDIO_SESSION_COOKIE_SECURE:-true}
       SPRING_APPLICATION_JSON: >-
         {
           "studio": {
@@ -48,7 +49,7 @@ services:
                 {
                   "id": "${STUDIO_PG_DESTINATION_ID:-postgresql-pilot}",
                   "engine": "postgresql",
-                  "host": "${STUDIO_PG_HOST:?Set PostgreSQL host name}",
+                  "host": "${STUDIO_PG_HOST:?Set PostgreSQL 16.11 host name}",
                   "port": ${STUDIO_PG_PORT:-5432},
                   "database": "${STUDIO_PG_DATABASE:?Set PostgreSQL database name}",
                   "trust-material": "/run/studio/postgres-ca.pem",
@@ -86,12 +87,18 @@ services:
       - /tmp:rw,noexec,nosuid,size=128m
     volumes:
       - type: bind
-        source: ${STUDIO_WORKSPACE_HOST_PATH:?Set STUDIO_WORKSPACE_HOST_PATH to an initialized private host directory owned by uid/gid 10001}
+        source: ${STUDIO_WORKSPACE_HOST_PATH:?Set STUDIO_WORKSPACE_HOST_PATH to a private host directory owned by uid/gid 10001}
         target: /workspace
       - type: bind
         source: ${STUDIO_PG_TRUST_MATERIAL_HOST_PATH:?Set absolute host path to the PostgreSQL PEM CA bundle}
         target: /run/studio/postgres-ca.pem
         read_only: true
+    healthcheck:
+      test: ["CMD", "java", "-cp", "/opt/studio/probe", "HealthProbe"]
+      interval: 15s
+      timeout: 5s
+      retries: 20
+      start_period: 30s
     mem_limit: 1g
     cpus: 1.0
     pids_limit: 256
