@@ -1,0 +1,52 @@
+{
+  "status": "APPROVED_WITH_LESS_IS_MORE_CORRECTION",
+  "date": "2026-09-13",
+  "scope": "Export guarded-package blocked/unavailable state, desktop and narrow. No successful package artifact state is included.",
+  "sourceReferences": [
+    "/home/tim/Downloads/QA-West Values Review_ Worker ID Required.png",
+    "/home/tim/Downloads/Midnight configuration comparison workbench.png",
+    "/home/tim/Downloads/XML placeholder mapping comparison.png"
+  ],
+  "images": [
+    {
+      "state": "blocked-package-candidate",
+      "view": "desktop",
+      "generatedPath": "/home/tim/.codex/generated_images/01a08112-856d-7042-81a1-5897748a6951/call_hCPvWDFvV4BGgn9iUAMwFUfg.png",
+      "path": "export-desktop-v1.png",
+      "sha256": "cbe580bb46101a47a170ed691ed5616ec163ae7059db974ec71ff9ba31c66214",
+      "pixels": [1504, 1046],
+      "intendedCssViewport": [1440, 1000],
+      "scroll": "natural full page",
+      "dpr": "generated raster, unspecified"
+    },
+    {
+      "state": "blocked-package-candidate",
+      "view": "narrow",
+      "generatedPath": "/home/tim/.codex/generated_images/01a08112-856d-7042-81a1-5897748a6951/call_sqExshfhno4OHez3PTA96OxJ.png",
+      "path": "export-narrow-v1.png",
+      "sha256": "c64766e7776d536a7a89e3731a76bfdd51a4f2f39e3fcecfb67dfb91e148c82b",
+      "pixels": [853, 1844],
+      "intendedCssViewport": [390, 844],
+      "scroll": "natural full page",
+      "dpr": "generated raster, unspecified"
+    }
+  ],
+  "correctionsRequiredBeforeImplementation": [
+    "Use actual SVG branding and committed flat Midnight tokens.",
+    "Keep 14-16px body text, 44px minimum controls and natural scrolling.",
+    "Do not expose Deploy, Run SQL, Execute or Commit actions.",
+    "Do not show digest, byte count or successful download until backed by an actual route response.",
+    "Keep unqualified package-candidate wording visible and do not claim release qualification.",
+    "Reduce repeated explanatory copy where possible while preserving export authority and external execution limits."
+  ],
+  "exclusions": [
+    "No successful package/download receipt state.",
+    "No production PostgreSQL/client/supervisor/TLS qualification.",
+    "No approval of Definitions designs or Verify/readback screens."
+  ],
+  "approval": {
+    "date": "2026-09-13",
+    "response": "view is approved, though less is more where possible",
+    "scope": "Export blocked-package desktop/narrow direction approved; implementation should reduce repetition and keep only actual backend-supported states."
+  }
+}

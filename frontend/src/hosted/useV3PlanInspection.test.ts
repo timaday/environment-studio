@@ -233,3 +233,119 @@ it("clears document consent and content when the no-document option is selected"
   expect(result.current.current).toBeNull();
   expect(result.current.target).toBeNull();
 });
+
+it("loads placeholder documents with a concrete binding rail", async () => {
+  const { result, transport } = await setup();
+  act(() => {
+    result.current.select("mock-a");
+    result.current.setMode("placeholders");
+    result.current.setConsent(true);
+  });
+  const entity = { kind: "existing" as const, handle: "50000000-0000-0000-0000-000000000003" };
+  const token = "[[value:50000000-0000-0000-0000-000000000003:mock-field]]";
+  transport
+    .mockResolvedValueOnce(json(document("current", "mock-a", "placeholders")))
+    .mockResolvedValueOnce(json(document("target", "mock-a", "placeholders")))
+    .mockResolvedValueOnce(json(summary))
+    .mockResolvedValueOnce(
+      json({
+        revision: "2",
+        total: 1,
+        offset: 0,
+        nextOffset: null,
+        items: [{ entity, typeId: "mock-type", fields: [] }],
+      }),
+    )
+    .mockResolvedValueOnce(
+      json({
+        revision: "2",
+        total: 1,
+        offset: 0,
+        nextOffset: null,
+        items: [{ entity, typeId: "mock-type", fields: [] }],
+      }),
+    )
+    .mockResolvedValueOnce(
+      json({
+        revision: "2",
+        total: 1,
+        offset: 0,
+        nextOffset: null,
+        items: [
+          {
+            fieldId: "mock-field",
+            token,
+            current: { state: "value", text: "before" },
+            target: { state: "value", text: "after" },
+            change: "changed",
+            currentLocations: { state: "complete", total: 1 },
+            targetLocations: { state: "complete", total: 1 },
+          },
+        ],
+      }),
+    )
+    .mockResolvedValueOnce(
+      json({
+        revision: "2",
+        total: 1,
+        offset: 0,
+        nextOffset: null,
+        items: [
+          {
+            documentId: "mock-a",
+            sourceDigest: digest,
+            projectionId: "mock-projection",
+            elementIndex: "0",
+            attribute: { namespaceUri: "", localName: "value" },
+            span: { start: 13, end: 19 },
+            role: "field",
+            declarationId: "mock-field",
+          },
+        ],
+      }),
+    )
+    .mockResolvedValueOnce(
+      json({
+        revision: "2",
+        total: 1,
+        offset: 0,
+        nextOffset: null,
+        items: [
+          {
+            documentId: "mock-a",
+            sourceDigest: "b".repeat(64),
+            projectionId: "mock-projection",
+            elementIndex: "0",
+            attribute: { namespaceUri: "", localName: "value" },
+            span: { start: 13, end: 18 },
+            role: "field",
+            declarationId: "mock-field",
+          },
+        ],
+      }),
+    );
+  await act(() => result.current.load());
+  expect(result.current.current?.mode).toBe("placeholders");
+  expect(result.current.target?.mode).toBe("placeholders");
+  expect(result.current.bindingRail).toEqual([
+    {
+      entity,
+      typeId: "mock-type",
+      fieldId: "mock-field",
+      token,
+      change: "changed",
+      current: "before",
+      target: "after",
+      currentLocations: 1,
+      targetLocations: 1,
+    },
+  ]);
+  expect(
+    transport.mock.calls
+      .filter(([path]) => String(path).endsWith("/views/document"))
+      .map(([, options]) => JSON.parse(String(options?.body)).mode),
+  ).toEqual(["placeholders", "placeholders"]);
+  expect(
+    transport.mock.calls.filter(([path]) => String(path).endsWith("/views/binding-locations")),
+  ).toHaveLength(2);
+});

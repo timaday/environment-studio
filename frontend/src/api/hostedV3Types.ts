@@ -29,3 +29,5 @@ export type ValidationSummary = Omit<
     | { readonly targetComplete: false; readonly computedRuleCount: null }
     | { readonly targetComplete: true; readonly computedRuleCount: number }
   );
+
+export type PackageCandidateRequest = Readonly<{ revision: string; inputFingerprint: string }>;

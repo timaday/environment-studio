@@ -195,7 +195,7 @@ it("blocks overlapping submissions while a response is held and retains its ackn
         release = resolve;
       }),
   );
-  let original: Promise<void> | undefined;
+  let original: Promise<unknown> | undefined;
   act(() => {
     original = result.current.submit(input);
   });
@@ -243,7 +243,7 @@ it("retires held work on API replacement without publishing old values or acknow
         release = resolve;
       }),
   );
-  let original: Promise<void> | undefined;
+  let original: Promise<unknown> | undefined;
   act(() => {
     original = result.current.submit(input);
   });
@@ -287,7 +287,7 @@ it("does not restore state after unmount with a held original command", async ()
         release = resolve;
       }),
   );
-  let original: Promise<void> | undefined;
+  let original: Promise<unknown> | undefined;
   act(() => {
     original = result.current.submit(input);
   });

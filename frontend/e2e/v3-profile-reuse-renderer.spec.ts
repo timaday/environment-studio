@@ -40,7 +40,11 @@ test("selects partial reuse, reviews dependencies and applies explicit placement
     expect(result.cache).toBe("no-store");
     return result.value;
   }
-  expect((await request("GET", "/api/v3/profiles")).profiles).toEqual([]);
+  const profileNativeId = `mock-profile-${info.project.name}`;
+  const profilesBefore = (await request("GET", "/api/v3/profiles")).profiles;
+  expect(
+    profilesBefore.some((profile: { nativeId: string }) => profile.nativeId === profileNativeId),
+  ).toBe(false);
   const created = await request(
     "POST",
     "/api/v3/plans",
@@ -95,7 +99,7 @@ test("selects partial reuse, reviews dependencies and applies explicit placement
   expect(mappings).toHaveLength(3);
   const captured = await request("POST", `${planPath}/profile-captures`, {
     revision: "2",
-    profileId: "mock-profile",
+    profileId: profileNativeId,
     profileRevision: "1",
     mappings,
   });
@@ -111,7 +115,12 @@ test("selects partial reuse, reviews dependencies and applies explicit placement
   for (const value of ['"alpha"', '"beta"', "MOCK-DOC-SECRET", "MockV3-Password"]) {
     expect(captured.source.includes(value)).toBe(false);
   }
-  expect((await request("GET", "/api/v3/profiles")).profiles).toEqual([]);
+  const profilesAfterCapture = (await request("GET", "/api/v3/profiles")).profiles;
+  expect(
+    profilesAfterCapture.some(
+      (profile: { nativeId: string }) => profile.nativeId === profileNativeId,
+    ),
+  ).toBe(false);
   expect(await request("GET", planPath)).toEqual(before);
   const objectId = crypto.randomUUID();
   const profilePath = `/api/v3/profiles/${objectId}`;
@@ -148,7 +157,9 @@ test("selects partial reuse, reviews dependencies and applies explicit placement
   before = await request("GET", planPath);
   expect(before.targetComplete).toBe(true);
   await page.getByRole("button", { name: "Load profiles and inspected items" }).click();
-  await page.getByRole("button", { name: /mock-profile.*Saved revision 2/ }).click();
+  await page
+    .getByRole("button", { name: new RegExp(`${profileNativeId}.*Saved revision 2`) })
+    .click();
   await page.getByRole("radio", { name: "Selected parts" }).check();
   await page.getByRole("checkbox", { name: /Neutral 1/ }).check();
   async function inspect(state: string) {

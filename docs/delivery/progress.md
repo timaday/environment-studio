@@ -1,3 +1,22 @@
+Latest lead checkpoint — 13 September 2026: Export candidate download is now connected in the Midnight UI on `implementation/midnight-operator-ui-after-pr10-20260913`. The frontend no longer treats UNKNOWN release-qualification checks as a client-side block for the unqualified package route; it enables download only after backend readiness confirms a complete target, then the server rechecks revision, fingerprint, destination and policy before streaming the ZIP. The browser `fetch` binding bug in `HostedApi.postBinary` is fixed. Local verification: `npm test --prefix frontend` PASS, 456 Vitest tests and 61 schema contract tests; `npm run check --prefix frontend` PASS; pinned frontend build PASS; pinned Maven server `test-compile` and `process-resources` PASS; hosted `profiles-v3-values` desktop/narrow browser PASS for Values → Validation → Export candidate download and unqualified receipt; repository content/integrity/diff/script guards PASS. Limits remain: no production PostgreSQL/client/supervisor execution, no GHCR/HiveForge release qualification and no claim that `exportAvailable` becomes true.
+
+Latest lead checkpoint — 13 September 2026: Export view is implemented on `implementation/midnight-operator-ui-after-pr10-20260913` after Tim approved the blocked-package layouts with “less is more” feedback. The screen preserves plan context, runs backend validation for the exact revision, keeps Download package candidate disabled unless every required check is PASS, starts a browser download only from the contracted unqualified ZIP response, and exposes no Run SQL/Deploy/Execute/Commit control. Local verification: `npm test --prefix frontend` PASS, 455 Vitest tests and 61 schema contract tests; `npm run check --prefix frontend` PASS, 108 files; pinned build PASS; hosted `profiles-v3-values` desktop/narrow browser with Values → Validation → Export blocked path PASS; repository content/integrity/diff/script guards PASS. Limits remain: no successful browser package-download e2e, no production PostgreSQL/client/supervisor execution, no GHCR/HiveForge release qualification.
+
+Latest lead checkpoint — 13 September 2026: Export screen approval packet is pending and non-visual guarded package client plumbing is implemented on `implementation/midnight-operator-ui-after-pr10-20260913`. Generated desktop/narrow blocked-export proposals are recorded in `docs/ux/reference/export-flow-approval.json` and await approval before view implementation. `HostedV3Api.guardedPackageCandidate` now validates revision/fingerprint requests and accepts only the contracted unqualified ZIP response with no-store, exact attachment filename and `X-Environment-Studio-Qualified: false`; it does not set export authority or execute SQL. Focused package client tests pass through the frontend suite, check and pinned build. HiveMind/HiveMap tools remain unavailable in this session, so repo evidence and issue #9 are the visible coordination record.
+
+Latest lead checkpoint — 13 September 2026: UI branch
+`implementation/midnight-operator-ui-after-pr10-20260913` now implements the
+approved Values and Validation operator screens on top of merged backend PR #10.
+Values loads actual paged target draft inventory, explicit binding comparison and
+plan-command receipts; Validation runs actual backend checks and computed-rule
+pages while keeping export unavailable for UNKNOWN required checks. Local author
+verification: `npm run check --prefix frontend` PASS; `npm test --prefix frontend`
+PASS, 450 Vitest tests and 61 schema contract tests; pinned frontend build PASS;
+`profiles-v3-values` hosted desktop/narrow browser PASS with axe, 44px controls,
+320px reflow, no horizontal overflow and complete cleanup; repository content,
+integrity, diff and script unit guards PASS. Evidence: `docs/evidence/v3-midnight-operator-ui-branch.md`.
+Limits: no independent review, no pixel identity and no production PostgreSQL/client/export/GHCR/HiveForge release qualification claimed for this UI slice.
+
 Ready: reviewer findings TEST-QA-013, TEST-QA-014 and TEST-QA-015 are accepted and corrected locally on `implementation/v3-postgres16-guarded-package-route-20260912`. TEST-QA-013 was already verified fixed by the reviewer. TEST-QA-014 now requires the owned Docker container or owned anonymous volume to be named with exact case in the same missing-resource diagnostic; Docker diagnostic prose may vary in case, but resource identity is not case-folded. Prefix matches, different-case names and unrelated diagnostics that mention the owned name elsewhere are rejected. TEST-QA-015 joins the actual launcher platform thread recorded by the blocked port before the repeated-cleanup test releases the process-wide window to the next launch-owner test. Focused checks pass after the case-identity correction: `Postgres16ClientWitnessCleanupOracleTest` 8 tests, `PrivacyLaunchOwnerTest` 16 tests, default `Postgres16ClientWitnessTest` with 3 skipped, and explicit `ES_POSTGRES16_CLIENT_WITNESS=true ES_POSTGRES16_IMAGE=postgres:16.11-bookworm Postgres16ClientWitnessTest` with 3 tests. Repository/content/script checks pass. Full backend Maven verify passes on this correction with core 335, qualified XML parser 7, server 1,049 and guarded-supervisor 354 tests, with the three Docker-gated PostgreSQL witness cases skipped by default. No production export/release qualification is claimed.
 
 # Handoff and capability status
@@ -1272,3 +1291,42 @@ Blockers: release readiness remains blocked by the existing full production gate
 for definitions, full profile/reuse UI, external database/client qualification,
 GHCR and HiveForge. This branch should close the narrowed PostgreSQL 16.11
 package/read-resource path after repository guards, commit, push and PR checks.
+
+## Midnight operator UI branch checkpoint — 13 September
+
+Ready: UI branch `implementation/midnight-operator-ui-20260913` was created in
+`/home/tim/.tmp/es-midnight-operator-ui-20260913` from local parent candidate
+`56457455df46d18f7319cc1ff4f3d2a78fc89509`; after PR #10 merged at
+`974b51332ffbf333ad47cdad1284412aa6beb459`, the branch was rebased for no-force
+publication as `implementation/midnight-operator-ui-after-pr10-20260913`. Approved Capture/Reuse renderer
+states were verified against the real hosted v3 workflow. Capture and Reuse e2e
+specs now support desktop+narrow in one hosted harness by using per-project
+invented profile IDs; the test harness control check now accepts combined profile
+observations while preserving canary and cleanup checks. Frontend check/test/build
+pass, backend test-compile/classpath pass, and hosted Capture/Re-use renderer
+browser gates pass for both viewports.
+
+Awaiting owners: none for the parent branch; PR #10 is merged. The reviewer is
+retired, so this UI checkpoint is self-reviewed lead evidence.
+
+Blockers: Values/Validation approval remains pending in the checked-in approval
+record, and full release qualification remains blocked by the established
+production gates.
+
+## Plan-inspection Placeholder UI checkpoint — 13 September
+
+Ready: the rebased UI branch now exposes Raw, Placeholders and Formatted in v3
+document inspection. Placeholder mode loads current/target documents only after
+explicit full-document disclosure and shows a concrete binding rail sourced from
+actual entity, binding and binding-location API calls for the selected document.
+Focused hook/render tests pass, frontend check/test/build pass, backend
+test-compile/classpath passes, and hosted plan-inspection browser gates pass
+desktop+narrow with axe, 44px controls, 320px reflow and cleanup complete both
+before and after rebasing onto merged `origin/main`.
+
+Awaiting owners: none for this local slice. Reviewer remains retired; evidence is
+lead-owned.
+
+Blockers: no full pixel-identity claim, no production DB/export qualification,
+and Values/Validation visuals remain pending approval before their affected UI can
+be implemented.

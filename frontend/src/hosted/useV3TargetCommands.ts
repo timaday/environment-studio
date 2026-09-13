@@ -57,19 +57,20 @@ export function useV3TargetCommands(api: HostedApi, plan: PlanSummary | null, en
       setView({ owner, state: empty });
     }
   }, [owner, context, enabled]);
-  async function execute(pending: Pending) {
-    if (!owner.active || !presentation.active || owner.state.busy) return;
+  async function execute(pending: Pending): Promise<Ack | null> {
+    if (!owner.active || !presentation.active || owner.state.busy) return null;
     const generation = owner.generation;
     replace({ busy: true, pending, receipt: null, error: "" });
     try {
       const receipt = await owner.client.command(pending.plan.planId, pending.command);
       if (owner.active && generation === owner.generation) replace({ ...empty, receipt });
+      return receipt;
     } catch (error) {
-      if (!owner.active || generation !== owner.generation) return;
+      if (!owner.active || generation !== owner.generation) return null;
       if (error instanceof ApiFailure && error.code === "SESSION_REQUIRED") {
         owner.active = false;
         replace({ ...empty, error: failureMessage(error) });
-        return;
+        return null;
       }
       const refused =
         error instanceof ApiFailure &&
@@ -81,9 +82,10 @@ export function useV3TargetCommands(api: HostedApi, plan: PlanSummary | null, en
           "429:CAPACITY",
         ].includes(`${error.status}:${error.code}`);
       replace({ ...empty, pending: refused ? null : pending, error: failureMessage(error) });
+      return null;
     }
   }
-  async function submit(input: TargetCommandInput) {
+  async function submit(input: TargetCommandInput): Promise<Ack | null> {
     if (
       !owner.active ||
       !presentation.active ||
@@ -92,7 +94,7 @@ export function useV3TargetCommands(api: HostedApi, plan: PlanSummary | null, en
       !plan?.inspectionValid ||
       !plan.observedDestination?.evidenceValid
     )
-      return;
+      return null;
     let pending: Pending;
     try {
       const command = prepareCommand({
@@ -104,12 +106,13 @@ export function useV3TargetCommands(api: HostedApi, plan: PlanSummary | null, en
       pending = Object.freeze({ plan: summary(plan), command });
     } catch {
       replace({ ...empty, error: "INVALID_REQUEST" });
-      return;
+      return null;
     }
-    await execute(pending);
+    return await execute(pending);
   }
-  async function retry() {
-    if (owner.state.pending) await execute(owner.state.pending);
+  async function retry(): Promise<Ack | null> {
+    if (owner.state.pending) return await execute(owner.state.pending);
+    return null;
   }
   function clear() {
     if (owner.active && presentation.active && !owner.state.pending && !owner.state.busy)

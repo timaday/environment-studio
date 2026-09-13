@@ -38,7 +38,11 @@ test("maps returned inventory, captures separately and confirms a lost save thro
     expect(result.cache).toBe("no-store");
     return result.value;
   }
-  expect((await request("GET", "/api/v3/profiles")).profiles).toEqual([]);
+  const profileNativeId = `mock-profile-${info.project.name}`;
+  const profilesBefore = (await request("GET", "/api/v3/profiles")).profiles;
+  expect(
+    profilesBefore.some((profile: { nativeId: string }) => profile.nativeId === profileNativeId),
+  ).toBe(false);
   const created = await request(
     "POST",
     "/api/v3/plans",
@@ -78,7 +82,7 @@ test("maps returned inventory, captures separately and confirms a lost save thro
   await page.getByRole("button", { name: "Load inspected structure" }).click();
   await expect(page.getByText("0 of 3 mappings entered")).toBeVisible();
   await expect(page.getByRole("button", { name: "Capture for review" })).toBeDisabled();
-  await page.getByLabel("Profile identifier", { exact: true }).fill("mock-profile");
+  await page.getByLabel("Profile identifier", { exact: true }).fill(profileNativeId);
   await page.getByLabel("Profile revision", { exact: true }).fill("1");
   for (let number = 1; number <= 3; number++) {
     if (info.project.name === "narrow" && number > 1)
@@ -163,7 +167,12 @@ test("maps returned inventory, captures separately and confirms a lost save thro
   await expect(page.getByRole("textbox", { name: "Profile identifier", exact: true })).toHaveCount(
     0,
   );
-  expect((await request("GET", "/api/v3/profiles")).profiles).toEqual([]);
+  const profilesAfterCapture = (await request("GET", "/api/v3/profiles")).profiles;
+  expect(
+    profilesAfterCapture.some(
+      (profile: { nativeId: string }) => profile.nativeId === profileNativeId,
+    ),
+  ).toBe(false);
   expect(await request("GET", planPath)).toEqual(before);
   for (const forbidden of ["MOCK-DOC-SECRET", "MockV3-Password", '"alpha"', '"beta"'])
     expect(captured.source.includes(forbidden)).toBe(false);

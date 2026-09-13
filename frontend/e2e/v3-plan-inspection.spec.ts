@@ -155,6 +155,22 @@ test("resumes actual v3 current and target documents with explicit disclosure", 
       await page.getByRole("region", { name: "Target XML" }).locator("pre").textContent(),
     ).toBe(proposed);
   }
+  await page.getByRole("combobox", { name: "Document", exact: true }).selectOption("sheet");
+  await expect(consent).not.toBeChecked();
+  await consent.check();
+  await page.getByRole("button", { name: "Placeholders", exact: true }).click();
+  await settled();
+  await page.getByRole("button", { name: "Load document comparison" }).click();
+  await expect(page.getByRole("region", { name: "Target XML" }).locator("pre")).toBeVisible();
+  await expect(page.getByRole("region", { name: "Current XML" }).locator("pre")).toContainText(
+    "[[value:",
+  );
+  await expect(page.getByRole("region", { name: "Binding rail" })).toContainText(
+    "Placeholder tokens are labels only",
+  );
+  await expect(page.getByRole("region", { name: "Binding rail" })).toContainText("Current");
+  await expect(page.getByRole("region", { name: "Binding rail" })).toContainText("Target");
+
   await page.getByRole("button", { name: "Formatted", exact: true }).click();
   await expect(page.getByRole("region", { name: "Current XML" }).locator("pre")).toHaveCount(0);
   await settled();
@@ -192,5 +208,7 @@ test("resumes actual v3 current and target documents with explicit disclosure", 
   await page.getByRole("link", { name: "Sign in with OIDC" }).click();
   await page.getByRole("combobox", { name: "Model version" }).selectOption("3");
   await expect(page.getByText("No current Native v3 plan in this session.")).toBeVisible();
+  await page.getByRole("button", { name: "Log out" }).click();
+  await expect(page.getByRole("link", { name: "Sign in with OIDC" })).toBeVisible();
   expect((await page.request.get("http://127.0.0.1:18444/control/checks")).ok()).toBe(true);
 });
