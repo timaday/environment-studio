@@ -110,6 +110,55 @@ not pixel identity, not production database qualification, not SQL execution
 qualification and not GHCR/HiveForge release readiness. Values/Validation visuals
 remain pending approval; Definitions approval remains separate.
 
+## Export approval packet and package client plumbing — 13 September 2026
+
+A complete Export screen is materially new, so the enterprise UX skill requires
+image approval before implementing the affected view. Desktop and narrow blocked
+package-candidate proposals were generated from the approved Midnight references
+and recorded in `docs/ux/reference/export-flow-approval.json`; their current
+status is `PENDING_APPROVAL`. The proposals show only a truthful unavailable
+state: no digest, byte count, successful download, production readiness, Deploy,
+Run SQL, Execute or Commit action.
+
+Non-visual plumbing was implemented independently of that pending screen approval.
+`HostedApi.postBinary` now supports a session-owned POST that reads a binary
+response while preserving CSRF, same-origin credentials, no-store request mode,
+401 session expiry, closed v3 early-refusal codes and JSON error responses.
+`HostedV3Api.guardedPackageCandidate` validates the closed request
+`{ revision, inputFingerprint }`, posts to the existing guarded package candidate
+route and accepts only the contracted unqualified ZIP response headers:
+`Cache-Control: no-store`, `Content-Type: application/zip`, the exact attachment
+filename and `X-Environment-Studio-Qualified: false`. A successful response
+returns bytes plus metadata only; it does not set export authority or execute SQL.
+
+Meaningful RED:
+
+```sh
+npm test --prefix frontend -- hostedV3Package.test.ts
+```
+
+Result before implementation: the new tests failed because
+`HostedV3Api.guardedPackageCandidate` did not exist and the existing client had
+no binary response path.
+
+Checks after implementation:
+
+```sh
+npm test --prefix frontend -- hostedV3Package.test.ts
+npm run check --prefix frontend
+PATH=/home/tim/.tmp/es-toolchain-20260909/node-v24.20.0-linux-x64/bin:$PATH npm run build --prefix frontend
+```
+
+Results: focused frontend suite PASS, now 34 Vitest files and 453 tests plus 61
+schema contract tests; frontend check PASS, 105 files; production build PASS
+with `dist/assets/index-DZbrLAl9.js` and `dist/assets/index-fZrgn5jm.css`.
+
+Limits: this does not implement the Export screen, does not prove a hosted
+end-to-end package download through the browser, does not qualify production
+PostgreSQL/client/supervisor execution and does not create a release-ready export
+claim. HiveMind/HiveMap tools were not exposed in this session; durable status is
+kept in repo evidence and issue #9 instead.
+
 ## Values and Validation operator screens — 13 September 2026
 
 This slice implements the approved Values and Validation operator states in the

@@ -1,3 +1,5 @@
+Latest lead checkpoint — 13 September 2026: Export screen approval packet is pending and non-visual guarded package client plumbing is implemented on `implementation/midnight-operator-ui-after-pr10-20260913`. Generated desktop/narrow blocked-export proposals are recorded in `docs/ux/reference/export-flow-approval.json` and await approval before view implementation. `HostedV3Api.guardedPackageCandidate` now validates revision/fingerprint requests and accepts only the contracted unqualified ZIP response with no-store, exact attachment filename and `X-Environment-Studio-Qualified: false`; it does not set export authority or execute SQL. Focused package client tests pass through the frontend suite, check and pinned build. HiveMind/HiveMap tools remain unavailable in this session, so repo evidence and issue #9 are the visible coordination record.
+
 Latest lead checkpoint — 13 September 2026: UI branch
 `implementation/midnight-operator-ui-after-pr10-20260913` now implements the
 approved Values and Validation operator screens on top of merged backend PR #10.

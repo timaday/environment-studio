@@ -110,6 +110,12 @@ export type Operation = {
   cleanup: string;
   installedRevision?: string;
 };
+export type BinaryResponse = {
+  bytes: ArrayBuffer;
+  contentType: string;
+  filename: string;
+  qualified: false;
+};
 export type Documents = {
   revision: string;
   documents: {
@@ -217,6 +223,9 @@ export class HostedApi {
   post<T>(path: string, body: unknown): Promise<T> {
     return this.request<T>(path, "POST", body);
   }
+  postBinary(path: string, body: unknown): Promise<BinaryResponse> {
+    return this.binary(path, body);
+  }
   put<T>(path: string, body: unknown): Promise<T> {
     return this.request<T>(path, "PUT", body);
   }
@@ -248,6 +257,120 @@ export class HostedApi {
       password,
     });
   }
+
+  private async binary(path: string, body: unknown): Promise<BinaryResponse> {
+    if (
+      this.authority &&
+      (Date.now() >= Date.parse(this.authority.absoluteExpiresAt) ||
+        performance.now() >= this.idleAt)
+    )
+      this.end();
+    if (!this.authority) throw new ApiFailure(401, "SESSION_REQUIRED");
+    const generation = this.generation;
+    const started = performance.now();
+    const controller = new AbortController();
+    this.requests.add(controller);
+    const deadline = setTimeout(() => controller.abort(), 120_000);
+    const live = () => {
+      if (generation !== this.generation) throw new ApiFailure(401, "SESSION_REQUIRED");
+    };
+    try {
+      const headers: Record<string, string> = {
+        [this.authority.csrfHeaderName]: this.authority.csrfToken,
+        "Content-Type": "application/json",
+      };
+      let response: Response;
+      try {
+        response = await this.transport(path, {
+          method: "POST",
+          headers,
+          credentials: "same-origin",
+          cache: "no-store",
+          redirect: "error",
+          signal: controller.signal,
+          body: JSON.stringify(body),
+        });
+      } catch {
+        live();
+        throw new ApiFailure(0, "NETWORK_UNCERTAIN");
+      }
+      live();
+      if (response.status === 401) {
+        this.end();
+        throw new ApiFailure(401, "SESSION_REQUIRED");
+      }
+      if (response.ok) {
+        this.idleAt = Math.max(this.idleAt, started + this.authority.idleTimeoutSeconds * 1000);
+        this.armExpiry();
+      }
+      const earlyCode = response.headers.get("X-Environment-Studio-Code");
+      if (
+        !response.ok &&
+        /^\/api\/v3\/(?:plans|operations)(?:\/|$)/.test(path) &&
+        response.headers.get("Content-Length") === "0" &&
+        earlyCode !== null &&
+        v3ControllerCodes.has(earlyCode)
+      ) {
+        let text: string;
+        try {
+          text = await response.text();
+        } catch {
+          live();
+          throw new ApiFailure(response.status, "RESPONSE_UNAVAILABLE");
+        }
+        live();
+        if (text !== "") throw new ApiFailure(response.status, "RESPONSE_UNAVAILABLE");
+        throw new ApiFailure(response.status, earlyCode);
+      }
+      if (!response.ok) {
+        let value: unknown;
+        try {
+          value = await response.json();
+        } catch {
+          live();
+          throw new ApiFailure(response.status, "RESPONSE_UNAVAILABLE");
+        }
+        live();
+        const failure = value as { code?: unknown; diagnostics?: Diagnostic[] };
+        const code =
+          typeof failure.code === "string" && /^[A-Z][A-Z0-9_]{0,95}$/.test(failure.code)
+            ? failure.code
+            : `HTTP_${response.status}`;
+        throw new ApiFailure(
+          response.status,
+          code,
+          Array.isArray(failure.diagnostics) ? failure.diagnostics : [],
+        );
+      }
+      const contentType = response.headers.get("Content-Type") ?? "";
+      const contentDisposition = response.headers.get("Content-Disposition") ?? "";
+      if (
+        response.headers.get("Cache-Control") !== "no-store" ||
+        contentType !== "application/zip" ||
+        contentDisposition !== 'attachment; filename="environment-studio-guarded-package.zip"' ||
+        response.headers.get("X-Environment-Studio-Qualified") !== "false"
+      )
+        throw new ApiFailure(response.status, "RESPONSE_UNAVAILABLE");
+      let bytes: ArrayBuffer;
+      try {
+        bytes = await response.arrayBuffer();
+      } catch {
+        live();
+        throw new ApiFailure(response.status, "RESPONSE_UNAVAILABLE");
+      }
+      live();
+      return Object.freeze({
+        bytes,
+        contentType,
+        filename: "environment-studio-guarded-package.zip",
+        qualified: false as const,
+      });
+    } finally {
+      clearTimeout(deadline);
+      this.requests.delete(controller);
+    }
+  }
+
   private async request<T>(path: string, method: string, body?: unknown): Promise<T> {
     if (
       this.authority &&

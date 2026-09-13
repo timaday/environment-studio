@@ -16,6 +16,12 @@ function planPath(id: string): string {
 function operationPath(id: string): string {
   return `/api/v3/operations/${encodeURIComponent(request(D.uuid, id))}`;
 }
+function packageCandidateRequest(value: T.PackageCandidateRequest): T.PackageCandidateRequest {
+  return Object.freeze({
+    revision: request(D.revision, value.revision),
+    inputFingerprint: request(D.digest, value.inputFingerprint),
+  });
+}
 function sameRevision(actual: string, expected: string) {
   if (actual !== expected) D.invalid();
 }
@@ -192,6 +198,10 @@ export class HostedV3Api {
     )
       return D.invalid();
     return result as T.ValidationSummary;
+  }
+  async guardedPackageCandidate(planId: string, value: T.PackageCandidateRequest) {
+    const body = packageCandidateRequest(value);
+    return this.api.postBinary(`${planPath(planId)}/package-candidates/guarded`, body);
   }
   async validationRules(
     planId: string,
