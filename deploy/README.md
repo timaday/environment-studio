@@ -17,13 +17,13 @@ release gate because the product/DB capabilities are not implemented.
 | Liveness | GET /actuator/health/liveness |
 | Readiness | GET /actuator/health/readiness; process only, no plan validation |
 | Capability visibility | GET /api/v1/capabilities reports mode and disabled inspection/export |
-| Runtime mode | STUDIO_MODE=demo by default; hosted requires the configuration below; unknown modes refuse startup |
+| Runtime mode | `deploy/compose.yaml` sets `STUDIO_MODE=hosted`; the image default remains demo when no mode is supplied; unknown modes refuse startup |
 | Filesystem | Read-only root; bounded noexec /tmp tmpfs; optional separately initialized private workspace volume |
 | Stop | SIGTERM, graceful shutdown 20s; platform grace period at least 30s |
 | Resources | Starting budget 1 CPU / 1 GiB; not measured product capacity |
 | Replicas | One; no shared session/raw observation support |
-| Secrets | No real DB credentials accepted; none configured as container env/files |
-| External access | Demo does not need a DB or external API |
+| Secrets | Local-operator password or OIDC client secret is supplied by deployment secret handling; database credentials are operation inputs only and are never configured as container env/files |
+| External access | Hosted mode requires authenticated local-operator or OIDC access and an explicitly configured PostgreSQL 16.11 destination; DB credentials are supplied per operation |
 
 The workflow emits an `image-reference-<commit>` artifact containing the full
 image digest and source revision, and displays the digest in its summary.
@@ -44,46 +44,105 @@ Use these standard OCI settings in its existing deployment UI/template:
 2. Registry = ghcr.io; use platform-managed pull identity if the package is private.
 3. Architecture = linux/amd64; container HTTP port = 8080, public URL routed by
    the platform. Keep origin access private behind the chosen ingress.
-4. Runtime mode = demo; configure both probes and the resource/user/tmpfs limits
-   above. Start with one replica and no durable volume.
-5. Apply TLS and the platform's normal access boundary. The public demo contains
-   synthetic data only; real-data mode must not be enabled before D02.
+4. Runtime mode = hosted; provide the local-operator, workspace and PostgreSQL 16.11
+   destination settings below. Start with one replica and one private workspace
+   volume.
+5. Apply TLS and the platform's normal access boundary. Do not expose the service
+   without configured local-operator or identity-provider authentication and
+   origin checks.
 6. Deploy, observe probes and the capability endpoint, then record digest,
    platform version, routing settings and observed results for G10.
 
-`compose.yaml` is a real **standard Docker Compose** example. If HiveForge
-supports Compose imports, import it and provide STUDIO_IMAGE; that capability
-must be confirmed rather than assumed. Otherwise map the same settings to its
-container deployment form/API. Do not invent a `hiveforge.yaml` dialect or an
-unauthenticated deployment webhook.
+`compose.yaml` is a real **standard Docker Compose** hosted PostgreSQL pilot
+example. If HiveForge supports Compose imports, import it and provide the listed
+environment variables; that capability must be confirmed rather than assumed.
+Otherwise map the same settings to its container deployment form/API. Do not
+invent a `hiveforge.yaml` dialect or an unauthenticated deployment webhook.
 
-A manual local rehearsal with Docker:
+A manual hosted rehearsal with Docker:
 
 ```bash
 export STUDIO_IMAGE='ghcr.io/timaday/environment-studio@sha256:REPLACE_WITH_EMITTED_DIGEST'
-docker compose -f deploy/compose.yaml pull
-docker compose -f deploy/compose.yaml up -d
+export STUDIO_HOST_PORT=18181
+export STUDIO_WORKSPACE_HOST_PATH=/path/to/private/studio-workspace
+export STUDIO_PG_TRUST_MATERIAL_HOST_PATH=/path/to/postgres-ca.pem
+
+# Local operator / public origin. Supply the password from your shell or secret manager;
+# do not commit it or place it in a shared .env file.
+export STUDIO_SECURITY_PUBLIC_ORIGIN=http://127.0.0.1:18181
+export STUDIO_SECURITY_LOCAL_OPERATOR_USERNAME=operator
+export STUDIO_SECURITY_LOCAL_OPERATOR_PASSWORD='set-outside-the-repository'
+export STUDIO_SECURITY_LOCAL_OPERATOR_ISSUER=https://local-operator.environment-studio.invalid
+export STUDIO_SECURITY_LOCAL_OPERATOR_SUBJECT=operator
+export STUDIO_SESSION_COOKIE_SECURE=false
+
+# Hosted definition publisher authority.
+export STUDIO_DEFINITION_PUBLISHER_ISSUER=https://local-operator.environment-studio.invalid
+export STUDIO_DEFINITION_PUBLISHER_SUBJECT=operator
+
+# PostgreSQL 16.11 destination admission and ownership.
+export STUDIO_PG_DESTINATION_ID=postgresql-pilot
+export STUDIO_PG_HOST=postgres.example.test
+export STUDIO_PG_PORT=5432
+export STUDIO_PG_DATABASE=appdb
+export STUDIO_PG_TRANSPORT_IDENTITY_SHA256=REPLACE_WITH_64_LOWERCASE_HEX_SHA256
+export STUDIO_PG_SYSTEM_IDENTIFIER=REPLACE_WITH_OBSERVED_SYSTEM_IDENTIFIER
+export STUDIO_PG_DATABASE_OID=REPLACE_WITH_OBSERVED_DATABASE_OID
+export STUDIO_DESTINATION_OWNER_ISSUER=https://local-operator.environment-studio.invalid
+export STUDIO_DESTINATION_OWNER_SUBJECT=operator
+
+# Run once for a new private workspace, then start the service.
+mkdir -p "$STUDIO_WORKSPACE_HOST_PATH"
+sudo chown 10001:10001 "$STUDIO_WORKSPACE_HOST_PATH"
+chmod 0700 "$STUDIO_WORKSPACE_HOST_PATH"
+docker compose -f deploy/compose.yaml --profile init run --rm environment-studio-workspace-init
+docker compose -f deploy/compose.yaml pull environment-studio
+docker compose -f deploy/compose.yaml up -d environment-studio
 ```
 
-Replace the illustrative digest before running. The example binds only to
-loopback; for platform ingress, route directly to container port 8080 on its
-private service network. Do not expose an unauthenticated real-data service.
+Replace the illustrative digest and PostgreSQL identity placeholders before
+running. The example binds `127.0.0.1:${STUDIO_HOST_PORT:-18181}` to the
+container port 8080 and listens only on loopback; for platform ingress, route
+directly to container port 8080 on its private service network. Do not expose an
+unauthenticated real-data service. Database credentials are not deployment
+variables; operators enter them for a scoped read-only inspection operation.
 
-## Hosted authentication rehearsal and remaining data gate
 
-D02a implements hosted OIDC, transient server sessions, strict Host/Origin/CSRF,
-cookie controls and cleanup hooks. It has independent mock protocol evidence;
-actual IdP/HiveForge qualification remains outstanding. The UI still shows
-synthetic previews and inspection/export remain disabled.
+## No-OIDC Dockerized demo
 
-Configure `STUDIO_MODE=hosted`, `STUDIO_SECURITY_PUBLIC_ORIGIN` (approved HTTPS
-origin), `STUDIO_SECURITY_ISSUER` (approved HTTPS issuer),
-`STUDIO_SECURITY_CLIENT_ID` and platform-managed client authentication through
-`studio.security.client-secret`. Do not enable the test-only HTTP issuer profile.
-Register the exact public-origin `/login/oauth2/code/studio` callback with the
-IdP. Start login at `/oauth2/authorization/studio`. Keep ingress restricted to the
-approved proxy, which supplies the original public Host; forwarding headers are
-not authority and are ignored.
+For local process/UI rehearsal without OIDC or database access, use the separate
+demo Compose file. It starts the same published image in `STUDIO_MODE=demo` and
+binds loopback port `${STUDIO_HOST_PORT:-18080}` to container port 8080.
+
+```bash
+export STUDIO_HOST_PORT=18080
+docker compose -f deploy/compose.demo.yaml pull
+docker compose -f deploy/compose.demo.yaml up -d
+curl -f http://127.0.0.1:${STUDIO_HOST_PORT}/actuator/health/readiness
+```
+
+Demo mode is intentionally synthetic and denies hosted workspace, inspection,
+profile persistence and export routes. Do not use it to claim PostgreSQL 16.11
+pilot readiness. Use `deploy/compose.yaml` when PostgreSQL access or guarded
+package download is required.
+
+## Hosted PostgreSQL pilot configuration
+
+The PostgreSQL 16.11 pilot image supports hosted local-operator or OIDC authentication, transient server sessions,
+strict Host/Origin/CSRF, private workspace storage, owned definition/profile
+publication, read-only PostgreSQL inspection, target values, validation and
+guarded PostgreSQL package download. Actual IdP/HiveForge qualification remains
+an environment-specific gate.
+
+Configure `STUDIO_MODE=hosted`, `STUDIO_SECURITY_PUBLIC_ORIGIN` and
+`studio.security.local-operator.enabled=true` with one local operator username,
+password, issuer and subject. The Compose template supplies the enablement flag
+and maps `STUDIO_SECURITY_LOCAL_OPERATOR_*` environment variables to those
+properties. Start sign-in at `/oauth2/authorization/studio`; in local-operator
+mode that route issues a Basic-auth challenge and then returns to `/`. Keep
+ingress restricted to the approved proxy, which supplies the original public
+Host; forwarding headers are not authority and are ignored. Use HTTPS for any
+non-loopback HiveForge origin and set `STUDIO_SESSION_COOKIE_SECURE=true` there.
 
 The packaged process probe connects to loopback at `SERVER_PORT` (default 8080)
 and sends the Host from `STUDIO_SECURITY_PUBLIC_ORIGIN`. Supply those same values
@@ -93,11 +152,13 @@ readiness only. Session cookies are Secure/HttpOnly/SameSite=Lax; authenticated
 session/logout responses are no-store. Logout cleanup failure revokes access and
 returns an explicit inconclusive result while capacity stays quarantined.
 
-Before adding DB inspection, qualify actual TLS/proxy/IdP behavior and extend
-authorization/ownership to every implemented object and download. Confirm allowed DB destinations.
-DB credentials remain operation inputs held only in session memory; they do
-not become STUDIO_DB_PASSWORD or an orchestrator secret. An IdP client secret,
-if needed, is a separate platform credential supplied by the platform's secret
+The hosted PostgreSQL destination must be configured explicitly from observed,
+approved environment facts: destination id, host, port, database name, trust
+material, TLS/transport identity, PostgreSQL system identifier, database OID,
+owner issuer and owner subject. Oracle is not enabled for this pilot. DB
+credentials remain operation inputs held only in session memory; they do not
+become `STUDIO_DB_PASSWORD` or an orchestrator secret. An IdP client secret, if
+needed, is a separate platform credential supplied by the platform's secret
 mount/integration. No raw observations go to the persistent metadata volume.
 
 For hosted definition/profile storage, provision a private volume directory owned by UID/GID

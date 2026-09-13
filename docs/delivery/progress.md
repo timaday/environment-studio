@@ -1,6 +1,185 @@
 # Handoff and capability status
 
-## Current checkpoint — 11 September 2026
+## Active no-OIDC hosted pilot checkpoint — 13 September 2026, 21:20 UTC
+
+Lead remains sole implementation owner. Reviewer and IDE2 are retired unless
+explicitly reactivated. Current root checkout is `implementation/d01-definition-compilation`;
+starting HEAD for this slice was `869f00f`. Working changes add a hosted
+local-operator authentication mode for the PostgreSQL 16.11 pilot so a packaged
+Docker deployment no longer depends on OIDC. This is authenticated Basic sign-in
+backed by the hosted session ledger and fixed configured owner identity; it is
+not anonymous access and does not persist credentials.
+
+Concrete runtime evidence: Docker build produced `environment-studio:local-operator`
+and the full image build gate completed successfully: frontend check/build,
+backend Maven reactor 1,289 tests (`server` 954 + `guarded-supervisor` 335),
+supervisor distribution checksums, and image export. Local compose startup on
+`127.0.0.1:18181` is running with UID/GID `10001:10001`; readiness is `UP`.
+Smoke evidence: unauthenticated `/api/v1/session` returns a Basic challenge,
+`/oauth2/authorization/studio` accepts the configured local operator and the
+resulting browser session returns authenticated `/api/v1/session` with CSRF.
+Focused checks also pass: `HostedSessionsTest`, `HostedSettingsTest`,
+`LocalOperatorSecurityTest`, `npm run check --prefix frontend`,
+`npm test --prefix frontend`, `python3 scripts/check_repository_content.py`,
+`python3 -m unittest discover -s scripts -p 'test_*.py'`,
+`python3 scripts/check_repository.py`, and `git diff --check`.
+
+Local run files are outside the checkout: `/home/tim/.local/share/environment-studio/hosted-local.env`,
+`operator-password.txt`, `workspace/`, and `postgres-ca.pem`. The password was
+rotated after an accidental compose-config dump; use only the current file. The
+compose file intentionally binds `127.0.0.1:${STUDIO_HOST_PORT:-18181}:8080` to
+avoid the occupied 8080 host port. The current local env uses independently
+invented PostgreSQL placeholders and the mock CA so the server can start; replace
+all `STUDIO_PG_*` values and the CA path with the real PostgreSQL 16.11
+destination before claiming real inspection/export qualification.
+
+Ready: replace destination env values with the real PostgreSQL 16.11 host,
+database, physical identity, transport identity and trust material, then run the
+ordinary hosted workflow through definition publication, read-only inspection,
+profile capture/reuse, target values, validation and guarded archive download.
+Awaiting another owner: none. Blockers: no real PostgreSQL 16.11 destination
+evidence in this checkout, no GHCR publish/HiveForge qualification yet, and no
+production claim beyond local packaged startup/auth smoke.
+
+## Active package admission check — 11 September 2026, 19:49 UTC
+
+Lead remains sole application/native/integration writer; reviewers and IDE2 retired.
+Current clean worktree `/home/tim/.tmp/es-v3-payload-resource-20260911`, branch
+`implementation/v3-payload-resource-20260911`, HEAD
+`848e8ab7354a182cb27b051faaeb37d39e7440b2` (evidence-only child of source200ad5d).
+Canonical JSON buffer correction is locally integrated:52 focused Java, two compiled
+fault controls, OCI1726 Java, protected smoke and29supervisor checksums. Unchanged
+446frontend/61schema UI layer reused from8b85011, not rerun.
+Exact image sha256:c3f8fb2931005f1b4a81c54e34b52583c1620cb1493fb868c1cba072c6e82f67
+passes the owned payload probe small2.072s/large156.116s, every67,121,255 bytes and
+all four retained plans/cleanup verified. No production or independent acceptance.
+
+Next bounded test is running, no source WIP: external
+`/home/tim/.tmp/es-v3-admission-capacity-20260911/run.py`, session46324.
+Small pinned-admission control passes2.084s. Large result pending. This extends
+payload verification with actual PackageAdmission.readPinnedV3 and complete decoded
+records/counts. Existing reviewed package manifest and explicit test compiler/
+publication witnesses only; no native client, download or SQL execution. Input
+fixture strings shared across owners, so distinct-source/HTTP/native/full-assembly
+qualification remains separate. Probe source hashf96da60e7dae0a4ebcd843badc14c82f1e3838f0025a6ed3388ca4fd511497d7.
+Runner owns es-capacity-admission-capacity containers and cleanup. No full build
+active. Inspect result/stage before changing source. Potential allocation risk is
+whole UTF-8 decoding in PackageJson.parse; this is a hypothesis until actual evidence.
+
+Native29 WIP and all preceding branches preserved. Awaiting Values/Validation
+image approvals and authorized native tracing host. Production publication,
+qualified client/export, combined resources and release/HiveForge remain blocked.
+No push attempts, reviewer revival or approval-setting changes.
+
+## Active continuation — 11 September 2026, 18:12 UTC
+
+Lead remains sole writer and self-reviewer; IDE2/remote reviewers remain retired.
+Active worktree `/home/tim/.tmp/es-validation-owner-20260911`, branch
+`implementation/validation-owner-20260911`, HEAD `84e5656` (source correction
+`02a3805694db1d40b01e41b6dc652ed2a1258e0a`). Validation callbacks and displayed
+results now belong to the exact active plan/view lifetime: RED2 regressions;
+GREEN446frontend/schema61, check/build and G00/Python11. Current uncommitted work
+adds actual Values/Validation HTTP checks to the existing profile browser workflow.
+
+Ready: finish the focused Values/Validation browser checks, then connect approved
+operator states. Exact four desktop/narrow proposals and content provenance are
+committed in docs/ux/reference/values-validation-approval.json in that worktree.
+Tim authorized actual mock content; image approval remains pending. Actual mock
+retention/edit/readback and paged validation observations succeeded with complete
+owned cleanup. Client capability/content policy/review remain UNKNOWN.
+
+Verified base `505f815552d4439220cc17e5c1ce120cff0df535` passed host Java1724,
+OCI Java1724/frontend443/schema61, protected startup/workspace smoke and all29
+supervisor checksums. Both final Reuse browser viewports pass. Local image:
+`sha256:3e7d022da656ae6b6a02b479064857c5369d67ecd61ed0c3969662fab5cfd8a6`.
+Build resources are released. This image does not include the later Validation
+correction. Detailed exact-candidate evidence is docs/evidence/reuse-combined-artifact.md.
+
+Awaiting input: four Values/Validation design approvals; authorized native tracing
+host/access reference. Native worktree/WIP remains preserved; current host cannot
+run the required bounded LHASH trace. Blockers: native/client/resource closure,
+production publication and hosted export admission, remaining operator workflows,
+post-commit recovery, exact combined release gates and rehearsal. Deadline passed;
+no release completion, new independent acceptance, GHCR push or HiveForge claim.
+
+## Active continuation — 11 September 2026, 17:44 UTC
+
+Lead remains sole writer; reviewers and IDE2 retired. Current combined candidate
+`505f815552d4439220cc17e5c1ce120cff0df535`, branch
+`implementation/reuse-completion-20260911`, worktree
+`/home/tim/.tmp/es-reuse-completion-20260911`, contains the approved Reuse renderer
+and original-command recovery on the verified payload/application ancestry.
+Original Reuse/native WIP remains preserved. The four recovery/create approvals
+are now recorded; they are no longer pending.
+
+Ready: complete candidate integration verification. Author443frontend/schema61,
+check/build and both actual desktop/narrow lost-response/retry browser journeys
+pass. Axe/44px/320px reflow/canary/cleanup checks pass within recorded scope.
+Self-review is explicit; no independent review is invented. Full Maven is running
+in the lead build slot; log `/home/tim/.tmp/es-reuse-completion-full-maven-20260911.log`.
+Visual differences remain in typography/card density/shell; no pixel identity.
+
+Awaiting input: existing authorized native tracing host/access reference. Current
+host still lacks clang/libbpf and unprivileged BPF access. No privilege mutation.
+Blockers remain native/client/resource qualification, production publication and
+final hosted export admission, remaining operator journeys and release rehearsal.
+The17:30UTC deadline passed; project completion or release readiness is not claimed.
+
+## Current lead checkpoint — 2026-09-11 17:24 UTC
+
+Lead is the sole implementation owner. Both reviewers are retired; no replacement
+or further review campaign is assigned. The user assigned implementation, testing
+and self-review to the lead; reviewer retirement does not stop implementation.
+Native and Reuse WIP remain untouched.
+
+Current application source: `fa50f3ee3b8600381d7e7252285a5becc61ada39`
+(evidence-only HEAD `75f2af3762927389e6c1eb4fff69dc3d4f0e6d34`) on
+`implementation/owned-plan-payload-20260911` in the worktree below. Payload
+preparation now runs under the original pinned admission with fresh validation
+and fingerprint matching. RED three failures; GREEN57 affected Java checks;
+two compiled guard-removal controls detected. G00 and Python11 PASS. Full Maven
+against this exact candidate passed1,724 tests, zero failures/errors/skips; log
+`/home/tim/.tmp/es-owned-payload-full-maven-20260911.log`.
+HiveMap graph/history reads succeeded and informed bounded self-review. Historical
+graph claims are not current acceptance; no new full scan is claimed.
+
+Ready/preserved: local `implementation/guarded-package-assembly-20260911` at
+`d3f4ae3f3d47c912e1bf40b74dc58034c9077c1d`, worktree
+`/home/tim/.tmp/es-v3-target-values-state-20260911`. This is an evidence-only
+child of tested source `6574e9e04b4e9eb56b9c38dcd0fcfb09b782ff77`. It adds
+internal deterministic package assembly; lead self-review is recorded separately
+from the earlier independent results.
+Author full Maven1721/frontend432/schema61, OCI1721 and protected startup/workspace
+smoke PASS. Matching supervisor distribution29checksums PASS; three assembly
+faults detected. Local image digest:
+`sha256:a8f17641b7447fe0fd15a4a4e8dbf439872978893ca2b90190e3b3a7ccdded16`.
+No GHCR publication or HiveForge qualification is claimed. Existing published
+ancestor9085c443 remains unchanged. Logs/results are external in
+es-assembly-oci-20260911; detailed evidence is docs/evidence/guarded-package-assembly.md
+in the candidate worktree. Actual mock PostgreSQL16.11 SQL passed five rollback,
+baseline, commit/readback and replay cases. This is not operational export.
+
+Awaiting another owner: no reviewer assignment remains active. Required independent
+release acceptance is not claimed. Reviewer retirement record: issue9/5637777802. Earlier9085
+Windows focused25PASS/two negative ownership controls support corrected behavior;
+its remoteG01 was interrupted at1321 completed cases, not a complete PASS.
+
+Blockers: native tracing toolchain/privilege/enforceable kernel-memory charge and
+complete native/client/resource qualification, actual compiler publication,
+hosted export authority, remaining operator UI/pending Reuse designs, post-commit
+recovery and exact GHCR/HiveForge release rehearsal. Release-readiness remains
+BLOCKED. Keep production admission and export disabled; do not replace these
+requirements with passing mock subsets or retired-reviewer acceptance.
+
+Resources: full Maven is finished; prior smokes finished and their containers and
+volumes were cleaned. No reviewer or second implementation writer is active.
+Lead-owned es-pg1611-lead-20260911 is stopped, external evidence preserved; its
+synthetic database was tmpfs. Image, distribution and frozen worktrees retained.
+RootHEAD869f00f has this delivery checkpoint working change. Candidate checkout
+is tracked-clean; frontend/node_modules is an excluded dependency symlink.
+NativeHEAD3a84c2c/29-file WIP and Reuse3efe73d/35-file WIP are preserved.
+
+## Historical ownership checkpoint — 11 September 2026
 
 The lead is the sole implementation owner for application, native and integration.
 IDE2 explicitly relinquished ownership; its branch/worktree, 29-file WIP23 and

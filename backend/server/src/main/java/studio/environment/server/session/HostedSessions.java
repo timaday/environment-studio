@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Supplier;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import studio.environment.core.session.Owner;
 import studio.environment.core.session.SessionLedger;
@@ -67,16 +68,22 @@ public final class HostedSessions {
         }
     }
     public SessionLedger.Admission authenticated(HttpSession session, OidcUser principal) {
+        return authenticated(session, () -> new Owner(principal.getIssuer().toString(), principal.getSubject()));
+    }
+    public SessionLedger.Admission authenticated(HttpSession session, Owner owner) {
+        return authenticated(session, () -> owner);
+    }
+    private SessionLedger.Admission authenticated(HttpSession session, Supplier<Owner> owner) {
         if (!(session.getAttribute(SLOT) instanceof Binding binding)) return new SessionLedger.Denied(SessionLedger.Refusal.CAPACITY);
         var slot = slots.get(binding.id);
         if (slot == null || slot.retired) return new SessionLedger.Denied(SessionLedger.Refusal.CAPACITY);
         synchronized (slot) {
             if (slot.retired || slot.lease != null) return new SessionLedger.Denied(SessionLedger.Refusal.CAPACITY);
-            var owner = new Owner(principal.getIssuer().toString(), principal.getSubject());
+            var admittedOwner = owner.get();
             var now = clock.instant();
             if (!now.isBefore(slot.lastSeen.plus(SessionLedger.IDLE)) || !now.isBefore(slot.created.plus(SessionLedger.ABSOLUTE)))
                 return new SessionLedger.Denied(SessionLedger.Refusal.EXPIRED);
-            var admission = ledger.admit(binding.id, owner, slot.created.plus(SessionLedger.ABSOLUTE));
+            var admission = ledger.admit(binding.id, admittedOwner, slot.created.plus(SessionLedger.ABSOLUTE));
             if (admission instanceof SessionLedger.Accepted accepted) { slot.lease = accepted.lease(); slot.lastSeen = clock.instant(); }
             return admission;
         }

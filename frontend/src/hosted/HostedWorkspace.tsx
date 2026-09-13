@@ -101,11 +101,11 @@ export function HostedWorkspace({ capabilities }: { capabilities: Capabilities }
           <section className="hosted-panel">
             <h1>Sign in to your workspace</h1>
             <p>
-              Use the configured identity provider. Definitions belong to your authenticated
-              account; plans remain session-only.
+              Use the configured sign-in method. Definitions belong to your authenticated account;
+              plans remain session-only.
             </p>
             <a className="primary" href="/oauth2/authorization/studio">
-              Sign in with OIDC
+              Sign in
             </a>
           </section>
         ) : (

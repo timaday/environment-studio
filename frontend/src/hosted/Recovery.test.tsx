@@ -157,7 +157,7 @@ it("clears retained source at known absolute expiry without another request", as
   });
   await act(async () => vi.advanceTimersByTimeAsync(2000));
   expect(screen.queryByDisplayValue("mock-expiry-source")).not.toBeInTheDocument();
-  expect(screen.getByRole("link", { name: "Sign in with OIDC" })).toBeVisible();
+  expect(screen.getByRole("link", { name: "Sign in" })).toBeVisible();
 });
 
 it("retains the exact uncertain plan create command and locks its inputs", async () => {
