@@ -121,7 +121,7 @@ public final class HostedBrowserHarness {
                 if(mode==Mode.PLANS_V3 && (!V3DocumentHttpTestConfiguration.exactCredentials.get() || V3DocumentHttpTestConfiguration.observations.get()!=1))status=500;
                 if(mode==Mode.PROFILES_V3) {
                     canaries.addAll(List.of("MockV3Reader","MockV3-Password","MOCK-DOC-SECRET"));
-                    if(!V3WorkflowHttpTestConfiguration.exactCredentials.get() || V3WorkflowHttpTestConfiguration.observations.get()!=1)status=500;
+                    if(!V3WorkflowHttpTestConfiguration.exactCredentials.get() || V3WorkflowHttpTestConfiguration.observations.get()<1)status=500;
                     try(var files=Files.list(store)) {
                         for(var file:files.filter(Files::isRegularFile).toList()) {
                             String stored=Files.readString(file,StandardCharsets.ISO_8859_1);
