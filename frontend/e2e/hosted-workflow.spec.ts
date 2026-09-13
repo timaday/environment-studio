@@ -45,7 +45,7 @@ test("maintainer saves, publishes, inspects and reviews an owned session plan", 
     });
   });
   await page.goto("/");
-  await page.getByRole("link", { name: "Sign in with OIDC" }).click();
+  await page.getByRole("link", { name: "Sign in" }).click();
   await expect(page.getByRole("button", { name: "Log out" })).toBeVisible();
   await page.getByRole("button", { name: "Definitions", exact: true }).click();
   const invented = JSON.parse(await readFile("../fixtures/native-v2/definition.json", "utf8"));
@@ -182,7 +182,7 @@ test("maintainer saves, publishes, inspects and reviews an owned session plan", 
   );
   await request.get("http://127.0.0.1:18444/control/expire");
   await page.getByRole("button", { name: "Resume current plan / refresh" }).click();
-  await expect(page.getByRole("link", { name: "Sign in with OIDC" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Sign in" })).toBeVisible();
   await expect(page.getByRole("region", { name: "Current XML" })).toHaveCount(0);
   const checks = await request.get("http://127.0.0.1:18444/control/checks");
   expect(checks.status()).toBe(200);
@@ -195,7 +195,7 @@ test("operator can save an owned draft but cannot publish through UI or HTTP", a
   await request.get("http://127.0.0.1:18444/control/reset-clock");
   await request.get("http://127.0.0.1:18444/control/operator");
   await page.goto("/");
-  await page.getByRole("link", { name: "Sign in with OIDC" }).click();
+  await page.getByRole("link", { name: "Sign in" }).click();
   await page.getByRole("button", { name: "Definitions", exact: true }).click();
   await page
     .getByLabel("Native definition source", { exact: true })
@@ -224,6 +224,6 @@ test("operator can save an owned draft but cannot publish through UI or HTTP", a
   });
   expect(refusal).toEqual({ status: 403, code: "WORKSPACE_FORBIDDEN" });
   await page.getByRole("button", { name: "Log out" }).click();
-  await expect(page.getByRole("link", { name: "Sign in with OIDC" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Sign in" })).toBeVisible();
   await expect(page.getByLabel("Native definition source", { exact: true })).toHaveCount(0);
 });

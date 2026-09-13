@@ -163,7 +163,7 @@ The Vite development server binds to loopback and forwards `/api` requests only
 to `127.0.0.1:18080`. Backend capabilities select the labelled synthetic demo;
 an unavailable backend displays Workspace unavailable. Demo accepts no database
 credentials and cannot connect to a database. This development proxy does not
-configure hosted HTTPS/OIDC or change the container's normal port 8080. Vite
+configure hosted local-operator/OIDC access or change the container's normal port 8080. Vite
 preview does not inherit the proxy.
 
 Build and run the combined Java + React application:
@@ -171,12 +171,12 @@ Build and run the combined Java + React application:
 ```bash
 docker build --target runtime -t environment-studio:dev .
 docker run --rm --read-only --cap-drop ALL --security-opt no-new-privileges \
-  --tmpfs /tmp:rw,noexec,nosuid,size=128m -p 127.0.0.1:8080:8080 environment-studio:dev
+  --tmpfs /tmp:rw,noexec,nosuid,size=128m -p 127.0.0.1:18181:8080 environment-studio:dev
 ```
 
-Open `http://localhost:8080`. Default mode is `demo`; it accepts no credentials.
+Open `http://localhost:18181`. Default mode is `demo`; it accepts no credentials.
 Health probes report process health, **not configuration validity**.
-Hosted authentication requires explicit OIDC/public-origin configuration; see
+Hosted authentication requires explicit local-operator or OIDC/public-origin configuration; see
 [the session contract](docs/contracts/hosted-session.md). Hosted views use actual
 server capabilities and authority. Real identity-provider/HiveForge qualification
 and complete browser-to-database workflow evidence remain separate work.
@@ -197,9 +197,9 @@ and narrow widths using Playwright keyboard actions and axe. Run it locally with
 `docker build --target browser-check -t environment-studio:browser-check .`.
 
 The actual HiveForge manifest/API has not been supplied. [The deployment
-contract](deploy/README.md) and Compose example expose standard OCI settings
-without claiming an invented HiveForge integration. No automatic deployment
-to an existing environment is configured.
+contract](deploy/README.md) and Compose example expose standard OCI settings for
+a hosted PostgreSQL 16.11 pilot without claiming an invented HiveForge
+integration. No automatic deployment to an existing environment is configured.
 
 ## Delivery constraint
 

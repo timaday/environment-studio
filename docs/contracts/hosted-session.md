@@ -7,16 +7,29 @@ deployment. Demo mode continues to accept no mutations or DB credentials.
 
 ## Runtime configuration
 
-`studio.mode=hosted` requires one explicit approved HTTPS public origin and OIDC
-issuer, client ID and platform-managed client authentication. Use the provider's
-authorization-code flow with state/nonce and PKCE. Platform OIDC credentials
-are separate from operation-owned DB credentials. Never log either. Discovery
-and JWKS use the configured issuer only; uploaded definitions cannot affect them.
+`studio.mode=hosted` requires one explicit approved public origin. The normal
+configuration uses an HTTPS OIDC issuer, client ID and platform-managed client
+authentication. Use the provider's authorization-code flow with state/nonce and
+PKCE. Platform OIDC credentials are separate from operation-owned DB credentials.
+Never log either. Discovery and JWKS use the configured issuer only; uploaded
+definitions cannot affect them.
+
+For PostgreSQL pilot deployments that have no identity provider, an operator may
+enable `studio.security.local-operator.enabled=true`. This keeps
+`studio.mode=hosted` and the hosted workspace/plan controllers, but replaces
+OIDC discovery with one local Basic-authenticated operator. Startup requires a
+configured username, password, issuer and subject. The issuer/subject are the
+only owner identity used for definition publication, plan ownership, destination
+ownership and downloads; request headers or uploaded content cannot change them.
+Local-operator mode is not anonymous access, does not store database credentials,
+and must not enable provider token handling. HTTP public origins and non-secure
+session cookies are accepted only for loopback rehearsal (`localhost` or
+`127.0.0.1`); non-loopback deployment origins remain HTTPS with Secure cookies.
+Production environments should prefer OIDC when available.
 
 Fail startup for missing/invalid configuration, unknown modes or unsupported
-trust settings. Do not silently fall back to demo, anonymous access or a mock
-identity. Loopback HTTP is restricted to explicitly selected test configuration,
-never a production default. The public origin has no userinfo, query or fragment.
+trust settings. Do not silently fall back to demo, anonymous access or request
+headers as identity. The public origin has no userinfo, query or fragment.
 
 Ignore client-supplied identity and forwarding headers. Initial deployment uses
 an explicit external origin for redirect construction, with forwarding processing

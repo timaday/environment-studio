@@ -36,13 +36,12 @@ final class HostedBoundaryFilter extends OncePerRequestFilter {
             SafeResponses.refuse(response, 403, "SESSION_OWNER_ACTIVE"); return;
         }
         boolean matchingOwner = authentication != null && authentication.isAuthenticated()
-                && authentication.getPrincipal() instanceof org.springframework.security.oauth2.core.oidc.user.OidcUser user
-                && lease.isPresent() && lease.get().owner().issuer().equals(user.getIssuer().toString())
-                && lease.get().owner().subject().equals(user.getSubject());
+                && lease.isPresent() && matches(lease.get(), authentication.getPrincipal());
         if ((protectedApi || !SAFE.contains(request.getMethod())) && !matchingOwner) {
             var session = request.getSession(false);
             if (session != null) session.invalidate();
             SecurityContextHolder.clearContext();
+            if (settings.localOperator()) response.setHeader("WWW-Authenticate", "Basic realm=\"Environment Studio\", charset=\"UTF-8\"");
             SafeResponses.refuse(response, 401, "AUTHENTICATION_REQUIRED"); return;
         }
         if (matchingOwner) request.setAttribute(HostedSessions.REQUEST_LEASE, lease.orElseThrow());
@@ -51,5 +50,12 @@ final class HostedBoundaryFilter extends OncePerRequestFilter {
             SafeResponses.refuse(response, 403, "SESSION_CAPACITY"); return;
         }
         chain.doFilter(request, response);
+    }
+    private boolean matches(studio.environment.core.session.SessionLedger.Lease lease, Object principal) {
+        if (principal instanceof org.springframework.security.oauth2.core.oidc.user.OidcUser user)
+            return lease.owner().issuer().equals(user.getIssuer().toString()) && lease.owner().subject().equals(user.getSubject());
+        if (principal instanceof LocalOperatorPrincipal local)
+            return lease.owner().equals(local.owner());
+        return false;
     }
 }

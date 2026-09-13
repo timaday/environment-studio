@@ -15,7 +15,7 @@ public class RuntimeConfiguration {
             default -> throw new IllegalStateException("UNSUPPORTED_RUNTIME_MODE");
         };
     }
-    // Neither mode supports local passwords; prevent generated credential logging.
+    // Runtime mode is selected explicitly; credential logging remains prohibited by the surrounding boundaries.
     @Bean UserDetailsService noLocalPasswords() { return new InMemoryUserDetailsManager(); }
     public enum RuntimeMode { DEMO, HOSTED }
 }

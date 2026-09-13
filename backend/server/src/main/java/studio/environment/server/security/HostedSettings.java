@@ -10,27 +10,36 @@ public final class HostedSettings {
     private final String clientId;
     private final String clientSecret;
     private final boolean testHttp;
+    private final boolean localOperator;
 
     public HostedSettings(Environment environment) {
         testHttp = Arrays.asList(environment.getActiveProfiles()).contains("oidc-test")
                 && environment.getProperty("studio.security.allow-test-http", Boolean.class, false);
+        localOperator = environment.getProperty("studio.security.local-operator.enabled", Boolean.class, false);
         if (environment.getProperty("studio.security.allow-test-http", Boolean.class, false) && !testHttp)
             throw new IllegalStateException("UNSUPPORTED_TRUST_CONFIGURATION");
         if (!"none".equals(environment.getProperty("server.forward-headers-strategy", "none")))
             throw new IllegalStateException("UNSUPPORTED_TRUST_CONFIGURATION");
-        if (!environment.getProperty("server.servlet.session.cookie.secure", Boolean.class, true)
+        if (environment.getProperty("spring.http.log-request-details", Boolean.class, false)
+                || environment.getProperty("spring.mvc.log-request-details", Boolean.class, false))
+            throw new IllegalStateException("UNSUPPORTED_REQUEST_LOGGING");
+        origin = parse(required(environment, "studio.security.public-origin"), true);
+        boolean loopbackLocalHttp = localOperator && "http".equals(origin.getScheme()) && LocalOperatorSettings.loopback(origin.getHost());
+        if ((!environment.getProperty("server.servlet.session.cookie.secure", Boolean.class, true) && !loopbackLocalHttp)
                 || !environment.getProperty("server.servlet.session.cookie.http-only", Boolean.class, true)
                 || !"lax".equalsIgnoreCase(environment.getProperty("server.servlet.session.cookie.same-site", "lax"))
                 || environment.getProperty("server.servlet.session.persistent", Boolean.class, false)
                 || !"cookie".equals(environment.getProperty("server.servlet.session.tracking-modes", "cookie")))
             throw new IllegalStateException("UNSUPPORTED_SESSION_CONFIGURATION");
-        if (environment.getProperty("spring.http.log-request-details", Boolean.class, false)
-                || environment.getProperty("spring.mvc.log-request-details", Boolean.class, false))
-            throw new IllegalStateException("UNSUPPORTED_REQUEST_LOGGING");
-        origin = parse(required(environment, "studio.security.public-origin"), true);
-        issuer = parse(required(environment, "studio.security.issuer"), false);
-        clientId = required(environment, "studio.security.client-id");
-        clientSecret = required(environment, "studio.security.client-secret");
+        if (localOperator) {
+            issuer = null;
+            clientId = null;
+            clientSecret = null;
+        } else {
+            issuer = parse(required(environment, "studio.security.issuer"), false);
+            clientId = required(environment, "studio.security.client-id");
+            clientSecret = required(environment, "studio.security.client-secret");
+        }
     }
     private static String required(Environment environment, String key) {
         var value = environment.getProperty(key);
@@ -44,7 +53,9 @@ public final class HostedSettings {
         boolean secure = "https".equals(uri.getScheme());
         boolean localTest = testHttp && "http".equals(uri.getScheme())
                 && ("127.0.0.1".equals(uri.getHost()) || "localhost".equals(uri.getHost()));
-        if ((!secure && !localTest) || uri.getHost() == null || uri.getUserInfo() != null
+        boolean localPilot = localOperator && originOnly && "http".equals(uri.getScheme())
+                && LocalOperatorSettings.loopback(uri.getHost());
+        if ((!secure && !localTest && !localPilot) || uri.getHost() == null || uri.getUserInfo() != null
                 || uri.getQuery() != null || uri.getFragment() != null || uri.getPort() == 0
                 || uri.getPort() > 65535 || (originOnly && !uri.getRawPath().isEmpty()))
             throw new IllegalStateException("INVALID_HOSTED_URI");
@@ -56,4 +67,5 @@ public final class HostedSettings {
     public String issuer() { return issuer.toASCIIString(); }
     public String clientId() { return clientId; }
     String clientSecret() { return clientSecret; }
+    boolean localOperator() { return localOperator; }
 }

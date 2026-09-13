@@ -47,4 +47,37 @@ class HostedSettingsTest {
         }
     }
 
+    @Test void localOperatorModeSkipsOidcDiscoveryButRequiresExplicitLocalOwner() {
+        var environment = new MockEnvironment()
+                .withProperty("studio.security.public-origin", "http://127.0.0.1:18181")
+                .withProperty("studio.security.local-operator.enabled", "true")
+                .withProperty("server.servlet.session.cookie.secure", "false");
+        assertEquals("http://127.0.0.1:18181", new HostedSettings(environment).origin());
+        assertEquals("LOCAL_OPERATOR_CONFIGURATION_REQUIRED", assertThrows(IllegalStateException.class,
+                () -> new LocalOperatorSettings(environment)).getMessage());
+        var local = new LocalOperatorSettings(environment
+                .withProperty("studio.security.local-operator.username", "operator")
+                .withProperty("studio.security.local-operator.password", "local-password-canary")
+                .withProperty("studio.security.local-operator.issuer", "https://local-operator.invalid")
+                .withProperty("studio.security.local-operator.subject", "pilot-operator"));
+        assertEquals("pilot-operator", local.owner().subject());
+    }
+
+    @Test void localOperatorHttpOriginIsLoopbackOnly() {
+        var environment = new MockEnvironment()
+                .withProperty("studio.security.local-operator.enabled", "true")
+                .withProperty("studio.security.public-origin", "http://studio.invalid");
+        assertEquals("INVALID_HOSTED_URI", assertThrows(IllegalStateException.class,
+                () -> new HostedSettings(environment)).getMessage());
+    }
+
+    @Test void localOperatorDoesNotPermitInsecureCookiesForHttpsOrRemoteHttp() {
+        var https = new MockEnvironment()
+                .withProperty("studio.security.local-operator.enabled", "true")
+                .withProperty("studio.security.public-origin", "https://studio.invalid")
+                .withProperty("server.servlet.session.cookie.secure", "false");
+        assertEquals("UNSUPPORTED_SESSION_CONFIGURATION", assertThrows(IllegalStateException.class,
+                () -> new HostedSettings(https)).getMessage());
+    }
+
 }
