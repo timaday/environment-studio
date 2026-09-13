@@ -60,6 +60,32 @@ it("downloads an unqualified guarded package candidate without treating it as ex
   expect(JSON.parse(String(request?.body))).toEqual({ revision, inputFingerprint });
 });
 
+it("calls the binary transport without rebinding browser fetch", async () => {
+  const receivers: unknown[] = [];
+  const zip = new Uint8Array([80, 75, 3, 4]);
+  const transport = async function (
+    this: unknown,
+    input: Parameters<typeof fetch>[0],
+  ): Promise<Response> {
+    receivers.push(this);
+    if (input === "/api/v1/session") return json(session);
+    return new Response(zip, {
+      status: 200,
+      headers: {
+        "Cache-Control": "no-store",
+        "Content-Type": "application/zip",
+        "Content-Disposition": 'attachment; filename="environment-studio-guarded-package.zip"',
+        "X-Environment-Studio-Qualified": "false",
+      },
+    });
+  } as typeof fetch;
+  const owner = new HostedApi(transport);
+  owners.push(owner);
+  await owner.session();
+  await new HostedV3Api(owner).guardedPackageCandidate(planId, { revision, inputFingerprint });
+  expect(receivers).toEqual([undefined, undefined]);
+});
+
 it("refuses malformed package requests and successful replies that imply qualification", async () => {
   {
     const { api } = await client(new Response(new Uint8Array([1]), { status: 200 }));

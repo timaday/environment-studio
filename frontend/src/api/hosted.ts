@@ -281,7 +281,8 @@ export class HostedApi {
       };
       let response: Response;
       try {
-        response = await this.transport(path, {
+        const transport = this.transport;
+        response = await transport(path, {
           method: "POST",
           headers,
           credentials: "same-origin",

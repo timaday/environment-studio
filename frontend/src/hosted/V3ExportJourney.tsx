@@ -16,11 +16,15 @@ function ready(summary: ValidationSummary | null): boolean {
     summary?.targetComplete && summary.checks.every((check) => check.outcome === "PASS"),
   );
 }
-function blocker(summary: ValidationSummary | null): string {
+function blockingChecks(summary: ValidationSummary | null) {
+  return summary?.checks.filter((check) => check.outcome !== "PASS") ?? [];
+}
+function packageStatus(summary: ValidationSummary | null): string {
   if (!summary) return "Check readiness before download.";
-  const blocked = summary.checks.filter((check) => check.outcome !== "PASS");
-  if (blocked.length === 0) return "Validation passed for this exact revision.";
-  return `${blocked.length} required check${blocked.length === 1 ? "" : "s"} block package generation.`;
+  if (!summary.targetComplete) return "Complete the target before package generation.";
+  const blocked = blockingChecks(summary);
+  if (blocked.length === 0) return "All checks passed for this revision.";
+  return `${blocked.length} check${blocked.length === 1 ? "" : "s"} block release qualification; candidate remains unqualified.`;
 }
 function download(bytes: ArrayBuffer, filename: string) {
   const url = URL.createObjectURL(new Blob([bytes], { type: "application/zip" }));
@@ -56,7 +60,8 @@ export function V3ExportJourney({
   const [error, setError] = useState("");
   const [receipt, setReceipt] = useState<DownloadReceipt | null>(null);
   const eligible = Boolean(plan?.inspectionValid && plan.observedDestination?.evidenceValid);
-  const canGenerate = eligible && ready(validation.summary) && !busy && !validation.busy;
+  const canGenerate =
+    eligible && Boolean(validation.summary?.targetComplete) && !busy && !validation.busy;
   const context = JSON.stringify(plan);
   useEffect(() => {
     void context;
@@ -105,9 +110,17 @@ export function V3ExportJourney({
         </article>
         <article className={ready(validation.summary) ? "ok" : "warn"}>
           <strong>
-            {ready(validation.summary) ? "Validation passed" : "Validation unresolved"}
+            {ready(validation.summary)
+              ? "Validation passed"
+              : validation.summary
+                ? "Validation checked"
+                : "Validation not checked"}
           </strong>
-          <span>{validation.summary ? "Latest check" : "Not checked"}</span>
+          <span>
+            {validation.summary
+              ? `${blockingChecks(validation.summary).length} blocker${blockingChecks(validation.summary).length === 1 ? "" : "s"}`
+              : "Run readiness"}
+          </span>
         </article>
         <article className={receipt ? "ok" : "neutral"}>
           <strong>{receipt ? "Package received" : "Package not generated"}</strong>
@@ -136,7 +149,7 @@ export function V3ExportJourney({
             Download package candidate
           </button>
         </div>
-        <p>{busy ? "Requesting package candidate…" : blocker(validation.summary)}</p>
+        <p>{busy ? "Requesting package candidate…" : packageStatus(validation.summary)}</p>
         {error && <p role="alert">{error}</p>}
         {receipt && (
           <p role="status">

@@ -104,24 +104,30 @@ async function setup(outcome: "PASS" | "UNKNOWN") {
   return { user: userEvent.setup(), transport };
 }
 
-it("keeps package download unavailable until every backend validation check passes", async () => {
+it("keeps package download unavailable until backend readiness confirms a complete target", async () => {
   const { user, transport } = await setup("UNKNOWN");
   expect(screen.queryByText(/Run SQL/i)).toBeNull();
   expect(screen.getByRole("button", { name: "Download package candidate" })).toBeDisabled();
   await user.click(screen.getByRole("button", { name: "Check readiness" }));
-  expect(await screen.findByText("10 required checks block package generation.")).toBeVisible();
-  expect(screen.getByText("Latest check")).toBeVisible();
-  expect(screen.getByRole("button", { name: "Download package candidate" })).toBeDisabled();
+  expect(
+    await screen.findByText(
+      "10 checks block release qualification; candidate remains unqualified.",
+    ),
+  ).toBeVisible();
+  expect(screen.getByText("10 blockers")).toBeVisible();
+  expect(screen.getByRole("button", { name: "Download package candidate" })).toBeEnabled();
+  await user.click(screen.getByRole("button", { name: "Download package candidate" }));
+  expect(await screen.findByText(/Unqualified candidate/i)).toBeVisible();
   expect(
     transport.mock.calls.some(([path]) => String(path).endsWith("/package-candidates/guarded")),
-  ).toBe(false);
+  ).toBe(true);
 });
 
 it("downloads only after an actual unqualified package response", async () => {
   const { user, transport } = await setup("PASS");
   await user.click(screen.getByRole("button", { name: "Check readiness" }));
-  await screen.findByText("Validation passed for this exact revision.");
-  expect(screen.getByText("Latest check")).toBeVisible();
+  await screen.findByText("All checks passed for this revision.");
+  expect(screen.getByText("0 blockers")).toBeVisible();
   await user.click(screen.getByRole("button", { name: "Download package candidate" }));
   expect(await screen.findByText(/Unqualified candidate/i)).toBeVisible();
   const request = transport.mock.calls.find(([path]) =>

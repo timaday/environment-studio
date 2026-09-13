@@ -10,6 +10,9 @@ test("enters one target value and validates backend outcomes without export auth
 }) => {
   await page.goto("/");
   await page.getByRole("link", { name: "Sign in with OIDC" }).click();
+  expect(
+    (await page.request.post("http://127.0.0.1:18446/control/protected-package-policies")).ok(),
+  ).toBe(true);
   const settled = async () =>
     expect((await page.request.get("http://127.0.0.1:18446/control/settled")).ok()).toBe(true);
   async function request(method: string, path: string, body?: unknown, status = 200) {
@@ -172,13 +175,22 @@ test("enters one target value and validates backend outcomes without export auth
   const exportWorkspace = page.locator(".export-workspace:visible");
   await exportWorkspace.getByRole("button", { name: "Check readiness", exact: true }).click();
   await expect(
-    exportWorkspace.getByText("3 required checks block package generation."),
+    exportWorkspace.getByText(
+      "3 checks block release qualification; candidate remains unqualified.",
+    ),
   ).toBeVisible();
   await expect(
     exportWorkspace.getByRole("button", { name: "Download package candidate", exact: true }),
-  ).toBeDisabled();
+  ).toBeEnabled();
+  await exportWorkspace
+    .getByRole("button", { name: "Download package candidate", exact: true })
+    .click();
+  await expect(exportWorkspace.getByText(/Unqualified candidate/i)).toBeVisible();
+  await expect(
+    exportWorkspace.getByRole("button", { name: "Download package candidate", exact: true }),
+  ).toBeEnabled();
   await expect(exportWorkspace.getByText(/Run SQL/i)).toHaveCount(0);
-  await inspect("export-blocked");
+  await inspect("export-candidate");
   await page.getByRole("button", { name: "Back to plan", exact: true }).click();
   await settled();
   await page.getByRole("button", { name: "Log out", exact: true }).click();
