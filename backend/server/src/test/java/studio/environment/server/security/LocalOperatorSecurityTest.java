@@ -69,6 +69,17 @@ class LocalOperatorSecurityTest {
                 .andExpect(content().string(containsString("REQUEST_ORIGIN_DENIED")));
     }
 
+    @Test void publicCapabilitiesIgnoreCachedBasicCredentials() throws Exception {
+        mvc.perform(get("/api/v1/capabilities").header("Host", "localhost:18181")
+                        .with(httpBasic("operator", "local-password-canary")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.mode").value("hosted"));
+        mvc.perform(get("/api/v1/session").header("Host", "localhost:18181")
+                        .with(httpBasic("operator", "local-password-canary")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.authenticated").value(true));
+    }
+
     @Test void wrongLocalCredentialsDoNotCreateSession() throws Exception {
         mvc.perform(get("/api/v1/session").header("Host", "localhost:18181")
                         .with(httpBasic("operator", "wrong-password")))

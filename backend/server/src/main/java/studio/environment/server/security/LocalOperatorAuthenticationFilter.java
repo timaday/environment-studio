@@ -23,6 +23,9 @@ final class LocalOperatorAuthenticationFilter extends OncePerRequestFilter {
     }
     @Override protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws ServletException, IOException {
         var header = request.getHeader("Authorization");
+        if (header != null && header.startsWith(BASIC) && !acceptsBasic(request)) {
+            chain.doFilter(request, response); return;
+        }
         if (header == null || !header.startsWith(BASIC)) {
             var lease = sessions.current(request);
             if (lease.isPresent() && lease.get().owner().equals(local.owner())) {
@@ -57,6 +60,11 @@ final class LocalOperatorAuthenticationFilter extends OncePerRequestFilter {
             response.setHeader("Cache-Control", "no-store"); response.sendRedirect(hosted.origin() + "/"); return;
         }
         chain.doFilter(request, response);
+    }
+    private boolean acceptsBasic(HttpServletRequest request) {
+        var path = request.getRequestURI();
+        return path.equals("/api/v1/session") || path.equals("/oauth2/authorization/studio")
+                || (path.startsWith("/api/") && !path.equals("/api/v1/capabilities"));
     }
     private void authenticateLocalOperator() {
         var authentication = new UsernamePasswordAuthenticationToken(new LocalOperatorPrincipal(local.username(), local.owner()), "PROTECTED", AuthorityUtils.createAuthorityList("ROLE_OPERATOR"));
