@@ -73,6 +73,13 @@ public final class HostedSessions {
     public SessionLedger.Admission authenticated(HttpSession session, Owner owner) {
         return authenticated(session, () -> owner);
     }
+    /** Local operator mode may replace its own active browser lease after successful Basic authentication. */
+    public SessionLedger.Admission replaceAuthenticated(HttpSession session, Owner owner) {
+        var first = authenticated(session, () -> owner);
+        if (!first.equals(new SessionLedger.Denied(SessionLedger.Refusal.OWNER_ACTIVE))) return first;
+        retireActiveOwner(owner);
+        return authenticated(session, () -> owner);
+    }
     private SessionLedger.Admission authenticated(HttpSession session, Supplier<Owner> owner) {
         if (!(session.getAttribute(SLOT) instanceof Binding binding)) return new SessionLedger.Denied(SessionLedger.Refusal.CAPACITY);
         var slot = slots.get(binding.id);
@@ -188,6 +195,18 @@ public final class HostedSessions {
         }
         synchronized(slot){if(slots.get(id)!=slot || !slot.retired || !original.equals(slot.lease))return Optional.empty();}
         return ledger.resumeCleanup(id);
+    }
+    private void retireActiveOwner(Owner owner) {
+        var leases = new ArrayList<SessionLedger.Lease>();
+        slots.forEach((id, slot) -> {
+            synchronized (slot) {
+                if (!slot.retired && slot.lease != null && slot.lease.owner().equals(owner)) {
+                    slot.retired = true;
+                    leases.add(slot.lease);
+                }
+            }
+        });
+        leases.forEach(lease -> ledger.close(lease.id()));
     }
     private void invalidate(SessionLedger.Lease lease) {
         var slot = slots.get(lease.id());

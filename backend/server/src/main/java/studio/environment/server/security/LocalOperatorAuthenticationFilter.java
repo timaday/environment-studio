@@ -43,7 +43,7 @@ final class LocalOperatorAuthenticationFilter extends OncePerRequestFilter {
         var lease = sessions.current(request);
         if (lease.isEmpty()) {
             if (!sessions.reserveLogin(request)) { SafeResponses.refuse(response, 403, "SESSION_CAPACITY"); return; }
-            var admission = sessions.authenticated(request.getSession(), local.owner());
+            var admission = sessions.replaceAuthenticated(request.getSession(), local.owner());
             if (admission instanceof SessionLedger.Denied denied) {
                 request.getSession().invalidate(); SecurityContextHolder.clearContext();
                 SafeResponses.refuse(response, 403, "SESSION_" + denied.reason().name()); return;

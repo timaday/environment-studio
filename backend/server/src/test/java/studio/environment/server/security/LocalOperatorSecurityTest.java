@@ -80,6 +80,28 @@ class LocalOperatorSecurityTest {
                 .andExpect(jsonPath("$.authenticated").value(true));
     }
 
+    @Test void successfulLocalBasicCredentialsReplaceEarlierLocalLease() throws Exception {
+        var first = mvc.perform(get("/api/v1/session").header("Host", "localhost:18181")
+                        .with(httpBasic("operator", "local-password-canary")))
+                .andExpect(status().isOk())
+                .andReturn();
+        var firstSession = (MockHttpSession) first.getRequest().getSession(false);
+
+        var second = mvc.perform(get("/api/v1/session").header("Host", "localhost:18181")
+                        .with(httpBasic("operator", "local-password-canary")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.authenticated").value(true))
+                .andReturn();
+
+        mvc.perform(get("/api/v1/session").header("Host", "localhost:18181").session(firstSession))
+                .andExpect(status().isUnauthorized())
+                .andExpect(content().string(containsString("AUTHENTICATION_REQUIRED")));
+        mvc.perform(get("/api/v1/session").header("Host", "localhost:18181")
+                        .session((MockHttpSession) second.getRequest().getSession(false)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.authenticated").value(true));
+    }
+
     @Test void wrongLocalCredentialsDoNotCreateSession() throws Exception {
         mvc.perform(get("/api/v1/session").header("Host", "localhost:18181")
                         .with(httpBasic("operator", "wrong-password")))

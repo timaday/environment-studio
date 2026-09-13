@@ -108,9 +108,15 @@ three-attempt exhaustion. Controlled session/registry tests do not establish an
 actual HTTP scheduling defect or complete deployment qualification.
 
 Initial application limits are 64 live sessions total and one live session per
-owner. A new login for an already active owner is refused rather than silently
-invalidating active work. Capacity is checked atomically before pending login
-allocation and at authentication; pending logins count toward the global limit.
+owner. In normal OIDC mode, a new login for an already active owner is refused
+rather than silently invalidating active work. In local-operator mode only, a
+successful Basic-authenticated session request for the configured operator
+explicitly retires any earlier live local-operator browser lease before admitting
+the new one; inconclusive cleanup still blocks the replacement with
+CLEANUP_INCONCLUSIVE. This allows localhost pilot recovery from stale tabs or
+recreated containers without weakening provider-backed owner exclusivity. Capacity
+is checked atomically before pending login allocation and at authentication;
+pending logins count toward the global limit.
 
 Require CSRF protection on every unsafe request, including logout. Provide the
 authenticated session's CSRF token through a no-store same-origin API; it is not
