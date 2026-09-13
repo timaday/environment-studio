@@ -1253,3 +1253,22 @@ Maven verify pass on the corrected working tree: core 335, XML parser 7, server
 1,049 and guarded-supervisor 354 tests; the default PostgreSQL witness keeps its
 three Docker-gated cases skipped. This is local invented-environment evidence
 only.
+
+## Lead cleanup-oracle settlement checkpoint — 13 September
+
+Ready: the current PostgreSQL 16.11 guarded package branch has a local correction
+for the retired reviewer's TEST-QA-016 sequencing finding and the PR #10 CI
+publication-boundary logout oracle failure on `2efbd424a9441ad708ecf6890dc338bea0fd748c`.
+The hosted-boundary test now waits for command scratch settlement before direct
+view admission, and both affected tests make cleanup ledger races explicit without
+changing production code. Focused affected methods pass, full `HostedBoundaryTest`
+and `V3PublicationBoundaryTest` pass, and full backend `mvn -B -ntp -f backend/pom.xml verify`
+passes with core335/XML7/server1049/guarded354.
+
+Awaiting owners: none; reviewer is retired. Any remaining evidence on this branch
+is lead-owned author/integration evidence until a reviewer is reintroduced.
+
+Blockers: release readiness remains blocked by the existing full production gates
+for definitions, full profile/reuse UI, external database/client qualification,
+GHCR and HiveForge. This branch should close the narrowed PostgreSQL 16.11
+package/read-resource path after repository guards, commit, push and PR checks.

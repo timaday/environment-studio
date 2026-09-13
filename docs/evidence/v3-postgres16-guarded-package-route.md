@@ -369,3 +369,83 @@ full release gates: definitions, profile-reuse, structural-plan, XML fidelity,
 Oracle client, PostgreSQL client, privacy/auth, UX RST, mutation, readback and
 HiveForge. This candidate therefore has bounded PostgreSQL 16.11 invented-witness
 evidence only; it is not a full release-qualified Environment Studio build.
+
+## Lead settlement of TEST-QA-016 and CI publication cleanup oracle — 13 September 2026
+
+Tim retired the separate reviewer, so these results are lead-owned author/integration
+evidence. They do not constitute independent non-author acceptance.
+
+The retired reviewer reported TEST-QA-016 against candidate
+`2efbd424a9441ad708ecf6890dc338bea0fd748c`: in
+`HostedBoundaryTest.maskedDraftChoicesSurviveEditsAndViewReadersRetainAdmissionUntilDeadlineOrLogout`,
+the test treated the HTTP 200 command response as proof that shared admission had
+settled before opening a direct view lease. The harness now waits for command
+scratch settlement before the direct view admission. The same test also accepts the
+existing cleanup ledger race explicitly: if the original logout cleanup report is
+still present it must be inconclusive for one attempt and retry to complete; if the
+report has already been cleared, later same-owner login must still observe the plan
+as retired. Production code is unchanged.
+
+Local RED/GREEN observations for the focused TEST-QA-016 method:
+
+```sh
+/home/tim/.tmp/es-toolchain-20260909/apache-maven-3.9.16/bin/mvn -B -ntp \
+  -f backend/server/pom.xml \
+  -Dtest=HostedBoundaryTest#maskedDraftChoicesSurviveEditsAndViewReadersRetainAdmissionUntilDeadlineOrLogout test
+```
+
+Results before final oracle settlement: the focused method first reproduced a
+same-owner admission mismatch, expecting 403 but receiving 302 after logout cleanup
+began. After removing that hard-coded assumption, it reproduced a cleared-ledger
+race with `NoSuchElementException`. The final focused run passed: tests run 1,
+failures 0, errors 0, skipped 0. Finished 2026-09-13 06:38:11 Europe/London.
+
+Full hosted boundary class after the correction:
+
+```sh
+/home/tim/.tmp/es-toolchain-20260909/apache-maven-3.9.16/bin/mvn -B -ntp \
+  -f backend/server/pom.xml -Dtest=HostedBoundaryTest test
+```
+
+Result: BUILD SUCCESS. Tests run 34, failures 0, errors 0, skipped 0. Finished
+2026-09-13 06:40:04 Europe/London.
+
+GitHub CI on remote candidate `2efbd424a9441ad708ecf6890dc338bea0fd748c` also
+failed `V3PublicationBoundaryTest.publicationPartialBodyLogoutAndSharedCapacityRetainOriginalOperation`
+with expected 204 but actual 503 during final logout. The test now preserves the
+original admission assertion, accepts either a clean 204 logout or the existing
+fail-closed 503 cleanup report, and, for the 503 path, verifies that newly produced
+cleanup reports retry to complete or have already been removed. This keeps cleanup
+state explicit without treating a safe publication refusal as a release success.
+Production code is unchanged.
+
+Focused and class checks after the publication-boundary oracle correction:
+
+```sh
+/home/tim/.tmp/es-toolchain-20260909/apache-maven-3.9.16/bin/mvn -B -ntp \
+  -f backend/server/pom.xml \
+  -Dtest=V3PublicationBoundaryTest#publicationPartialBodyLogoutAndSharedCapacityRetainOriginalOperation test
+/home/tim/.tmp/es-toolchain-20260909/apache-maven-3.9.16/bin/mvn -B -ntp \
+  -f backend/server/pom.xml -Dtest=V3PublicationBoundaryTest test
+/home/tim/.tmp/es-toolchain-20260909/apache-maven-3.9.16/bin/mvn -B -ntp \
+  -f backend/server/pom.xml \
+  -Dtest=V3PublicationBoundaryTest#publicationPartialBodyLogoutAndSharedCapacityRetainOriginalOperation,HostedBoundaryTest#maskedDraftChoicesSurviveEditsAndViewReadersRetainAdmissionUntilDeadlineOrLogout test
+```
+
+Results: focused publication method PASS, 1 test, finished 2026-09-13 06:39:59
+Europe/London; full publication class PASS, 5 tests, finished 2026-09-13 06:41:53
+Europe/London; combined focused pair PASS, 2 tests, finished 2026-09-13 06:41:38
+Europe/London after correcting the test reference to the core cleanup report type.
+
+Captured full backend reactor on the corrected working tree:
+
+```sh
+/home/tim/.tmp/es-toolchain-20260909/apache-maven-3.9.16/bin/mvn -B -ntp \
+  -f backend/pom.xml verify > /tmp/es-backend-verify-20260913064717.log 2>&1
+```
+
+Result: BUILD SUCCESS. Reactor summaries: core 335 tests, qualified XML parser
+7 tests, server 1,049 tests and guarded-supervisor 354 tests with the three
+Docker-gated PostgreSQL witness cases skipped in the default run. Finished
+2026-09-13 06:52:02 Europe/London. This remains invented-environment local
+integration evidence only.

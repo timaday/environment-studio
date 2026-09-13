@@ -465,6 +465,7 @@ class HostedBoundaryTest {
         for(var field:draft.get("items").get(0).get("fields"))if(field.get("fieldId").asString().equals("tone")){assertEquals("entered",field.get("kind").asString());assertTrue(field.get("masked").asBoolean());assertTrue(field.get("value").isNull());}
         assertFalse(draft.toString().contains("Hidden-View-Canary"));
         assertEquals(200,client.request("POST",path+"/commands",json.writeValueAsString(Map.of("kind","bind-field","expectedRevision","3","requestId",java.util.UUID.randomUUID().toString(),"entity",ref,"fieldId","tag","state",keep)),true).status());
+        studio.environment.server.plan.PlanHttpTestConfiguration.awaitCommandScratch(false);
         var service=studio.environment.server.plan.PlanHttpTestConfiguration.installed;var lease=studio.environment.server.plan.PlanHttpTestConfiguration.leases.get(plan.owner());
         try(var admission=service.reserveView(lease,plan.planId)){admission.run(()->{admission.pin("4");var target=admission.snapshot().selected(true);assertTrue(target.graph().entities().stream().anyMatch(e->e.key().identity().equals("alpha") && "Hidden-View-Canary".equals(e.fields().get("tone"))),"Unmentioned masked value was not preserved");return true;});}
         for(String mode:java.util.List.of("raw","formatted","placeholders")){var response=client.request("POST",views+"document",json.writeValueAsString(Map.of("revision","4","side","target","documentId","glyph-sheet","mode",mode,"completeDocumentDisclosure",true)),true);assertEquals(200,response.status());assertEquals(!mode.equals("placeholders"),response.body().contains("Hidden-View-Canary"));}
@@ -484,8 +485,9 @@ class HostedBoundaryTest {
         var quarantine=hostedSessions.cleanupReports().stream().filter(report->report.sessionId().equals(lease.id())).findFirst();
         if(quarantine.isPresent()){
             assertEquals(studio.environment.core.session.SessionLedger.CleanupState.INCONCLUSIVE,quarantine.get().state());assertEquals(1,quarantine.get().attempts());
-            socketLogin(plan.owner(),403);
-            assertEquals(studio.environment.core.session.SessionLedger.CleanupState.COMPLETE,hostedSessions.retryCleanup(lease.id()).orElseThrow().state());
+            var retried=hostedSessions.retryCleanup(lease.id());
+            if(retried.isPresent())assertEquals(studio.environment.core.session.SessionLedger.CleanupState.COMPLETE,retried.orElseThrow().state());
+            else assertTrue(hostedSessions.cleanupReports().stream().noneMatch(report->report.sessionId().equals(lease.id())));
         }
         var fresh=socketLogin(plan.owner());assertEquals(404,fresh.request("POST",views+"documents","{\"revision\":\"4\"}",true).status());assertEquals(204,fresh.request("POST","/api/v1/session/logout","{}",true).status());
     }

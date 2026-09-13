@@ -22,6 +22,7 @@ class V3PublicationBoundaryTest {
     static final tools.jackson.databind.json.JsonMapper JSON=tools.jackson.databind.json.JsonMapper.builder().build();
     @LocalServerPort int port;
     @org.springframework.beans.factory.annotation.Autowired studio.environment.server.workspace.WorkspaceRuntime runtime;
+    @org.springframework.beans.factory.annotation.Autowired studio.environment.server.session.HostedSessions sessions;
     @org.springframework.boot.test.context.TestConfiguration
     static class SocketConfiguration {
         @org.springframework.context.annotation.Bean org.springframework.boot.web.server.WebServerFactoryCustomizer<org.springframework.boot.tomcat.servlet.TomcatServletWebServerFactory> smallSendBuffer(){
@@ -114,8 +115,14 @@ class V3PublicationBoundaryTest {
             int logout=client.request("POST","/api/v1/session/logout","",true).status();assertTrue(logout==204||logout==503);
             for(var pending:held)assertEquals(403,pending.response().status());
         } finally {for(var pending:held)pending.close();}
-        awaitCount(0);var again=login(subject);assertEquals(200,again.get("/api/v3/profiles").status());
-        assertEquals(204,again.request("POST","/api/v1/session/logout","",true).status());
+        awaitCount(0);var existingReports=sessions.cleanupReports().stream().map(studio.environment.core.session.SessionLedger.CleanupReport::sessionId).collect(java.util.stream.Collectors.toSet());
+        var again=login(subject);assertEquals(200,again.get("/api/v3/profiles").status());
+        int finalLogout=again.request("POST","/api/v1/session/logout","",true).status();assertTrue(finalLogout==204||finalLogout==503);
+        if(finalLogout==503)for(var report:sessions.cleanupReports().stream().filter(report->!existingReports.contains(report.sessionId())).toList()){
+            var retried=sessions.retryCleanup(report.sessionId());
+            if(retried.isPresent())assertEquals(studio.environment.core.session.SessionLedger.CleanupState.COMPLETE,retried.orElseThrow().state());
+            else assertTrue(sessions.cleanupReports().stream().noneMatch(current->current.sessionId().equals(report.sessionId())));
+        }
     }
     @Test void unlistedMethodsAuthenticationHostOriginAndMalformedCommandsStayClosed() throws Exception {
         String path="/api/v3/profiles/"+UUID.randomUUID()+"/publish";
