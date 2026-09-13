@@ -44,6 +44,21 @@ jobs:
           cache-to: type=gha,mode=max,scope=studio
       - name: Container contract smoke test
         run: bash scripts/container_smoke.sh environment-studio:ci
+      - name: Build and verify the separate supervisor candidate
+        uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7
+        with:
+          context: .
+          target: supervisor-artifacts
+          platforms: linux/amd64
+          outputs: type=local,dest=/tmp/studio-supervisor
+          cache-from: type=gha,scope=studio
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: guarded-supervisor-candidate-${{ github.sha }}
+          path: /tmp/studio-supervisor/environment-studio-guarded-0.1.0-SNAPSHOT.zip
+          if-no-files-found: error
+      - name: Browser keyboard and accessibility checks
+        run: docker build --target browser-check -t environment-studio:browser-check .
 
   publish:
     needs: quality

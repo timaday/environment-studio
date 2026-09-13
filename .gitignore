@@ -22,3 +22,7 @@ __pycache__/
 .DS_Store
 *.iml
 .idea/
+
+# Independently generated public certificate only; its private key was never saved.
+!fixtures/plan-http-tls/mock-ca.pem
+!fixtures/guarded-supervisor-v1/mock-ca.pem

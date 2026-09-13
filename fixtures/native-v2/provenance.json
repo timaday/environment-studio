@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "purpose": "MOCK_DATABASE_TESTING",
+  "origin": "INVENTED_FROM_SCRATCH",
+  "artifacts": [
+    "definition.json",
+    "expected-digests.json",
+    "digest-oracle.py",
+    "unicode-integer-definition.json",
+    "unicode-integer-expected-digests.json",
+    "xml/glyphs.xml",
+    "xml/palettes.xml",
+    "historical-direct-snapshot.json",
+    "child-property-digest-oracle.py",
+    "child-property-expected-digests.json"
+  ]
+}

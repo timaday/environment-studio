@@ -1,0 +1,3378 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Environment Studio hosted v3 plans",
+    "version": "0.3.1",
+    "description": "Twenty-four fixed-v3 routes including semantic commands, explicit materialization, document inventory, physical entities, structural decisions, binding pages, document comparison, complete locations and computed groups/contributors. Actual compiler publication remains incomplete; test publication witnesses do not qualify runtime availability. See hosted-plan-http-v3.md, hosted-plan-commands-v3.md, hosted-plan-materialization-v3.md hosted-plan-physical-views-v3.md hosted-plan-structural-views-v3.md hosted-plan-document-views-v3.md and hosted-plan-computed-views-v3.md for original session authority, shared admission, bounded transfers and early no-body controller refusals. The guarded package candidate endpoint provides an unqualified ZIP download only; no production export or readback endpoint is provided."
+  },
+  "paths": {
+    "/api/v3/plans": {
+      "post": {
+        "operationId": "v3CreateHostedPlan",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Safe owned result; no-store; no export authority implied",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Ack"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error500"
+          }
+        },
+        "parameters": [
+          {
+            "name": "X-CSRF-TOKEN",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePlan"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v3/plans/current": {
+      "get": {
+        "operationId": "v3GetCurrentHostedPlan",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Safe owned result; no-store; no export authority implied",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlanSummary"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error500"
+          }
+        }
+      }
+    },
+    "/api/v3/plans/{planId}": {
+      "get": {
+        "operationId": "v3GetHostedPlan",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Safe owned result; no-store; no export authority implied",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlanSummary"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error500"
+          }
+        },
+        "parameters": [
+          {
+            "name": "planId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Uuid"
+            }
+          }
+        ]
+      }
+    },
+    "/api/v3/plans/{planId}/inspections": {
+      "post": {
+        "operationId": "v3ReservePlanInspection",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Safe owned result; no-store; no export authority implied",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Ack"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error500"
+          }
+        },
+        "parameters": [
+          {
+            "name": "planId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Uuid"
+            }
+          },
+          {
+            "name": "X-CSRF-TOKEN",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReserveInspection"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v3/operations/{operationId}/credentials": {
+      "post": {
+        "operationId": "v3SubmitReservedCredentialsOnce",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Safe owned result; no-store; no export authority implied",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Operation"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error500"
+          }
+        },
+        "parameters": [
+          {
+            "name": "operationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Uuid"
+            }
+          },
+          {
+            "name": "X-CSRF-TOKEN",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Credentials"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v3/operations/{operationId}": {
+      "get": {
+        "operationId": "v3GetOwnedOperation",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Safe owned result; no-store; no export authority implied",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Operation"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error500"
+          }
+        },
+        "parameters": [
+          {
+            "name": "operationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Uuid"
+            }
+          }
+        ]
+      }
+    },
+    "/api/v3/operations/{operationId}/cancel": {
+      "post": {
+        "operationId": "v3CancelOwnedOperation",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Safe owned result; no-store; no export authority implied",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Operation"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error500"
+          }
+        },
+        "parameters": [
+          {
+            "name": "operationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Uuid"
+            }
+          },
+          {
+            "name": "X-CSRF-TOKEN",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Empty"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v3/plans/{planId}/commands": {
+      "post": {
+        "operationId": "v3MutateHostedPlan",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Safe owned result; no-store; no export authority implied",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Ack"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error500"
+          }
+        },
+        "parameters": [
+          {
+            "name": "planId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Uuid"
+            }
+          },
+          {
+            "name": "X-CSRF-TOKEN",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PlanCommand"
+              }
+            }
+          }
+        },
+        "description": "Uses the existing closed command protocol after immutable V3 ownership and both immediate admissions. Original single full scratch and semantic HTTP record remain owned through the small acknowledgement transfer. Body maximum134217728 UTF8 bytes and one original30s read deadline; no caller-selected model, computed membership or export authority. See hosted-plan-commands-v3.md."
+      }
+    },
+    "/api/v3/plans/{planId}/materializations": {
+      "post": {
+        "operationId": "v3MaterializeOwnedPlan",
+        "summary": "Materialize the exact owned v3 revision",
+        "description": "Requires original fixed V3 ownership, one full view scratch and the shared semantic HTTP record before body access. Closed16KiB revision body with original10s read deadline; full128MiB response with original30s encoding/output/flush budget. Original pinned ViewAdmission.run spans all work and response checks, including owned errors. See hosted-plan-materialization-v3.md. No replay ID or export authority.",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "planId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Uuid"
+            }
+          },
+          {
+            "name": "X-CSRF-TOKEN",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "../../schemas/plan-view-v1.schema.json#/$defs/revisionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Bounded owned revision result; no-store; shape is not export authority",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Materialization"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error500"
+          }
+        }
+      }
+    },
+    "/api/v3/plans/{planId}/views/documents": {
+      "post": {
+        "operationId": "v3ListPlanDocuments",
+        "summary": "Complete revision-bound document inventory",
+        "description": "See hosted-plan-physical-views-v3.md. Original live lease, Host/Origin/CSRF and fixed V3 ownership precede the existing full scratch and single semantic HTTP record admission and body access. The original pinned ViewAdmission remains executing through complete re-verification, rendering, encoding, output and final verification, including errors after pinning. Closed small request: 16 KiB/depth 4/128 tokens/original 10 seconds. Full response: 128 MiB with one original 30-second encoding/output/flush deadline. No revision increment, command replay, computed rows, disclosure override or export authority.",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "planId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Uuid"
+            }
+          },
+          {
+            "name": "X-CSRF-TOKEN",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "../../schemas/plan-view-v1.schema.json#/$defs/revisionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Bounded owned revision result; no-store; shape is not export authority",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "../../schemas/plan-view-v1.schema.json#/$defs/documentsResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error500"
+          }
+        }
+      }
+    },
+    "/api/v3/plans/{planId}/views/entities": {
+      "post": {
+        "operationId": "v3ListPlanEntities",
+        "summary": "Revision-bound physical entity page",
+        "description": "See hosted-plan-physical-views-v3.md. Original live lease, Host/Origin/CSRF and fixed V3 ownership precede the existing full scratch and single semantic HTTP record admission and body access. The original pinned ViewAdmission remains executing through complete re-verification, rendering, encoding, output and final verification, including errors after pinning. Closed small request: 16 KiB/depth 4/128 tokens/original 10 seconds. Full response: 128 MiB with one original 30-second encoding/output/flush deadline. No revision increment, command replay, computed rows, disclosure override or export authority.",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "planId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Uuid"
+            }
+          },
+          {
+            "name": "X-CSRF-TOKEN",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "../../schemas/plan-view-v1.schema.json#/$defs/entitiesRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Bounded owned revision result; no-store; shape is not export authority",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "../../schemas/plan-view-v1.schema.json#/$defs/entitiesResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error500"
+          }
+        }
+      }
+    },
+    "/api/v3/plans/{planId}/views/relations": {
+      "post": {
+        "operationId": "v3ListPlanRelations",
+        "summary": "Revision-bound physical relations page",
+        "description": "See hosted-plan-structural-views-v3.md. Original lease, Host/Origin/CSRF and fixed V3 ownership precede full view scratch and single semantic HTTP record admission and body access. Original pinned ViewAdmission executes through full re-verification, rendering, encoding, writes, flush and final verification, including pinned errors. Closed small request: 16 KiB/depth 4/128 tokens/original 10 seconds. Full response: 128 MiB and one original 30-second encoding/output/flush deadline. Exact physical shapes preserve complete totals, stable references and masking. No revision increment, replay ID, computed rows, disclosure override or export authority.",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "planId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Uuid"
+            }
+          },
+          {
+            "name": "X-CSRF-TOKEN",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "../../schemas/plan-view-v1.schema.json#/$defs/entitiesRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Bounded owned revision result; no-store; shape is not export authority",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "../../schemas/plan-view-v1.schema.json#/$defs/relationsResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error500"
+          }
+        }
+      }
+    },
+    "/api/v3/plans/{planId}/views/draft": {
+      "post": {
+        "operationId": "v3ListPlanDraft",
+        "summary": "Revision-bound physical draft page",
+        "description": "See hosted-plan-structural-views-v3.md. Original lease, Host/Origin/CSRF and fixed V3 ownership precede full view scratch and single semantic HTTP record admission and body access. Original pinned ViewAdmission executes through full re-verification, rendering, encoding, writes, flush and final verification, including pinned errors. Closed small request: 16 KiB/depth 4/128 tokens/original 10 seconds. Full response: 128 MiB and one original 30-second encoding/output/flush deadline. Exact physical shapes preserve complete totals, stable references and masking. No revision increment, replay ID, computed rows, disclosure override or export authority.",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "planId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Uuid"
+            }
+          },
+          {
+            "name": "X-CSRF-TOKEN",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "../../schemas/plan-view-v1.schema.json#/$defs/draftRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Bounded owned revision result; no-store; shape is not export authority",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "../../schemas/plan-view-v1.schema.json#/$defs/draftResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error500"
+          }
+        }
+      }
+    },
+    "/api/v3/plans/{planId}/views/containment": {
+      "post": {
+        "operationId": "v3ListPlanContainment",
+        "summary": "Revision-bound physical containment page",
+        "description": "See hosted-plan-structural-views-v3.md. Original lease, Host/Origin/CSRF and fixed V3 ownership precede full view scratch and single semantic HTTP record admission and body access. Original pinned ViewAdmission executes through full re-verification, rendering, encoding, writes, flush and final verification, including pinned errors. Closed small request: 16 KiB/depth 4/128 tokens/original 10 seconds. Full response: 128 MiB and one original 30-second encoding/output/flush deadline. Exact physical shapes preserve complete totals, stable references and masking. No revision increment, replay ID, computed rows, disclosure override or export authority.",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "planId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Uuid"
+            }
+          },
+          {
+            "name": "X-CSRF-TOKEN",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "../../schemas/plan-view-v1.schema.json#/$defs/draftRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Bounded owned revision result; no-store; shape is not export authority",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "../../schemas/plan-view-v1.schema.json#/$defs/containmentResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error500"
+          }
+        }
+      }
+    },
+    "/api/v3/plans/{planId}/views/placements": {
+      "post": {
+        "operationId": "v3ListPlanPlacements",
+        "summary": "Revision-bound physical placements page",
+        "description": "See hosted-plan-structural-views-v3.md. Original lease, Host/Origin/CSRF and fixed V3 ownership precede full view scratch and single semantic HTTP record admission and body access. Original pinned ViewAdmission executes through full re-verification, rendering, encoding, writes, flush and final verification, including pinned errors. Closed small request: 16 KiB/depth 4/128 tokens/original 10 seconds. Full response: 128 MiB and one original 30-second encoding/output/flush deadline. Exact physical shapes preserve complete totals, stable references and masking. No revision increment, replay ID, computed rows, disclosure override or export authority.",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "planId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Uuid"
+            }
+          },
+          {
+            "name": "X-CSRF-TOKEN",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "../../schemas/plan-view-v1.schema.json#/$defs/placementsRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Bounded owned revision result; no-store; shape is not export authority",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "../../schemas/plan-view-v1.schema.json#/$defs/placementsResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error500"
+          }
+        }
+      }
+    },
+    "/api/v3/plans/{planId}/views/bindings": {
+      "post": {
+        "operationId": "v3ListPlanBindings",
+        "summary": "Revision-bound physical bindings page",
+        "description": "See hosted-plan-structural-views-v3.md. Original lease, Host/Origin/CSRF and fixed V3 ownership precede full view scratch and single semantic HTTP record admission and body access. Original pinned ViewAdmission executes through full re-verification, rendering, encoding, writes, flush and final verification, including pinned errors. Closed small request: 16 KiB/depth 4/128 tokens/original 10 seconds. Full response: 128 MiB and one original 30-second encoding/output/flush deadline. Exact physical shapes preserve complete totals, stable references and masking. No revision increment, replay ID, computed rows, disclosure override or export authority.",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "planId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Uuid"
+            }
+          },
+          {
+            "name": "X-CSRF-TOKEN",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "../../schemas/plan-view-v1.schema.json#/$defs/bindingsRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Bounded owned revision result; no-store; shape is not export authority",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "../../schemas/plan-view-v1.schema.json#/$defs/bindingsResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error500"
+          }
+        }
+      }
+    },
+    "/api/v3/plans/{planId}/views/document": {
+      "post": {
+        "operationId": "v3GetPlanDocument",
+        "summary": "Revision-bound document with explicit complete-document disclosure",
+        "description": "See hosted-plan-document-views-v3.md. Original lease, Host/Origin/CSRF and fixed V3 ownership precede full view scratch and single semantic HTTP record admission and body access. Closed request requires completeDocumentDisclosure=true even for empty locations. Original ViewAdmission remains executing through controlled full comparison/scan, encoding, output and final verification, including pinned errors. Small body: 16 KiB/depth 4/128 tokens/original 10 seconds. Full response: 128 MiB and one original 30-second encoding/output/flush deadline. Raw preserves exact text; Placeholders can leave unmapped concrete content; Formatted is display-only. No revision mutation, replay, computed XML locations or export authority.",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "planId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Uuid"
+            }
+          },
+          {
+            "name": "X-CSRF-TOKEN",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "../../schemas/plan-view-v1.schema.json#/$defs/documentRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Bounded owned revision result; no-store; shape is not export authority",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "../../schemas/plan-view-v1.schema.json#/$defs/documentResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error500"
+          }
+        }
+      }
+    },
+    "/api/v3/plans/{planId}/views/binding-locations": {
+      "post": {
+        "operationId": "v3ListPlanBindingLocations",
+        "summary": "Revision-bound binding-locations with explicit complete-document disclosure",
+        "description": "See hosted-plan-document-views-v3.md. Original lease, Host/Origin/CSRF and fixed V3 ownership precede full view scratch and single semantic HTTP record admission and body access. Closed request requires completeDocumentDisclosure=true even for empty locations. Original ViewAdmission remains executing through controlled full comparison/scan, encoding, output and final verification, including pinned errors. Small body: 16 KiB/depth 4/128 tokens/original 10 seconds. Full response: 128 MiB and one original 30-second encoding/output/flush deadline. Raw preserves exact text; Placeholders can leave unmapped concrete content; Formatted is display-only. No revision mutation, replay, computed XML locations or export authority.",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "planId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Uuid"
+            }
+          },
+          {
+            "name": "X-CSRF-TOKEN",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "../../schemas/plan-view-v1.schema.json#/$defs/bindingLocationsRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Bounded owned revision result; no-store; shape is not export authority",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "../../schemas/plan-view-v1.schema.json#/$defs/bindingLocationsResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error500"
+          }
+        }
+      }
+    },
+    "/api/v3/plans/{planId}/views/computed/nodes": {
+      "post": {
+        "operationId": "v3ListPlanComputedNodes",
+        "summary": "Revision-bound computed nodes",
+        "description": "See hosted-plan-computed-views-v3.md. Original fixed V3 owner and full view/semantic admission precede input; complete original and retained target proofs are reverified under the original pin through output. Closed request, exact structured keys, intmax offset and limit1..100; response128MiB/original30s. Collection body16KiB/original10s. Exact eligible PUBLIC values; complete current FAIL rules remain visible. Counts and cardinalities preserve exact meaning. No computed edit, export, runtime qualification or source pin authority is granted.",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "planId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Uuid"
+            }
+          },
+          {
+            "name": "X-CSRF-TOKEN",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "../../schemas/plan-computed-view-v3.schema.json#/$defs/collectionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Bounded owned revision result; no-store; shape is not export authority",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "../../schemas/plan-computed-view-v3.schema.json#/$defs/nodesResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error500"
+          }
+        }
+      }
+    },
+    "/api/v3/plans/{planId}/views/computed/memberships": {
+      "post": {
+        "operationId": "v3ListPlanComputedMemberships",
+        "summary": "Revision-bound computed memberships",
+        "description": "See hosted-plan-computed-views-v3.md. Original fixed V3 owner and full view/semantic admission precede input; complete original and retained target proofs are reverified under the original pin through output. Closed request, exact structured keys, intmax offset and limit1..100; response128MiB/original30s. Collection body16KiB/original10s. Exact eligible PUBLIC values; complete current FAIL rules remain visible. Counts and cardinalities preserve exact meaning. No computed edit, export, runtime qualification or source pin authority is granted.",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "planId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Uuid"
+            }
+          },
+          {
+            "name": "X-CSRF-TOKEN",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "../../schemas/plan-computed-view-v3.schema.json#/$defs/collectionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Bounded owned revision result; no-store; shape is not export authority",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "../../schemas/plan-computed-view-v3.schema.json#/$defs/membershipsResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error500"
+          }
+        }
+      }
+    },
+    "/api/v3/plans/{planId}/views/computed/cooccurrences": {
+      "post": {
+        "operationId": "v3ListPlanComputedCooccurrences",
+        "summary": "Revision-bound computed cooccurrences",
+        "description": "See hosted-plan-computed-views-v3.md. Original fixed V3 owner and full view/semantic admission precede input; complete original and retained target proofs are reverified under the original pin through output. Closed request, exact structured keys, intmax offset and limit1..100; response128MiB/original30s. Collection body16KiB/original10s. Exact eligible PUBLIC values; complete current FAIL rules remain visible. Counts and cardinalities preserve exact meaning. No computed edit, export, runtime qualification or source pin authority is granted.",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "planId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Uuid"
+            }
+          },
+          {
+            "name": "X-CSRF-TOKEN",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "../../schemas/plan-computed-view-v3.schema.json#/$defs/collectionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Bounded owned revision result; no-store; shape is not export authority",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "../../schemas/plan-computed-view-v3.schema.json#/$defs/cooccurrencesResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error500"
+          }
+        }
+      }
+    },
+    "/api/v3/plans/{planId}/views/computed/rules": {
+      "post": {
+        "operationId": "v3ListPlanComputedRules",
+        "summary": "Revision-bound computed rules",
+        "description": "See hosted-plan-computed-views-v3.md. Original fixed V3 owner and full view/semantic admission precede input; complete original and retained target proofs are reverified under the original pin through output. Closed request, exact structured keys, intmax offset and limit1..100; response128MiB/original30s. Collection body16KiB/original10s. Exact eligible PUBLIC values; complete current FAIL rules remain visible. Counts and cardinalities preserve exact meaning. No computed edit, export, runtime qualification or source pin authority is granted.",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "planId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Uuid"
+            }
+          },
+          {
+            "name": "X-CSRF-TOKEN",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "../../schemas/plan-computed-view-v3.schema.json#/$defs/collectionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Bounded owned revision result; no-store; shape is not export authority",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "../../schemas/plan-computed-view-v3.schema.json#/$defs/rulesResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error500"
+          }
+        }
+      }
+    },
+    "/api/v3/plans/{planId}/views/computed/contributors": {
+      "post": {
+        "operationId": "v3ListPlanComputedContributors",
+        "summary": "Revision-bound computed contributors",
+        "description": "See hosted-plan-computed-views-v3.md. Original fixed V3 owner and full view/semantic admission precede input; complete original and retained target proofs are reverified under the original pin through output. Closed request, exact structured keys, intmax offset and limit1..100; response128MiB/original30s. Contributor selector body16MiB/original30s with strict Unicode/UTF16 bounds. completeDocumentDisclosure=true required before lookup, including empty pages. Locations are actual physical contributor/child-selector pins. No computed edit, export, runtime qualification or source pin authority is granted.",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "planId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Uuid"
+            }
+          },
+          {
+            "name": "X-CSRF-TOKEN",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "../../schemas/plan-computed-view-v3.schema.json#/$defs/contributorsRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Bounded owned revision result; no-store; shape is not export authority",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "../../schemas/plan-computed-view-v3.schema.json#/$defs/contributorsResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error500"
+          }
+        }
+      }
+    },
+    "/api/v3/plans/{planId}/profile-captures": {
+      "post": {
+        "operationId": "capturePlanProfileV3",
+        "summary": "Capture verified original physical-only schema3 profile",
+        "description": "See hosted-plan-workflow-v3.md. Original V3 owner, full view admission and the shared semantic transfer precede input; original authority and full proofs remain checked through owned output (128 MiB, original 30 seconds). The closed capture body permits 64 MiB under the original 30-second clock and requires a complete physical mapping of the original observation, at most 20000 entries, with explicit value-free slot IDs and labels. Capture returns physical-only schema 3 JSON source, at most 1 MiB UTF8, with its exact definition reference. Capture does not save or publish a profile; use the existing workspace draft/history APIs explicitly.",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "planId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Uuid"
+            }
+          },
+          {
+            "name": "X-CSRF-TOKEN",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "../../schemas/plan-workflow-v3.schema.json#/$defs/captureRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Owned complete result or explicit computed-rule page; no export authority",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "../../schemas/plan-workflow-v3.schema.json#/$defs/captureResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error500"
+          }
+        }
+      }
+    },
+    "/api/v3/plans/{planId}/profile-previews": {
+      "post": {
+        "operationId": "previewPlanProfileV3",
+        "summary": "Inspect full qualified v3 profile closure and affected derivations",
+        "description": "See hosted-plan-workflow-v3.md. Original V3 owner, full view admission and the shared semantic transfer precede input; original authority and full proofs remain checked through owned output (128 MiB, original 30 seconds). The closed preview body permits 64 MiB under the original 30-second clock. Whole or selected physical roots yield complete freshly qualified versioned dependencies and pins, plus all affected derivations. Page sections are included, dependencies, relations or conflicts; offset 0..50000 and limit 1..100. All pages share the complete preview digest and pins. Apply explicit conflict, value and placement choices through the existing compose-profile command; donor values are never imported.",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "planId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Uuid"
+            }
+          },
+          {
+            "name": "X-CSRF-TOKEN",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "../../schemas/plan-workflow-v3.schema.json#/$defs/previewRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Owned complete result or explicit computed-rule page; no export authority",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "../../schemas/plan-workflow-v3.schema.json#/$defs/previewResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error500"
+          }
+        }
+      }
+    },
+    "/api/v3/plans/{planId}/validations": {
+      "post": {
+        "operationId": "validatePlanV3",
+        "summary": "Evaluate complete v3 validation and inspect fingerprint-bound rule pages",
+        "description": "See hosted-plan-workflow-v3.md. Original V3 owner, full view admission and the shared semantic transfer precede input; original authority and full proofs remain checked through owned output (128 MiB, original 30 seconds). The closed validation body permits 16 KiB under the original 10-second clock. A revision-only request returns complete checks, physical rules, target completeness and nullable computed-rule count without the full computed-rule array. Computed-rule page requests require the exact validation inputFingerprint, offset 0..2147483647 and limit 1..100. Fingerprint mismatch refuses CONFLICT; missing target refuses INCOMPLETE_TARGET. An oversized page refuses RESOURCE_LIMIT; request fewer rows at the same offset and fingerprint. Counts remain complete and cardinalities are exact decimal strings. Export remains unavailable.",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "planId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Uuid"
+            }
+          },
+          {
+            "name": "X-CSRF-TOKEN",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "../../schemas/plan-workflow-v3.schema.json#/$defs/validationRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Owned complete result or explicit computed-rule page; no export authority",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "../../schemas/plan-workflow-v3.schema.json#/$defs/validationResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error500"
+          }
+        }
+      }
+    },
+    "/api/v3/plans/{planId}/package-candidates/guarded": {
+      "post": {
+        "operationId": "downloadGuardedPackageCandidateV3",
+        "summary": "Download an unqualified PostgreSQL 16.11 guarded package candidate",
+        "description": "See guarded-package-v1.md. Original V3 owner, pinned revision, inspection evidence, complete target materialization, validation input fingerprint, destination physical identity, binding engine/storage, protected document policies and package admission are rechecked before bytes are streamed. Destination, server, client, template, policy, binding and publication metadata are trusted server-side configuration and cannot be supplied by the caller. Successful downloads remain unqualified, keep exportAvailable false, do not persist a package and do not execute SQL.",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "planId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Uuid"
+            }
+          },
+          {
+            "name": "X-CSRF-TOKEN",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PackageCandidateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Deterministic unqualified guarded package candidate ZIP; export authority remains unavailable",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              },
+              "Content-Disposition": {
+                "schema": {
+                  "type": "string",
+                  "const": "attachment; filename=\"environment-studio-guarded-package.zip\""
+                }
+              },
+              "X-Environment-Studio-Qualified": {
+                "schema": {
+                  "type": "string",
+                  "const": "false"
+                }
+              }
+            },
+            "content": {
+              "application/zip": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error500"
+          }
+        }
+      }
+    },
+    "/api/v3/plans/{planId}/reviews": {
+      "post": {
+        "operationId": "acknowledgePlanReviewV3",
+        "summary": "Acknowledge exact checked v3 plan inputs without granting export",
+        "description": "See plan-review-v3.md. Original V3 lease/view and shared semantic transfer precede input. Closed 16 KiB body under original 10-second deadline; 32 KiB acknowledgement under original 30-second output deadline. Fresh publication and complete XML proof bind exact fingerprint, destination and protected-self-contained intent. Shared 256-entry replay is checked before current revision pinning and never reactivates review. Original async abort is atomically ordered before commit; response loss after commit preserves the historical receipt. Review and immutable whole-document policy checks do not qualify client capability or authorize export.",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "planId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Uuid"
+            }
+          },
+          {
+            "name": "X-CSRF-TOKEN",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "../../schemas/plan-review-v3.schema.json#/$defs/request"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Original unchanged-revision receipt; no operationId or export authority",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "../../schemas/plan-review-v3.schema.json#/$defs/response"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error500"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Uuid": {
+        "type": "string",
+        "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}(?![\\s\\S])"
+      },
+      "Id": {
+        "type": "string",
+        "pattern": "^[a-z][a-z0-9.-]{0,63}(?![\\s\\S])",
+        "maxLength": 64
+      },
+      "Revision": {
+        "type": "string",
+        "pattern": "^[1-9][0-9]*(?![\\s\\S])",
+        "maxLength": 1024
+      },
+      "Sha256": {
+        "type": "string",
+        "pattern": "^[0-9a-f]{64}(?![\\s\\S])"
+      },
+      "Code": {
+        "type": "string",
+        "pattern": "^[A-Z][A-Z0-9_]{0,63}(?![\\s\\S])"
+      },
+      "PublicationRef": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "objectId",
+          "workspaceRevision"
+        ],
+        "properties": {
+          "objectId": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "workspaceRevision": {
+            "$ref": "#/components/schemas/Revision"
+          }
+        }
+      },
+      "CreatePlan": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "expectedRevision",
+          "requestId",
+          "definition",
+          "bindingId",
+          "destinationId"
+        ],
+        "properties": {
+          "expectedRevision": {
+            "const": "0"
+          },
+          "requestId": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "definition": {
+            "$ref": "#/components/schemas/PublicationRef"
+          },
+          "bindingId": {
+            "$ref": "#/components/schemas/Id"
+          },
+          "destinationId": {
+            "$ref": "#/components/schemas/Id"
+          }
+        }
+      },
+      "ReserveInspection": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "expectedRevision",
+          "requestId",
+          "discardDraftOnSuccess"
+        ],
+        "properties": {
+          "expectedRevision": {
+            "$ref": "#/components/schemas/Revision"
+          },
+          "requestId": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "discardDraftOnSuccess": {
+            "const": true
+          }
+        }
+      },
+      "PackageCandidateRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "revision",
+          "inputFingerprint"
+        ],
+        "properties": {
+          "revision": {
+            "$ref": "#/components/schemas/Revision"
+          },
+          "inputFingerprint": {
+            "$ref": "#/components/schemas/Sha256"
+          }
+        }
+      },
+      "Credentials": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "username",
+          "password"
+        ],
+        "properties": {
+          "username": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[^\\u0000]*(?![\\s\\S])",
+            "writeOnly": true
+          },
+          "password": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1024,
+            "pattern": "^[^\\u0000]*(?![\\s\\S])",
+            "writeOnly": true
+          }
+        }
+      },
+      "Ack": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "planId",
+          "revision"
+        ],
+        "properties": {
+          "planId": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "revision": {
+            "$ref": "#/components/schemas/Revision"
+          },
+          "operationId": {
+            "$ref": "#/components/schemas/Uuid"
+          }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "code"
+        ],
+        "properties": {
+          "code": {
+            "$ref": "#/components/schemas/Code"
+          }
+        }
+      },
+      "Empty": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [],
+        "properties": {}
+      },
+      "Counts": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "documents",
+          "entities",
+          "relations"
+        ],
+        "properties": {
+          "documents": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 128
+          },
+          "entities": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 20000
+          },
+          "relations": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 50000
+          }
+        }
+      },
+      "PlanSummary": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "planId",
+          "revision",
+          "definition",
+          "bindingId",
+          "destinationId",
+          "currentCounts",
+          "targetCounts",
+          "inspectionValid",
+          "targetComplete",
+          "exportAvailable",
+          "blockers",
+          "observedDestination",
+          "currentComputedCounts",
+          "targetComputedCounts"
+        ],
+        "properties": {
+          "planId": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "revision": {
+            "$ref": "#/components/schemas/Revision"
+          },
+          "definition": {
+            "$ref": "#/components/schemas/PublicationRef"
+          },
+          "bindingId": {
+            "$ref": "#/components/schemas/Id"
+          },
+          "destinationId": {
+            "$ref": "#/components/schemas/Id"
+          },
+          "currentCounts": {
+            "$ref": "#/components/schemas/Counts"
+          },
+          "targetCounts": {
+            "$ref": "#/components/schemas/Counts"
+          },
+          "inspectionValid": {
+            "type": "boolean"
+          },
+          "targetComplete": {
+            "type": "boolean"
+          },
+          "exportAvailable": {
+            "type": "boolean",
+            "const": false
+          },
+          "blockers": {
+            "type": "array",
+            "maxItems": 256,
+            "items": {
+              "$ref": "#/components/schemas/Code"
+            }
+          },
+          "activeOperationId": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "observedDestination": {
+            "$ref": "#/components/schemas/ObservedDestination"
+          },
+          "currentComputedCounts": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/ComputedCounts"
+              }
+            ],
+            "description": "Null means no complete retained partition; a present all-zero object is an empty complete partition."
+          },
+          "targetComputedCounts": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/ComputedCounts"
+              }
+            ],
+            "description": "Null means no complete retained partition; a present all-zero object is an empty complete partition."
+          }
+        }
+      },
+      "Operation": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "operationId",
+          "planId",
+          "phase",
+          "code",
+          "cleanup"
+        ],
+        "properties": {
+          "operationId": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "planId": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "phase": {
+            "enum": [
+              "reserved",
+              "running",
+              "succeeded",
+              "refused",
+              "cancelled",
+              "expired"
+            ]
+          },
+          "code": {
+            "$ref": "#/components/schemas/Code"
+          },
+          "cleanup": {
+            "enum": [
+              "complete",
+              "in-progress",
+              "inconclusive"
+            ]
+          },
+          "installedRevision": {
+            "$ref": "#/components/schemas/Revision"
+          }
+        }
+      },
+      "ObservedDestination": {
+        "oneOf": [
+          {
+            "type": "null"
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "engine",
+              "identity",
+              "observationFingerprint",
+              "evidenceValid"
+            ],
+            "properties": {
+              "engine": {
+                "const": "postgresql"
+              },
+              "identity": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "systemIdentifier",
+                  "databaseOid",
+                  "databaseName"
+                ],
+                "properties": {
+                  "systemIdentifier": {
+                    "type": "string",
+                    "pattern": "^[1-9][0-9]{0,19}$"
+                  },
+                  "databaseOid": {
+                    "type": "string",
+                    "pattern": "^[1-9][0-9]{0,19}$"
+                  },
+                  "databaseName": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 128,
+                    "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f\\ud800-\\udfff]+$",
+                    "not": {
+                      "pattern": "^[\\u0020\\u1680\\u2000-\\u2006\\u2008-\\u200a\\u2028\\u2029\\u205f\\u3000]*$"
+                    }
+                  }
+                }
+              },
+              "observationFingerprint": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "evidenceValid": {
+                "type": "boolean"
+              }
+            }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "engine",
+              "identity",
+              "observationFingerprint",
+              "evidenceValid"
+            ],
+            "properties": {
+              "engine": {
+                "const": "oracle"
+              },
+              "identity": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "dbid",
+                  "dbUniqueName",
+                  "conId",
+                  "conUid",
+                  "conName",
+                  "pdbGuid"
+                ],
+                "properties": {
+                  "dbid": {
+                    "type": "string",
+                    "pattern": "^[1-9][0-9]{0,19}$"
+                  },
+                  "dbUniqueName": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 128,
+                    "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f\\ud800-\\udfff]+$",
+                    "not": {
+                      "pattern": "^[\\u0020\\u1680\\u2000-\\u2006\\u2008-\\u200a\\u2028\\u2029\\u205f\\u3000]*$"
+                    }
+                  },
+                  "conId": {
+                    "type": "string",
+                    "pattern": "^[1-9][0-9]{0,19}$"
+                  },
+                  "conUid": {
+                    "type": "string",
+                    "pattern": "^[1-9][0-9]{0,19}$"
+                  },
+                  "conName": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 128,
+                    "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f\\ud800-\\udfff]+$",
+                    "not": {
+                      "pattern": "^[\\u0020\\u1680\\u2000-\\u2006\\u2008-\\u200a\\u2028\\u2029\\u205f\\u3000]*$"
+                    }
+                  },
+                  "pdbGuid": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{32}$"
+                  }
+                }
+              },
+              "observationFingerprint": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "evidenceValid": {
+                "type": "boolean"
+              }
+            }
+          }
+        ]
+      },
+      "ComputedCounts": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "nodes",
+          "memberships",
+          "cooccurrences"
+        ],
+        "description": "One computed partition. Java separately enforces the shared physical-plus-computed graph limits.",
+        "properties": {
+          "nodes": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 20000
+          },
+          "memberships": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 50000
+          },
+          "cooccurrences": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 50000
+          }
+        }
+      },
+      "ControllerErrorCode": {
+        "type": "string",
+        "enum": [
+          "BODY_DEADLINE",
+          "BODY_TOO_LARGE",
+          "CANCELLED",
+          "CAPACITY",
+          "CLEANUP_INCONCLUSIVE",
+          "CONFLICT",
+          "CREDENTIALS_ALREADY_CONSUMED",
+          "DESTINATION_DENIED",
+          "DISCLOSURE_REQUIRED",
+          "EXPORT_UNAVAILABLE",
+          "INCOMPLETE_TARGET",
+          "INSPECTION_REQUIRED",
+          "INVALID_CREDENTIALS",
+          "INVALID_DESTINATION",
+          "INVALID_REQUEST",
+          "MALFORMED_BODY",
+          "NOT_FOUND",
+          "OBSERVATION_REFUSED",
+          "PLAN_BUSY",
+          "PLAN_INTERNAL_REFUSAL",
+          "PLAN_SERVICES_UNAVAILABLE",
+          "PROFILE_REFUSED",
+          "PROJECTION_REFUSED",
+          "PUBLICATION_REQUIRED",
+          "RESERVATION_EXPIRED",
+          "RESOURCE_LIMIT",
+          "SESSION_REQUIRED",
+          "STALE_PREVIEW",
+          "UNSUPPORTED_DEFINITION"
+        ]
+      },
+      "PlanCommand": {
+        "$ref": "../../schemas/plan-command-v1.schema.json"
+      },
+      "Materialization": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "revision",
+          "state",
+          "complete",
+          "diagnostics"
+        ],
+        "properties": {
+          "revision": {
+            "$ref": "#/components/schemas/Revision"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "COMPLETE",
+              "INCOMPLETE",
+              "REFUSED"
+            ]
+          },
+          "complete": {
+            "type": "boolean"
+          },
+          "diagnostics": {
+            "type": "array",
+            "maxItems": 256,
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 129
+            }
+          }
+        },
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "state": {
+                  "const": "COMPLETE"
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "complete": {
+                  "const": true
+                },
+                "diagnostics": {
+                  "maxItems": 0,
+                  "type": "array"
+                }
+              }
+            },
+            "else": {
+              "properties": {
+                "complete": {
+                  "const": false
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    "responses": {
+      "Error400": {
+        "description": "Malformed or unknown request fields; an early controller refusal has no body and includes Content-Length: 0 plus X-Environment-Studio-Code together. The closed-code header denotes that branch and requires zero length. Other branches may also carry a nonzero Content-Length. An owned transfer or security middleware may instead return its documented JSON error body.",
+        "headers": {
+          "Cache-Control": {
+            "schema": {
+              "type": "string",
+              "const": "no-store"
+            }
+          },
+          "Content-Length": {
+            "description": "Zero when X-Environment-Studio-Code denotes an early no-body controller refusal. Owned JSON errors carry their actual encoded length. OpenAPI cannot enforce this conditional relationship between headers and body.",
+            "schema": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          "X-Environment-Studio-Code": {
+            "description": "Closed safe code on the early no-body controller branch; paired with Content-Length: 0.",
+            "schema": {
+              "$ref": "#/components/schemas/ControllerErrorCode"
+            }
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "Error401": {
+        "description": "No live hosted authentication; an early controller refusal has no body and includes Content-Length: 0 plus X-Environment-Studio-Code together. The closed-code header denotes that branch and requires zero length. Other branches may also carry a nonzero Content-Length. An owned transfer or security middleware may instead return its documented JSON error body.",
+        "headers": {
+          "Cache-Control": {
+            "schema": {
+              "type": "string",
+              "const": "no-store"
+            }
+          },
+          "Content-Length": {
+            "description": "Zero when X-Environment-Studio-Code denotes an early no-body controller refusal. Owned JSON errors carry their actual encoded length. OpenAPI cannot enforce this conditional relationship between headers and body.",
+            "schema": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          "X-Environment-Studio-Code": {
+            "description": "Closed safe code on the early no-body controller branch; paired with Content-Length: 0.",
+            "schema": {
+              "$ref": "#/components/schemas/ControllerErrorCode"
+            }
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "Error403": {
+        "description": "Host, Origin, CSRF or policy denied; unavailable in demo; an early controller refusal has no body and includes Content-Length: 0 plus X-Environment-Studio-Code together. The closed-code header denotes that branch and requires zero length. Other branches may also carry a nonzero Content-Length. An owned transfer or security middleware may instead return its documented JSON error body.",
+        "headers": {
+          "Cache-Control": {
+            "schema": {
+              "type": "string",
+              "const": "no-store"
+            }
+          },
+          "Content-Length": {
+            "description": "Zero when X-Environment-Studio-Code denotes an early no-body controller refusal. Owned JSON errors carry their actual encoded length. OpenAPI cannot enforce this conditional relationship between headers and body.",
+            "schema": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          "X-Environment-Studio-Code": {
+            "description": "Closed safe code on the early no-body controller branch; paired with Content-Length: 0.",
+            "schema": {
+              "$ref": "#/components/schemas/ControllerErrorCode"
+            }
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "Error404": {
+        "description": "Missing, foreign-owner, foreign-lease or wrong-version resource; original retained v3 operation metadata remains eligible; an early controller refusal has no body and includes Content-Length: 0 plus X-Environment-Studio-Code together. The closed-code header denotes that branch and requires zero length. Other branches may also carry a nonzero Content-Length. An owned transfer or security middleware may instead return its documented JSON error body.",
+        "headers": {
+          "Cache-Control": {
+            "schema": {
+              "type": "string",
+              "const": "no-store"
+            }
+          },
+          "Content-Length": {
+            "description": "Zero when X-Environment-Studio-Code denotes an early no-body controller refusal. Owned JSON errors carry their actual encoded length. OpenAPI cannot enforce this conditional relationship between headers and body.",
+            "schema": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          "X-Environment-Studio-Code": {
+            "description": "Closed safe code on the early no-body controller branch; paired with Content-Length: 0.",
+            "schema": {
+              "$ref": "#/components/schemas/ControllerErrorCode"
+            }
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "Error409": {
+        "description": "Stale or colliding request, busy plan or consumed reservation; an early controller refusal has no body and includes Content-Length: 0 plus X-Environment-Studio-Code together. The closed-code header denotes that branch and requires zero length. Other branches may also carry a nonzero Content-Length. An owned transfer or security middleware may instead return its documented JSON error body.",
+        "headers": {
+          "Cache-Control": {
+            "schema": {
+              "type": "string",
+              "const": "no-store"
+            }
+          },
+          "Content-Length": {
+            "description": "Zero when X-Environment-Studio-Code denotes an early no-body controller refusal. Owned JSON errors carry their actual encoded length. OpenAPI cannot enforce this conditional relationship between headers and body.",
+            "schema": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          "X-Environment-Studio-Code": {
+            "description": "Closed safe code on the early no-body controller branch; paired with Content-Length: 0.",
+            "schema": {
+              "$ref": "#/components/schemas/ControllerErrorCode"
+            }
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "Error413": {
+        "description": "Wire byte limit exceeded; an early controller refusal has no body and includes Content-Length: 0 plus X-Environment-Studio-Code together. The closed-code header denotes that branch and requires zero length. Other branches may also carry a nonzero Content-Length. An owned transfer or security middleware may instead return its documented JSON error body.",
+        "headers": {
+          "Cache-Control": {
+            "schema": {
+              "type": "string",
+              "const": "no-store"
+            }
+          },
+          "Content-Length": {
+            "description": "Zero when X-Environment-Studio-Code denotes an early no-body controller refusal. Owned JSON errors carry their actual encoded length. OpenAPI cannot enforce this conditional relationship between headers and body.",
+            "schema": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          "X-Environment-Studio-Code": {
+            "description": "Closed safe code on the early no-body controller branch; paired with Content-Length: 0.",
+            "schema": {
+              "$ref": "#/components/schemas/ControllerErrorCode"
+            }
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "Error422": {
+        "description": "Semantic operation refused; an early controller refusal has no body and includes Content-Length: 0 plus X-Environment-Studio-Code together. The closed-code header denotes that branch and requires zero length. Other branches may also carry a nonzero Content-Length. An owned transfer or security middleware may instead return its documented JSON error body.",
+        "headers": {
+          "Cache-Control": {
+            "schema": {
+              "type": "string",
+              "const": "no-store"
+            }
+          },
+          "Content-Length": {
+            "description": "Zero when X-Environment-Studio-Code denotes an early no-body controller refusal. Owned JSON errors carry their actual encoded length. OpenAPI cannot enforce this conditional relationship between headers and body.",
+            "schema": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          "X-Environment-Studio-Code": {
+            "description": "Closed safe code on the early no-body controller branch; paired with Content-Length: 0.",
+            "schema": {
+              "$ref": "#/components/schemas/ControllerErrorCode"
+            }
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "Error429": {
+        "description": "Bounded plan, operation or memory capacity exhausted; an early controller refusal has no body and includes Content-Length: 0 plus X-Environment-Studio-Code together. The closed-code header denotes that branch and requires zero length. Other branches may also carry a nonzero Content-Length. An owned transfer or security middleware may instead return its documented JSON error body.",
+        "headers": {
+          "Cache-Control": {
+            "schema": {
+              "type": "string",
+              "const": "no-store"
+            }
+          },
+          "Content-Length": {
+            "description": "Zero when X-Environment-Studio-Code denotes an early no-body controller refusal. Owned JSON errors carry their actual encoded length. OpenAPI cannot enforce this conditional relationship between headers and body.",
+            "schema": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          "X-Environment-Studio-Code": {
+            "description": "Closed safe code on the early no-body controller branch; paired with Content-Length: 0.",
+            "schema": {
+              "$ref": "#/components/schemas/ControllerErrorCode"
+            }
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "Error503": {
+        "description": "Trusted service or configuration unavailable; an early controller refusal has no body and includes Content-Length: 0 plus X-Environment-Studio-Code together. The closed-code header denotes that branch and requires zero length. Other branches may also carry a nonzero Content-Length. An owned transfer or security middleware may instead return its documented JSON error body.",
+        "headers": {
+          "Cache-Control": {
+            "schema": {
+              "type": "string",
+              "const": "no-store"
+            }
+          },
+          "Content-Length": {
+            "description": "Zero when X-Environment-Studio-Code denotes an early no-body controller refusal. Owned JSON errors carry their actual encoded length. OpenAPI cannot enforce this conditional relationship between headers and body.",
+            "schema": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          "X-Environment-Studio-Code": {
+            "description": "Closed safe code on the early no-body controller branch; paired with Content-Length: 0.",
+            "schema": {
+              "$ref": "#/components/schemas/ControllerErrorCode"
+            }
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "Error500": {
+        "description": "Closed internal controller refusal; an early controller refusal has no body and includes Content-Length: 0 plus X-Environment-Studio-Code together. The closed-code header denotes that branch and requires zero length. Other branches may also carry a nonzero Content-Length. An owned transfer or security middleware may instead return its documented JSON error body.",
+        "headers": {
+          "Cache-Control": {
+            "schema": {
+              "type": "string",
+              "const": "no-store"
+            }
+          },
+          "Content-Length": {
+            "description": "Zero when X-Environment-Studio-Code denotes an early no-body controller refusal. Owned JSON errors carry their actual encoded length. OpenAPI cannot enforce this conditional relationship between headers and body.",
+            "schema": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          "X-Environment-Studio-Code": {
+            "description": "Closed safe code on the early no-body controller branch; paired with Content-Length: 0.",
+            "schema": {
+              "$ref": "#/components/schemas/ControllerErrorCode"
+            }
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "sessionCookie": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "JSESSIONID"
+      }
+    }
+  }
+}

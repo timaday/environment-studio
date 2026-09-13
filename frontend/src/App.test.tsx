@@ -1,7 +1,7 @@
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
-import App from "./App";
+import App from "./DemoWorkspace";
 
 describe("synthetic comparison workbench", () => {
   it("clearly labels the demo and cannot export", () => {
@@ -9,7 +9,7 @@ describe("synthetic comparison workbench", () => {
     expect(screen.getByText(/Synthetic example/)).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Export SQL" })).toBeDisabled();
     expect(
-      screen.getByText(/Database inspection and SQL export are not implemented/),
+      screen.getByText(/This synthetic demo does not connect to a database/),
     ).toBeInTheDocument();
   });
 
@@ -36,4 +36,21 @@ describe("synthetic comparison workbench", () => {
     expect(within(bindings).getByText("qa-01")).toBeInTheDocument();
     expect(within(bindings).getByText("qa-02")).toBeInTheDocument();
   });
+  it("opens a synthetic definition preview and returns to the selected comparison", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    await user.click(screen.getByRole("button", { name: /workloads.xml/ }));
+    await user.click(screen.getByRole("button", { name: "Definitions" }));
+    expect(screen.getByText("Synthetic definition preview")).toBeVisible();
+    expect(screen.getByRole("tabpanel", { name: "Model" })).toBeVisible();
+    expect(screen.queryByRole("button", { name: /Upload|Save|Publish/ })).not.toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Comparison" }));
+    expect(screen.getByRole("region", { name: "Current XML" })).toHaveTextContent('node="old-01"');
+    expect(screen.getByRole("region", { name: "Target XML" })).toHaveTextContent('node="qa-02"');
+    await user.click(screen.getByRole("button", { name: "Formatted" }));
+    expect(screen.getByText(/Display projection/)).toBeVisible();
+    expect(screen.getByRole("button", { name: "Export SQL" })).toBeDisabled();
+  });
 });
+
+// Capability routing uses server results; demo tests above are explicitly isolated.

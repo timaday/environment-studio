@@ -1,0 +1,101 @@
+package studio.environment.server.plan;
+
+import java.nio.charset.StandardCharsets;
+import java.util.*;
+import studio.environment.core.graph.*;
+import studio.environment.core.observation.ObservationResult;
+import studio.environment.core.plan.PlanPorts.*;
+import studio.environment.core.plan.PlanRefusal;
+import studio.environment.core.plan.PlanDefinition;
+import studio.environment.core.plan.V3PlanContent;
+import studio.environment.core.derived.DerivedInput;
+import studio.environment.core.observation.ObservationPort.Cancellation;
+import studio.environment.core.planning.*;
+import studio.environment.core.profile.ProfileCapture;
+import studio.environment.server.planning.*;
+import studio.environment.server.profile.ProfileBytesAdapter;
+import studio.environment.server.projection.*;
+
+/** Qualified adapters supply exact sources; independent projection establishes graph/provenance each time. */
+public final class PlanContentAdapter implements ContentAdapter {
+    @Override public void verifyV3(studio.environment.core.plan.HostedPlanService.ViewSnapshot snapshot,boolean target,Cancellation cancellation) {
+        V3PlanReadContent.verify(snapshot,target,cancellation);
+    }
+    private final GraphProjectionAdapter projection = new GraphProjectionAdapter();
+    private final StructuralTargetAdapter targets = new StructuralTargetAdapter();
+    private final ProfileBytesAdapter profiles = new ProfileBytesAdapter();
+    private final V3PlanContent v3 = new V3PlanContentAdapter();
+    @Override public ContentResult project(PublishedDefinition definition,String binding,ObservationResult.Observation observation,Cancellation cancellation) {
+        if(definition.model() instanceof PlanDefinition.V2) return project(definition,binding,observation);
+        var result=v3.project((PlanDefinition.V3)definition.model(),binding,observation,cancellation);
+        return switch(result) {
+            case V3PlanContent.Result.Complete complete -> new ContentResult.Complete(complete.content());
+            case V3PlanContent.Result.Refused refused -> rejected(refused.code());
+            case V3PlanContent.Result.Incomplete ignored -> rejected("PROJECTION_INCOMPLETE");
+        };
+    }
+    @Override public V3PlanContent.Result materializeV3(PublishedDefinition definition,DerivedInput.Pin expectedCurrent,Content current,
+            DerivedInput.Pin expectedTarget,Draft draft,Cancellation cancellation) {
+        if(!(definition.model() instanceof PlanDefinition.V3 model)) return new V3PlanContent.Result.Refused("UNSUPPORTED_DEFINITION");
+        return v3.materialize(model,expectedCurrent,current,expectedTarget,draft,cancellation);
+    }
+    @Override public ContentResult project(PublishedDefinition definition,String binding,ObservationResult.Observation observation) {
+        var result=projection.project(definition.compiled(),binding,observation.documents().stream().map(document->new DocumentSource(document.documentId(),document.xml())).toList());
+        if(!(result instanceof ProjectionResult.Accepted accepted)) return rejected("PROJECTION_REFUSED");
+        if(!accepted.logicalDigest().equals(observation.logicalDigest()) || !accepted.bindingDigest().equals(observation.bindingDigest())) return rejected("PROJECTION_PIN_MISMATCH");
+        var supplied=new HashMap<String,String>(); observation.documents().forEach(document->supplied.put(document.documentId(),document.sourceDigest()));
+        if(accepted.projection().documents().stream().anyMatch(document->!document.digest().equals(supplied.get(document.documentId())))) return rejected("SOURCE_DIGEST_MISMATCH");
+        var provenance=new HashMap<ObservedGraph.Key,TargetIntent.Ref>(); accepted.graph().entities().forEach(entity->provenance.put(entity.key(),new TargetIntent.Ref.Existing(entity.key())));
+        return new ContentResult.Complete(content(accepted,provenance));
+    }
+    @Override public ContentResult materialize(PublishedDefinition definition,String binding,Content current,Draft draft) {
+        var sources=current.sources().stream().map(source->new TargetSource(source.documentId(),source.xml(),Optional.empty())).toList();
+        var placements=draft.placements().stream().map(placement->new TargetPlacement(placement.entity(),placement.documentId(),placement.projectionId(),switch(placement.parent()) {
+            case Parent.Existing old -> new TargetPlacement.Parent.Existing(old.documentId(),old.sourceDigest(),old.elementIndex());
+            case Parent.Created fresh -> new TargetPlacement.Parent.Created(fresh.entity());
+        })).toList();
+        var materialized=targets.materialize(definition.compiled(),binding,sources,draft.intent(),placements);
+        if(materialized instanceof MaterializationResult.Rejected refused) return new ContentResult.Rejected(refused.codes());
+        var complete=(MaterializationResult.Complete)materialized;
+        var independent=projection.project(definition.compiled(),binding,complete.documents().stream().map(source->new DocumentSource(source.documentId(),source.source())).toList());
+        if(!(independent instanceof ProjectionResult.Accepted projected) || !projected.graph().equals(complete.graph())) return rejected("TARGET_REPROJECTION_MISMATCH");
+        var expected=new TargetIntentCompiler().compile(definition.compiled(),new GraphValidationResult.Accepted(current.graph()),draft.intent());
+        if(!(expected instanceof TargetCompilationResult.Expected checked)) return rejected("EXPECTED_TARGET_REFUSED");
+        var provenance=new HashMap<ObservedGraph.Key,TargetIntent.Ref>();
+        for(var entity:checked.target().entities()) if(provenance.putIfAbsent(entity.identity(),entity.reference())!=null) return rejected("AMBIGUOUS_PROVENANCE");
+        if(provenance.size()!=projected.graph().entities().size() || projected.graph().entities().stream().anyMatch(entity->!provenance.containsKey(entity.key()))) return rejected("TARGET_PROVENANCE_MISMATCH");
+        return new ContentResult.Complete(content(projected,provenance));
+    }
+    @Override public Capture capture(PublishedDefinition definition,String binding,Content current,ProfileCapture.Command command) {
+        var projected=projection.project(definition.compiled(),binding,current.sources().stream().map(source->new DocumentSource(source.documentId(),source.xml())).toList());
+        if(!(projected instanceof ProjectionResult.Accepted observation) || !observation.graph().equals(current.graph())) throw new PlanRefusal(PlanRefusal.Code.PROJECTION_REFUSED);
+        var result=profiles.capture(definition.compiled(),observation,command);
+        if(!(result instanceof ProfileBytesAdapter.Result.Accepted accepted)) throw new PlanRefusal(PlanRefusal.Code.PROFILE_REFUSED);
+        var encoded=profiles.write(definition.compiled(),accepted.checked());
+        if(!(encoded instanceof ProfileBytesAdapter.ExportResult.Encoded bytes)) throw new PlanRefusal(PlanRefusal.Code.PROFILE_REFUSED);
+        return new Capture(new String(bytes.bytes(),StandardCharsets.UTF_8),accepted.checked());
+    }
+    @Override public Capture captureV3(PublishedDefinition definition,studio.environment.core.derived.DerivedInput.Pin expected,Content current,ProfileCapture.Command command,studio.environment.core.observation.ObservationPort.Cancellation cancellation) {
+        if(!(definition.model() instanceof studio.environment.core.plan.PlanDefinition.V3 model))throw new PlanRefusal(PlanRefusal.Code.UNSUPPORTED_DEFINITION);
+        V3PlanReadContent.original(model,expected,current,cancellation);
+        var snapshot=new DerivedGraphProjectionAdapter.Snapshot(expected.revisionToken(),expected.logicalDigest(),expected.bindingId(),expected.bindingDigest(),
+                current.sources().stream().map(s->new DocumentSource(s.documentId(),s.xml())).toList());
+        var profiles=new studio.environment.server.profile.V3ProfileBytesAdapter();
+        var result=profiles.capture(model.checked(),expected,snapshot,command,cancellation::cancelled);
+        if(!(result instanceof studio.environment.server.profile.V3ProfileBytesAdapter.Result.Accepted accepted))throw new PlanRefusal(PlanRefusal.Code.PROFILE_REFUSED);
+        var encoded=profiles.write(model.checked(),accepted.checked());
+        if(!(encoded instanceof studio.environment.server.profile.V3ProfileBytesAdapter.ExportResult.Encoded bytes))throw new PlanRefusal(PlanRefusal.Code.PROFILE_REFUSED);
+        V3PlanReadContent.live(cancellation);
+        return new Capture(new String(bytes.bytes(),StandardCharsets.UTF_8),accepted.checked());
+    }
+    @Override public DocumentView compare(studio.environment.core.plan.HostedPlanService.ViewSnapshot snapshot,boolean target,String documentId,ViewMode mode) {
+        return PlanDocumentViews.render(snapshot,target,documentId,mode);
+    }
+    @Override public DocumentView compare(studio.environment.core.plan.HostedPlanService.ViewSnapshot snapshot,boolean target,String documentId,ViewMode mode,studio.environment.core.observation.ObservationPort.Cancellation cancellation) {
+        return PlanDocumentViews.render(snapshot,target,documentId,mode,cancellation);
+    }
+    private static Content content(ProjectionResult.Accepted projection,Map<ObservedGraph.Key,TargetIntent.Ref> provenance) {
+        return new Content(projection.projection().documents().stream().map(document->new Source(document.documentId(),document.source(),document.digest())).toList(),projection.graph(),provenance);
+    }
+    private static ContentResult.Rejected rejected(String code) { return new ContentResult.Rejected(List.of(code)); }
+}

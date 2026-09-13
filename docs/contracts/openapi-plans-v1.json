@@ -1,0 +1,2458 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Environment Studio hosted plan boundary",
+    "version": "0.1.0-planned",
+    "description": "Planned initial route group. Shape acceptance is not observation, publication, validation or export authority. See hosted-plan-http-v1.md and hosted-plans-v1.md. Credentials submit once only after a reserved physical permit; no execution endpoint."
+  },
+  "paths": {
+    "/api/v1/destinations": {
+      "get": {
+        "operationId": "listOwnedDestinations",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Safe owned result; no-store; no export authority implied",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Destinations"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          }
+        }
+      }
+    },
+    "/api/v1/plans": {
+      "post": {
+        "operationId": "createHostedPlan",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Safe owned result; no-store; no export authority implied",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Ack"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          }
+        },
+        "parameters": [
+          {
+            "name": "X-CSRF-TOKEN",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePlan"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/plans/current": {
+      "get": {
+        "operationId": "getCurrentHostedPlan",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Safe owned result; no-store; no export authority implied",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlanSummary"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          }
+        }
+      }
+    },
+    "/api/v1/plans/{planId}": {
+      "get": {
+        "operationId": "getHostedPlan",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Safe owned result; no-store; no export authority implied",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlanSummary"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          }
+        },
+        "parameters": [
+          {
+            "name": "planId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Uuid"
+            }
+          }
+        ]
+      }
+    },
+    "/api/v1/plans/{planId}/inspections": {
+      "post": {
+        "operationId": "reservePlanInspection",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Safe owned result; no-store; no export authority implied",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Ack"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          }
+        },
+        "parameters": [
+          {
+            "name": "planId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Uuid"
+            }
+          },
+          {
+            "name": "X-CSRF-TOKEN",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReserveInspection"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/operations/{operationId}/credentials": {
+      "post": {
+        "operationId": "submitReservedCredentialsOnce",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Safe owned result; no-store; no export authority implied",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Operation"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          }
+        },
+        "parameters": [
+          {
+            "name": "operationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Uuid"
+            }
+          },
+          {
+            "name": "X-CSRF-TOKEN",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Credentials"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/operations/{operationId}": {
+      "get": {
+        "operationId": "getOwnedOperation",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Safe owned result; no-store; no export authority implied",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Operation"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          }
+        },
+        "parameters": [
+          {
+            "name": "operationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Uuid"
+            }
+          }
+        ]
+      }
+    },
+    "/api/v1/operations/{operationId}/cancel": {
+      "post": {
+        "operationId": "cancelOwnedOperation",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Safe owned result; no-store; no export authority implied",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Operation"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          }
+        },
+        "parameters": [
+          {
+            "name": "operationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Uuid"
+            }
+          },
+          {
+            "name": "X-CSRF-TOKEN",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Empty"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/plans/{planId}/commands": {
+      "post": {
+        "operationId": "mutateHostedPlan",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Safe owned result; no-store; no export authority implied",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Ack"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          }
+        },
+        "parameters": [
+          {
+            "name": "planId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Uuid"
+            }
+          },
+          {
+            "name": "X-CSRF-TOKEN",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PlanCommand"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/plans/{planId}/materializations": {
+      "post": {
+        "operationId": "materializeOwnedPlan",
+        "summary": "Planned D06b3 revision-bound view; not yet implemented",
+        "description": "See hosted-plan-views-v1.md. Live lease/ownership before body and again before response; Host/Origin/CSRF required. No command replay ID. Read responses bounded to 128 MiB. Small request: 16 KiB/depth 4/128 tokens/10 seconds; four immediate reader slots.",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "planId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Uuid"
+            }
+          },
+          {
+            "name": "X-CSRF-TOKEN",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "../../schemas/plan-view-v1.schema.json#/$defs/revisionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Bounded owned revision result; no-store; shape is not export authority",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "../../schemas/plan-view-v1.schema.json#/$defs/materializationResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          }
+        }
+      }
+    },
+    "/api/v1/plans/{planId}/views/documents": {
+      "post": {
+        "operationId": "listPlanDocuments",
+        "summary": "Planned D06b3 revision-bound view; not yet implemented",
+        "description": "See hosted-plan-views-v1.md. Live lease/ownership before body and again before response; Host/Origin/CSRF required. No command replay ID. Read responses bounded to 128 MiB. Small request: 16 KiB/depth 4/128 tokens/10 seconds; four immediate reader slots.",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "planId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Uuid"
+            }
+          },
+          {
+            "name": "X-CSRF-TOKEN",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "../../schemas/plan-view-v1.schema.json#/$defs/revisionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Bounded owned revision result; no-store; shape is not export authority",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "../../schemas/plan-view-v1.schema.json#/$defs/documentsResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          }
+        }
+      }
+    },
+    "/api/v1/plans/{planId}/views/entities": {
+      "post": {
+        "operationId": "listPlanEntities",
+        "summary": "Planned D06b3 revision-bound view; not yet implemented",
+        "description": "See hosted-plan-views-v1.md. Live lease/ownership before body and again before response; Host/Origin/CSRF required. No command replay ID. Read responses bounded to 128 MiB. Small request: 16 KiB/depth 4/128 tokens/10 seconds; four immediate reader slots.",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "planId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Uuid"
+            }
+          },
+          {
+            "name": "X-CSRF-TOKEN",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "../../schemas/plan-view-v1.schema.json#/$defs/entitiesRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Bounded owned revision result; no-store; shape is not export authority",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "../../schemas/plan-view-v1.schema.json#/$defs/entitiesResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          }
+        }
+      }
+    },
+    "/api/v1/plans/{planId}/views/relations": {
+      "post": {
+        "operationId": "listPlanRelations",
+        "summary": "Planned D06b3 revision-bound view; not yet implemented",
+        "description": "See hosted-plan-views-v1.md. Live lease/ownership before body and again before response; Host/Origin/CSRF required. No command replay ID. Read responses bounded to 128 MiB. Small request: 16 KiB/depth 4/128 tokens/10 seconds; four immediate reader slots.",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "planId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Uuid"
+            }
+          },
+          {
+            "name": "X-CSRF-TOKEN",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "../../schemas/plan-view-v1.schema.json#/$defs/entitiesRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Bounded owned revision result; no-store; shape is not export authority",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "../../schemas/plan-view-v1.schema.json#/$defs/relationsResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          }
+        }
+      }
+    },
+    "/api/v1/plans/{planId}/views/draft": {
+      "post": {
+        "operationId": "listPlanDraft",
+        "summary": "Planned D06b3 revision-bound view; not yet implemented",
+        "description": "See hosted-plan-views-v1.md. Live lease/ownership before body and again before response; Host/Origin/CSRF required. No command replay ID. Read responses bounded to 128 MiB. Small request: 16 KiB/depth 4/128 tokens/10 seconds; four immediate reader slots.",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "planId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Uuid"
+            }
+          },
+          {
+            "name": "X-CSRF-TOKEN",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "../../schemas/plan-view-v1.schema.json#/$defs/draftRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Bounded owned revision result; no-store; shape is not export authority",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "../../schemas/plan-view-v1.schema.json#/$defs/draftResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          }
+        }
+      }
+    },
+    "/api/v1/plans/{planId}/views/containment": {
+      "post": {
+        "operationId": "listPlanContainment",
+        "summary": "Planned D06b3 revision-bound view; not yet implemented",
+        "description": "See hosted-plan-views-v1.md. Live lease/ownership before body and again before response; Host/Origin/CSRF required. No command replay ID. Read responses bounded to 128 MiB. Small request: 16 KiB/depth 4/128 tokens/10 seconds; four immediate reader slots.",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "planId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Uuid"
+            }
+          },
+          {
+            "name": "X-CSRF-TOKEN",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "../../schemas/plan-view-v1.schema.json#/$defs/draftRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Bounded owned revision result; no-store; shape is not export authority",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "../../schemas/plan-view-v1.schema.json#/$defs/containmentResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          }
+        }
+      }
+    },
+    "/api/v1/plans/{planId}/views/placements": {
+      "post": {
+        "operationId": "listEligiblePlanParents",
+        "summary": "Planned D06b3 revision-bound view; not yet implemented",
+        "description": "See hosted-plan-views-v1.md. Live lease/ownership before body and again before response; Host/Origin/CSRF required. No command replay ID. Read responses bounded to 128 MiB. Small request: 16 KiB/depth 4/128 tokens/10 seconds; four immediate reader slots.",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "planId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Uuid"
+            }
+          },
+          {
+            "name": "X-CSRF-TOKEN",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "../../schemas/plan-view-v1.schema.json#/$defs/placementsRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Bounded owned revision result; no-store; shape is not export authority",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "../../schemas/plan-view-v1.schema.json#/$defs/placementsResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          }
+        }
+      }
+    },
+    "/api/v1/plans/{planId}/views/document": {
+      "post": {
+        "operationId": "readPlanDocument",
+        "summary": "Planned D06b3 revision-bound view; not yet implemented",
+        "description": "See hosted-plan-views-v1.md. Live lease/ownership before body and again before response; Host/Origin/CSRF required. No command replay ID. Read responses bounded to 128 MiB. Small request: 16 KiB/depth 4/128 tokens/10 seconds; four immediate reader slots.",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "planId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Uuid"
+            }
+          },
+          {
+            "name": "X-CSRF-TOKEN",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "../../schemas/plan-view-v1.schema.json#/$defs/documentRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Bounded owned revision result; no-store; shape is not export authority",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "../../schemas/plan-view-v1.schema.json#/$defs/documentResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          }
+        }
+      }
+    },
+    "/api/v1/plans/{planId}/profile-captures": {
+      "post": {
+        "operationId": "capturePlanProfile",
+        "summary": "Planned D06b3 revision-bound view; not yet implemented",
+        "description": "See hosted-plan-views-v1.md. Live lease/ownership before body and again before response; Host/Origin/CSRF required. No command replay ID. Read responses bounded to 128 MiB. Collection request: 64 MiB/depth 8/1,000,000 tokens/30 seconds with admitted single scratch.",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "planId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Uuid"
+            }
+          },
+          {
+            "name": "X-CSRF-TOKEN",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "../../schemas/plan-view-v1.schema.json#/$defs/captureRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Bounded owned revision result; no-store; shape is not export authority",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "../../schemas/plan-view-v1.schema.json#/$defs/captureResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          }
+        }
+      }
+    },
+    "/api/v1/plans/{planId}/profile-previews": {
+      "post": {
+        "operationId": "previewPlanProfile",
+        "summary": "Planned D06b3 revision-bound view; not yet implemented",
+        "description": "See hosted-plan-views-v1.md. Live lease/ownership before body and again before response; Host/Origin/CSRF required. No command replay ID. Read responses bounded to 128 MiB. Collection request: 64 MiB/depth 8/1,000,000 tokens/30 seconds with admitted single scratch.",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "planId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Uuid"
+            }
+          },
+          {
+            "name": "X-CSRF-TOKEN",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "../../schemas/plan-view-v1.schema.json#/$defs/previewRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Bounded owned revision result; no-store; shape is not export authority",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "../../schemas/plan-view-v1.schema.json#/$defs/previewResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          }
+        }
+      }
+    },
+    "/api/v1/plans/{planId}/validations": {
+      "post": {
+        "operationId": "validateOwnedPlan",
+        "summary": "Planned D06b3 revision-bound view; not yet implemented",
+        "description": "See hosted-plan-views-v1.md. Live lease/ownership before body and again before response; Host/Origin/CSRF required. No command replay ID. Read responses bounded to 128 MiB. Small request: 16 KiB/depth 4/128 tokens/10 seconds; four immediate reader slots.",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "planId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Uuid"
+            }
+          },
+          {
+            "name": "X-CSRF-TOKEN",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "../../schemas/plan-view-v1.schema.json#/$defs/revisionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Bounded owned revision result; no-store; shape is not export authority",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "../../schemas/plan-view-v1.schema.json#/$defs/validationResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          }
+        }
+      }
+    },
+    "/api/v1/plans/{planId}/views/bindings": {
+      "post": {
+        "operationId": "listPlanBindings",
+        "summary": "Planned D06b4 complete value mapping; qualification pending",
+        "description": "See hosted-plan-context-v1.md. See hosted-plan-views-v1.md. Live lease/ownership before body and again before response; Host/Origin/CSRF required. No command replay ID. Read responses bounded to 128 MiB. Small request: 16 KiB/depth 4/128 tokens/10 seconds; four immediate reader slots.",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "planId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Uuid"
+            }
+          },
+          {
+            "name": "X-CSRF-TOKEN",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "../../schemas/plan-view-v1.schema.json#/$defs/bindingsRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Bounded owned revision result; no-store; shape is not export authority",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "../../schemas/plan-view-v1.schema.json#/$defs/bindingsResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          }
+        }
+      }
+    },
+    "/api/v1/plans/{planId}/views/binding-locations": {
+      "post": {
+        "operationId": "listPlanBindingLocations",
+        "summary": "Planned D06b4 complete value mapping; qualification pending",
+        "description": "See hosted-plan-context-v1.md. See hosted-plan-views-v1.md. Live lease/ownership before body and again before response; Host/Origin/CSRF required. No command replay ID. Read responses bounded to 128 MiB. Small request: 16 KiB/depth 4/128 tokens/10 seconds; four immediate reader slots. Exact raw coordinates require completeDocumentDisclosure=true for every field and side; masked binding values remain masked.",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "planId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/Uuid"
+            }
+          },
+          {
+            "name": "X-CSRF-TOKEN",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "../../schemas/plan-view-v1.schema.json#/$defs/bindingLocationsRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Bounded owned revision result; no-store; shape is not export authority",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "../../schemas/plan-view-v1.schema.json#/$defs/bindingLocationsResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "sessionCookie": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "JSESSIONID"
+      }
+    },
+    "schemas": {
+      "Uuid": {
+        "type": "string",
+        "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}(?![\\s\\S])"
+      },
+      "Id": {
+        "type": "string",
+        "pattern": "^[a-z][a-z0-9.-]{0,63}(?![\\s\\S])",
+        "maxLength": 64
+      },
+      "Revision": {
+        "type": "string",
+        "pattern": "^[1-9][0-9]*(?![\\s\\S])",
+        "maxLength": 1024
+      },
+      "Sha256": {
+        "type": "string",
+        "pattern": "^[0-9a-f]{64}(?![\\s\\S])"
+      },
+      "Code": {
+        "type": "string",
+        "pattern": "^[A-Z][A-Z0-9_]{0,63}(?![\\s\\S])"
+      },
+      "PublicationRef": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "objectId",
+          "workspaceRevision"
+        ],
+        "properties": {
+          "objectId": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "workspaceRevision": {
+            "$ref": "#/components/schemas/Revision"
+          }
+        }
+      },
+      "CreatePlan": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "expectedRevision",
+          "requestId",
+          "definition",
+          "bindingId",
+          "destinationId"
+        ],
+        "properties": {
+          "expectedRevision": {
+            "const": "0"
+          },
+          "requestId": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "definition": {
+            "$ref": "#/components/schemas/PublicationRef"
+          },
+          "bindingId": {
+            "$ref": "#/components/schemas/Id"
+          },
+          "destinationId": {
+            "$ref": "#/components/schemas/Id"
+          }
+        }
+      },
+      "ReserveInspection": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "expectedRevision",
+          "requestId",
+          "discardDraftOnSuccess"
+        ],
+        "properties": {
+          "expectedRevision": {
+            "$ref": "#/components/schemas/Revision"
+          },
+          "requestId": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "discardDraftOnSuccess": {
+            "const": true
+          }
+        }
+      },
+      "Credentials": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "username",
+          "password"
+        ],
+        "properties": {
+          "username": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[^\\u0000]*(?![\\s\\S])",
+            "writeOnly": true
+          },
+          "password": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1024,
+            "pattern": "^[^\\u0000]*(?![\\s\\S])",
+            "writeOnly": true
+          }
+        }
+      },
+      "Ack": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "planId",
+          "revision"
+        ],
+        "properties": {
+          "planId": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "revision": {
+            "$ref": "#/components/schemas/Revision"
+          },
+          "operationId": {
+            "$ref": "#/components/schemas/Uuid"
+          }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "code"
+        ],
+        "properties": {
+          "code": {
+            "$ref": "#/components/schemas/Code"
+          }
+        }
+      },
+      "Empty": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [],
+        "properties": {}
+      },
+      "Counts": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "documents",
+          "entities",
+          "relations"
+        ],
+        "properties": {
+          "documents": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 128
+          },
+          "entities": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 20000
+          },
+          "relations": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 50000
+          }
+        }
+      },
+      "PlanSummary": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "planId",
+          "revision",
+          "definition",
+          "bindingId",
+          "destinationId",
+          "currentCounts",
+          "targetCounts",
+          "inspectionValid",
+          "targetComplete",
+          "exportAvailable",
+          "blockers",
+          "observedDestination"
+        ],
+        "properties": {
+          "planId": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "revision": {
+            "$ref": "#/components/schemas/Revision"
+          },
+          "definition": {
+            "$ref": "#/components/schemas/PublicationRef"
+          },
+          "bindingId": {
+            "$ref": "#/components/schemas/Id"
+          },
+          "destinationId": {
+            "$ref": "#/components/schemas/Id"
+          },
+          "currentCounts": {
+            "$ref": "#/components/schemas/Counts"
+          },
+          "targetCounts": {
+            "$ref": "#/components/schemas/Counts"
+          },
+          "inspectionValid": {
+            "type": "boolean"
+          },
+          "targetComplete": {
+            "type": "boolean"
+          },
+          "exportAvailable": {
+            "type": "boolean"
+          },
+          "blockers": {
+            "type": "array",
+            "maxItems": 256,
+            "items": {
+              "$ref": "#/components/schemas/Code"
+            }
+          },
+          "activeOperationId": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "observedDestination": {
+            "$ref": "#/components/schemas/ObservedDestination"
+          }
+        }
+      },
+      "Operation": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "operationId",
+          "planId",
+          "phase",
+          "code",
+          "cleanup"
+        ],
+        "properties": {
+          "operationId": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "planId": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "phase": {
+            "enum": [
+              "reserved",
+              "running",
+              "succeeded",
+              "refused",
+              "cancelled",
+              "expired"
+            ]
+          },
+          "code": {
+            "$ref": "#/components/schemas/Code"
+          },
+          "cleanup": {
+            "enum": [
+              "complete",
+              "in-progress",
+              "inconclusive"
+            ]
+          },
+          "installedRevision": {
+            "$ref": "#/components/schemas/Revision"
+          }
+        }
+      },
+      "Destination": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "engine",
+          "host",
+          "port",
+          "database"
+        ],
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/Id"
+          },
+          "engine": {
+            "enum": [
+              "postgresql",
+              "oracle"
+            ]
+          },
+          "host": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9.-]{1,253}(?![\\s\\S])"
+          },
+          "port": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 65535
+          },
+          "database": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_]{1,128}(?![\\s\\S])"
+          }
+        }
+      },
+      "Destinations": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "destinations"
+        ],
+        "properties": {
+          "destinations": {
+            "type": "array",
+            "maxItems": 32,
+            "items": {
+              "$ref": "#/components/schemas/Destination"
+            }
+          }
+        }
+      },
+      "PlanCommand": {
+        "$ref": "../../schemas/plan-command-v1.schema.json"
+      },
+      "ObservedDestination": {
+        "oneOf": [
+          {
+            "type": "null"
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "engine",
+              "identity",
+              "observationFingerprint",
+              "evidenceValid"
+            ],
+            "properties": {
+              "engine": {
+                "const": "postgresql"
+              },
+              "identity": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "systemIdentifier",
+                  "databaseOid",
+                  "databaseName"
+                ],
+                "properties": {
+                  "systemIdentifier": {
+                    "type": "string",
+                    "pattern": "^[1-9][0-9]{0,19}$"
+                  },
+                  "databaseOid": {
+                    "type": "string",
+                    "pattern": "^[1-9][0-9]{0,19}$"
+                  },
+                  "databaseName": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 128,
+                    "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f\\ud800-\\udfff]+$",
+                    "not": {
+                      "pattern": "^[\\u0020\\u1680\\u2000-\\u2006\\u2008-\\u200a\\u2028\\u2029\\u205f\\u3000]*$"
+                    }
+                  }
+                }
+              },
+              "observationFingerprint": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "evidenceValid": {
+                "type": "boolean"
+              }
+            }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "engine",
+              "identity",
+              "observationFingerprint",
+              "evidenceValid"
+            ],
+            "properties": {
+              "engine": {
+                "const": "oracle"
+              },
+              "identity": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "dbid",
+                  "dbUniqueName",
+                  "conId",
+                  "conUid",
+                  "conName",
+                  "pdbGuid"
+                ],
+                "properties": {
+                  "dbid": {
+                    "type": "string",
+                    "pattern": "^[1-9][0-9]{0,19}$"
+                  },
+                  "dbUniqueName": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 128,
+                    "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f\\ud800-\\udfff]+$",
+                    "not": {
+                      "pattern": "^[\\u0020\\u1680\\u2000-\\u2006\\u2008-\\u200a\\u2028\\u2029\\u205f\\u3000]*$"
+                    }
+                  },
+                  "conId": {
+                    "type": "string",
+                    "pattern": "^[1-9][0-9]{0,19}$"
+                  },
+                  "conUid": {
+                    "type": "string",
+                    "pattern": "^[1-9][0-9]{0,19}$"
+                  },
+                  "conName": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 128,
+                    "pattern": "^[^\\u0000-\\u001f\\u007f-\\u009f\\ud800-\\udfff]+$",
+                    "not": {
+                      "pattern": "^[\\u0020\\u1680\\u2000-\\u2006\\u2008-\\u200a\\u2028\\u2029\\u205f\\u3000]*$"
+                    }
+                  },
+                  "pdbGuid": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{32}$"
+                  }
+                }
+              },
+              "observationFingerprint": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "evidenceValid": {
+                "type": "boolean"
+              }
+            }
+          }
+        ]
+      }
+    },
+    "responses": {
+      "Error400": {
+        "description": "Malformed or unknown request fields",
+        "headers": {
+          "Cache-Control": {
+            "schema": {
+              "type": "string",
+              "const": "no-store"
+            }
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "Error401": {
+        "description": "No live hosted authentication",
+        "headers": {
+          "Cache-Control": {
+            "schema": {
+              "type": "string",
+              "const": "no-store"
+            }
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "Error403": {
+        "description": "Host, Origin, CSRF or policy denied; unavailable in demo",
+        "headers": {
+          "Cache-Control": {
+            "schema": {
+              "type": "string",
+              "const": "no-store"
+            }
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "Error404": {
+        "description": "Missing, foreign-owner, foreign-lease or retired object",
+        "headers": {
+          "Cache-Control": {
+            "schema": {
+              "type": "string",
+              "const": "no-store"
+            }
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "Error409": {
+        "description": "Stale or colliding request, busy plan or consumed reservation",
+        "headers": {
+          "Cache-Control": {
+            "schema": {
+              "type": "string",
+              "const": "no-store"
+            }
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "Error413": {
+        "description": "Wire byte limit exceeded",
+        "headers": {
+          "Cache-Control": {
+            "schema": {
+              "type": "string",
+              "const": "no-store"
+            }
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "Error422": {
+        "description": "Semantic operation refused",
+        "headers": {
+          "Cache-Control": {
+            "schema": {
+              "type": "string",
+              "const": "no-store"
+            }
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "Error429": {
+        "description": "Bounded plan, operation or memory capacity exhausted",
+        "headers": {
+          "Cache-Control": {
+            "schema": {
+              "type": "string",
+              "const": "no-store"
+            }
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      },
+      "Error503": {
+        "description": "Trusted service or configuration unavailable",
+        "headers": {
+          "Cache-Control": {
+            "schema": {
+              "type": "string",
+              "const": "no-store"
+            }
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      }
+    }
+  }
+}

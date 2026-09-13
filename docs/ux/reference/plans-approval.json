@@ -1,0 +1,38 @@
+[
+  {
+    "reference": "plans-desktop-v1.png",
+    "sha256": "4f630c98882925458b06c30c449d4a88cae6473b47750f34ae11f1b7e157dd6d",
+    "pixels": [
+      1505,
+      1045
+    ],
+    "intendedCssViewport": [
+      1440,
+      1000
+    ],
+    "intendedDpr": 1,
+    "approval": "APPROVED",
+    "state": "Confirmed no current Native v3 plan; no model data or XML",
+    "source": "Built-in image generation using approved generic Midnight reference",
+    "implementationRequirements": "Preserve repository SVG branding and session-expiry information; system fonts14\u201316px,44px controls, measured AA contrast and natural vertical scrolling. Raster logo/text is not permission to replace branding or reduce accessibility.",
+    "approvalReference": "User explicitly approved both Plans layouts in response to their exact approval question, 10 September 2026."
+  },
+  {
+    "reference": "plans-narrow-v1.png",
+    "sha256": "6039aa9eb4e8fdd39dd4537fc16465021ee2e8c95ce260414b3f001e0cc66fba",
+    "pixels": [
+      853,
+      1844
+    ],
+    "intendedCssViewport": [
+      390,
+      844
+    ],
+    "intendedDpr": 1,
+    "approval": "APPROVED",
+    "state": "Confirmed no current Native v3 plan; no model data or XML",
+    "source": "Built-in image generation using approved generic Midnight reference",
+    "implementationRequirements": "Preserve repository SVG branding and session-expiry information; system fonts14\u201316px,44px controls, measured AA contrast and natural vertical scrolling. Raster logo/text is not permission to replace branding or reduce accessibility.",
+    "approvalReference": "User explicitly approved both Plans layouts in response to their exact approval question, 10 September 2026."
+  }
+]

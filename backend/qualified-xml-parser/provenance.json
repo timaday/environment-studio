@@ -1,0 +1,20 @@
+{
+  "kind": "PUBLIC_UPSTREAM_BUILD_METADATA",
+  "upstream": {
+    "artifact": "com.fasterxml.woodstox:woodstox-core:7.2.2:jar:sources",
+    "sha256": "24669b0269917ca63270e81222c038b3ce737eba12bdb4a159e48e8b1d5a4822",
+    "repository": "https://repo.maven.apache.org/maven2/",
+    "license": "Apache-2.0"
+  },
+  "modifiedImplementation": "7.2.2-es-xml10-fifth-1",
+  "patchScope": [
+    "XmlChars.is10NameStartChar",
+    "XmlChars.is10NameChar"
+  ],
+  "runtimeDependency": {
+    "artifact": "org.codehaus.woodstox:stax2-api:4.3.0",
+    "sha256": "7c805f36129ea9fa42b696093b7ae1eb20bb6ccec65c8280d6f33db5609ca5e1"
+  },
+  "checkedInArtifacts": "Only build configuration, original helper/tests, upstream Apache license and patch notice; no upstream source archive, binaries or upstream test fixtures.",
+  "testInputOrigin": "Independently invented generic strings and ZIP entries; classifier oracle transcribes W3C XML 1.0 Fifth Edition productions."
+}

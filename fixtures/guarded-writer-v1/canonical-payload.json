@@ -1,0 +1,1 @@
+{"bindingId":"invented.pg","engine":"postgresql","records":[{"documentId":"packet.one","key":{"type":"text","value":"01"},"originalHex":"3c74696c652076616c75653d226f6c64222f3e","targetHex":"3c74696c652076616c75653d226e6577222f3e"}],"schemaVersion":"1","storage":"text","table":{"keyColumn":"slot","keyType":"text","name":"CanvasRows","schema":"MockSchema","xmlColumn":"xml_data"}}

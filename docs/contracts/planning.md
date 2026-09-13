@@ -18,6 +18,9 @@ MoveRelation, RemoveEntity, BindField and KeepObserved. These are vocabulary
 independent. The definition and writer must support each operation. Dragging
 canvas positions changes layout only. Moves, replicas and copies are distinct;
 no silent deletion cascade. Inserts/row keys/triggers need a qualified strategy.
+The internal [structural target mechanism](structural-target.md) specifies exact
+field/reference decisions, creation/move placement and independent final graph
+comparison before hosted plan authority is added.
 
 Every mutation includes expectedRevision and requestId. A stale command returns
 409; the same request ID/body returns the original bounded result, while reuse

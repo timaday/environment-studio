@@ -32,6 +32,127 @@ Apply it to independent ready slices, keep shared contracts with one owner, and
 measure integration/rework before revising these estimates. It does not remove
 the critical path or private application qualification.
 
+## Amended Q findings — 9 September continuation
+
+These extend the full completion plan; they do not replace the remaining hosted,
+native-client, resource, operator or deployment work. Q's original wording is
+superseded by the amended task. Current direct-only rejection is consistent with
+the advertised contract. Q publication to GitHub is not authorized.
+
+| Work | Dependency and acceptance |
+| --- | --- |
+| QF-0001/0002 child-property fields and mechanism compatibility | [Reviewed mapping slice integrated](../evidence/qf12-child-property.md): closed declarations, shared source locators, projection/creation/moves/views, target reprojection, whole/partial reuse, historical replay and per-binding compatibility. Java754, independent guard controls and exact candidate OCI smoke pass. Combined capacity, native clients and complete hosted export remain separate open gates. |
+| QF-0003/0004 computed groups and co-occurrence | Tim approved [authoritative recomputation with physical-only v3 profiles](../product/derived-graph-decision.md), PUBLIC text inputs and shared graph limits. Contracts, internal compiler, derived engine and [actual observed XML](../evidence/qf34-derived-projection.md) are reviewed. [Typed/final-target integration](../evidence/qf34-derived-target.md) now compares complete proofs after actual XML materialization; combined Java894 passes. [Physical-only profile ports](../evidence/qf34-profile-v3.md) now pass full Java912 and independent XML/inventory/byte controls. [Separate typed history](../evidence/qf34-history-v3.md) is reviewed; combined Java943 passes. [Explicit schema3 storage and definition drafts](../evidence/qf34-workspace-v3.md) are reviewed; the exact candidate container passes Java973 and protected schema3 administration. The [draft/history HTTP routes](../evidence/qf34-workspace-http-v3.md) are reviewed; combined Java1024 and frontend40/schema36 pass. The [owned profile draft command](../evidence/qf34-profile-drafts-v3.md) now passes combined Java1053 and independent persistence controls. Profile HTTP is reviewed below; complete new publication, plan integration and qualification before availability. |
+
+The [profile HTTP draft/history routes](../evidence/qf34-profile-http-v3.md) are
+now reviewed and integrated: combined Java1072, frontend40/schema40 and independent
+reference, exact-revision and owner controls pass.
+[Internal publication commands](../evidence/qf34-publication-v3.md) now pass
+independent review and combined Java1115; the actual compiler still refuses
+publication. [Internal v3 observation](../evidence/qf34-observation-v3.md) now passes
+independent review, combined Java1126 and actual mock Oracle/PostgreSQL TLS and
+derived-projection controls. The
+[current v3 plan publication lookup](../evidence/qf34-plan-workspace-v3.md) now
+passes independent review and combined Java1151. The separate
+[actual both-engine workflow extension](../evidence/qf34-database-workflow-v3.md)
+passes complete target/proof, physical-only capture and whole/partial reuse
+checks after correcting an independently found test-oracle gap. Publication HTTP
+remains required before operational qualification.
+The [versioned plan model](../evidence/qf34-plan-model.md) now shares the physical
+composition algorithm while retaining distinct v2/v3 metadata: independent review,
+combined Java1157 and actual both-engine production-merge workflows pass. The
+[complete v3 content adapter](../evidence/qf34-plan-content.md) now passes independent
+review, full Java1187 and eight compiled guard mutations. The
+[shared internal lifecycle](../evidence/qf34-shared-lifecycle.md) passes full Java1203
+and corrected independent review: current-only v3 inspection, separately proven
+targets, physical commands/pages and readable unresolved summaries. Comparison
+now passes [corrected independent review](../evidence/qf34-shared-comparison.md)
+and full Java1217. [Shared profile capture](../evidence/qf34-shared-capture.md)
+passes independent review and combined Java1224.
+[Shared profile reuse](../evidence/qf34-shared-composition.md) and the
+[native launch owner](../evidence/d07c3-privacy-native-launch.md) now pass
+independent review and combined Java1253. The
+[shared versioned workspace adapter](../evidence/qf34-shared-workspace.md) now
+passes independent review and combined Java1260. Versioned plan APIs and
+combined retained-proof resources remain required. The
+[native maps sampler](../evidence/d07c3-privacy-maps.md) now passes independent
+complete-stream, shared-retry and descriptor-reuse review. Combined Java1275
+passes; production JNI, mapped byte identity, loader closure and native client
+qualification remain open.
+The [launch-owned executable inspection](../evidence/d07c3-privacy-owned-image.md)
+now joins trusted-file/image/ELF checks under the original startup and hash owner;
+independent dynamic/static and held-cleanup controls and combined Java1304 pass. Mapped byte identity,
+loader closure, production JNI and native client qualification remain required.
+The [shared controlled v3 views](../evidence/qf34-shared-views.md) pass independent
+physical-origin and contributor-role review. Combined Java1294 with native maps
+passes. [Shared v3 validation](../evidence/qf34-shared-validation.md) now passes
+independent policy/origin review and combined Java1320. It retains UNKNOWN checks,
+fresh publication/full XML verification and a separate v3 identity.
+[Publication HTTP](../evidence/qf34-publication-http.md) and
+[shared runtime registration](../evidence/qf34-plan-runtime.md) now pass independent
+review and combined Java1343/frontend40/schema42. Current compilation still refuses
+new publication. Concurrent workspace cleanup and schema2/v2 compatibility are
+verified. [Immutable model-version admission](../evidence/qf34-plan-version-admission.md)
+and [legacy HTTP enforcement](../evidence/qf34-plan-version-http.md) now pass fixed
+independent reviews and combined Java1373. [Small v3 summaries](../evidence/qf34-plan-summary.md)
+and [body callbacks](../evidence/owned-body-callbacks.md) now pass combined Java1393.
+[Cleanup and transfer helpers](../evidence/owned-plan-transfer-foundation.md) now
+pass fixed independent review and combined Java1427. The
+[v3 registry and closed replies](../evidence/v3-plan-transfer-registry.md) now pass
+fixed independent review and combined Java1448. The
+[initial v3 plan HTTP routes](../evidence/v3-plan-http.md) now pass independent
+real HTTP/OIDC review and full Java1488, frontend40/schema46, checking and build.
+Original authority, one-shot credentials and stalled-body recovery are verified;
+compiler publication remains incomplete. [Owned v3 commands](../evidence/v3-plan-commands.md)
+now pass independent real HTTP review, full Java1506 and frontend40/schema47.
+[Owned v3 materialization](../evidence/v3-plan-materialization.md) now corrects
+original view-cancellation forwarding and keeps the pinned view executing through
+all response checks. Independent HTTP review, full Java1522 and frontend40/schema49
+pass. [V3 document/entity pages](../evidence/v3-plan-physical-views.md) now pass
+independent HTTP review, full Java1531 and frontend40/schema51.
+[V3 structural/binding pages](../evidence/v3-plan-structural-views.md) now pass
+independent HTTP review, full Java1539 and frontend40/schema53.
+[Document comparison and locations](../evidence/v3-plan-document-views.md) now pass
+independent review, full Java1549 and frontend40/schema55. The
+[three priority corrections](../evidence/continuation-p2-corrections.md) pass
+combined Java1563. The [computed HTTP integration](../evidence/v3-plan-computed-candidate.md)
+now passes independent Java50/schema57 review and combined Java1579/frontend40/schema57,
+preserving all three corrections. [Capture/reuse and paged validation](../evidence/v3-plan-workflow.md)
+now pass fixed independent review and full Java1599/frontend40/schema58. The typed
+v3 browser client is the next application slice. The committed
+[c3b891a image](../evidence/v3-plan-artifacts.md) passes its own Java1579/frontend40/schema57
+build and protected smoke. The [production JNI ownership contract](../evidence/privacy-jni-ownership-contract.md)
+passes independent review and is ready for implementation. Export remains unavailable.
+
+The lead owns shared contracts and compatibility. Independent fixed-candidate
+review, actual RED/GREEN, targeted guard mutations and integrated verification
+remain required. Private models and original Q inputs stay outside the repository.
+
+The later 5fa6695 independent review's retained-origin defect is
+[corrected and reviewed](../evidence/derived-retained-origin-fix.md), with actual
+RED and full Java850. Preserve later XML/root changes. Finish final derived
+profile/hosted paths. [Inspection capability fields](../evidence/inspection-capability-clarification.md)
+now separate UI availability from configured API admission; a false UI flag is
+not backend enforcement. [Exact 7111230 container and browser checks](../evidence/derived-target-artifacts.md)
+pass; native/client, combined resource and deployment qualification remain open.
+The [native argument prerequisite](../evidence/d07c3-privacy-arguments.md) is now
+independently reviewed with current-head Java985 and additional process controls.
+The [bounded file-hash prerequisite](../evidence/d07c3-privacy-hash.md) is now
+independently reviewed with combined Java1036; native resource/loader qualification
+remains open. The [trusted-file opening prerequisite](../evidence/d07c3-privacy-file.md)
+now passes independent review, full Java1086 and nine actual guard mutants.
+The [executable association prerequisite](../evidence/d07c3-privacy-image.md)
+now passes independent review, full Java1100 and thirteen guard mutants. Its
+retrospective RED ordering gap remains recorded. The
+[script/interpreter association prerequisite](../evidence/d07c3-privacy-script.md)
+now passes independent review, full Java1141 and thirteen guard mutations.
+The [structural ELF64 prerequisite](../evidence/d07c3-privacy-elf.md) now passes
+independent review, full Java1171 and fourteen compiled guard mutations;
+structural file metadata confers no mapped-object or runtime admission.
+Complete loader closure, consumed-script evidence and coordinator/JNI before
+client admission. The exact9454d9f [HTTP artifact](../evidence/workspace-http-v3-artifacts.md)
+passes Java1024, frontend40/schema36 and protected smoke; it predates hashing.
+
 ## Daily checkpoints
 
 **Tuesday:** confirm D01's generic compiler contracts and an independent mock

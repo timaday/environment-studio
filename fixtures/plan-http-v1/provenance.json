@@ -1,0 +1,10 @@
+{
+  "schemaVersion": 1,
+  "purpose": "MOCK_DATABASE_TESTING",
+  "origin": "INVENTED_FROM_SCRATCH",
+  "artifacts": [
+    "command.json",
+    "preview-oracle.py",
+    "preview-digest.json"
+  ]
+}

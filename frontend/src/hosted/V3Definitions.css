@@ -1,0 +1,318 @@
+.v3-definitions {
+  max-width: 1130px;
+  margin: 0 auto;
+  padding: 24px 30px;
+  background: #101b2c;
+  border-radius: 10px;
+  font-size: 14px;
+}
+.v3-definitions h1 {
+  font-size: 36px;
+  font-weight: 650;
+  margin: 0 0 6px;
+}
+.v3-definitions h2 {
+  font-size: 24px;
+  margin-bottom: 16px;
+}
+.v3-definitions p {
+  font-size: 14px;
+}
+.v3-definitions > p {
+  font-size: 16px;
+}
+.v3-definitions label {
+  margin: 0;
+}
+.v3-definitions button {
+  margin: 0;
+  padding: 10px 18px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: #18243a;
+  min-height: 44px;
+}
+.v3-definitions select,
+.v3-definitions textarea {
+  border-color: var(--border);
+  background: #111d30;
+  margin-top: 6px;
+}
+.v3-definitions select {
+  min-height: 44px;
+  padding: 10px 14px;
+}
+.v3-definitions button:disabled {
+  background: #303e56;
+  color: #b0bed2;
+}
+.v3-definitions .definition-primary {
+  background: var(--accent);
+  color: #0b1220;
+  border-color: var(--accent);
+  font-weight: 600;
+}
+.v3-definitions .definition-primary:disabled {
+  background: #303e56;
+  color: #b0bed2;
+  border-color: var(--border);
+}
+.definition-selection {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 170px;
+  align-items: end;
+  gap: 20px;
+  max-width: 860px;
+  margin: 24px 0 16px;
+}
+.v3-definitions .definition-notice {
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: #18243a;
+  font-size: 14px;
+  margin-block: 16px;
+}
+.definition-source {
+  border-top: 1px solid var(--border);
+  margin-top: 20px;
+  padding-top: 16px;
+}
+.definition-upload {
+  display: flex;
+  align-items: start;
+  gap: 24px;
+  margin-bottom: 16px;
+}
+.v3-definitions .definition-upload-button {
+  color: var(--accent);
+  border-color: var(--accent);
+  background: transparent;
+  min-width: 236px;
+}
+.definition-upload-button span {
+  font-size: 22px;
+  line-height: 16px;
+  margin-right: 12px;
+}
+.definition-upload > p {
+  padding-top: 8px;
+}
+.definition-upload p {
+  margin-top: 6px;
+}
+.definition-editor {
+  display: grid;
+  grid-template-columns: 168px minmax(0, 1fr);
+  gap: 22px;
+}
+.v3-definitions textarea {
+  height: 120px;
+  min-height: 120px;
+  resize: vertical;
+  line-height: 1.5;
+}
+.definition-save {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin: 14px 0 16px;
+}
+.definition-save button {
+  min-width: 152px;
+}
+.definition-saved {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.definition-view-tabs {
+  display: flex;
+  gap: 20px;
+  background: #18243a;
+  border-bottom: 1px solid var(--border);
+  padding: 0 14px;
+}
+.v3-definitions .definition-view-tabs button {
+  min-height: 52px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  padding: 10px 16px;
+  color: var(--muted);
+  border-bottom: 4px solid transparent;
+}
+.v3-definitions .definition-view-tabs button[aria-selected="true"] {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+.definition-saved [role="tabpanel"] {
+  padding: 20px;
+  overflow: auto;
+  max-height: 36rem;
+  overflow-wrap: anywhere;
+}
+.definition-saved .definition-empty {
+  display: grid;
+  place-items: center;
+  min-height: 104px;
+  text-align: center;
+}
+.definition-saved li {
+  margin-block: 8px;
+}
+.definition-saved summary {
+  cursor: pointer;
+  padding-block: 12px;
+}
+.definition-publication {
+  border-top: 1px solid var(--border);
+  background: #18243a;
+  padding: 14px 20px;
+}
+@media (max-width: 650px) {
+  .v3-definitions {
+    padding: 20px 16px;
+  }
+  .v3-definitions h1 {
+    font-size: 30px;
+  }
+  .definition-selection,
+  .definition-editor {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
+  }
+  .definition-upload,
+  .definition-save {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+  .definition-save button {
+    align-self: flex-start;
+  }
+  .definition-upload > p {
+    padding-top: 0;
+  }
+  .definition-upload-button {
+    width: 100%;
+  }
+  .v3-definitions .definition-view-tabs {
+    gap: 0;
+    padding: 0;
+  }
+  .v3-definitions .definition-view-tabs button {
+    flex: 1;
+    padding-inline: 8px;
+  }
+  .definition-saved [role="tabpanel"] {
+    padding: 16px;
+  }
+}
+
+/* The approved Definitions shell; other workspace views retain their existing layout. */
+:is(.definitions-active, .plans-active) {
+  position: relative;
+}
+:is(.definitions-active, .plans-active) .app-header {
+  min-height: 58px;
+  padding: 8px 32px;
+  gap: 20px;
+}
+:is(.definitions-active, .plans-active) .app-header > button {
+  margin-left: auto;
+  background: transparent;
+  border: 0;
+  border-left: 1px solid var(--border);
+  padding: 10px 0 10px 32px;
+  min-height: 44px;
+  font-size: 14px;
+}
+:is(.definitions-active, .plans-active) .workspace-navigation {
+  position: absolute;
+  top: 4px;
+  right: 152px;
+  margin: 0;
+  background: transparent;
+  border: 0;
+  gap: 16px;
+}
+:is(.definitions-active, .plans-active) .workspace-navigation button {
+  min-height: 44px;
+  padding: 10px 20px;
+  font-size: 14px;
+}
+:is(.definitions-active, .plans-active) .workspace-navigation button[aria-pressed="true"] {
+  background: #222e4a;
+  color: var(--accent);
+}
+:is(.definitions-active, .plans-active) .badge {
+  border: 0;
+  border-left: 1px solid var(--border);
+  border-radius: 0;
+  padding-left: 20px;
+  font-size: 14px;
+}
+:is(.definitions-active, .plans-active) main {
+  max-width: 1194px;
+  padding: 24px 32px;
+}
+:is(.definitions-active, .plans-active) .session-note {
+  margin-top: 20px;
+  font-size: 14px;
+}
+@media (max-width: 800px) {
+  :is(.definitions-active, .plans-active) .app-header {
+    padding: 10px 16px;
+    flex-wrap: nowrap;
+    gap: 8px;
+  }
+  :is(.definitions-active, .plans-active) .wordmark {
+    width: 220px;
+    max-width: 65%;
+  }
+  :is(.definitions-active, .plans-active) .badge {
+    display: none;
+  }
+  :is(.definitions-active, .plans-active) .app-header > button {
+    padding-left: 12px;
+  }
+  :is(.definitions-active, .plans-active) .workspace-navigation {
+    position: static;
+    margin: 4px 16px 12px;
+  }
+  :is(.definitions-active, .plans-active) main {
+    padding: 8px 14px 24px;
+  }
+}
+
+.definition-icon {
+  width: 24px;
+  height: 24px;
+  flex: none;
+  vertical-align: middle;
+  margin-right: 12px;
+  color: var(--accent);
+}
+.definition-icon-file {
+  width: 36px;
+  height: 44px;
+  margin: 0;
+  color: #a2b2d4;
+}
+.definition-saved .definition-empty {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 16px;
+  min-height: 104px;
+}
+.v3-definitions .definition-notice,
+.definition-publication {
+  display: flex;
+  align-items: center;
+}
+.v3-definitions section.definition-notice {
+  display: block;
+}

@@ -1,0 +1,20 @@
+{
+  "postgresql": [
+    "LOCK TABLE \"MockSchema\".\"CanvasRows\" IN ACCESS EXCLUSIVE MODE;",
+    "es_original bytea[] := ARRAY[",
+    "es_target bytea[] := ARRAY[",
+    "pg_catalog.convert_to(\"slot\",'UTF8')=pg_catalog.decode('3031','hex')",
+    "GET DIAGNOSTICS es_count = ROW_COUNT;",
+    "datlocprovider='c'"
+  ],
+  "oracle": [
+    "LOCK TABLE \"MockSchema\".\"CanvasRows\" IN EXCLUSIVE MODE WAIT 30;",
+    "PHRpbGUgdmFsdWU9Im9sZCIvPg==",
+    "PHRpbGUgdmFsdWU9Im5ldyIvPg==",
+    "SYS.DBMS_LOB.WRITEAPPEND(:es_original_blob,19,es_raw);",
+    "SYS.DBMS_LOB.WRITEAPPEND(:es_target_blob,19,es_raw);",
+    "FROM sys.dba_audit_policies",
+    "FROM sys.dba_mview_logs",
+    "FROM sys.dba_flashback_archive_tables"
+  ]
+}

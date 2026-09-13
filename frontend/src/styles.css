@@ -404,3 +404,140 @@ tbody th {
   overflow: visible;
   min-width: max-content;
 }
+
+.workspace-navigation {
+  margin: 20px 36px 0;
+  width: fit-content;
+}
+.definition-inspector {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.definition-inspector > p {
+  padding: 16px 24px;
+}
+.definition-blockers {
+  padding: 20px 24px;
+  border-block: 1px solid var(--border);
+}
+.definition-blockers ul,
+.definition-panel ul {
+  padding-left: 24px;
+}
+.definition-blockers li,
+.definition-panel li {
+  margin-block: 12px;
+  line-height: 1.6;
+}
+.definition-blockers li > span {
+  color: var(--muted);
+  font-size: 13px;
+}
+.definition-tabs {
+  margin: 20px 24px;
+  width: fit-content;
+}
+.segmented button[aria-selected="true"] {
+  background: #314162;
+  color: #edf3fd;
+}
+.definition-panel {
+  overflow: auto;
+  padding: 0 24px 24px;
+}
+.definition-panel pre {
+  min-width: max-content;
+  overflow: visible;
+}
+@media (max-width: 650px) {
+  .workspace-navigation {
+    margin-left: 20px;
+  }
+  .definition-blockers,
+  .definition-panel {
+    padding-inline: 16px;
+  }
+  .definition-tabs {
+    margin-inline: 16px;
+  }
+}
+
+.hosted-panel,
+.plan-context {
+  margin: 1rem 0;
+  padding: 1.5rem;
+  border: 1px solid var(--border, #33425c);
+  border-radius: 12px;
+  background: #121c2e;
+  min-width: 0;
+}
+.hosted-panel label {
+  display: block;
+  margin: 1rem 0;
+  overflow-wrap: anywhere;
+}
+.hosted-panel input:not([type="checkbox"]),
+.hosted-panel select,
+.hosted-panel textarea {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  margin-top: 0.5rem;
+  padding: 0.75rem;
+  color: #edf3fd;
+  background: #0b1220;
+  border: 1px solid #b0bed2;
+  border-radius: 8px;
+  font: inherit;
+}
+.hosted-panel input[type="checkbox"] {
+  width: 1.2rem;
+  height: 1.2rem;
+  margin-right: 0.5rem;
+  vertical-align: middle;
+}
+.hosted-panel textarea,
+.hosted-panel pre {
+  font-family: ui-monospace, monospace;
+}
+.hosted-panel pre {
+  overflow: auto;
+  max-height: 32rem;
+  padding: 1rem;
+  background: #0b1220;
+  white-space: pre;
+}
+.hosted-panel button {
+  margin: 0.25rem;
+  min-height: 44px;
+}
+.hosted-panel p,
+.plan-context p,
+.plan-context h2,
+.session-note {
+  overflow-wrap: anywhere;
+}
+.xml-panes {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 1rem;
+}
+.xml-panes > section {
+  min-width: 0;
+}
+.hosted-panel [role="alert"] {
+  border-left: 4px solid #ffbf87;
+  padding: 0.75rem;
+}
+@media (max-width: 760px) {
+  .xml-panes {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .hosted-panel,
+  .plan-context {
+    padding: 1rem;
+  }
+}

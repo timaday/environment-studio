@@ -23,8 +23,10 @@ never fabricate the RED observation or downgrade a missing gate to PASS.
 | G09 release evidence | Version tags | Capability matrix + per-gate evidence for exact candidate tree | Missing/UNKNOWN evidence blocks versioned release |
 | G10 HiveForge deployment | Release | Actual pull by digest, routing/TLS, lifecycle/storage/identity | No claim of HiveForge qualification without observation |
 
-G00/G01/G02/G08 are wired into starter CI. G03–G07/G10 include implementation
-work and initially **NOT RUN** evidence. G09 deliberately fails for the starter.
+G00/G01/G02/G08 are wired into CI. G03 now includes the definition-inspector
+browser check; complete workflow and operator evidence remain outstanding.
+G04–G07/G10 still require their capability evidence. G09 deliberately fails
+while required release evidence is missing.
 Main images are explicitly development/demo images; only version tags require
 the complete release gate. There is no `continue-on-error`, zero-test success or
 `Export anyway` route. CI never connects to a real environment or receives its

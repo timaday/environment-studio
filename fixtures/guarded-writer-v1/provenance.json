@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "purpose": "MOCK_DATABASE_TESTING",
+  "origin": "INVENTED_FROM_SCRATCH",
+  "artifacts": [
+    "zip-oracle.py",
+    "zip-expected.json",
+    "canonical-oracle.py",
+    "canonical-execution.json",
+    "canonical-payload.json",
+    "canonical-digest.json"
+  ]
+}

@@ -1,0 +1,89 @@
+{
+  "status": "PENDING_APPROVAL",
+  "sourceRevision": "505f815552d4439220cc17e5c1ce120cff0df535",
+  "integrationBase": "02a3805694db1d40b01e41b6dc652ed2a1258e0a",
+  "syntheticException": "call_qBBkVB58oX93NDpKBV9qXZ4D: Authorize Values and Validation previews",
+  "observationPath": "/home/tim/.tmp/es-values-validation-preview-20260911/responses.json",
+  "observationSha256": "ad87e078b098ea2ef26ff9dd91539cc707fa78fa880d378d05655460a2fd89cd",
+  "scope": "Values retained-item Enter value before submission; Validation complete target with three UNKNOWN checks and complete two-rule page. Separate desktop/narrow.",
+  "images": [
+    {
+      "state": "values",
+      "view": "desktop",
+      "path": "values-desktop-v2.png",
+      "sha256": "45437fd09c87d374a34cd207868a9ae800d29f2e41cbeab67e05c02195395f12",
+      "pixels": [
+        1506,
+        1045
+      ],
+      "intendedCssViewport": [
+        1440,
+        1000
+      ],
+      "scroll": "natural full page",
+      "dpr": "generated raster, unspecified"
+    },
+    {
+      "state": "values",
+      "view": "narrow",
+      "path": "values-narrow-v1.png",
+      "sha256": "ad6a4f51923f74505f58b0c1ac9a7b78803507f44db9dcbc797debee18827263",
+      "pixels": [
+        853,
+        1844
+      ],
+      "intendedCssViewport": [
+        390,
+        844
+      ],
+      "scroll": "natural full page",
+      "dpr": "generated raster, unspecified"
+    },
+    {
+      "state": "validation",
+      "view": "desktop",
+      "path": "validation-desktop-v1.png",
+      "sha256": "953730559e6448eb07ab9773dd4e81571dcb0c374a872d5784471462bb3da578",
+      "pixels": [
+        1505,
+        1045
+      ],
+      "intendedCssViewport": [
+        1440,
+        1000
+      ],
+      "scroll": "natural full page",
+      "dpr": "generated raster, unspecified"
+    },
+    {
+      "state": "validation",
+      "view": "narrow",
+      "path": "validation-narrow-v2.png",
+      "sha256": "3d15aa5ea3bce7e3b20bc3e2eef3d37828cafd0d0a4e6ef882b5badf0a230cb8",
+      "pixels": [
+        853,
+        1844
+      ],
+      "intendedCssViewport": [
+        390,
+        844
+      ],
+      "scroll": "natural full page",
+      "dpr": "generated raster, unspecified"
+    }
+  ],
+  "corrections": [
+    "Use actual SVG branding and flat committed Midnight tokens.",
+    "14\u201316px body text, 44px minimum interactive controls, natural scroll and 320px reflow.",
+    "Use periwinkle primary actions; Validate plan secondary in Values.",
+    "Keep narrow header compact and consistent; stack Back to plan below title at narrow widths.",
+    "Label Item selector on desktop; use native details and labelled read-only comparison cells.",
+    "Masking means comparison unavailable, never a proven change or missing required value.",
+    "Never infer field labels, requiredness or edit eligibility from field identifiers."
+  ],
+  "exclusions": [
+    "No approval of pending Definitions designs.",
+    "No new recovery, acknowledgement, retention prerequisite or expanded alternative input-state layout.",
+    "No production compiler publication, real database connection, client qualification or export readiness claim."
+  ]
+}
