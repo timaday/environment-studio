@@ -6,6 +6,7 @@ import { useV3ProfileCapture } from "./useV3ProfileCapture";
 import { V3PlanInspection } from "./V3PlanInspection";
 import { V3ProfileCapture } from "./V3ProfileCapture";
 import { V3ProfileReuse } from "./V3ProfileReuse";
+import { V3ValuesValidation } from "./V3ValuesValidation";
 export function VersionedPlans({
   api,
   inspectionUiEnabled,
@@ -25,9 +26,13 @@ export function VersionedPlans({
 }) {
   const [version, setVersion] = useState("2");
   const state = useV3PlanInspection(api, active && version === "3");
-  const [journey, setJourney] = useState<"capture" | "reuse" | null>(null);
+  const [journey, setJourney] = useState<"capture" | "reuse" | "values" | "validation" | null>(
+    null,
+  );
   const captureOpen = journey === "capture";
   const reuseOpen = journey === "reuse";
+  const valuesOpen = journey === "values";
+  const validationOpen = journey === "validation";
   const capture = useV3ProfileCapture(api, state.plan, active && version === "3" && captureOpen);
   const selector = (
     <label>
@@ -69,6 +74,14 @@ export function VersionedPlans({
               setJourney("capture");
               captureChanged?.(true);
             }}
+            editValues={() => {
+              setJourney("values");
+              captureChanged?.(true);
+            }}
+            validatePlan={() => {
+              setJourney("validation");
+              captureChanged?.(true);
+            }}
           />
         </div>
       )}
@@ -78,6 +91,34 @@ export function VersionedPlans({
           refreshPlan={state.refresh}
           plan={state.plan}
           active={active && version === "3" && reuseOpen}
+          back={() => {
+            setJourney(null);
+            captureChanged?.(false);
+            void state.refresh();
+          }}
+        />
+      </div>
+      <div hidden={!valuesOpen || version !== "3"}>
+        <V3ValuesValidation
+          api={api}
+          plan={state.plan}
+          active={active && version === "3" && valuesOpen}
+          view="values"
+          refreshPlan={state.refresh}
+          back={() => {
+            setJourney(null);
+            captureChanged?.(false);
+            void state.refresh();
+          }}
+        />
+      </div>
+      <div hidden={!validationOpen || version !== "3"}>
+        <V3ValuesValidation
+          api={api}
+          plan={state.plan}
+          active={active && version === "3" && validationOpen}
+          view="validation"
+          refreshPlan={state.refresh}
           back={() => {
             setJourney(null);
             captureChanged?.(false);

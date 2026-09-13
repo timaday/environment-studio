@@ -7,12 +7,16 @@ export function V3PlanInspection({
   openDefinitions,
   captureProfile,
   reuseProfile,
+  editValues,
+  validatePlan,
 }: {
   state: ReturnType<typeof useV3PlanInspection>;
   versionSelector: ReactNode;
   openDefinitions: () => void;
   captureProfile?: () => void;
   reuseProfile?: () => void;
+  editValues?: () => void;
+  validatePlan?: () => void;
 }) {
   const plan = state.plan;
   const documents = state.inventory?.documents;
@@ -116,6 +120,16 @@ export function V3PlanInspection({
       {reuseProfile && (
         <button type="button" onClick={reuseProfile}>
           Reuse profile
+        </button>
+      )}
+      {editValues && (
+        <button type="button" onClick={editValues}>
+          Define values
+        </button>
+      )}
+      {validatePlan && (
+        <button type="button" onClick={validatePlan}>
+          Validate plan
         </button>
       )}
       {captureProfile && (

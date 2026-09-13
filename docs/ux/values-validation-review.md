@@ -1,6 +1,6 @@
 # Values and Validation approval packet
 
-Status: pending image approval. User `call_qBBkVB58oX93NDpKBV9qXZ4D` authorized
+Status: approved with explicit corrections on 2026-09-13 (`done - approved UX, proceed`). User `call_qBBkVB58oX93NDpKBV9qXZ4D` authorized
 actual reviewed mock-workflow content for these previews. Exact images, hashes,
 dimensions and corrections are in `reference/values-validation-approval.json`.
 These are presentation proposals, not implemented views or release evidence.

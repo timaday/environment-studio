@@ -4,6 +4,7 @@ import App from "./App";
 import "./styles.css";
 import "./hosted/V3Definitions.css";
 import "./hosted/V3PlanInspection.css";
+import "./hosted/V3ValuesValidation.css";
 
 const root = document.getElementById("root");
 if (!root) throw new Error("MISSING_APP_ROOT");

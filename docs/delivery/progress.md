@@ -1,3 +1,16 @@
+Latest lead checkpoint — 13 September 2026: UI branch
+`implementation/midnight-operator-ui-after-pr10-20260913` now implements the
+approved Values and Validation operator screens on top of merged backend PR #10.
+Values loads actual paged target draft inventory, explicit binding comparison and
+plan-command receipts; Validation runs actual backend checks and computed-rule
+pages while keeping export unavailable for UNKNOWN required checks. Local author
+verification: `npm run check --prefix frontend` PASS; `npm test --prefix frontend`
+PASS, 450 Vitest tests and 61 schema contract tests; pinned frontend build PASS;
+`profiles-v3-values` hosted desktop/narrow browser PASS with axe, 44px controls,
+320px reflow, no horizontal overflow and complete cleanup; repository content,
+integrity, diff and script unit guards PASS. Evidence: `docs/evidence/v3-midnight-operator-ui-branch.md`.
+Limits: no independent review, no pixel identity and no production PostgreSQL/client/export/GHCR/HiveForge release qualification claimed for this UI slice.
+
 Ready: reviewer findings TEST-QA-013, TEST-QA-014 and TEST-QA-015 are accepted and corrected locally on `implementation/v3-postgres16-guarded-package-route-20260912`. TEST-QA-013 was already verified fixed by the reviewer. TEST-QA-014 now requires the owned Docker container or owned anonymous volume to be named with exact case in the same missing-resource diagnostic; Docker diagnostic prose may vary in case, but resource identity is not case-folded. Prefix matches, different-case names and unrelated diagnostics that mention the owned name elsewhere are rejected. TEST-QA-015 joins the actual launcher platform thread recorded by the blocked port before the repeated-cleanup test releases the process-wide window to the next launch-owner test. Focused checks pass after the case-identity correction: `Postgres16ClientWitnessCleanupOracleTest` 8 tests, `PrivacyLaunchOwnerTest` 16 tests, default `Postgres16ClientWitnessTest` with 3 skipped, and explicit `ES_POSTGRES16_CLIENT_WITNESS=true ES_POSTGRES16_IMAGE=postgres:16.11-bookworm Postgres16ClientWitnessTest` with 3 tests. Repository/content/script checks pass. Full backend Maven verify passes on this correction with core 335, qualified XML parser 7, server 1,049 and guarded-supervisor 354 tests, with the three Docker-gated PostgreSQL witness cases skipped by default. No production export/release qualification is claimed.
 
 # Handoff and capability status

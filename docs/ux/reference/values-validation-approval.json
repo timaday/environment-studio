@@ -1,5 +1,5 @@
 {
-  "status": "PENDING_APPROVAL",
+  "status": "APPROVED_WITH_EXPLICIT_CORRECTIONS",
   "sourceRevision": "505f815552d4439220cc17e5c1ce120cff0df535",
   "integrationBase": "02a3805694db1d40b01e41b6dc652ed2a1258e0a",
   "syntheticException": "call_qBBkVB58oX93NDpKBV9qXZ4D: Authorize Values and Validation previews",
@@ -85,5 +85,10 @@
     "No approval of pending Definitions designs.",
     "No new recovery, acknowledgement, retention prerequisite or expanded alternative input-state layout.",
     "No production compiler publication, real database connection, client qualification or export readiness claim."
-  ]
+  ],
+  "approval": {
+    "date": "2026-09-13",
+    "response": "done - approved UX, proceed",
+    "scope": "Values desktop/narrow and Validation desktop/narrow states in this manifest, with listed corrections and exclusions preserved."
+  }
 }
