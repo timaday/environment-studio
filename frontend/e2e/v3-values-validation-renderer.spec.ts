@@ -105,7 +105,7 @@ test("enters one target value and validates backend outcomes without export auth
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
       true,
     );
-    const undersized = await page.locator(".values-workspace:visible").evaluate((workspace) =>
+    const undersized = await page.locator(".capture-workspace:visible").evaluate((workspace) =>
       [...workspace.querySelectorAll<HTMLElement>("button, input, select, summary")]
         .filter((element) => element.getClientRects().length > 0)
         .map((element) => {
@@ -164,6 +164,21 @@ test("enters one target value and validates backend outcomes without export auth
   await expect(validationWorkspace.getByText("alpha", { exact: true })).toBeVisible();
   await expect(validationWorkspace.getByText("beta", { exact: true })).toBeVisible();
   await inspect("validation-rules");
+  await page.getByRole("button", { name: "Back to plan", exact: true }).click();
+  await expect(page.getByRole("region", { name: "Current plan context" })).toContainText(
+    "revision 4",
+  );
+  await page.getByRole("button", { name: "Export package", exact: true }).click();
+  const exportWorkspace = page.locator(".export-workspace:visible");
+  await exportWorkspace.getByRole("button", { name: "Check readiness", exact: true }).click();
+  await expect(
+    exportWorkspace.getByText("3 required checks still block package generation."),
+  ).toBeVisible();
+  await expect(
+    exportWorkspace.getByRole("button", { name: "Download package candidate", exact: true }),
+  ).toBeDisabled();
+  await expect(exportWorkspace.getByText(/Run SQL/i)).toHaveCount(0);
+  await inspect("export-blocked");
   await page.getByRole("button", { name: "Back to plan", exact: true }).click();
   await settled();
   await page.getByRole("button", { name: "Log out", exact: true }).click();

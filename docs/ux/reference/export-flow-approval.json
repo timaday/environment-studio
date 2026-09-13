@@ -1,5 +1,5 @@
 {
-  "status": "PENDING_APPROVAL",
+  "status": "APPROVED_WITH_LESS_IS_MORE_CORRECTION",
   "date": "2026-09-13",
   "scope": "Export guarded-package blocked/unavailable state, desktop and narrow. No successful package artifact state is included.",
   "sourceReferences": [
@@ -36,11 +36,17 @@
     "Keep 14-16px body text, 44px minimum controls and natural scrolling.",
     "Do not expose Deploy, Run SQL, Execute or Commit actions.",
     "Do not show digest, byte count or successful download until backed by an actual route response.",
-    "Keep unqualified package-candidate wording visible and do not claim release qualification."
+    "Keep unqualified package-candidate wording visible and do not claim release qualification.",
+    "Reduce repeated explanatory copy where possible while preserving export authority and external execution limits."
   ],
   "exclusions": [
     "No successful package/download receipt state.",
     "No production PostgreSQL/client/supervisor/TLS qualification.",
     "No approval of Definitions designs or Verify/readback screens."
-  ]
+  ],
+  "approval": {
+    "date": "2026-09-13",
+    "response": "view is approved, though less is more where possible",
+    "scope": "Export blocked-package desktop/narrow direction approved; implementation should reduce repetition and keep only actual backend-supported states."
+  }
 }

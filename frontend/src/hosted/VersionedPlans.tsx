@@ -3,6 +3,7 @@ import type { HostedApi } from "../api/hosted";
 import { Plans } from "./Plans";
 import { useV3PlanInspection } from "./useV3PlanInspection";
 import { useV3ProfileCapture } from "./useV3ProfileCapture";
+import { V3ExportJourney } from "./V3ExportJourney";
 import { V3PlanInspection } from "./V3PlanInspection";
 import { V3ProfileCapture } from "./V3ProfileCapture";
 import { V3ProfileReuse } from "./V3ProfileReuse";
@@ -26,13 +27,14 @@ export function VersionedPlans({
 }) {
   const [version, setVersion] = useState("2");
   const state = useV3PlanInspection(api, active && version === "3");
-  const [journey, setJourney] = useState<"capture" | "reuse" | "values" | "validation" | null>(
-    null,
-  );
+  const [journey, setJourney] = useState<
+    "capture" | "reuse" | "values" | "validation" | "export" | null
+  >(null);
   const captureOpen = journey === "capture";
   const reuseOpen = journey === "reuse";
   const valuesOpen = journey === "values";
   const validationOpen = journey === "validation";
+  const exportOpen = journey === "export";
   const capture = useV3ProfileCapture(api, state.plan, active && version === "3" && captureOpen);
   const selector = (
     <label>
@@ -82,6 +84,10 @@ export function VersionedPlans({
               setJourney("validation");
               captureChanged?.(true);
             }}
+            exportPlan={() => {
+              setJourney("export");
+              captureChanged?.(true);
+            }}
           />
         </div>
       )}
@@ -123,6 +129,22 @@ export function VersionedPlans({
             setJourney(null);
             captureChanged?.(false);
             void state.refresh();
+          }}
+        />
+      </div>
+      <div hidden={!exportOpen || version !== "3"}>
+        <V3ExportJourney
+          api={api}
+          plan={state.plan}
+          active={active && version === "3" && exportOpen}
+          back={() => {
+            setJourney(null);
+            captureChanged?.(false);
+            void state.refresh();
+          }}
+          reviewDocuments={() => {
+            setJourney(null);
+            captureChanged?.(false);
           }}
         />
       </div>

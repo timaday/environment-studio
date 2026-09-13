@@ -9,6 +9,7 @@ export function V3PlanInspection({
   reuseProfile,
   editValues,
   validatePlan,
+  exportPlan,
 }: {
   state: ReturnType<typeof useV3PlanInspection>;
   versionSelector: ReactNode;
@@ -17,6 +18,7 @@ export function V3PlanInspection({
   reuseProfile?: () => void;
   editValues?: () => void;
   validatePlan?: () => void;
+  exportPlan?: () => void;
 }) {
   const plan = state.plan;
   const documents = state.inventory?.documents;
@@ -130,6 +132,11 @@ export function V3PlanInspection({
       {validatePlan && (
         <button type="button" onClick={validatePlan}>
           Validate plan
+        </button>
+      )}
+      {exportPlan && (
+        <button type="button" onClick={exportPlan}>
+          Export package
         </button>
       )}
       {captureProfile && (

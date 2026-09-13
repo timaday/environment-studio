@@ -112,24 +112,25 @@ remain pending approval; Definitions approval remains separate.
 
 ## Export approval packet and package client plumbing — 13 September 2026
 
-A complete Export screen is materially new, so the enterprise UX skill requires
-image approval before implementing the affected view. Desktop and narrow blocked
-package-candidate proposals were generated from the approved Midnight references
-and recorded in `docs/ux/reference/export-flow-approval.json`; their current
-status is `PENDING_APPROVAL`. The proposals show only a truthful unavailable
-state: no digest, byte count, successful download, production readiness, Deploy,
-Run SQL, Execute or Commit action.
+Desktop and narrow blocked package-candidate proposals were generated from the
+approved Midnight references and recorded in
+`docs/ux/reference/export-flow-approval.json`. Tim approved that view on
+2026-09-13 with the correction "less is more where possible." The implemented
+view therefore keeps the status cards, one package action panel, compact required
+checks and an optional external-execution disclosure, trimming repeated review
+copy from the generated proposal.
 
-Non-visual plumbing was implemented independently of that pending screen approval.
-`HostedApi.postBinary` now supports a session-owned POST that reads a binary
-response while preserving CSRF, same-origin credentials, no-store request mode,
-401 session expiry, closed v3 early-refusal codes and JSON error responses.
+`HostedApi.postBinary` supports a session-owned POST that reads a binary response
+while preserving CSRF, same-origin credentials, no-store request mode, 401 session
+expiry, closed v3 early-refusal codes and JSON error responses.
 `HostedV3Api.guardedPackageCandidate` validates the closed request
 `{ revision, inputFingerprint }`, posts to the existing guarded package candidate
 route and accepts only the contracted unqualified ZIP response headers:
 `Cache-Control: no-store`, `Content-Type: application/zip`, the exact attachment
-filename and `X-Environment-Studio-Qualified: false`. A successful response
-returns bytes plus metadata only; it does not set export authority or execute SQL.
+filename and `X-Environment-Studio-Qualified: false`. The Export view runs backend
+validation for the current revision, enables the package request only when every
+returned required check is PASS, starts a browser download only from that actual
+binary response and never exposes Deploy, Run SQL, Execute or Commit.
 
 Meaningful RED:
 
@@ -149,15 +150,61 @@ npm run check --prefix frontend
 PATH=/home/tim/.tmp/es-toolchain-20260909/node-v24.20.0-linux-x64/bin:$PATH npm run build --prefix frontend
 ```
 
-Results: focused frontend suite PASS, now 34 Vitest files and 453 tests plus 61
-schema contract tests; frontend check PASS, 105 files; production build PASS
-with `dist/assets/index-DZbrLAl9.js` and `dist/assets/index-fZrgn5jm.css`.
+Results before screen implementation: focused frontend suite PASS, 34 Vitest
+files and 453 tests plus 61 schema contract tests; frontend check PASS, 105
+files; production build PASS.
 
-Limits: this does not implement the Export screen, does not prove a hosted
-end-to-end package download through the browser, does not qualify production
-PostgreSQL/client/supervisor execution and does not create a release-ready export
-claim. HiveMind/HiveMap tools were not exposed in this session; durable status is
-kept in repo evidence and issue #9 instead.
+Screen implementation RED/GREEN:
+
+```sh
+npm test --prefix frontend -- V3ExportJourney.test.tsx
+```
+
+Initial result: the new component tests failed after implementation because the
+generated proposal's repeated readiness sentence appeared in both the status card
+and package panel. The shipped view was simplified per approval feedback, leaving
+the actionable reason in the package panel only. Final focused result: PASS
+through the full frontend suite harness, 35 Vitest files and 455 tests plus 61
+schema contract tests.
+
+Hosted browser verification after wiring Export into the v3 operator journey:
+
+```sh
+python3 <local owned harness wrapper> \
+  /home/tim/.tmp/es-midnight-operator-ui-20260913 profiles-v3-values \
+  values-validation-export-20260913-green2
+```
+
+Result: desktop PASS and narrow PASS, 2 tests, 7.1s. The journey enters one
+target value, validates, loads computed rules, opens Export, runs backend
+readiness, observes three UNKNOWN checks, keeps Download package candidate
+disabled, verifies no Run SQL control exists, checks axe, 44px controls, 320px
+reflow and no horizontal overflow, then logs out and confirms cleanup complete.
+Browser log: `/tmp/es-values-validation-export-20260913-green2-browser.log`.
+Harness log: `/tmp/es-values-validation-export-20260913-green2-harness.log`.
+
+Final checks after Export screen implementation:
+
+```sh
+npm test --prefix frontend
+npm run check --prefix frontend
+PATH=/home/tim/.tmp/es-toolchain-20260909/node-v24.20.0-linux-x64/bin:$PATH npm run build --prefix frontend
+git diff --check
+python3 scripts/check_repository_content.py
+python3 scripts/check_repository.py
+python3 -m unittest discover -s scripts -p 'test_*.py'
+```
+
+Results: full frontend tests PASS, 35 files and 455 tests; schema contract tests
+PASS, 61 tests; frontend check PASS, 108 files; production build PASS with
+`dist/assets/index-DQP8UVgs.js` and `dist/assets/index-BC651ns4.css`; whitespace,
+repository content, repository integrity and script unit guards PASS.
+
+Limits: this proves the blocked Export path in the hosted browser and the binary
+package client in component tests. It does not prove a successful hosted browser
+package download, production PostgreSQL/client/supervisor execution, GHCR publish
+or HiveForge release qualification. HiveMind/HiveMap tools were not exposed in
+this session; durable status is kept in repo evidence and issue #9 instead.
 
 ## Values and Validation operator screens — 13 September 2026
 
