@@ -80,4 +80,28 @@ class HostedSettingsTest {
                 () -> new HostedSettings(https)).getMessage());
     }
 
+    @Test void localOperatorAcceptsEquivalentLoopbackAliasesOnTheSamePortOnly() {
+        var settings = new HostedSettings(new MockEnvironment()
+                .withProperty("studio.security.local-operator.enabled", "true")
+                .withProperty("studio.security.public-origin", "http://localhost:18181")
+                .withProperty("server.servlet.session.cookie.secure", "false"));
+        assertTrue(settings.allowsHost("localhost:18181"));
+        assertTrue(settings.allowsHost("127.0.0.1:18181"));
+        assertTrue(settings.allowsOrigin("http://localhost:18181"));
+        assertTrue(settings.allowsOrigin("http://127.0.0.1:18181"));
+        assertFalse(settings.allowsHost("localhost:18180"));
+        assertFalse(settings.allowsHost("studio.invalid:18181"));
+        assertFalse(settings.allowsOrigin("http://127.0.0.1:18180"));
+        assertFalse(settings.allowsOrigin("http://studio.invalid:18181"));
+        assertFalse(settings.allowsOrigin("null"));
+    }
+
+    @Test void oidcHostedModeKeepsExactHostAndOriginMatching() {
+        var settings = new HostedSettings(valid().withProperty("studio.security.public-origin", "https://studio.invalid:8443"));
+        assertTrue(settings.allowsHost("studio.invalid:8443"));
+        assertTrue(settings.allowsOrigin("https://studio.invalid:8443"));
+        assertFalse(settings.allowsHost("127.0.0.1:8443"));
+        assertFalse(settings.allowsOrigin("https://127.0.0.1:8443"));
+    }
+
 }

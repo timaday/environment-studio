@@ -64,6 +64,35 @@ public final class HostedSettings {
     public void validateProviderEndpoint(String endpoint) { parse(endpoint, false); }
     public String origin() { return origin.toASCIIString(); }
     public String host() { return origin.getRawAuthority(); }
+    boolean allowsHost(String value) {
+        if (host().equalsIgnoreCase(value)) return true;
+        if (!localOperator || !isLoopbackLocalOrigin()) return false;
+        var candidate = parseAuthority(value);
+        return candidate != null && sameLocalOperatorEndpoint(candidate);
+    }
+    boolean allowsOrigin(String value) {
+        if (origin().equals(value)) return true;
+        if (!localOperator || !isLoopbackLocalOrigin()) return false;
+        URI candidate;
+        try { candidate = URI.create(value); }
+        catch (IllegalArgumentException exception) { return false; }
+        return "http".equals(candidate.getScheme()) && candidate.getRawPath().isEmpty()
+                && candidate.getUserInfo() == null && candidate.getQuery() == null && candidate.getFragment() == null
+                && sameLocalOperatorEndpoint(candidate);
+    }
+    private boolean isLoopbackLocalOrigin() {
+        return "http".equals(origin.getScheme()) && LocalOperatorSettings.loopback(origin.getHost());
+    }
+    private boolean sameLocalOperatorEndpoint(URI candidate) {
+        return LocalOperatorSettings.loopback(candidate.getHost()) && effectivePort(candidate) == effectivePort(origin);
+    }
+    private int effectivePort(URI uri) { return uri.getPort() == -1 ? defaultPort(uri.getScheme()) : uri.getPort(); }
+    private int defaultPort(String scheme) { return "https".equals(scheme) ? 443 : 80; }
+    private URI parseAuthority(String value) {
+        if (value == null || value.isBlank() || value.contains("/")) return null;
+        try { return URI.create("http://" + value); }
+        catch (IllegalArgumentException exception) { return null; }
+    }
     public String issuer() { return issuer.toASCIIString(); }
     public String clientId() { return clientId; }
     String clientSecret() { return clientSecret; }

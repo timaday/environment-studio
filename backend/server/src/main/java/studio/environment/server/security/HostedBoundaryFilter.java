@@ -17,12 +17,12 @@ final class HostedBoundaryFilter extends OncePerRequestFilter {
     @Override protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws ServletException, IOException {
         response.setHeader("Cache-Control", "no-store");
         var hosts = Collections.list(request.getHeaders("Host"));
-        if (hosts.size() != 1 || !settings.host().equalsIgnoreCase(hosts.getFirst())) {
+        if (hosts.size() != 1 || !settings.allowsHost(hosts.getFirst())) {
             SafeResponses.refuse(response, 403, "REQUEST_ORIGIN_DENIED"); return;
         }
         var origins = Collections.list(request.getHeaders("Origin"));
         if ((!SAFE.contains(request.getMethod()) && origins.size() != 1)
-                || (!origins.isEmpty() && (origins.size() != 1 || !settings.origin().equals(origins.getFirst())))) {
+                || (!origins.isEmpty() && (origins.size() != 1 || !settings.allowsOrigin(origins.getFirst())))) {
             SafeResponses.refuse(response, 403, "REQUEST_ORIGIN_DENIED"); return;
         }
         boolean protectedApi = request.getRequestURI().startsWith("/api/")

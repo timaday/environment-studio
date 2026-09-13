@@ -24,7 +24,11 @@ ownership and downloads; request headers or uploaded content cannot change them.
 Local-operator mode is not anonymous access, does not store database credentials,
 and must not enable provider token handling. HTTP public origins and non-secure
 session cookies are accepted only for loopback rehearsal (`localhost` or
-`127.0.0.1`); non-loopback deployment origins remain HTTPS with Secure cookies.
+`127.0.0.1`). In local-operator loopback mode only, `localhost` and
+`127.0.0.1` are treated as equivalent request hosts/origins on the same port so
+a browser stale tab or loopback alias does not block public capability loading;
+remote hosts, `Origin: null`, mixed ports and non-loopback deployments remain
+refused. Non-loopback deployment origins remain HTTPS with Secure cookies.
 Production environments should prefer OIDC when available.
 
 Fail startup for missing/invalid configuration, unknown modes or unsupported

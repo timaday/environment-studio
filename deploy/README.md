@@ -75,7 +75,7 @@ export STUDIO_PG_TRUST_MATERIAL_HOST_PATH=/path/to/postgres-ca.pem
 
 # Local operator / public origin. Supply the password from your shell or secret manager;
 # do not commit it or place it in a shared .env file.
-export STUDIO_SECURITY_PUBLIC_ORIGIN=http://127.0.0.1:18181
+export STUDIO_SECURITY_PUBLIC_ORIGIN=http://localhost:18181
 export STUDIO_SECURITY_LOCAL_OPERATOR_USERNAME=operator
 export STUDIO_SECURITY_LOCAL_OPERATOR_PASSWORD='set-outside-the-repository'
 export STUDIO_SECURITY_LOCAL_OPERATOR_ISSUER=https://local-operator.environment-studio.invalid
@@ -107,8 +107,8 @@ docker compose -f deploy/compose.yaml up -d environment-studio
 ```
 
 Replace the illustrative digest and PostgreSQL identity placeholders before
-running. The example binds `127.0.0.1:${STUDIO_HOST_PORT:-18181}` to the
-container port 8080 and listens only on loopback; for platform ingress, route
+running. The example publishes loopback port `${STUDIO_HOST_PORT:-18181}` and uses
+`localhost` as the operator-facing origin; for platform ingress, route
 directly to container port 8080 on its private service network. Do not expose an
 unauthenticated real-data service. Database credentials are not deployment
 variables; operators enter them for a scoped read-only inspection operation.
@@ -124,7 +124,7 @@ binds loopback port `${STUDIO_HOST_PORT:-18080}` to container port 8080.
 export STUDIO_HOST_PORT=18080
 docker compose -f deploy/compose.demo.yaml pull
 docker compose -f deploy/compose.demo.yaml up -d
-curl -f http://127.0.0.1:${STUDIO_HOST_PORT}/actuator/health/readiness
+curl -f http://localhost:${STUDIO_HOST_PORT}/actuator/health/readiness
 ```
 
 Demo mode is intentionally synthetic and denies hosted workspace, inspection,
