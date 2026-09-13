@@ -18,7 +18,8 @@ class IndependentV3ComputedViewsTest {
         var base = definition(false).definition(); var logical = base.logical();
         var self = new NativeDefinition.Cooccurrence("self-pair","by-tone","by-tone",BigInteger.ZERO,BigInteger.ONE);
         var changed = new NativeDefinition.Logical(logical.entityTypes(),logical.relations(),logical.rules(),logical.operationCapabilities(),logical.computedTypes(),logical.derivations(),List.of(self),logical.computedRules());
-        var checked = assertInstanceOf(NativeCompilationResult.Incomplete.class,new NativeDefinitionCompiler().compile(new NativeDefinition(base.id(),base.revision(),changed,base.bindings()))).checked();
+        var checked = studio.environment.server.NativeV3TestSupport.checked(new NativeDefinitionCompiler()
+                .compile(new NativeDefinition(base.id(),base.revision(),changed,base.bindings())));
         String xml = "<items><item id='one' tone='alpha'/><item id='two' tone='alpha'/></items>";
         var fixture = SharedV3PlanXmlTest.with(checked,xml); var service = fixture.service(); String plan = fixture.inspected(service);
         try (var view = service.reserveView(fixture.lease,plan)) {

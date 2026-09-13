@@ -3,8 +3,13 @@
 CI publishes the application image to **ghcr.io/timaday/environment-studio**
 after Java, UI, repository and container gates pass. PRs build/test without
 publication. Main publishes `main` and `sha-<full commit>`. Version tags (`v*`)
-run the complete release-evidence gate first. The starter cannot pass that
-release gate because the product/DB capabilities are not implemented.
+run the complete release-evidence gate first.
+
+The Monday pilot image is PostgreSQL 16.11 only. Configure PostgreSQL text XML
+storage and a psql 16.11/linux-amd64 export client with template
+`postgresql16-text-v1`. Oracle implementation remains in the codebase for later
+qualification, but Oracle destinations with export clients are rejected for this
+pilot and must be treated as unavailable.
 
 ## Image contract
 
@@ -16,14 +21,14 @@ release gate because the product/DB capabilities are not implemented.
 | User | UID/GID 10001; never root |
 | Liveness | GET /actuator/health/liveness |
 | Readiness | GET /actuator/health/readiness; process only, no plan validation |
-| Capability visibility | GET /api/v1/capabilities reports mode and disabled inspection/export |
+| Capability visibility | GET /api/v1/capabilities reports mode and available hosted capabilities from actual configuration |
 | Runtime mode | STUDIO_MODE=demo by default; hosted requires the configuration below; unknown modes refuse startup |
 | Filesystem | Read-only root; bounded noexec /tmp tmpfs; optional separately initialized private workspace volume |
 | Stop | SIGTERM, graceful shutdown 20s; platform grace period at least 30s |
 | Resources | Starting budget 1 CPU / 1 GiB; not measured product capacity |
 | Replicas | One; no shared session/raw observation support |
-| Secrets | No real DB credentials accepted; none configured as container env/files |
-| External access | Demo does not need a DB or external API |
+| Secrets | DB credentials are per-operation inputs only; do not configure DB passwords as container env/files |
+| External access | Demo needs no DB; hosted PostgreSQL inspection requires the configured external DB and OIDC/volume setup below |
 
 The workflow emits an `image-reference-<commit>` artifact containing the full
 image digest and source revision, and displays the digest in its summary.
@@ -44,11 +49,14 @@ Use these standard OCI settings in its existing deployment UI/template:
 2. Registry = ghcr.io; use platform-managed pull identity if the package is private.
 3. Architecture = linux/amd64; container HTTP port = 8080, public URL routed by
    the platform. Keep origin access private behind the chosen ingress.
-4. Runtime mode = demo; configure both probes and the resource/user/tmpfs limits
-   above. Start with one replica and no durable volume.
-5. Apply TLS and the platform's normal access boundary. The public demo contains
-   synthetic data only; real-data mode must not be enabled before D02.
-6. Deploy, observe probes and the capability endpoint, then record digest,
+4. Runtime mode = hosted for the pilot after supplying the required OIDC,
+   schema3 workspace volume and PostgreSQL destination configuration. Use demo
+   only for process smoke.
+5. Configure both probes and the resource/user/tmpfs limits above. Start with one
+   replica and one private durable workspace volume.
+6. Apply TLS and the platform's normal access boundary. Do not enable Oracle or
+   any PostgreSQL version/client tuple other than 16.11 for this pilot.
+7. Deploy, observe probes and the capability endpoint, then record digest,
    platform version, routing settings and observed results for G10.
 
 `compose.yaml` is a real **standard Docker Compose** example. If HiveForge

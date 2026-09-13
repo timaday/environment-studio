@@ -18,8 +18,8 @@ public final class V3WorkflowLargeHttpWitnesses {
         var logical=new NativeDefinition.Logical(l.entityTypes(),l.relations(),l.rules(),l.operationCapabilities(),l.computedTypes(),l.derivations(),pairs,l.computedRules());
         var projection=b.documents().getFirst().entities().getFirst();var docs=new ArrayList<Document>();for(int i=0;i<3;i++)docs.add(new Document("part-"+i,Integer.toString(i+1),List.of(new Projection("items-"+i,projection.type(),projection.path(),projection.fields(),projection.references()))));
         var binding=new Binding(b.id(),b.engine(),b.storage(),b.schema(),b.table(),b.keyColumn(),b.xmlColumn(),b.keyType(),docs);
-        var result=assertInstanceOf(NativeCompilationResult.Incomplete.class,new studio.environment.core.definitionv3.NativeDefinitionCompiler().compile(new NativeDefinition(wide?"mock-wide":"mock-tail",BigInteger.ONE,logical,List.of(binding))));
-        assertTrue(result.diagnostics().stream().allMatch(d->d.code().equals("MECHANISM_UNQUALIFIED")));return result.checked();
+        var result=new studio.environment.core.definitionv3.NativeDefinitionCompiler().compile(new NativeDefinition(wide?"mock-wide":"mock-tail",BigInteger.ONE,logical,List.of(binding)));
+        return studio.environment.server.NativeV3TestSupport.checked(result);
     }
     public static ObservationResult observation(boolean wide){
         var checked=definition(wide);var docs=new ArrayList<ObservationResult.Document>();

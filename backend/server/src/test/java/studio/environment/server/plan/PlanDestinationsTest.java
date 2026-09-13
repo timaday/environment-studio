@@ -83,7 +83,7 @@ class PlanDestinationsTest {
             assertSafeRefusal(configured().withProperty(prefix+mutation[0],mutation[1]));
     }
 
-    @Test void exportClientConfigurationIsClosedAndVersionPinned() {
+    @Test void exportClientConfigurationIsClosedAndVersionPinned(@org.junit.jupiter.api.io.TempDir Path directory) throws Exception {
         String prefix="studio.plans.destinations[0].export-client.";
         var destinations=new PlanDestinations(configured()
             .withProperty(prefix+"server-version","16.11")
@@ -100,12 +100,33 @@ class PlanDestinationsTest {
             .withProperty(prefix+"version","16.10")
             .withProperty(prefix+"platform","linux-amd64")
             .withProperty(prefix+"template-version","postgresql16-text-v1"));
+        assertSafeRefusal(configured().withProperty(prefix+"server-version","18.6")
+            .withProperty(prefix+"family","psql")
+            .withProperty(prefix+"version","18.6")
+            .withProperty(prefix+"platform","linux-amd64")
+            .withProperty(prefix+"template-version","postgresql-text-v1"));
+        var oracleTrust = jks(directory.resolve("pilot-oracle.jks"));
+        assertSafeRefusal(oracle(oracleTrust)
+            .withProperty(prefix+"server-version","23.26.3.0.0")
+            .withProperty(prefix+"family","sqlplus")
+            .withProperty(prefix+"version","23.26.3.0.0")
+            .withProperty(prefix+"platform","linux-amd64")
+            .withProperty(prefix+"template-version","oracle-clob-v1"));
         assertSafeRefusal(configured().withProperty(prefix+"family","psql"));
     }
 
     @Test void retiredAccountPolicyCannotSilentlyCertifyOperationPolicy() {
         assertSafeRefusal(configured().withProperty("studio.plans.destinations[0].account-policy-version", "postgresql-read-only-v1"));
         assertSafeRefusal(configured().withProperty("studio.plans.destinations[0].operation-policy-version", "postgresql-read-only-v1"));
+    }
+    private static Path jks(Path path) throws Exception {
+        java.security.cert.Certificate certificate;
+        try(var input=Files.newInputStream(Path.of("../../fixtures/plan-http-tls/mock-ca.pem").toAbsolutePath().normalize())) {
+            certificate=java.security.cert.CertificateFactory.getInstance("X.509").generateCertificate(input);
+        }
+        var store=java.security.KeyStore.getInstance("JKS"); store.load(null,null); store.setCertificateEntry("independent-mock",certificate);
+        try(var output=Files.newOutputStream(path)) { store.store(output,new char[0]); }
+        return path;
     }
     private MockEnvironment oracle(Path path) {
         var env=configured(); String p="studio.plans.destinations[0].";

@@ -83,9 +83,13 @@ public final class NativeDefinitionCompiler {
         diagnostics.addAll(physicalResult.diagnostics());
         var errors = diagnostics.stream().filter(d -> d.phase() != DefinitionDiagnostic.Phase.PUBLICATION).toList();
         if (!errors.isEmpty()) return new NativeCompilationResult.Rejected(errors);
+        var checked = NativeDigests.checked(definition);
+        if (NativeMechanisms.qualified(definition))
+            return diagnostics.isEmpty() ? new NativeCompilationResult.ReadyToPublish(checked)
+                    : new NativeCompilationResult.Incomplete(checked, diagnostics);
         diagnostics.add(new DefinitionDiagnostic(DefinitionDiagnostic.Phase.PUBLICATION, "MECHANISM_UNQUALIFIED", "",
-                "V3 requires complete server qualification before publication."));
-        return new NativeCompilationResult.Incomplete(NativeDigests.checked(definition), diagnostics);
+                "V3 publication is qualified only for PostgreSQL text bindings in this pilot."));
+        return new NativeCompilationResult.Incomplete(checked, diagnostics);
     }
     private static <T> Map<String, T> unique(List<T> items, Function<T, String> identifier, String path, List<DefinitionDiagnostic> diagnostics) {
         Map<String, T> result = new LinkedHashMap<>();

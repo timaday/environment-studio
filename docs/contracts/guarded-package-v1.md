@@ -129,9 +129,11 @@ Schema acceptance never replaces template, transaction or authority checks.
 
 ## Client admission and credential channel
 
-First qualify Linux amd64, PostgreSQL 18.6/text with psql 18.6, and Oracle Free
-23.26.3.0.0/CLOB with SQL*Plus 23.26.3.0.0. Driver qualification alone does not
-qualify a CLI. Unknown client/version/platform/template combinations refuse;
+For the Monday pilot, qualify Linux amd64, PostgreSQL 16.11/text with psql
+16.11 and template `postgresql16-text-v1`. Oracle Free 23.26.3.0.0/CLOB with
+SQL*Plus 23.26.3.0.0 and PostgreSQL 18.6 remain preserved implementation paths
+but are explicitly unavailable for this pilot. Driver qualification alone does
+not qualify a CLI. Unknown client/version/platform/template combinations refuse;
 SQLcl is not implicitly equivalent to SQL*Plus. The supervisor launches an exact
 trusted executable only after matching destination, endpoint and transport identity
 against independently approved external supervisor configuration. Archive labels
@@ -372,8 +374,9 @@ qualification; those remain separate server-owned export requirements.
 
 ## Version-explicit v3 package pins
 
-The [PostgreSQL16.11 candidate tuple](postgresql-16-template.md) is version-pinned
-separately from18.6; neither metadata acceptance nor generated SQL is authority.
+The [PostgreSQL16.11 candidate tuple](postgresql-16-template.md) is the only
+pilot export-client tuple. Metadata acceptance and generated SQL still are not
+execution authority.
 
 The closed v1 container may describe exactly one mechanism family. Existing v2
 execution metadata and bytes remain valid without change. V3 metadata requires

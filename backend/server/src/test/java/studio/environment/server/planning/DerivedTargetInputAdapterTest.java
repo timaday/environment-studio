@@ -44,8 +44,11 @@ class DerivedTargetInputAdapterTest {
                         new FieldMapping("finish", new ExpandedName("", "finish"))), List.of());
         var binding = new Binding("mock-pg", Engine.POSTGRESQL, Storage.TEXT, "mock_schema", "mock_table", "mock_key", "mock_xml", KeyType.INT64,
                 List.of(new Document("sheet", "1", List.of(projection))));
-        return assertInstanceOf(NativeCompilationResult.Incomplete.class, new NativeDefinitionCompiler().compile(
-                new NativeDefinition("mock-target", BigInteger.ONE, logical, List.of(binding)))).checked();
+        return switch (new NativeDefinitionCompiler().compile(new NativeDefinition("mock-target", BigInteger.ONE, logical, List.of(binding)))) {
+            case NativeCompilationResult.ReadyToPublish ready -> ready.checked();
+            case NativeCompilationResult.Incomplete incomplete -> incomplete.checked();
+            case NativeCompilationResult.Rejected rejected -> fail(rejected.diagnostics().toString());
+        };
     }
     static String digest(String source) {
         try { return HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(source.getBytes(StandardCharsets.UTF_8))); }
@@ -131,8 +134,8 @@ class DerivedTargetInputAdapterTest {
         var d = definition(false).definition(); var l = d.logical();
         var logical = new NativeDefinition.Logical(l.entityTypes(), l.relations(), l.rules(), l.operationCapabilities(),
                 l.computedTypes(), l.derivations(), List.of(new NativeDefinition.Cooccurrence("pair", "by-tone", "by-finish", BigInteger.ZERO, BigInteger.ONE)), l.computedRules());
-        var definition = assertInstanceOf(NativeCompilationResult.Incomplete.class, new NativeDefinitionCompiler().compile(
-                new NativeDefinition(d.id(), d.revision(), logical, d.bindings()))).checked();
+        var definition = studio.environment.server.NativeV3TestSupport.checked(new NativeDefinitionCompiler().compile(
+                new NativeDefinition(d.id(), d.revision(), logical, d.bindings())));
         var unchanged = assertInstanceOf(DerivedTargetInputAdapter.Complete.class, prepare(definition, XML, intent()));
         var alpha = unchanged.derived().rules().stream().filter(r -> r.source().orElseThrow().value().equals("alpha")).findFirst().orElseThrow();
         assertEquals(BigInteger.TWO, alpha.actual()); assertEquals(studio.environment.core.Outcome.FAIL, alpha.outcome());
@@ -147,7 +150,7 @@ class DerivedTargetInputAdapterTest {
         var projection = new Projection(p.id(), p.type(), p.path(), p.fields(), List.of(new ReferenceMapping("link", new ExpandedName("", "next"))));
         var binding = new Binding(b.id(), b.engine(), b.storage(), b.schema(), b.table(), b.keyColumn(), b.xmlColumn(), b.keyType(), List.of(new Document("sheet", "1", List.of(projection))));
         var logical = new NativeDefinition.Logical(l.entityTypes(), List.of(relation), l.rules(), l.operationCapabilities(), l.computedTypes(), l.derivations(), l.cooccurrences(), l.computedRules());
-        var definition = assertInstanceOf(NativeCompilationResult.Incomplete.class, new NativeDefinitionCompiler().compile(new NativeDefinition(d.id(), d.revision(), logical, List.of(binding)))).checked();
+        var definition = studio.environment.server.NativeV3TestSupport.checked(new NativeDefinitionCompiler().compile(new NativeDefinition(d.id(), d.revision(), logical, List.of(binding))));
         String xml = "<items><item id='one' tone='alpha' next='two'/><item id='two' tone='beta'/></items>";
         var complete = assertInstanceOf(DerivedTargetInputAdapter.Complete.class, prepare(definition, xml, intent()));
         assertEquals(List.of(new DerivedInput.Edge("link", new DerivedInput.Ref.Target(old("one")), new DerivedInput.Ref.Target(old("two")))), complete.input().edges());

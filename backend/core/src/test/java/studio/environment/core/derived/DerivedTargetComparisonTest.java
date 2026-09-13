@@ -113,8 +113,8 @@ class DerivedTargetComparisonTest {
         var logical = new studio.environment.core.definitionv3.NativeDefinition.Logical(l.entityTypes(), l.relations(), l.rules(), l.operationCapabilities(),
                 l.computedTypes(), l.derivations(), l.cooccurrences(), List.of(new studio.environment.core.definitionv2.NativeDefinition.CountRule(
                         "required", "tones", java.math.BigInteger.TEN, java.math.BigInteger.TEN)));
-        var checked = assertInstanceOf(studio.environment.core.definitionv3.NativeCompilationResult.Incomplete.class,
-                new studio.environment.core.definitionv3.NativeDefinitionCompiler().compile(new studio.environment.core.definitionv3.NativeDefinition(d.id(), d.revision(), logical, d.bindings()))).checked();
+        var checked = DerivedGraphEngineTest.checked(new studio.environment.core.definitionv3.NativeDefinitionCompiler()
+                .compile(new studio.environment.core.definitionv3.NativeDefinition(d.id(), d.revision(), logical, d.bindings())));
         var p = f.typed().pin(); var q = f.actual().pin();
         var tp = new DerivedInput.Pin(p.revisionToken(), checked.logicalDigest(), p.bindingId(), checked.bindingDigests().get(p.bindingId()), p.documentDigests());
         var fp = new DerivedInput.Pin(q.revisionToken(), checked.logicalDigest(), q.bindingId(), checked.bindingDigests().get(q.bindingId()), q.documentDigests());

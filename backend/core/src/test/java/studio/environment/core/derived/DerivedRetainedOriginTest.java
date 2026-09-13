@@ -31,7 +31,7 @@ class DerivedRetainedOriginTest {
                 List.of(l.derivations().getFirst(), new NativeDefinition.Derivation("by-finish", "item", "finish", "finishes", "has-finish")),
                 List.of(new NativeDefinition.Cooccurrence("pair", "by-tone", "by-finish", BigInteger.ZERO, BigInteger.TEN)), List.of());
         var binding = new Binding(b.id(), b.engine(), b.storage(), b.schema(), b.table(), b.keyColumn(), b.xmlColumn(), b.keyType(), List.of(new Document("sheet", "1", List.of(projection))));
-        return assertInstanceOf(NativeCompilationResult.Incomplete.class, new NativeDefinitionCompiler().compile(new NativeDefinition(d.id(), d.revision(), logical, List.of(binding)))).checked();
+        return DerivedInputValidatorTest.checked(new NativeDefinitionCompiler().compile(new NativeDefinition(d.id(), d.revision(), logical, List.of(binding))));
     }
     static Location location(String field, String value, int entity, int attribute, boolean child) {
         var pin = DerivedInputValidatorTest.attribute(child ? "value" : field, value, attribute);

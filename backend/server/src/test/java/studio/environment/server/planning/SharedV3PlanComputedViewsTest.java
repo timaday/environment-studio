@@ -28,8 +28,8 @@ class SharedV3PlanComputedViewsTest {
         var narrowed = new studio.environment.core.definitionv3.NativeDefinition.Logical(logical.entityTypes(), logical.relations(), logical.rules(),
                 logical.operationCapabilities(), logical.computedTypes(), logical.derivations(),
                 List.of(new studio.environment.core.definitionv3.NativeDefinition.Cooccurrence("pair", "by-tone", "by-finish", java.math.BigInteger.ZERO, java.math.BigInteger.ONE)), logical.computedRules());
-        var checked = assertInstanceOf(studio.environment.core.definitionv3.NativeCompilationResult.Incomplete.class,
-                new studio.environment.core.definitionv3.NativeDefinitionCompiler().compile(new studio.environment.core.definitionv3.NativeDefinition(base.id(), base.revision(), narrowed, base.bindings()))).checked();
+        var checked = studio.environment.server.NativeV3TestSupport.checked(new studio.environment.core.definitionv3.NativeDefinitionCompiler()
+                .compile(new studio.environment.core.definitionv3.NativeDefinition(base.id(), base.revision(), narrowed, base.bindings())));
         var fixture = SharedV3PlanXmlTest.with(checked, XML); var service = fixture.service(); String plan = fixture.inspected(service);
         try (var view = service.reserveView(fixture.lease, plan)) {
             view.run(() -> {

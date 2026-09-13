@@ -36,6 +36,13 @@ class V3PublicationBoundaryTest {
         try (var files = Files.list(workspace)) { for (var file : files.toList()) Files.delete(file); }
         Files.delete(workspace);
     }
+
+    static String postgresqlOnlyDefinitionSource() throws Exception {
+        var root = (tools.jackson.databind.node.ObjectNode) JSON.readTree(Files.readString(Path.of("../../fixtures/native-v3/definition.json")));
+        var bindings = root.putArray("bindings");
+        bindings.add(JSON.readTree(Files.readString(Path.of("../../fixtures/native-v3/definition.json"))).get("bindings").get(0));
+        return JSON.writeValueAsString(root);
+    }
     PlanHttpSocketClient login(String subject)throws Exception {
         issuer.subject=subject;issuer.mode=MockIssuer.TokenMode.VALID;
         var client=new PlanHttpSocketClient(port);var start=client.get("/oauth2/authorization/studio");assertEquals(302,start.status());
@@ -43,23 +50,31 @@ class V3PublicationBoundaryTest {
         var callback=URI.create(provider.headers().firstValue("location").orElseThrow());assertEquals(302,client.get(callback.getRawPath()+"?"+callback.getRawQuery()).status());
         var session=client.get("/api/v1/session");assertEquals(200,session.status());var body=JSON.readTree(session.body());client.csrf(body.get("csrfHeaderName").asString(),body.get("csrfToken").asString());return client;
     }
-    @Test void actualIncompleteDefinitionReachesPublicationApplicationWithoutChangingHistory(CapturedOutput output) throws Exception {
+    @Test void actualPostgresqlTextDefinitionPublishesWithoutInjectedHistory(CapturedOutput output) throws Exception {
         var client=login("publication-maintainer");
         try {
             String id=UUID.randomUUID().toString(), path="/api/v3/definitions/"+id;
-            String source=Files.readString(Path.of("../../fixtures/native-v3/definition.json")).replace("Glyph","INVENTED-PUBLICATION-CANARY");assertTrue(source.contains("INVENTED-PUBLICATION-CANARY"));
+            String source=postgresqlOnlyDefinitionSource().replace("Glyph","INVENTED-PUBLICATION-CANARY");assertTrue(source.contains("INVENTED-PUBLICATION-CANARY"));
             String draft=JSON.writeValueAsString(Map.of("expectedRevision","0","requestId",UUID.randomUUID().toString(),"format","JSON","source",source));
-            var saved=client.request("PUT",path,draft,true);assertEquals(200,saved.status());
+            var saved=client.request("PUT",path,draft,true);assertEquals(200,saved.status(), saved.body());
+            assertEquals("historical-ready", JSON.readTree(saved.body()).at("/projection/kind").asString(), saved.body());
             var model=JSON.readTree(saved.body()).at("/projection/model");
             var policies=new ArrayList<Map<String,String>>();
             for(var binding:model.get("bindings"))for(var doc:binding.get("documents"))policies.add(Map.of("bindingId",binding.get("id").asString(),"documentId",doc.get("id").asString(),"content","deny"));
             String command=JSON.writeValueAsString(Map.of("expectedRevision","1","requestId",UUID.randomUUID().toString(),"exportPolicies",policies));
-            var refused=client.request("POST",path+"/publish",command,true);
-            assertEquals(422,refused.status());
-            assertEquals("DEFINITION_INCOMPLETE",JSON.readTree(refused.body()).at("/diagnostics/0/code").asString());
-            assertEquals(saved.body(),client.get(path).body());
-            assertEquals(422,client.request("POST",path+"/publish",command,true).status());
-            assertEquals(404,client.get(path+"/revisions/2").status());
+            var published=client.request("POST",path+"/publish",command,true);
+            assertEquals(200,published.status(), published.body());
+            var publishedBody=JSON.readTree(published.body());
+            assertEquals("published",publishedBody.get("state").asString());
+            assertEquals("2",publishedBody.get("workspaceRevision").asString());
+            assertEquals("1",publishedBody.at("/publication/sourceRevision").asString());
+            assertEquals("historical-ready",publishedBody.at("/projection/kind").asString());
+            assertEquals(policies.size(),publishedBody.at("/publication/exportPolicies").size());
+            var replay=client.request("POST",path+"/publish",command,true);
+            assertEquals(200,replay.status());
+            assertEquals(published.body(),replay.body());
+            assertEquals(published.body(),client.get(path).body());
+            assertEquals(200,client.get(path+"/revisions/2").status());
             assertFalse(output.getAll().contains("INVENTED-PUBLICATION-CANARY"));assertFalse(output.getAll().contains("mock-platform-secret"));
             for(String token:issuer.issuedTokens)assertFalse(output.getAll().contains(token));
         } finally {assertEquals(204,client.request("POST","/api/v1/session/logout","",true).status());}
@@ -80,9 +95,9 @@ class V3PublicationBoundaryTest {
                 assertEquals(current.body(),client.get(path).body());
                 assertEquals(409,client.request("POST",path+"/publish",history.body().replace("\"1\"","\"3\""),true).status());
                 var next=JSON.readTree(history.body()).deepCopy();((tools.jackson.databind.node.ObjectNode)next).put("expectedRevision","3").put("requestId",UUID.randomUUID().toString());
-                var refused=client.request("POST",path+"/publish",JSON.writeValueAsString(next),true);
-                assertEquals(422,refused.status());assertEquals("DEFINITION_INCOMPLETE",JSON.readTree(refused.body()).at("/diagnostics/0/code").asString());
-                assertEquals(404,client.get(path+"/revisions/4").status());
+                var republished=client.request("POST",path+"/publish",JSON.writeValueAsString(next),true);
+                assertEquals(422,republished.status());
+                assertEquals("DEFINITION_INCOMPLETE",JSON.readTree(republished.body()).at("/diagnostics/0/code").asString());
             }
         } finally {assertEquals(204,client.request("POST","/api/v1/session/logout","",true).status());}
     }

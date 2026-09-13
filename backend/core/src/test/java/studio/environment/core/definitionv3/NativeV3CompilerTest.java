@@ -42,11 +42,14 @@ class NativeV3CompilerTest {
                 "mock_schema", "mock_table", "mock_key", "mock_xml", KeyType.INT64, List.of(new Document("sheet", "1", List.of(projection))))));
     }
     private NativeCompilationResult.Checked checked(NativeDefinition definition) {
-        return assertInstanceOf(NativeCompilationResult.Incomplete.class, compiler.compile(definition)).checked();
+        return switch (compiler.compile(definition)) {
+            case NativeCompilationResult.ReadyToPublish ready -> ready.checked();
+            case NativeCompilationResult.Incomplete incomplete -> incomplete.checked();
+            case NativeCompilationResult.Rejected rejected -> fail(rejected.diagnostics().toString());
+        };
     }
-    @Test void validDeclarationsHaveExplicitV3DependenciesButCannotBecomeReady() {
-        var result = assertInstanceOf(NativeCompilationResult.Incomplete.class, compiler.compile(fixture()));
-        assertEquals(List.of("MECHANISM_UNQUALIFIED"), result.diagnostics().stream().map(d -> d.code()).toList());
+    @Test void validPostgresqlTextDeclarationsHaveExplicitV3DependenciesAndBecomeReady() {
+        var result = assertInstanceOf(NativeCompilationResult.ReadyToPublish.class, compiler.compile(fixture()));
         assertEquals(BigInteger.ONE, result.checked().mechanisms().get("native-compiler-v3"));
         assertEquals(BigInteger.ONE, result.checked().mechanisms().get("derived-graph-v1"));
         assertFalse(result.checked().mechanisms().containsKey("native-compiler-v2"));
@@ -54,6 +57,16 @@ class NativeV3CompilerTest {
         assertEquals(fixture(), result.checked().definition());
         assertEquals(result, compiler.compile(fixture()));
         assertFalse(result.toString().contains("Invented"));
+    }
+    @Test void oracleV3DefinitionsRemainExplicitlyUnqualifiedForThePostgresqlPilot() {
+        var d = fixture(); var b = d.bindings().getFirst();
+        var oracle = new NativeDefinition(d.id(), d.revision(), d.logical(), List.of(new Binding(b.id(), Engine.ORACLE, Storage.CLOB,
+                b.schema(), b.table(), b.keyColumn(), b.xmlColumn(), b.keyType(), b.documents())));
+        var result = assertInstanceOf(NativeCompilationResult.Incomplete.class, compiler.compile(oracle));
+        assertEquals(List.of("MECHANISM_UNQUALIFIED"), result.diagnostics().stream().map(diag -> diag.code()).toList());
+        assertEquals(BigInteger.ONE, result.checked().mechanisms().get("native-compiler-v3"));
+        assertEquals(BigInteger.ONE, result.checked().mechanisms().get("derived-graph-v1"));
+        assertEquals(oracle, result.checked().definition());
     }
     @Test void everyIneligibleSourceIsRejectedRegardlessOfFieldClassification() {
         for (var classification : Classification.values()) {
@@ -145,7 +158,7 @@ class NativeV3CompilerTest {
         pairs.add(new Cooccurrence("pair-over", "by-tone", "by-tone", BigInteger.ZERO, BigInteger.ONE));
         rejected(withLogical(new Logical(l.entityTypes(), l.relations(), l.rules(), l.operationCapabilities(), l.computedTypes(), l.derivations(), pairs, l.computedRules())), "RESOURCE_LIMIT");
     }
-    @Test void explicitlyEmptyDerivationsStillUseV3CompatibilityAndRemainUnqualified() {
+    @Test void explicitlyEmptyDerivationsStillUseV3CompatibilityAndRetainDistinctDigests() {
         var d = fixture(); var l = d.logical();
         var empty = withLogical(new Logical(l.entityTypes(), l.relations(), l.rules(), l.operationCapabilities(), List.of(), List.of(), List.of(), List.of()));
         var v3 = checked(empty);

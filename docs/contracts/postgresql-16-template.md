@@ -1,8 +1,9 @@
 # PostgreSQL 16.11 candidate template
 
-User-selected destination version: PostgreSQL16.11. This adds an explicitly pinned
-internal candidate variant, not production/client/export availability. Existing
-PostgreSQL18.6 and Oracle behavior and evidence remain unchanged.
+User-selected pilot destination version: PostgreSQL16.11. This is the only
+Monday pilot export-client tuple. Existing PostgreSQL18.6 and Oracle behavior and
+evidence remain preserved for later delivery but do not make those combinations
+available in this pilot.
 
 The closed guarded manifest accepts the additional exact tuple PostgreSQL/text,
 server16.11, psql16.11, linux-amd64 and template `postgresql16-text-v1`.
@@ -31,6 +32,6 @@ image digest and exact candidate; do not reuse18.6 results as16.11 qualification
 
 The application never executes these statements. Only the disposable test
 workflow executes candidate SQL. Production execution remains through the
-separately qualified supervisor. This slice neither qualifies JDBC observation
-on16.11 nor constructs a post-commit recovery artifact. Both remain separately
-required, along with live plan/publication/review/client and privacy authority.
+separately qualified supervisor. Pilot readiness also requires live definition
+publication, plan workflow, PostgreSQL16.11 observation, downloaded archive
+inspection, client privacy checks and exact-image deployment evidence.

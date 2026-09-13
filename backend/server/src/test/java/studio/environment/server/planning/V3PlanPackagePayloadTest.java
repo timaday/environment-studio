@@ -119,7 +119,7 @@ class V3PlanPackagePayloadTest {
         var policies = execution.putArray("exportPolicies");
         for (String id : List.of("other", "sheet")) policies.addObject().put("documentId", id).put("content", "protected-self-contained");
         var payload = assertInstanceOf(V3PlanPackagePayload.Result.Candidate.class, new V3PlanPackagePayload().prepare(good, new Cancellation()));
-        // Explicit test witness for mechanical pin compatibility only; actual compiler is Incomplete.
+        // Explicit witness keeps package admission scoped to the checked definition and payload pins.
         var witness = new studio.environment.core.definitionv3.NativeCompilationResult.ReadyToPublish(((PlanDefinition.V3) good.definition().model()).checked());
         var admitted = assertInstanceOf(studio.environment.server.export.PackageAdmission.Result.Accepted.class,
                 new studio.environment.server.export.PackageAdmission().readPinnedV3(witness, good.binding(), mapper.writeValueAsBytes(execution), payload.bytes()));
@@ -139,8 +139,11 @@ class V3PlanPackagePayloadTest {
                 oldBinding.schema(), oldBinding.table(), oldBinding.keyColumn(), oldBinding.xmlColumn(), oldBinding.keyType(),
                 List.of(oldBinding.documents().getFirst(), new studio.environment.core.definitionv2.NativeDefinition.Document("other", "2", List.of())));
         var definition = new studio.environment.core.definitionv3.NativeDefinition(originalDefinition.id(), originalDefinition.revision(), originalDefinition.logical(), List.of(binding));
-        var checked = assertInstanceOf(studio.environment.core.definitionv3.NativeCompilationResult.Incomplete.class,
-                new studio.environment.core.definitionv3.NativeDefinitionCompiler().compile(definition)).checked();
+        studio.environment.core.definitionv3.NativeCompilationResult.Checked checked = switch (new studio.environment.core.definitionv3.NativeDefinitionCompiler().compile(definition)) {
+            case studio.environment.core.definitionv3.NativeCompilationResult.ReadyToPublish ready -> ready.checked();
+            case studio.environment.core.definitionv3.NativeCompilationResult.Incomplete incomplete -> incomplete.checked();
+            case studio.environment.core.definitionv3.NativeCompilationResult.Rejected rejected -> fail(rejected.diagnostics().toString());
+        };
         var model = new PlanDefinition.V3(checked);
         var observedDocuments = new ArrayList<studio.environment.core.observation.ObservationResult.Document>();
         for (var doc : binding.documents()) {

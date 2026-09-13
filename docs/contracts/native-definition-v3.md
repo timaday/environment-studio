@@ -7,8 +7,12 @@ The [derived engine](../evidence/qf34-derived-engine.md),
 [final targets](../evidence/qf34-derived-target.md) and
 [physical-only profiles](../evidence/qf34-profile-v3.md) are reviewed internal
 mechanisms. Versioned publication and hosted plan paths have separate internal
-implementation evidence; the actual compiler still blocks new publication.
-A schema-valid document has no publication or execution authority.
+implementation evidence. For the PostgreSQL-only pilot, the compiler may return
+ReadyToPublish only for definitions whose bindings are all PostgreSQL text
+storage and whose required v3 mechanisms are the explicitly qualified base vector,
+with optional direct child-property XML support. Oracle, mixed-engine and non-text
+bindings remain incomplete with MECHANISM_UNQUALIFIED. A schema-valid document has
+no publication or execution authority.
 This version is explicit opt-in; [v2](native-definition-v2.md) keeps its original
 meaning, mechanisms, digest domains and historical codecs.
 
@@ -80,21 +84,23 @@ authorization. Constructing any result or Checked record supplies data only.
 Internal projection, target, profile and observation consumers freshly compile
 the supplied declaration before comparing the complete Checked value, including
 the declaration, logical digest, all binding digests and mechanism vector. That
-comparison accepts ReadyToPublish, or Incomplete with exclusively
-MECHANISM_UNQUALIFIED diagnostics. Rejected, any other publication blocker
-(including mixed diagnostics), or any mismatch refuses. Historical readiness or
-an uploaded Checked/result record cannot replace fresh compilation.
+comparison accepts ReadyToPublish only when the freshly compiled checked definition
+is in the explicitly qualified PostgreSQL text subset. It accepts Incomplete with
+exclusively MECHANISM_UNQUALIFIED diagnostics only when the checked definition is
+outside that subset, preserving unavailable Oracle and mixed-definition history
+without converting it into current authority. Rejected, any other publication
+blocker, a missing mechanism, an uploaded result or any mismatch refuses.
 
 The workspace compiler projects each typed outcome without stripping incomplete
 diagnostics. New publication and fresh plan lookup retain their separate fresh
 compilation, equality, owner and policy checks. Historical storage/replay remains
 readable without becoming current authority.
 
-This result compatibility change does not enable production ReadyToPublish:
-the actual compiler continues to add MECHANISM_UNQUALIFIED to every valid result
-until the required paths have actual qualification evidence. No configuration
-flag, uploaded mechanism list, diagnostic suppression or test witness can enable
-it. Tests constructing ReadyToPublish qualify only the result/consumer boundary.
+This result compatibility change enables production ReadyToPublish only for the
+PostgreSQL text pilot subset described above. No configuration flag, uploaded
+mechanism list, diagnostic suppression or test witness can make Oracle, mixed or
+non-text declarations ready. Tests constructing ReadyToPublish qualify only the
+result/consumer boundary unless they drive the public compiler path.
 
 ## Compatibility bytes and mechanism ownership
 
@@ -149,11 +155,11 @@ required vector, containing integer versions:
 
 The checked definition records the union of its bindings' exact vectors. Adding
 a mechanism to the server registry does not add it to unrelated binding digests.
-Required versions are not availability assertions. The server keeps v3
-availability disabled until all required paths are qualified; an internal
-compiler or graph test cannot enable hosted publication, inspection or export.
-Database/client, destination, policy, cleanup and deployment evidence remain
-separate from compiler readiness.
+Required versions are not availability assertions. The server advertises v3
+availability only for the explicitly qualified PostgreSQL text subset; an internal
+compiler or graph test cannot enable Oracle, mixed-engine, non-text, hosted export
+or deployment authority. Database/client, destination, policy, cleanup and
+deployment evidence remain separate from compiler readiness.
 
 ## Version boundaries and acceptance
 
