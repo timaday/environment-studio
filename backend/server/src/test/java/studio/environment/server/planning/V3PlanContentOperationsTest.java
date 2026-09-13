@@ -23,7 +23,7 @@ import studio.environment.server.plan.V3PlanContentAdapter;
 /** Independently invented XML operations, with literal whole-document expectations. */
 class V3PlanContentOperationsTest {
     static NativeCompilationResult.Checked compile(NativeDefinition definition) {
-        return assertInstanceOf(NativeCompilationResult.Incomplete.class,new NativeDefinitionCompiler().compile(definition)).checked();
+        return studio.environment.server.NativeV3TestSupport.checked(new NativeDefinitionCompiler().compile(definition));
     }
     static ObservationResult.Observation observed(PlanDefinition.V3 model,Map<String,String> documents) {
         var binding=model.checked().definition().bindings().getFirst();

@@ -8,7 +8,7 @@ import java.util.Objects;
 import java.util.TreeMap;
 import studio.environment.core.definition.DefinitionDiagnostic;
 
-/** Closed compiler data; actual v3 compilation remains unqualified. */
+/** Closed compiler data; readiness is limited to explicitly qualified v3 mechanisms. */
 public sealed interface NativeCompilationResult permits NativeCompilationResult.Rejected,
         NativeCompilationResult.Incomplete, NativeCompilationResult.ReadyToPublish {
     List<DefinitionDiagnostic> diagnostics();
@@ -17,8 +17,9 @@ public sealed interface NativeCompilationResult permits NativeCompilationResult.
         return switch (this) {
             case Rejected ignored -> false;
             case Incomplete incomplete -> incomplete.checked().equals(expected)
-                    && incomplete.diagnostics().stream().allMatch(d -> d.code().equals("MECHANISM_UNQUALIFIED"));
-            case ReadyToPublish ready -> ready.checked().equals(expected);
+                    && incomplete.diagnostics().stream().allMatch(d -> d.code().equals("MECHANISM_UNQUALIFIED"))
+                    && !NativeMechanisms.eligible(incomplete.checked());
+            case ReadyToPublish ready -> ready.checked().equals(expected) && NativeMechanisms.eligible(ready.checked());
         };
     }
     record Checked(NativeDefinition definition, String logicalDigest, Map<String, String> bindingDigests,

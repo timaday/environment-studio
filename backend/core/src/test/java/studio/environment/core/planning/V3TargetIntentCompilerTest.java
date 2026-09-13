@@ -14,14 +14,20 @@ import studio.environment.core.graph.ObservedGraph;
 
 /** Independently invented physical expectations; no XML or publication authority. */
 class V3TargetIntentCompilerTest {
+    static NativeCompilationResult.Checked checked(NativeCompilationResult result) {
+        return switch (result) {
+            case NativeCompilationResult.ReadyToPublish ready -> ready.checked();
+            case NativeCompilationResult.Incomplete incomplete -> incomplete.checked();
+            case NativeCompilationResult.Rejected rejected -> fail(rejected.diagnostics().toString());
+        };
+    }
     static NativeCompilationResult.Checked definition() {
         var old = TargetIntentCompilerTest.definition().checked().definition();
         var l = old.logical();
         var logical = new NativeDefinition.Logical(l.entityTypes(), l.relations(), l.rules(), l.operationCapabilities(),
                 List.of(new NativeDefinition.ComputedType("names", "Names")),
                 List.of(new NativeDefinition.Derivation("by-name", "a", "id", "names", "named")), List.of(), List.of());
-        return assertInstanceOf(NativeCompilationResult.Incomplete.class, new NativeDefinitionCompiler().compile(
-                new NativeDefinition("mock-target", BigInteger.ONE, logical, old.bindings()))).checked();
+        return checked(new NativeDefinitionCompiler().compile(new NativeDefinition("mock-target", BigInteger.ONE, logical, old.bindings())));
     }
     static TargetIntent.Ref.Existing old(String type, String id) {
         return new TargetIntent.Ref.Existing(new ObservedGraph.Key(type, id));
@@ -110,7 +116,7 @@ class V3TargetIntentCompilerTest {
                 new NativeCompilationResult.Checked(original.definition(), original.logicalDigest(), original.bindingDigests(), Map.of()))) {
             assertEquals("INVALID_DEFINITION", refusal(forged, intent));
         }
-        assertInstanceOf(NativeCompilationResult.Incomplete.class, new NativeDefinitionCompiler().compile(original.definition()));
+        assertInstanceOf(NativeCompilationResult.ReadyToPublish.class, new NativeDefinitionCompiler().compile(original.definition()));
         assertInstanceOf(TargetCompilationResult.Expected.class,
                 new V3TargetIntentCompiler().compile(original, TargetIntentCompilerTest.graph(), intent));
     }

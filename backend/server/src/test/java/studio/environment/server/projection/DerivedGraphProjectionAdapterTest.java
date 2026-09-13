@@ -47,8 +47,8 @@ class DerivedGraphProjectionAdapterTest {
         for (int i = 0; i < documentCount; i++) documents.add(new Document("sheet-" + i, Integer.toString(i + 1), List.of(new Projection("items-" + i,
                 projection.type(), projection.path(), projection.fields(), projection.references()))));
         var binding = new Binding("mock-pg", Engine.POSTGRESQL, Storage.TEXT, "mock_schema", "mock_table", "mock_key", "mock_xml", KeyType.INT64, documents);
-        return assertInstanceOf(NativeCompilationResult.Incomplete.class, new NativeDefinitionCompiler().compile(
-                new NativeDefinition("mock-source", BigInteger.ONE, logical, List.of(binding)))).checked();
+        return studio.environment.server.NativeV3TestSupport.checked(new NativeDefinitionCompiler().compile(
+                new NativeDefinition("mock-source", BigInteger.ONE, logical, List.of(binding))));
     }
     static String digest(String source) {
         try { return HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(source.getBytes(StandardCharsets.UTF_8))); }
@@ -175,8 +175,8 @@ class DerivedGraphProjectionAdapterTest {
                 List.of(new Document("sheet-0", "1", List.of(projection))));
         var logical = new NativeDefinition.Logical(l.entityTypes(), List.of(relation), l.rules(), l.operationCapabilities(),
                 l.computedTypes(), l.derivations(), l.cooccurrences(), l.computedRules());
-        var definition = assertInstanceOf(NativeCompilationResult.Incomplete.class, new NativeDefinitionCompiler().compile(
-                new NativeDefinition(original.id(), original.revision(), logical, List.of(binding)))).checked();
+        var definition = studio.environment.server.NativeV3TestSupport.checked(new NativeDefinitionCompiler().compile(
+                new NativeDefinition(original.id(), original.revision(), logical, List.of(binding))));
         var source = "<items xmlns='urn:mock'><item id='one' tone='alpha' next='two'/><item id='two' tone='beta'/></items>";
         var result = project(definition, source);
         assertEquals(1, result.input().edges().size());
@@ -192,8 +192,8 @@ class DerivedGraphProjectionAdapterTest {
         var relation = new NativeDefinition.Cooccurrence("pair", "by-tone", "by-finish", BigInteger.ZERO, BigInteger.ONE);
         var logical = new NativeDefinition.Logical(l.entityTypes(), l.relations(), l.rules(), l.operationCapabilities(),
                 l.computedTypes(), l.derivations(), List.of(relation), l.computedRules());
-        var definition = assertInstanceOf(NativeCompilationResult.Incomplete.class, new NativeDefinitionCompiler().compile(
-                new NativeDefinition(original.id(), original.revision(), logical, original.bindings()))).checked();
+        var definition = studio.environment.server.NativeV3TestSupport.checked(new NativeDefinitionCompiler().compile(
+                new NativeDefinition(original.id(), original.revision(), logical, original.bindings())));
         var result = project(definition, DIRECT);
         var alpha = result.derived().rules().stream().filter(r -> r.source().orElseThrow().value().equals("alpha")).findFirst().orElseThrow();
         assertEquals(BigInteger.TWO, alpha.actual());

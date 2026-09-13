@@ -30,8 +30,8 @@ class SharedV3PlanValidationTest {
                 logical.operationCapabilities(),logical.computedTypes(),logical.derivations(),
                 List.of(new NativeDefinition.Cooccurrence("pair","by-tone","by-finish",BigInteger.ONE,BigInteger.TWO)),
                 List.of(new CountRule("tone-count","tones",BigInteger.TWO,BigInteger.TWO)));
-        var checked=assertInstanceOf(NativeCompilationResult.Incomplete.class,new NativeDefinitionCompiler().compile(
-                new NativeDefinition(base.id(),base.revision(),narrowed,base.bindings()))).checked();
+        var checked=studio.environment.server.NativeV3TestSupport.checked(new NativeDefinitionCompiler().compile(
+                new NativeDefinition(base.id(),base.revision(),narrowed,base.bindings())));
         var fixture=SharedV3PlanXmlTest.with(checked,XML);var service=fixture.service();String plan=fixture.inspected(service);
         var current=service.validateV3(fixture.lease,plan,"2");
         assertEquals(Map.of("physical-max",Outcome.UNKNOWN,"physical-min",Outcome.UNKNOWN),current.applicationRules());
@@ -55,8 +55,8 @@ class SharedV3PlanValidationTest {
         var narrowed=new NativeDefinition.Logical(logical.entityTypes(),logical.relations(),logical.rules(),logical.operationCapabilities(),
                 logical.computedTypes(),logical.derivations(),
                 List.of(new NativeDefinition.Cooccurrence("pair","by-tone","by-finish",BigInteger.ZERO,BigInteger.ONE)),logical.computedRules());
-        var checked=assertInstanceOf(NativeCompilationResult.Incomplete.class,new NativeDefinitionCompiler().compile(
-                new NativeDefinition(base.id(),base.revision(),narrowed,base.bindings()))).checked();
+        var checked=studio.environment.server.NativeV3TestSupport.checked(new NativeDefinitionCompiler().compile(
+                new NativeDefinition(base.id(),base.revision(),narrowed,base.bindings())));
         var fixture=SharedV3PlanXmlTest.with(checked,XML);var service=fixture.service();String plan=fixture.inspected(service);
         try(var view=service.reserveView(fixture.lease,plan)) {
             view.run(()->{view.pin("2");assertEquals(List.of(Outcome.FAIL,Outcome.PASS),

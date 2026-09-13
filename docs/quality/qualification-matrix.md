@@ -6,10 +6,10 @@ evidence; never fill the matrix from driver availability.
 
 | Capability | Candidate | Scope | State |
 | --- | --- | --- | --- |
-| Oracle | Disposable Free 23.26.3.0.0; CLOB; JDBC 23.26.3.0.0 | [Complete read matrix](../evidence/d04a-integration.md), account READ ONLY/vendor baseline, bounds and cleanup; SQL*Plus guarded execution unqualified | READ CHECKS PASS; WRITER INCOMPLETE |
-| PostgreSQL | Disposable 18.6; text; JDBC 42.7.13 | [Complete read matrix](../evidence/d04a-integration.md), effective privileges/visibility, bounds and cleanup; psql guarded execution unqualified | READ CHECKS PASS; WRITER INCOMPLETE |
+| Oracle | Disposable Free 23.26.3.0.0; CLOB; JDBC 23.26.3.0.0 | Preserved implementation and prior read evidence; no Monday pilot completion or SQL*Plus guarded execution qualification | DEFERRED; UNAVAILABLE IN POSTGRESQL PILOT |
+| PostgreSQL | Disposable 16.11; text XML storage; JDBC 42.7.13; psql 16.11 client target | Monday pilot target: normal definition setup/publication, read-only inspection, profile capture/reuse, target values, current/target XML, fail-closed validation and guarded package download against independently invented fixtures | PILOT QUALIFICATION IN PROGRESS |
 | PostgreSQL xml/OID | Not selected | Separate storage contract required | UNSUPPORTED |
-| Native YAML/JSON definitions | Version 1 draft meta-schema; D01a compiler and D02b owned upload | Bounded parsing, checks, immutable incomplete revisions; publication absent | INCOMPLETE |
+| Native YAML/JSON definitions | Version 3 PostgreSQL/TEXT publication subset; v1/v2 historical codecs preserved | Bounded parsing, checks, immutable revisions; PostgreSQL/TEXT definitions can become ReadyToPublish; Oracle/mixed/non-text definitions remain MECHANISM_UNQUALIFIED | POSTGRESQL PILOT PATH READY FOR INTEGRATION CHECKS |
 | Native version 2 compiler | D01b closed logical/binding semantics and versioned digests | Independent digest oracle and reviewed static mechanism limits; runtime publication/observation separate | COMPILER CHECKS PASS |
 | Definition inspector | Synthetic version 1 projection | Component behavior and desktop/390px keyboard/axe checks; no integrated editing or operator rehearsal | COMPONENT CHECKS PASS |
 | XML spans and graph projection | D03b/c, qualified Woodstox 7.2.2-es-xml10-fifth-1 on Java 21 | Exact source and graph, Fifth Edition names/bounds, three graph and nine writer/parser guard mutants; [211-test integration and protected image](../evidence/d03bc-integration.md); structural planner/client qualification separate | MECHANISM CHECKS PASS |

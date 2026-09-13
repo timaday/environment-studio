@@ -23,7 +23,7 @@ public final class V3StructuralWireFixtures {
         var mapped=new Projection(projection.id(),projection.type(),projection.path(),projection.fields(),List.of(new ReferenceMapping("link",new ExpandedName("","next"))));
         var bound=new Binding(binding.id(),binding.engine(),binding.storage(),binding.schema(),binding.table(),binding.keyColumn(),binding.xmlColumn(),binding.keyType(),List.of(new Document("sheet","1",List.of(mapped))));
         var result=new studio.environment.core.definitionv3.NativeDefinitionCompiler().compile(new studio.environment.core.definitionv3.NativeDefinition(base.id(),base.revision(),model,List.of(bound)));
-        var checked=org.junit.jupiter.api.Assertions.assertInstanceOf(studio.environment.core.definitionv3.NativeCompilationResult.Incomplete.class,result).checked();
+        var checked=studio.environment.server.NativeV3TestSupport.checked(result);
         fixture=SharedV3PlanXmlTest.with(checked,XML);service=fixture.service();lease=fixture.lease;plan=fixture.inspected(service);
     }
     public HostedPlanService.ViewSnapshot snapshot(String revision){return fixture.snapshot(service,plan,revision);}

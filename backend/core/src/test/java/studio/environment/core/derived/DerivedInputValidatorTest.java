@@ -21,6 +21,13 @@ import studio.environment.core.planning.TargetIntent;
 /** Independently invented internal pins; these are not actual XML/DB qualification evidence. */
 class DerivedInputValidatorTest {
     static final String SOURCE = "a".repeat(64);
+    static NativeCompilationResult.Checked checked(NativeCompilationResult result) {
+        return switch (result) {
+            case NativeCompilationResult.ReadyToPublish ready -> ready.checked();
+            case NativeCompilationResult.Incomplete incomplete -> incomplete.checked();
+            case NativeCompilationResult.Rejected rejected -> fail(rejected.diagnostics().toString());
+        };
+    }
     static NativeCompilationResult.Checked definition(boolean child) {
         var fields = List.of(new Field("id", ValueType.TEXT, true, Classification.STRUCTURAL, Sensitivity.PUBLIC, true, false),
                 new Field("tone", ValueType.TEXT, false, Classification.ENVIRONMENT, Sensitivity.PUBLIC, true, true));
@@ -35,8 +42,7 @@ class DerivedInputValidatorTest {
                 List.of(new FieldMapping("id", new ExpandedName("", "id")), new FieldMapping("tone", locator)), List.of());
         var binding = new Binding("mock-pg", Engine.POSTGRESQL, Storage.TEXT, "mock_schema", "mock_table", "mock_key", "mock_xml", KeyType.INT64,
                 List.of(new Document("sheet", "1", List.of(projection))));
-        return assertInstanceOf(NativeCompilationResult.Incomplete.class,
-                new NativeDefinitionCompiler().compile(new NativeDefinition("mock", BigInteger.ONE, logical, List.of(binding)))).checked();
+        return checked(new NativeDefinitionCompiler().compile(new NativeDefinition("mock", BigInteger.ONE, logical, List.of(binding))));
     }
     static Pin pin(NativeCompilationResult.Checked definition) {
         return new Pin("revision-1", definition.logicalDigest(), "mock-pg", definition.bindingDigests().get("mock-pg"), Map.of("sheet", SOURCE));
@@ -180,8 +186,7 @@ class DerivedInputValidatorTest {
         var required = new Field(tone.id(), tone.valueType(), true, tone.classification(), tone.sensitivity(), tone.readable(), tone.editable());
         var logical = new NativeDefinition.Logical(List.of(new EntityType(type.id(), type.label(), List.of(type.fields().getFirst(), required), type.identity())),
                 old.relations(), old.rules(), old.operationCapabilities(), old.computedTypes(), old.derivations(), old.cooccurrences(), old.computedRules());
-        var definition = assertInstanceOf(NativeCompilationResult.Incomplete.class, new NativeDefinitionCompiler().compile(
-                new NativeDefinition(before.id(), before.revision(), logical, before.bindings()))).checked();
+        var definition = checked(new NativeDefinitionCompiler().compile(new NativeDefinition(before.id(), before.revision(), logical, before.bindings())));
         refused(definition, withFields(definition, observed("one", 1), Map.of("tone", new FieldState.Absent()), Kind.OBSERVED), "REQUIRED_FIELD_MISSING");
     }
     static DerivedInput withFields(NativeCompilationResult.Checked definition, Ref reference, Map<String, FieldState> fields, Kind kind) {

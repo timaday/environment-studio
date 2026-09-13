@@ -6,13 +6,16 @@ POST `/api/v3/profiles/{objectId}/publish`. All existing v1/v2 meanings, v3 draf
 history response shapes, original-session ownership, private schema3 storage,
 four shared operation slots, body/output clocks and completion cleanup remain.
 These routes add access to the existing V3PublicationWorkspace application
-commands, not new compiler qualification or plan/export authority.
+commands, not plan/export authority.
 
-The actual compiler remains incomplete. New production publication therefore
-refuses under the existing application contract. A stored historical publication
-or successful replay is inspectable history and cannot confer current readiness.
-Do not add a production flag, test-only compiler toggle or caller-supplied checked
-model to bypass current qualification.
+For the PostgreSQL-only pilot, new definition publication may succeed only when
+fresh server compilation returns ReadyToPublish for a definition whose bindings
+are all PostgreSQL text storage and whose required v3 mechanisms are in the
+explicitly qualified subset. Oracle, mixed-engine and non-text definitions remain
+incomplete with MECHANISM_UNQUALIFIED and refuse new publication. A stored
+historical publication or successful replay is inspectable history and cannot
+confer current readiness. Do not add a production flag, test-only compiler toggle
+or caller-supplied checked model to bypass current qualification.
 
 ## Requests and authority
 
@@ -81,8 +84,9 @@ supported compiler/schema, current recompilation equality, full definition polic
 coverage, exact eligible profile definition reference, immutable bounded append
 and final authenticated commit. Preserve DEFINITION_INCOMPLETE,
 DEFINITION_NOT_PUBLISHED, CURRENT_COMPILATION_MISMATCH and policy diagnostics as
-safe422 Rejected results. A new actual valid-source attempt currently refuses
-DEFINITION_INCOMPLETE; historical-ready data cannot bypass this.
+safe422 Rejected results. A new actual valid PostgreSQL text source can publish;
+Oracle, mixed-engine and non-text sources refuse DEFINITION_INCOMPLETE.
+Historical-ready data cannot bypass this.
 
 Keep400 malformed input,401 unauthenticated,403 forbidden,404 missing/foreign,
 409 conflict,413 byte limit,422 semantic refusal,429 capacity and503 unavailable
@@ -92,17 +96,17 @@ in workspace-http-v3.md. No raw exception, source, path or credential enters err
 ## Acceptance and remaining work
 
 Use only independently invented fixtures. Demonstrate an actual HTTP request
-reaches the application refusal rather than an unlisted-route denial. Test both
-routes through real local HTTP/session/security and schema3 SQLite, definition
-maintainer versus profile-owner behavior, original lease revocation, strict body
-decoding, policy completeness, foreign/kind isolation, schema2 no-upgrade and
-unchanged store/replay after refusal. Existing operation/transfer adverse controls
-remain required. Exact historical replay can supply200 coverage using explicitly
-labelled test-produced history and the actual production runtime/compiler.
+reaches the application and can publish a PostgreSQL text definition without
+injected publication history, while Oracle and mixed definitions refuse through
+the same application path rather than an unlisted-route denial. Test both routes
+through real local HTTP/session/security and schema3 SQLite, definition maintainer
+versus profile-owner behavior, original lease revocation, strict body decoding,
+policy completeness, foreign/kind isolation, schema2 no-upgrade and unchanged
+store/replay after refusal. Existing operation/transfer adverse controls remain
+required. Exact historical replay can supply200 coverage using explicitly labelled
+test-produced history and the actual production runtime/compiler.
 
-Positive new publication application/store tests already use explicit compiler
-witnesses; those do not qualify a new actual publication. Do not weaken the
-current compiler to manufacture HTTP success. Freeze and independently review
-the candidate, run relevant guard mutants and integrated gates. Current v3
-compiler integration qualification, full plan HTTP/operator workflow, response
-resources and release/deployment evidence remain separate work.
+Positive new publication tests qualify only the PostgreSQL text compiler and
+workspace boundary. They do not qualify Oracle, production database connectivity,
+guarded package execution, HiveForge deployment or release readiness. Freeze the
+candidate, run relevant gates and record exact integration evidence.

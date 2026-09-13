@@ -20,7 +20,7 @@ public final class V3DocumentHttpWitnesses {
         var model=new studio.environment.core.definitionv3.NativeDefinition.Logical(List.of(type),logical.relations(),logical.rules(),logical.operationCapabilities(),logical.computedTypes(),logical.derivations(),logical.cooccurrences(),logical.computedRules());
         var bound=new Binding(binding.id(),binding.engine(),binding.storage(),binding.schema(),binding.table(),binding.keyColumn(),binding.xmlColumn(),binding.keyType(),List.of(new Document("sheet","1",List.of(mapped)),new Document("tail","2",List.of(tail))));
         var result=new studio.environment.core.definitionv3.NativeDefinitionCompiler().compile(new studio.environment.core.definitionv3.NativeDefinition(base.id(),base.revision(),model,List.of(bound)));
-        var incomplete=org.junit.jupiter.api.Assertions.assertInstanceOf(NativeCompilationResult.Incomplete.class,result);org.junit.jupiter.api.Assertions.assertTrue(incomplete.diagnostics().stream().allMatch(d->d.code().equals("MECHANISM_UNQUALIFIED")));return incomplete.checked();
+        return studio.environment.server.NativeV3TestSupport.checked(result);
     }
     public static final String SHEET="<items><!-- mock -->\r\n<item id='one' tone='al&#112;ha' finish='x' next='two' secret='MOCK-DOC-SECRET' optional=''><prop key='extra' value='al&#112;ha'/><prop key='other' value='alpha'/></item><unmapped sample='alpha'/></items>";
     public static final String TAIL="<items><item id='two' tone='alpha' finish='y'/><item id='three' tone='beta' finish='x' next='two'/></items>";

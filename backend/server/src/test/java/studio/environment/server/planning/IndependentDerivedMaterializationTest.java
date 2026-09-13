@@ -36,9 +36,7 @@ class IndependentDerivedMaterializationTest {
                 new Projection("bucket-" + id, "bucket", List.of(new ExpandedName("", "world"), new ExpandedName("", "items")), List.of(new FieldMapping("id", new ExpandedName("", "id"))), List.of()),
                 new Projection("items-" + id, "item", List.of(new ExpandedName("", "world"), new ExpandedName("", "items"), new ExpandedName("", "item")), item.fields(), List.of()))));
         var binding = new Binding(b.id(), b.engine(), b.storage(), b.schema(), b.table(), b.keyColumn(), b.xmlColumn(), b.keyType(), documents);
-        var compiled = assertInstanceOf(NativeCompilationResult.Incomplete.class, new NativeDefinitionCompiler().compile(new NativeDefinition(d.id(), d.revision(), logical, List.of(binding))));
-        assertTrue(compiled.diagnostics().stream().allMatch(x -> x.code().equals("MECHANISM_UNQUALIFIED")));
-        return compiled.checked();
+        return studio.environment.server.NativeV3TestSupport.checked(new NativeDefinitionCompiler().compile(new NativeDefinition(d.id(), d.revision(), logical, List.of(binding))));
     }
     static DerivedInput.Pin pin(NativeCompilationResult.Checked d, String revision) {
         return new DerivedInput.Pin(revision, d.logicalDigest(), "mock-pg", d.bindingDigests().get("mock-pg"), Map.of("left", digest(LEFT), "right", digest(RIGHT)));
@@ -106,8 +104,8 @@ class IndependentDerivedMaterializationTest {
         var d = model().definition(); var l = d.logical();
         var logical = new NativeDefinition.Logical(l.entityTypes(), l.relations(), l.rules(), l.operationCapabilities(),
                 l.computedTypes(), l.derivations(), List.of(new NativeDefinition.Cooccurrence("pair", "by-tone", "by-finish", BigInteger.TWO, BigInteger.TWO)), l.computedRules());
-        var checked = assertInstanceOf(NativeCompilationResult.Incomplete.class,
-                new NativeDefinitionCompiler().compile(new NativeDefinition(d.id(), d.revision(), logical, d.bindings()))).checked();
+        var checked = studio.environment.server.NativeV3TestSupport.checked(
+                new NativeDefinitionCompiler().compile(new NativeDefinition(d.id(), d.revision(), logical, d.bindings())));
         assertEquals(new DerivedTargetMaterializer.Refused("DERIVED_RULE_FAILED"), run(checked, intent(), List.of(), () -> false));
     }
 }

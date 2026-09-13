@@ -87,8 +87,9 @@ the exact state. Neither helper accepts an operator-supplied command or argument
 
 `clients` has one or two entries, with no duplicate family. Each entry contains
 exactly `family`, `version`, `runtimeRoot`, `runtimeIdentity`, `executableSha256`
-and, for SQL*Plus only, `orapkiSha256`. Family/version is `psql`/`18.6` or
-`sqlplus`/`23.26.3.0.0`. Executables resolve to `runtimeRoot/bin/psql`,
+and, for SQL*Plus only, `orapkiSha256`. The Monday pilot family/version is
+`psql`/`16.11`; `sqlplus`/`23.26.3.0.0` remains a preserved but unavailable later
+Oracle path. Executables resolve to `runtimeRoot/bin/psql`,
 `runtimeRoot/bin/sqlplus` and `runtimeRoot/bin/orapki`; there are no caller-supplied
 argument lists. All hashes/identities are 64 lowercase hex characters. The
 read-only trusted installation and its libraries/scripts must match an installed

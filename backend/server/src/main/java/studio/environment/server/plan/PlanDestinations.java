@@ -71,11 +71,7 @@ final class PlanDestinations {
         if(client.serverVersion()==null || client.family()==null || client.version()==null || client.platform()==null || client.templateVersion()==null) invalid();
         boolean postgresql16=engine==Engine.POSTGRESQL && client.serverVersion().equals("16.11") && client.family().equals("psql")
                 && client.version().equals("16.11") && client.platform().equals("linux-amd64") && client.templateVersion().equals("postgresql16-text-v1");
-        boolean postgresql18=engine==Engine.POSTGRESQL && client.serverVersion().equals("18.6") && client.family().equals("psql")
-                && client.version().equals("18.6") && client.platform().equals("linux-amd64") && client.templateVersion().equals("postgresql-text-v1");
-        boolean oracle=engine==Engine.ORACLE && client.serverVersion().equals("23.26.3.0.0") && client.family().equals("sqlplus")
-                && client.version().equals("23.26.3.0.0") && client.platform().equals("linux-amd64") && client.templateVersion().equals("oracle-clob-v1");
-        if(!(postgresql16 || postgresql18 || oracle)) invalid();
+        if(!postgresql16) invalid();
     }
     private static void physicalIdentity(Engine engine,Map<String,String> identity) {
         var numeric=engine==Engine.POSTGRESQL?Set.of("systemIdentifier","databaseOid"):Set.of("dbid","conId","conUid");

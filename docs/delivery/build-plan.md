@@ -1,8 +1,10 @@
-# Build plan — Friday 11 September 2026
+# Build plan — Monday 14 September 2026 PostgreSQL pilot
 
-Start: Tuesday 8 September. Goal: the highest honestly qualified pilot by
-Friday, retaining the complete workflow. The broad enterprise product will
-extend beyond this window. Indicative remaining work is **55–90 engineering
+Start: Tuesday 8 September. Current amended goal: a PostgreSQL 16.11-only
+pilot by Monday 14 September 2026 09:00 Europe/London, retaining the complete
+PostgreSQL workflow. Oracle is deferred and unavailable in this pilot, while its
+existing implementation and architecture remain preserved. The broad enterprise
+product will extend beyond this window. Indicative remaining work is **55–90 engineering
 hours**, plus DBA/application-owner access and independent qualification. This
 is an initial planning estimate, not measured velocity. One developer's normal
 four-day capacity does not cover the upper range; Codex helps implementation
@@ -16,7 +18,7 @@ but cannot supply missing application facts or replace database evidence.
 | D01 | Generic definition compiler + mock contracts / 6–10h | Public behavior decisions; independent mock cases | Native upload compiles exact supported vocabulary; unknown semantics block; mock family reviewed; actual application qualification remains external |
 | D02 | Hosted identity/session/storage boundary / 5–8h | HiveForge/IdP facts | Auth, owner scoping, TLS/CSRF, expiry and leakage/isolation checks pass before real credentials |
 | D03 | Lossless XML projection and patches / 8–12h | D01 | No-op exact fidelity; intended scalar/structural edits preserve unrelated spans across fixtures |
-| D04 | Complete Oracle/Postgres observation / 6–10h | D01,D02 | Independent read-only/scope/identity/cleanup tests on each intended engine/storage/version |
+| D04 | Complete PostgreSQL 16.11 observation for pilot / 6–10h | D01,D02 | Independent read-only/scope/identity/cleanup tests on PostgreSQL 16.11 text; Oracle evidence preserved but deferred |
 | D05 | Profiles + all/partial composition / 5–8h | D01 | Value-free capture, immutable revisions, closure preview and explicit conflict resolution |
 | D06 | Mapping, values and structural planner / 7–10h | D03,D04,D05 | One-to-two example works across CLOBs with explicit IDs, references and typed moves/creates |
 | D07 | Guarded SQL writers and client qualification / 10–16h | D03,D04,D06 | Complete baseline/destination/row-count/post-state/rollback guards pass actual client fault tests |
@@ -48,19 +50,19 @@ The [profile HTTP draft/history routes](../evidence/qf34-profile-http-v3.md) are
 now reviewed and integrated: combined Java1072, frontend40/schema40 and independent
 reference, exact-revision and owner controls pass.
 [Internal publication commands](../evidence/qf34-publication-v3.md) now pass
-independent review and combined Java1115; the actual compiler still refuses
-publication. [Internal v3 observation](../evidence/qf34-observation-v3.md) now passes
+independent review and combined Java1115; the amended PostgreSQL pilot now allows
+new publication only for the qualified PostgreSQL text subset. [Internal v3 observation](../evidence/qf34-observation-v3.md) now passes
 independent review, combined Java1126 and actual mock Oracle/PostgreSQL TLS and
 derived-projection controls. The
 [current v3 plan publication lookup](../evidence/qf34-plan-workspace-v3.md) now
 passes independent review and combined Java1151. The separate
-[actual both-engine workflow extension](../evidence/qf34-database-workflow-v3.md)
+[actual PostgreSQL workflow extension](../evidence/qf34-database-workflow-v3.md)
 passes complete target/proof, physical-only capture and whole/partial reuse
 checks after correcting an independently found test-oracle gap. Publication HTTP
 remains required before operational qualification.
 The [versioned plan model](../evidence/qf34-plan-model.md) now shares the physical
 composition algorithm while retaining distinct v2/v3 metadata: independent review,
-combined Java1157 and actual both-engine production-merge workflows pass. The
+combined Java1157 and actual PostgreSQL production-merge workflows pass; Oracle remains deferred for the pilot. The
 [complete v3 content adapter](../evidence/qf34-plan-content.md) now passes independent
 review, full Java1187 and eight compiled guard mutations. The
 [shared internal lifecycle](../evidence/qf34-shared-lifecycle.md) passes full Java1203
@@ -160,7 +162,7 @@ family, stand up CI/demo image, and create the first adversarial mock fixtures.
 Start D02 and exact no-op XML proof. In the separate private qualification
 workflow, the owner confirms actual application semantics and destination
 evidence. Record only generic capability outcomes here. Without the necessary
-evidence, Friday's outcome is an interactive prototype, not a certified export tool.
+evidence, Monday's outcome is an incomplete pilot, not a certified export tool.
 
 **Wednesday:** complete supported XML read/write contracts and complete
 observations, then profile capture/reuse using mock databases. Real current data
@@ -175,14 +177,14 @@ mock schemas/data, deliberately
 fail final DML and change unchanged dependencies/row membership. Do not spend
 this day polishing a canvas while the transaction contract is unproven.
 
-**Friday morning:** feature freeze for the pilot; qualification, RST and operator
-rehearsal. Confirm HiveForge pulls the exact image digest, restart/expiry behavior
-and rollback to the previous image. Re-run only affected gates after fixes.
-
-**Friday afternoon:** release the supported matrix with evidence or label the
-candidate incomplete and list concrete blockers. Never enable export to meet a
-date. A single-engine or scalar-only candidate requires an explicit scope
-agreement; it does not silently satisfy the full original requirements.
+**Monday 09:00 Europe/London:** freeze the PostgreSQL 16.11 pilot candidate;
+qualification, RST and operator rehearsal must match the exact image digest.
+Confirm HiveForge can pull that digest, then record restart/expiry behavior and
+rollback to the previous image when the platform evidence is available. Re-run
+only affected gates after fixes. Release the supported matrix with evidence or
+label the candidate incomplete and list concrete blockers. Never enable export to
+meet a date. Oracle remains explicitly unavailable until a later delivery qualifies
+it.
 
 ## Safe scope controls
 

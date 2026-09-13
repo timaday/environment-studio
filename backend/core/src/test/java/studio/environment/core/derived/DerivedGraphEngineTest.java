@@ -14,6 +14,13 @@ import studio.environment.core.planning.TargetIntent;
 
 class DerivedGraphEngineTest {
     private final DerivedGraphEngine engine = new DerivedGraphEngine();
+    static NativeCompilationResult.Checked checked(NativeCompilationResult result) {
+        return switch (result) {
+            case NativeCompilationResult.ReadyToPublish ready -> ready.checked();
+            case NativeCompilationResult.Incomplete incomplete -> incomplete.checked();
+            case NativeCompilationResult.Rejected rejected -> fail(rejected.diagnostics().toString());
+        };
+    }
     static NativeCompilationResult.Checked definition() {
         var fields = List.of(new Field("id", ValueType.TEXT, true, Classification.STRUCTURAL, Sensitivity.PUBLIC, true, true),
                 new Field("tone", ValueType.TEXT, false, Classification.ENVIRONMENT, Sensitivity.PUBLIC, true, true),
@@ -30,8 +37,7 @@ class DerivedGraphEngineTest {
                         new FieldMapping("finish", new ExpandedName("", "finish"))), List.of());
         var binding = new Binding("mock-pg", Engine.POSTGRESQL, Storage.TEXT, "mock_schema", "mock_table", "mock_key", "mock_xml",
                 KeyType.INT64, List.of(new Document("sheet", "1", List.of(projection))));
-        return assertInstanceOf(NativeCompilationResult.Incomplete.class,
-                new studio.environment.core.definitionv3.NativeDefinitionCompiler().compile(new NativeDefinition("mock-derived", BigInteger.ONE, logical, List.of(binding)))).checked();
+        return checked(new studio.environment.core.definitionv3.NativeDefinitionCompiler().compile(new NativeDefinition("mock-derived", BigInteger.ONE, logical, List.of(binding))));
     }
     static DerivedInput.Pin pin(NativeCompilationResult.Checked definition) {
         return new DerivedInput.Pin("invented-revision", definition.logicalDigest(), "mock-pg", definition.bindingDigests().get("mock-pg"), Map.of("sheet", "a".repeat(64)));
@@ -69,8 +75,7 @@ class DerivedGraphEngineTest {
         var d = definition.definition(); var l = d.logical();
         var changed = new NativeDefinition(d.id(), d.revision(), new NativeDefinition.Logical(l.entityTypes(), l.relations(), l.rules(),
                 l.operationCapabilities(), l.computedTypes(), l.derivations(), pairs, rules), d.bindings());
-        return assertInstanceOf(NativeCompilationResult.Incomplete.class,
-                new studio.environment.core.definitionv3.NativeDefinitionCompiler().compile(changed)).checked();
+        return checked(new studio.environment.core.definitionv3.NativeDefinitionCompiler().compile(changed));
     }
     @Test void selfEdgesRetainBothOrderedFieldRolesAndDistinctOutgoingTargets() {
         var definition = withRules(definition(), List.of(new NativeDefinition.Cooccurrence("self", "by-tone", "by-tone", BigInteger.ONE, BigInteger.ONE)), List.of());
@@ -159,7 +164,7 @@ class DerivedGraphEngineTest {
                 new NativeDefinition.Cooccurrence("self", "by-tone", "by-tone", BigInteger.ZERO, BigInteger.ONE));
         var model = new NativeDefinition(d.id(), d.revision(), new NativeDefinition.Logical(l.entityTypes(), l.relations(), l.rules(),
                 l.operationCapabilities(), types, derivations, pairs, l.computedRules()), d.bindings());
-        return assertInstanceOf(NativeCompilationResult.Incomplete.class, new studio.environment.core.definitionv3.NativeDefinitionCompiler().compile(model)).checked();
+        return checked(new studio.environment.core.definitionv3.NativeDefinitionCompiler().compile(model));
     }
     @Test void contributorBudgetChargesEveryNodeAndEdgeAssociationDespiteDeduplication() {
         var definition = linkDefinition();
@@ -188,9 +193,9 @@ class DerivedGraphEngineTest {
         var projection = new Projection(p.id(), p.type(), p.path(), p.fields(), references);
         var binding = new Binding(b.id(), b.engine(), b.storage(), b.schema(), b.table(), b.keyColumn(), b.xmlColumn(), b.keyType(),
                 List.of(new Document("sheet", "1", List.of(projection))));
-        return assertInstanceOf(NativeCompilationResult.Incomplete.class, new studio.environment.core.definitionv3.NativeDefinitionCompiler().compile(
+        return checked(new studio.environment.core.definitionv3.NativeDefinitionCompiler().compile(
                 new NativeDefinition(d.id(), d.revision(), new NativeDefinition.Logical(l.entityTypes(), relations, l.rules(), l.operationCapabilities(),
-                        l.computedTypes(), l.derivations(), l.cooccurrences(), l.computedRules()), List.of(binding)))).checked();
+                        l.computedTypes(), l.derivations(), l.cooccurrences(), l.computedRules()), List.of(binding))));
     }
     @Test void actualPhysicalEdgeInventorySharesTheDerivedEdgeLimit() {
         var definition = physicalEdgesDefinition(); var values = new String[10000][2]; values[0][0] = "alpha";
@@ -250,8 +255,8 @@ class DerivedGraphEngineTest {
         var projection = new Projection(p.id(), p.type(), p.path(), fields, p.references());
         var binding = new Binding(b.id(), b.engine(), b.storage(), b.schema(), b.table(), b.keyColumn(), b.xmlColumn(), b.keyType(),
                 List.of(new Document("sheet", "1", List.of(projection))));
-        var definition = assertInstanceOf(NativeCompilationResult.Incomplete.class, new studio.environment.core.definitionv3.NativeDefinitionCompiler()
-                .compile(new NativeDefinition(d.id(), d.revision(), d.logical(), List.of(binding)))).checked();
+        var definition = checked(new studio.environment.core.definitionv3.NativeDefinitionCompiler()
+                .compile(new NativeDefinition(d.id(), d.revision(), d.logical(), List.of(binding))));
         var origin = new studio.environment.core.graph.ObservedGraph.Origin("sheet", "items", "a".repeat(64), 1, List.of(0));
         var ref = new DerivedInput.Ref.Observed(new studio.environment.core.graph.ObservedGraph.Key("item", "one"), origin);
         var value = new DerivedInput.AttributePin("sheet", "a".repeat(64), 2, child.valueAttribute(), "value", "alpha", 90, 95, '\'');

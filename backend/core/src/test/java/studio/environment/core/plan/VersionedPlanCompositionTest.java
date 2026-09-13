@@ -23,6 +23,13 @@ class VersionedPlanCompositionTest {
     static final ObservedGraph.Key FIRST = new ObservedGraph.Key("unit", "first-source");
     static final ObservedGraph.Key SECOND = new ObservedGraph.Key("unit", "second-source");
     static final ObservedGraph.Key HUB = new ObservedGraph.Key("hub", "shared-source");
+    static NativeCompilationResult.Checked checked(NativeCompilationResult result) {
+        return switch (result) {
+            case NativeCompilationResult.ReadyToPublish ready -> ready.checked();
+            case NativeCompilationResult.Incomplete incomplete -> incomplete.checked();
+            case NativeCompilationResult.Rejected rejected -> fail(rejected.diagnostics().toString());
+        };
+    }
     static NativeCompilationResult.Checked definition() {
         var fields = List.of(new Field("id", ValueType.TEXT, true, Classification.STRUCTURAL, Sensitivity.PUBLIC, true, true),
                 new Field("tone", ValueType.TEXT, true, Classification.ENVIRONMENT, Sensitivity.PUBLIC, true, true));
@@ -36,9 +43,7 @@ class VersionedPlanCompositionTest {
                 List.of(new NativeDefinition.ComputedType("tones","Mock tones")),
                 List.of(new NativeDefinition.Derivation("by-tone","unit","tone","tones","has-tone")),List.of(),
                 List.of(new CountRule("tone-count","tones",BigInteger.ZERO,BigInteger.TEN)));
-        var result = assertInstanceOf(NativeCompilationResult.Incomplete.class,new NativeDefinitionCompiler().compile(new NativeDefinition("mock-plan",BigInteger.ONE,logical,List.of(binding))));
-        assertTrue(result.diagnostics().stream().allMatch(d -> d.code().equals("MECHANISM_UNQUALIFIED")),result.diagnostics().toString());
-        return result.checked();
+        return checked(new NativeDefinitionCompiler().compile(new NativeDefinition("mock-plan",BigInteger.ONE,logical,List.of(binding))));
     }
     static ObservedGraph graph() {
         var entities = new ArrayList<ObservedGraph.Entity>();int index=1;

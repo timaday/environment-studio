@@ -21,8 +21,8 @@ public final class V3ComputedWireFixtures {
             var definition = checked.definition(); var l = definition.logical();
             var logical = new NativeDefinition.Logical(l.entityTypes(), l.relations(), l.rules(), l.operationCapabilities(), l.computedTypes(), l.derivations(),
                     List.of(new NativeDefinition.Cooccurrence("pair", "by-tone", self ? "by-tone" : "by-finish", BigInteger.ZERO, failedRules ? BigInteger.ONE : BigInteger.TEN)), l.computedRules());
-            checked = org.junit.jupiter.api.Assertions.assertInstanceOf(NativeCompilationResult.Incomplete.class,
-                    new NativeDefinitionCompiler().compile(new NativeDefinition(definition.id(), definition.revision(), logical, definition.bindings()))).checked();
+            checked = studio.environment.server.NativeV3TestSupport.checked(
+                    new NativeDefinitionCompiler().compile(new NativeDefinition(definition.id(), definition.revision(), logical, definition.bindings())));
         }
         fixture = SharedV3PlanXmlTest.with(checked, xml); service = fixture.service(); lease = fixture.lease; plan = fixture.inspected(service);
     }

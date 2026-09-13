@@ -62,8 +62,8 @@ class SharedV3PlanReviewTest {
         documents.add(new studio.environment.core.definitionv2.NativeDefinition.Document("unmapped-sheet","2",List.of()));
         var changed=new studio.environment.core.definitionv2.NativeDefinition.Binding(binding.id(),binding.engine(),binding.storage(),binding.schema(),binding.table(),binding.keyColumn(),binding.xmlColumn(),binding.keyType(),documents);
         var definition=new studio.environment.core.definitionv3.NativeDefinition(original.id(),original.revision(),original.logical(),List.of(changed));
-        var checked=assertInstanceOf(studio.environment.core.definitionv3.NativeCompilationResult.Incomplete.class,
-                new studio.environment.core.definitionv3.NativeDefinitionCompiler().compile(definition)).checked();
+        var checked=studio.environment.server.NativeV3TestSupport.checked(
+                new studio.environment.core.definitionv3.NativeDefinitionCompiler().compile(definition));
         fixture.model=new PlanDefinition.V3(checked);fixture.additionalXml=java.util.Map.of("unmapped-sheet","<mock-private-field>invented-canary</mock-private-field>");
         fixture.definitionLookup=p->new PlanPorts.PublishedDefinition(p.reference(),p.publicationDigest(),p.model(),List.of(
                 new NativeCommand.Policy("mock-pg","sheet","protected-self-contained"),new NativeCommand.Policy("mock-pg","unmapped-sheet","deny")));

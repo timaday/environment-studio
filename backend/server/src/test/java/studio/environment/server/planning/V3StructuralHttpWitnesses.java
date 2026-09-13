@@ -25,7 +25,7 @@ public final class V3StructuralHttpWitnesses {
         var model=new studio.environment.core.definitionv3.NativeDefinition.Logical(List.of(type),List.of(new studio.environment.core.definition.DefinitionDraft.Relation("link","item","item",studio.environment.core.definition.DefinitionDraft.RelationKind.REFERENCE,java.math.BigInteger.ZERO,java.math.BigInteger.ONE,false)),logical.rules(),List.of(Operation.RETAIN_ENTITY,Operation.CREATE_ENTITY,Operation.REMOVE_ENTITY,Operation.BIND_FIELD,Operation.MOVE_RELATION),logical.computedTypes(),logical.derivations(),logical.cooccurrences(),logical.computedRules());
         var bound=new Binding(binding.id(),binding.engine(),binding.storage(),binding.schema(),binding.table(),binding.keyColumn(),binding.xmlColumn(),binding.keyType(),List.of(new Document("sheet","1",List.of(mapped))));
         var compiled=new studio.environment.core.definitionv3.NativeDefinitionCompiler().compile(new studio.environment.core.definitionv3.NativeDefinition(base.id(),base.revision(),model,List.of(bound)));
-        return org.junit.jupiter.api.Assertions.assertInstanceOf(NativeCompilationResult.Incomplete.class,compiled).checked();
+        return studio.environment.server.NativeV3TestSupport.checked(compiled);
     }
     public static final String XML="<items><!-- mock -->\r\n<item id='one' tone='al&#112;ha' finish='x' secret='MOCK-SECRET-VIEW' optional='' next='two'/><item id='two' tone='alpha' finish='y'/><item id='three' tone='beta' finish='x'/></items>";
     public static ObservationResult observation() {

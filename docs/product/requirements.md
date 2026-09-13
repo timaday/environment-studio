@@ -31,12 +31,14 @@ DBAs/Operations execute reviewed artifacts through the existing change process.
 One person may hold several responsibilities. No new approval bureaucracy is
 invented. A hosted deployment must enforce authorization and object ownership.
 
-The Friday pilot targets one explicitly qualified application XML family and
-its supported structural operations. Both Oracle CLOB and PostgreSQL text are
-requirements; each advertises only individually evidenced capabilities. Native
-PostgreSQL xml/OID, arbitrary schemas, cross-database atomicity, full visual
-schema authoring, solver-driven optimization, multi-replica hosting and automated
-SQL execution are outside the initial qualification boundary.
+The Monday 14 September 2026 09:00 Europe/London pilot target is PostgreSQL
+16.11 only, using text XML storage and the guarded PostgreSQL package path. Oracle
+CLOB support is preserved in the architecture and implementation but is explicitly
+deferred and unavailable in this pilot; Oracle-only evidence does not gate the
+PostgreSQL-supported configuration. Native PostgreSQL xml/OID, arbitrary schemas,
+cross-database atomicity, full visual schema authoring, solver-driven
+optimization, multi-replica hosting and application SQL execution are outside the
+pilot qualification boundary.
 
 ## Completion is not one flag
 

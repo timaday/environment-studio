@@ -13,6 +13,13 @@ import studio.environment.core.graph.ObservedGraph;
 
 /** Independent neutral slots and mock donor canaries; no application configuration. */
 class V3ProfileTest {
+    static NativeCompilationResult.Checked checked(NativeCompilationResult result) {
+        return switch (result) {
+            case NativeCompilationResult.ReadyToPublish ready -> ready.checked();
+            case NativeCompilationResult.Incomplete incomplete -> incomplete.checked();
+            case NativeCompilationResult.Rejected rejected -> fail(rejected.diagnostics().toString());
+        };
+    }
     static NativeCompilationResult.Checked definition() {
         var original = ProfileCaptureCompositionTest.definition().checked().definition();
         var types = original.logical().entityTypes().stream().map(t -> new EntityType(t.id(), t.label(), t.fields().stream()
@@ -22,10 +29,7 @@ class V3ProfileTest {
                 List.of(new NativeDefinition.Derivation("by-a", "a", "value", "a-values", "has-a"),
                         new NativeDefinition.Derivation("by-b", "b", "value", "b-values", "has-b")), List.of(),
                 List.of(new CountRule("minimum-a", "a-values", BigInteger.TEN, BigInteger.TEN)));
-        var result = assertInstanceOf(NativeCompilationResult.Incomplete.class,
-                new NativeDefinitionCompiler().compile(new NativeDefinition("mock-v3", BigInteger.ONE, logical, original.bindings())));
-        assertTrue(result.diagnostics().stream().allMatch(d -> d.code().equals("MECHANISM_UNQUALIFIED")));
-        return result.checked();
+        return checked(new NativeDefinitionCompiler().compile(new NativeDefinition("mock-v3", BigInteger.ONE, logical, original.bindings())));
     }
     static Profile profile(NativeCompilationResult.Checked d) {
         return new Profile("neutral", BigInteger.ONE, d.logicalDigest(), List.of(

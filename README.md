@@ -132,7 +132,7 @@ Starter CI and GHCR publication have passed. [Verification evidence](docs/eviden
 | Give GPT/Codex the next task | [Agent kickoff](docs/agents/start-here.md), [AGENTS.md](AGENTS.md) |
 | Speed up independent development work | [Lead, two writers and reviewer](docs/agents/parallel-development.md) |
 | Keep the real model private; give Q feedback to GPT | [Repository boundary](docs/product/repository-content-policy.md), [Amazon Q rules and handoff](docs/agents/amazon-q-feedback.md) |
-| Build by Friday 11 September 2026 | [Sequenced build plan](docs/delivery/build-plan.md), [progress](docs/delivery/progress.md) |
+| Build the Monday PostgreSQL pilot | [Sequenced build plan](docs/delivery/build-plan.md), [progress](docs/delivery/progress.md) |
 | Understand the agreed product | [Requirements](docs/product/requirements.md), [scope decisions](docs/product/decisions.md) |
 | Implement safely | [Hexagonal architecture](docs/architecture/architecture.md), [contracts](docs/contracts/README.md) |
 | Build the UX | [Flows and components](docs/ux/design-system.md) |
@@ -187,7 +187,10 @@ Pull requests run repository, Java, frontend and container checks. Successful
 `main` builds publish `ghcr.io/timaday/environment-studio:sha-<full-commit>` and
 `main`, with SBOM/provenance. HiveForge should deploy the emitted immutable
 `ghcr.io/timaday/environment-studio@sha256:…` reference. Publication does not
-declare database functionality ready; version tags require release evidence.
+by itself declare database functionality ready; version tags require release
+evidence. The Monday pilot support target is PostgreSQL
+16.11/psql 16.11 with text XML storage and guarded package download. Oracle is
+preserved but unavailable for this pilot.
 
 The browser gate builds the frontend and checks definition review at desktop
 and narrow widths using Playwright keyboard actions and axe. Run it locally with
@@ -200,9 +203,11 @@ to an existing environment is configured.
 
 ## Delivery constraint
 
-Friday is a **conditional pilot target**, not a production-readiness promise.
-The critical path requires generic compiler contracts, independently invented
-mock fixtures and disposable Oracle/PostgreSQL test databases. Actual application
+Monday 14 September 2026 09:00 Europe/London is a **PostgreSQL-only pilot
+target**, not a production-readiness promise. The critical path requires generic
+compiler contracts, independently invented mock fixtures and a disposable
+PostgreSQL 16.11 test database. Oracle-specific completion and qualification are
+deferred. Actual application
 semantics and destination identity must also be qualified in a separate authorized
 private workspace; real XML, schemas, mappings and even value-free real profiles
 never enter this repository. Share only generic feedback through the Q workflow.
