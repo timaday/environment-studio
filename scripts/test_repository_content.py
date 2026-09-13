@@ -26,6 +26,13 @@ class RepositoryContentTest(unittest.TestCase):
             with self.subTest(suffix=suffix):
                 self.assertTrue(assess({f"docs/unregistered.{suffix}": b"invented test payload"}))
 
+    def test_supervisor_build_descriptor_does_not_allow_adjacent_xml(self):
+        self.assertEqual([], assess({"backend/tools/guarded-supervisor/pom.xml": b"<project/>"}))
+        for name in ["backend/tools/guarded-supervisor/configuration.xml",
+                     "backend/tools/another-tool/pom.xml"]:
+            with self.subTest(name=name):
+                self.assertTrue(assess({name: b"<independently-invented-mock/>"}))
+
     def test_a_fixture_path_alone_does_not_establish_mock_provenance(self):
         self.assertTrue(assess({"fixtures/example/input.xml": b"<root/>"}))
         files = mock_files()

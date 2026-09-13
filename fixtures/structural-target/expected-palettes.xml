@@ -1,0 +1,3 @@
+<tiles xmlns='urn:mock:tiles'>
+  <palette id='shared' shade='warm'/>
+<ns0:palette xmlns:ns0="urn:mock:tiles" id="second-palette" shade="cool &amp; &#9;𐀀"/></tiles>

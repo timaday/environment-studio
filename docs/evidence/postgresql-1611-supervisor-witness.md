@@ -1,0 +1,154 @@
+# PostgreSQL 16.11 guarded supervisor client witness
+
+Status: local invented-environment witness for the narrowed PostgreSQL 16.11
+operator path. This is not production database qualification, not TLS evidence,
+not GHCR/HiveForge release evidence and not a claim that arbitrary customer
+schemas are supported.
+
+## Scope
+
+The witness adds an explicit opt-in JUnit test under the separately installed
+supervisor module. It is skipped in ordinary Maven runs unless
+`ES_POSTGRES16_CLIENT_WITNESS=true` is set. The test starts a disposable
+`postgres:16.11-bookworm` container using independently invented schema/table/XML
+values, generates the package transaction through the existing package admission
+and `TransactionTemplates` path, then drives the existing Java `ClientProtocol`
+against the real container `psql` 16.11 binary through `OwnedNativeProcess`.
+
+The browser/application still does not execute SQL, persist credentials, or make
+`exportAvailable=true`. The witness does not introduce a runtime registry entry.
+It proves only the bounded local combination named above.
+
+## Acceptance examples
+
+- the real `psql` 16.11 prompt matches the supervisor's fixed `Password: `
+  transcript expectation and responds to the `ES_SETTINGS` probe;
+- a generated PostgreSQL 16.11 package program updates the invented row only
+  after the supervisor sends COMMIT and receives the committed frame;
+- a supervisor-side refusal before the program write sends ROLLBACK to the still
+  usable client, receives the rollback frame, exits cleanly and leaves the row
+  unchanged;
+- a lost committed-frame read after real `psql` returns the committed marker remains
+  `UNKNOWN`, makes no rollback claim and leaves the row committed;
+- the witness remains skipped by default so routine Java gates do not require
+  Docker or a database daemon.
+
+## RED and GREEN
+
+Initial live execution refused before commit with `NOT_APPLIED` and inconclusive
+cleanup when the disposable database used the image default locale. That was an
+expected guard finding: the PostgreSQL template refuses default-collation indexes
+unless the database collation/ctype are within the supported C/UTF-8 shape. The
+witness now initializes the disposable database with
+`POSTGRES_INITDB_ARGS=--locale=C --encoding=UTF8`, matching the supported
+collation contract.
+
+Focused explicit witness:
+
+```sh
+ES_POSTGRES16_CLIENT_WITNESS=true ES_POSTGRES16_IMAGE=postgres:16.11-bookworm \
+  /home/tim/.tmp/es-toolchain-20260909/apache-maven-3.9.16/bin/mvn -B -ntp \
+  -f backend/tools/guarded-supervisor/pom.xml -Dtest=Postgres16ClientWitnessTest test
+```
+
+Result: BUILD SUCCESS. Tests run: 3, failures: 0, errors: 0, skipped: 0. Finished
+2026-09-12 17:18:44 Europe/London.
+
+Default invocation:
+
+```sh
+/home/tim/.tmp/es-toolchain-20260909/apache-maven-3.9.16/bin/mvn -B -ntp \
+  -f backend/tools/guarded-supervisor/pom.xml -Dtest=Postgres16ClientWitnessTest test
+```
+
+Result: BUILD SUCCESS. Tests run: 2, failures: 0, errors: 0, skipped: 2. Finished
+2026-09-12 17:13:52 Europe/London.
+
+Integrated backend gate after the post-COMMIT witness update:
+
+```sh
+/home/tim/.tmp/es-toolchain-20260909/apache-maven-3.9.16/bin/mvn -B -ntp \
+  -f backend/pom.xml verify
+```
+
+Result: BUILD SUCCESS. Module totals: 335 core tests, 7 qualified XML parser
+tests, 1,047 server tests and 346 guarded-supervisor tests, with the three
+Docker-gated witness cases skipped in the normal run. Finished 2026-09-12
+17:26:12 Europe/London. The known recycled-response diagnostic noise appeared
+during existing hosted boundary tests, but no test failed.
+
+## Remaining limits
+
+Production PostgreSQL execution still requires its own approved definition,
+operator-selected archive digest, destination maintenance approval, exact client
+installation identity, TLS configuration, and DBA/application-owner witness. This
+local evidence also does not cover Oracle, non-C collations, partitioned tables,
+row security, triggers, generated columns, unsupported types, multi-table
+packages or interrupted terminal entry.
+
+## Review correction — TEST-QA-012
+
+Independent review of effective candidate `4a824555ed8988fee9508c04af8f764b3cc78ac5`
+found TEST-QA-012, a P2 test-resource cleanup defect: the opt-in PostgreSQL
+witness removed each container but left the image's anonymous PGDATA volume
+behind. This was test infrastructure leakage only; the reviewer cleaned the
+three observed volumes from that run.
+
+The witness now records exact owned Docker volume names from the started
+container, removes the container with `docker rm -f -v`, and verifies both the
+container and every recorded owned volume are absent after each test. It does
+not use global prune and does not remove resources it did not create.
+
+Default compile/skip path after the correction:
+
+```sh
+/home/tim/.tmp/es-toolchain-20260909/apache-maven-3.9.16/bin/mvn -B -ntp \
+  -f backend/tools/guarded-supervisor/pom.xml -Dtest=Postgres16ClientWitnessTest test
+```
+
+Result: BUILD SUCCESS. Tests run: 3, failures: 0, errors: 0, skipped: 3.
+Finished 2026-09-12 18:26:26 Europe/London.
+
+Explicit local Docker witness after the correction:
+
+```sh
+ES_POSTGRES16_CLIENT_WITNESS=true ES_POSTGRES16_IMAGE=postgres:16.11-bookworm \
+  /home/tim/.tmp/es-toolchain-20260909/apache-maven-3.9.16/bin/mvn -B -ntp \
+  -f backend/tools/guarded-supervisor/pom.xml -Dtest=Postgres16ClientWitnessTest test
+```
+
+Result: BUILD SUCCESS. Tests run: 3, failures: 0, errors: 0, skipped: 0.
+Finished 2026-09-12 18:26:38 Europe/London.
+
+Integrated backend gate after the owned-volume cleanup correction:
+
+```sh
+/home/tim/.tmp/es-toolchain-20260909/apache-maven-3.9.16/bin/mvn -B -ntp \
+  -f backend/pom.xml verify
+```
+
+Result: BUILD SUCCESS. Reactor modules all passed, including server and
+guarded-supervisor. Module summaries reported 1,049 server tests and 346
+guarded-supervisor tests, with the three PostgreSQL 16.11 Docker witness cases
+skipped by default. Finished 2026-09-12 18:33:01 Europe/London.
+
+## Review corrections — TEST-QA-014 and TEST-QA-015
+
+A follow-up independent review found that the TEST-QA-012 cleanup correction still used an ambiguous oracle: Docker `inspect` exit code 1 can mean the resource is absent, but it can also mean the daemon, permission or transport path failed. The witness now accepts absence only when Docker reports an exact `No such container` or `No such volume` diagnostic for the owned resource name in the same diagnostic. Present resources, daemon/transport failures, prefix resource names and diagnostics for a different resource fail the cleanup assertion. A separate launch-owner correction waits for the original launcher to settle before the repeated-cleanup test releases the shared window to the next test.
+
+Focused checks on 12 September 2026 21:29 Europe/London:
+
+```sh
+/home/tim/.tmp/es-toolchain-20260909/apache-maven-3.9.16/bin/mvn -B -ntp \
+  -f backend/tools/guarded-supervisor/pom.xml \
+  -Dtest=Postgres16ClientWitnessCleanupOracleTest,PrivacyLaunchOwnerTest test
+/home/tim/.tmp/es-toolchain-20260909/apache-maven-3.9.16/bin/mvn -B -ntp \
+  -f backend/tools/guarded-supervisor/pom.xml -Dtest=Postgres16ClientWitnessTest test
+ES_POSTGRES16_CLIENT_WITNESS=true ES_POSTGRES16_IMAGE=postgres:16.11-bookworm \
+  /home/tim/.tmp/es-toolchain-20260909/apache-maven-3.9.16/bin/mvn -B -ntp \
+  -f backend/tools/guarded-supervisor/pom.xml -Dtest=Postgres16ClientWitnessTest test
+```
+
+Results before the case-identity follow-up: cleanup-oracle plus launch-owner focused tests PASS, 22 tests. Full backend Maven verify on the final launch-thread-join correction PASSed with guarded-supervisor 352 tests and the three Docker-gated witness cases skipped by default, finished 2026-09-12 21:47:53 Europe/London.
+
+A later reviewer counterexample showed that the same TEST-QA-014 cleanup oracle still case-folded the quoted Docker resource name. The correction now keeps Docker diagnostic prose case-flexible but matches the owned resource name exactly. Focused checks on 12 September 2026 21:55 Europe/London pass: `Postgres16ClientWitnessCleanupOracleTest` 8 tests, including different-case resource names and diagnostic-prose case variation; `PrivacyLaunchOwnerTest` 16 tests; default `Postgres16ClientWitnessTest` 3 skipped; explicit PostgreSQL 16.11 witness 3 tests. Repository/content/script checks also pass. Full backend Maven verify also passed on this correction at 2026-09-12 22:01:14 Europe/London: core 335 tests, qualified XML parser 7 tests, server 1,049 tests and guarded-supervisor 354 tests, with the three Docker-gated witness cases skipped by default. This remains local invented-environment evidence only.

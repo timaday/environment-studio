@@ -9,7 +9,8 @@ import sys
 
 DATA_SUFFIXES = {".xml", ".xsd", ".wsdl", ".sql", ".ddl", ".csv", ".tsv",
                  ".dmp", ".dump", ".db", ".sqlite", ".sqlite3", ".bak"}
-TOOL_XML = {"backend/pom.xml", "backend/core/pom.xml", "backend/server/pom.xml"}
+TOOL_XML = {"backend/pom.xml", "backend/core/pom.xml", "backend/server/pom.xml",
+            "backend/qualified-xml-parser/pom.xml", "backend/tools/guarded-supervisor/pom.xml"}
 EXTERNAL_ROOTS = {"private-fixtures", "workspace-data", "exports", "external-config"}
 REGULAR_MODES = {"100644", "100755"}
 MANIFEST_FIELDS = {"schemaVersion", "purpose", "origin", "artifacts"}

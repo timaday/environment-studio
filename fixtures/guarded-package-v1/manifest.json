@@ -1,0 +1,75 @@
+{
+  "format": "es-guarded-package-v1",
+  "execution": {
+    "engine": "postgresql",
+    "storage": "text",
+    "serverVersion": "18.6",
+    "client": {
+      "family": "psql",
+      "version": "18.6",
+      "platform": "linux-amd64"
+    },
+    "supervisorVersion": "1",
+    "templateVersion": "postgresql-text-v1",
+    "writerVersion": "1",
+    "parserVersion": "7.2.2-es-xml10-fifth-1",
+    "mechanisms": {
+      "native-compiler-v2": "2",
+      "xml-path-v1": "1",
+      "xml-span-v1": "1",
+      "generic-graph-v1": "1",
+      "structural-target-v1": "1",
+      "plan-validation-v1": "1"
+    },
+    "planId": "00000000-0000-4000-8000-000000000001",
+    "planRevision": "1",
+    "planInputFingerprint": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "observationFingerprint": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "definitionPublicationDigest": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+    "profilePublicationDigests": [],
+    "bindingId": "invented.pg",
+    "logicalDigest": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+    "bindingDigest": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+    "destination": {
+      "id": "invented.destination",
+      "host": "127.0.0.1",
+      "port": 5432,
+      "database": "MockDb",
+      "transport": "disposable-loopback",
+      "transportIdentity": "independently-invented-π",
+      "provisioningPolicyVersion": "invented-policy-1",
+      "expectedPhysicalIdentity": {
+        "systemIdentifier": "42",
+        "databaseOid": "16384",
+        "databaseName": "MockDb"
+      }
+    },
+    "exportPolicies": [
+      {
+        "documentId": "packet.one",
+        "content": "protected-self-contained"
+      }
+    ]
+  },
+  "programDigest": "dabb86943f35e26b373e11c1711da368937241ce43688c43ba952ae654999aa8",
+  "counts": {
+    "records": 1,
+    "changedRecords": 1,
+    "originalBytes": 19,
+    "targetBytes": 19
+  },
+  "members": {
+    "payload.json": {
+      "bytes": 511,
+      "sha256": "9d5d0598978013c117393121f97ae687e429602fc46f25a5ad51a501dd2c90b8"
+    },
+    "transaction.sql": {
+      "bytes": 1,
+      "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+    },
+    "instructions.txt": {
+      "bytes": 1,
+      "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+    }
+  }
+}

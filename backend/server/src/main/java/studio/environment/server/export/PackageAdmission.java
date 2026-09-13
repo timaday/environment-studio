@@ -1,0 +1,171 @@
+package studio.environment.server.export;
+
+import java.io.IOException;
+import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.HexFormat;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
+import com.networknt.schema.Schema;
+import com.networknt.schema.SchemaRegistry;
+import com.networknt.schema.SpecificationVersion;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.node.ObjectNode;
+import studio.environment.core.definitionv2.NativeDefinition;
+import studio.environment.core.definitionv2.NativeLexicalRules;
+import studio.environment.server.xml.LosslessXmlAdapter;
+import studio.environment.server.xml.XmlResult;
+import static studio.environment.server.export.PackageData.*;
+import static studio.environment.server.export.PackageJson.fail;
+
+/** Mechanical admission only; never a validated plan or permission to export or execute. */
+public final class PackageAdmission {
+    private final Schema executionSchema, payloadSchema, manifestSchema;
+    public PackageAdmission() {
+        var manifest=resource("guarded-manifest-v1.schema.json");var execution=(ObjectNode)manifest.get("properties").get("execution").deepCopy();execution.set("$defs",manifest.get("$defs"));
+        var registry=SchemaRegistry.withDefaultDialect(SpecificationVersion.DRAFT_2020_12,b->b.schemaLoader(l->l.fetchRemoteResources(false).block(iri->true)));
+        executionSchema=registry.getSchema(execution);payloadSchema=registry.getSchema(resource("guarded-payload-v1.schema.json"));manifestSchema=registry.getSchema(manifest);
+    }
+    private static JsonNode resource(String name) {
+        try(var stream=PackageAdmission.class.getResourceAsStream("/schemas/"+name)) {if(stream==null)throw new IllegalStateException("PACKAGE_SCHEMA_UNAVAILABLE");return JsonMapper.builder().build().readTree(stream);}
+        catch(IOException invalid){throw new IllegalStateException("PACKAGE_SCHEMA_UNAVAILABLE");}
+    }
+    public sealed interface Result {
+        final class Accepted implements Result {
+            private final Execution execution;private final Payload payload;private final Counts counts;private final String payloadDigest,programDigest;
+            private final JsonNode executionTree;
+            private Accepted(Execution execution,Payload payload,Counts counts,String payloadDigest,String programDigest,JsonNode executionTree){this.execution=execution;this.payload=payload;this.counts=counts;this.payloadDigest=payloadDigest;this.programDigest=programDigest;this.executionTree=executionTree;}
+            public Execution execution(){return execution;}public Payload payload(){return payload;}public Counts counts(){return counts;}public String payloadDigest(){return payloadDigest;}public String programDigest(){return programDigest;}
+            public byte[] canonicalExecution(){return PackageJson.canonical(executionTree,PackageJson.SMALL);}
+            public byte[] canonicalPayload(){var out=new PackageJson.Bounded(PackageJson.LARGE);writePayload(out);out.allocate();writePayload(out);return out.bytes();}
+            PackageJson.Metrics canonicalPayloadMetrics(){var out=PackageJson.Bounded.metrics(PackageJson.LARGE);writePayload(out);return out.metrics();}
+            void writeCanonicalPayload(OutputStream output){writePayload(PackageJson.Bounded.stream(PackageJson.LARGE,output));}
+            JsonNode executionTree(){return executionTree.deepCopy();}
+            Accepted withCanonicalPayloadDigest(String payloadDigest){return new Accepted(execution,payload,counts,payloadDigest,PackageJson.executionDigest(executionTree,payloadDigest),executionTree);}
+            private void writePayload(PackageJson.Bounded out) {
+                out.add("{");field("bindingId",payload.bindingId(),out);out.add(",");
+                field("engine",payload.engine().token(),out);out.add(",\"records\":[");
+                boolean first=true;for(var record:payload.records()){if(!first)out.add(",");first=false;record(record,out);}
+                out.add("],");field("schemaVersion","1",out);out.add(",");
+                field("storage",payload.storage(),out);out.add(",\"table\":{");
+                field("keyColumn",payload.table().keyColumn(),out);out.add(",");
+                field("keyType",payload.table().keyType().token(),out);out.add(",");
+                field("name",payload.table().name(),out);out.add(",");
+                field("schema",payload.table().schema(),out);out.add(",");
+                field("xmlColumn",payload.table().xmlColumn(),out);out.add("}}");
+            }
+            private static void record(Document record,PackageJson.Bounded out) {
+                out.add("{");field("documentId",record.documentId(),out);out.add(",\"key\":{");
+                field("type",record.key().type().token(),out);out.add(",");
+                field("value",record.key().value(),out);out.add("},");
+                field("originalHex",record.originalHex(),out);out.add(",");
+                field("targetHex",record.targetHex(),out);out.add("}");
+            }
+            private static void field(String name,String value,PackageJson.Bounded out) {
+                PackageJson.string(name,out);out.add(":");PackageJson.string(value,out);
+            }
+            @Override public String toString(){return "MechanicallyAdmittedPackageInputs[redacted,unqualified]";}
+        }
+        record Rejected(String code) implements Result { }
+    }
+    public Result read(byte[] executionJson,byte[] payloadJson) {
+        try {
+            var execution=PackageJson.parse(executionJson,PackageJson.SMALL,8192);var payload=PackageJson.parse(payloadJson,PackageJson.LARGE,4096);
+            if(!executionSchema.validate(execution).isEmpty() || !payloadSchema.validate(payload).isEmpty())fail("SCHEMA_VIOLATION");
+            var decodedExecution=execution(execution);var decodedPayload=payload(payload);var counts=validate(decodedExecution,decodedPayload);
+            String payloadDigest=PackageJson.sha256(payloadJson),programDigest=PackageJson.executionDigest(execution,payloadDigest);
+            return new Result.Accepted(decodedExecution,decodedPayload,counts,payloadDigest,programDigest,execution);
+        }catch(PackageJson.Refusal refused){return new Result.Rejected(refused.code);}
+    }
+    /** Internal definition-pin check, additional to mechanical inspection; never export authority. */
+    public Result readPinned(studio.environment.core.definitionv2.NativeCompilationResult.ReadyToPublish definition,
+            String bindingId, byte[] executionJson, byte[] payloadJson) {
+        if (definition == null || !studio.environment.core.definitionv2.NativeMechanisms.eligible(definition.checked()))
+            return new Result.Rejected("UNSUPPORTED_MECHANISM");
+        var binding = definition.checked().definition().bindings().stream().filter(b -> b.id().equals(bindingId)).findFirst();
+        if (binding.isEmpty()) return new Result.Rejected("UNKNOWN_BINDING");
+        var result = read(executionJson, payloadJson);
+        if (!(result instanceof Result.Accepted accepted)) return result;
+        var pins = accepted.execution().binding();
+        if (!pins.id().equals(bindingId) || !pins.logicalDigest().equals(definition.checked().logicalDigest())
+                || !pins.bindingDigest().equals(definition.checked().bindingDigests().get(bindingId)))
+            return new Result.Rejected("DEFINITION_BINDING_MISMATCH");
+        var required = new TreeMap<String, String>();
+        studio.environment.core.definitionv2.NativeMechanisms.required(binding.orElseThrow()).forEach((key, version) -> required.put(key, version.toString()));
+        required.put("structural-target-v1", "1"); required.put("plan-validation-v1", "1");
+        if (!required.equals(accepted.execution().versions().mechanisms())) return new Result.Rejected("MECHANISM_MISMATCH");
+        return accepted;
+    }
+    /** Version-explicit internal pin check only; supplied compiler data is not publication authority. */
+    public Result readPinnedV3(studio.environment.core.definitionv3.NativeCompilationResult.ReadyToPublish definition,
+            String bindingId, byte[] executionJson, byte[] payloadJson) {
+        if (definition == null || !studio.environment.core.definitionv3.NativeMechanisms
+                .required(definition.checked().definition()).equals(definition.checked().mechanisms()))
+            return new Result.Rejected("UNSUPPORTED_MECHANISM");
+        var checked = definition.checked();
+        var binding = checked.definition().bindings().stream().filter(b -> b.id().equals(bindingId)).findFirst();
+        if (binding.isEmpty()) return new Result.Rejected("UNKNOWN_BINDING");
+        var result = read(executionJson, payloadJson);
+        if (!(result instanceof Result.Accepted accepted)) return result;
+        var pins = accepted.execution().binding();
+        if (!pins.id().equals(bindingId) || !pins.logicalDigest().equals(checked.logicalDigest())
+                || !pins.bindingDigest().equals(checked.bindingDigests().get(bindingId))
+                || !accepted.execution().engine().name().equals(binding.orElseThrow().engine().name())
+                || !accepted.execution().storage().equals(binding.orElseThrow().storage().name().toLowerCase(java.util.Locale.ROOT)))
+            return new Result.Rejected("DEFINITION_BINDING_MISMATCH");
+        var required = new TreeMap<String, String>();
+        studio.environment.core.definitionv3.NativeMechanisms.required(binding.orElseThrow())
+                .forEach((key, version) -> required.put(key, version.toString()));
+        required.put("structural-target-v1", "1"); required.put("plan-validation-v3", "1");
+        if (!required.equals(accepted.execution().versions().mechanisms())) return new Result.Rejected("MECHANISM_MISMATCH");
+        return accepted;
+    }
+    JsonNode manifest(byte[] json) {
+        var tree=PackageJson.parse(json,PackageJson.SMALL,8192);if(!manifestSchema.validate(tree).isEmpty())fail("SCHEMA_VIOLATION");return tree;
+    }
+    private static Execution execution(JsonNode node) {
+        var client=node.get("client");var destination=node.get("destination");var identity=destination.get("expectedPhysicalIdentity");var engine=Engine.valueOf(text(node,"engine").toUpperCase(java.util.Locale.ROOT));
+        PhysicalIdentity physical=engine==Engine.POSTGRESQL?new PhysicalIdentity.Postgres(text(identity,"systemIdentifier"),text(identity,"databaseOid"),text(identity,"databaseName")):
+            new PhysicalIdentity.Oracle(text(identity,"dbid"),text(identity,"dbUniqueName"),text(identity,"conId"),text(identity,"conUid"),text(identity,"conName"),text(identity,"pdbGuid"));
+        Map<String,String> mechanisms=new TreeMap<>();node.get("mechanisms").properties().forEach(e->mechanisms.put(e.getKey(),e.getValue().asString()));
+        List<String> profiles=new ArrayList<>();node.get("profilePublicationDigests").forEach(p->profiles.add(p.asString()));
+        List<Policy> policies=new ArrayList<>();node.get("exportPolicies").forEach(p->policies.add(new Policy(text(p,"documentId"),text(p,"content"))));
+        return new Execution(engine,text(node,"storage"),new Client(text(client,"family"),text(client,"version"),text(client,"platform")),
+            new Versions(text(node,"serverVersion"),text(node,"supervisorVersion"),text(node,"templateVersion"),text(node,"writerVersion"),text(node,"parserVersion"),mechanisms),
+            new Plan(text(node,"planId"),text(node,"planRevision"),text(node,"planInputFingerprint"),text(node,"observationFingerprint"),text(node,"definitionPublicationDigest"),profiles),
+            new Binding(text(node,"bindingId"),text(node,"logicalDigest"),text(node,"bindingDigest")),
+            new Destination(text(destination,"id"),text(destination,"host"),destination.get("port").intValue(),text(destination,"database"),text(destination,"transport"),text(destination,"transportIdentity"),text(destination,"provisioningPolicyVersion"),physical),policies);
+    }
+    private static Payload payload(JsonNode node) {
+        var table=node.get("table");List<Document> documents=new ArrayList<>();
+        for(var record:node.get("records")){var key=record.get("key");documents.add(new Document(text(record,"documentId"),new Key(keyType(text(key,"type")),text(key,"value")),text(record,"originalHex"),text(record,"targetHex")));}
+        return new Payload(text(node,"bindingId"),Engine.valueOf(text(node,"engine").toUpperCase(java.util.Locale.ROOT)),text(node,"storage"),new Table(text(table,"schema"),text(table,"name"),text(table,"keyColumn"),text(table,"xmlColumn"),keyType(text(table,"keyType"))),documents);
+    }
+    private static Counts validate(Execution execution,Payload payload) {
+        if(execution.engine()!=payload.engine() || !execution.storage().equals(payload.storage()) || !execution.binding().id().equals(payload.bindingId()))fail("EXECUTION_PAYLOAD_MISMATCH");
+        var table=payload.table();if(table.keyColumn().equals(table.xmlColumn()))fail("INVALID_TABLE");
+        int identifierLimit=payload.engine()==Engine.POSTGRESQL?63:128;
+        for(String identifier:List.of(table.schema(),table.name(),table.keyColumn(),table.xmlColumn()))if(identifier.length()>identifierLimit)fail("INVALID_IDENTIFIER");
+        sorted(execution.plan().profilePublicationDigests());sorted(execution.exportPolicies().stream().map(Policy::documentId).toList());sorted(payload.records().stream().map(Document::documentId).toList());
+        if(!execution.exportPolicies().stream().map(Policy::documentId).toList().equals(payload.records().stream().map(Document::documentId).toList()))fail("POLICY_INVENTORY_MISMATCH");
+        HashSet<Key> keys=new HashSet<>();long original=0,target=0;int changed=0;var xml=new LosslessXmlAdapter();
+        for(var record:payload.records()) {
+            if(record.key().type()!=table.keyType() || !NativeLexicalRules.validKey(record.key().type()==KeyType.INT64?NativeDefinition.KeyType.INT64:NativeDefinition.KeyType.TEXT,record.key().value()))fail("INVALID_KEY");
+            if(!keys.add(record.key()))fail("DUPLICATE_KEY");
+            if((record.originalHex().length()&1)!=0 || (record.targetHex().length()&1)!=0)fail("INVALID_HEX");
+            original+=record.originalHex().length()/2;target+=record.targetHex().length()/2;if(original>16L*1024*1024 || target>16L*1024*1024)fail("RESOURCE_LIMIT");
+            for(String hex:List.of(record.originalHex(),record.targetHex())){
+                String source=PackageJson.utf8(HexFormat.of().parseHex(hex));if(source.length()>1_048_576)fail("RESOURCE_LIMIT");
+                if(xml.project(source) instanceof XmlResult.Rejected)fail("INVALID_XML");
+            }
+            if(!record.originalHex().equals(record.targetHex()))changed++;
+        }
+        return new Counts(payload.records().size(),changed,original,target);
+    }
+    private static void sorted(List<String> values){for(int i=1;i<values.size();i++)if(PackageJson.UTF8.compare(values.get(i-1),values.get(i))>=0)fail("NONCANONICAL_ORDER");}
+    private static String text(JsonNode node,String name){return node.get(name).asString();}
+    private static KeyType keyType(String value){return value.equals("int64")?KeyType.INT64:KeyType.TEXT;}
+}

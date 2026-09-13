@@ -1,0 +1,52 @@
+{
+  "status": "APPROVED_WITH_EXPLICIT_CORRECTIONS",
+  "scope": "Duplicate mapping explanation and associated field errors, including collapsed/navigated rows; existing full Capture approvals remain unchanged",
+  "source": "Existing authorized profiles-v3 harness inventory and explicit test mappings: item1 and item2 assigned slot-1; item3 assigned slot-3. No new domain records or success claim. Cross-page21item unit case supplies separate behavior acceptance.",
+  "images": [
+    {
+      "view": "desktop",
+      "path": "capture-duplicate-desktop-v2.png",
+      "sha256": "693691468a59d59ae713382f657da4a10c677246e79299effd2e0db22b2e7d3a",
+      "pixels": [
+        1506,
+        1045
+      ],
+      "intendedCssViewport": [
+        1440,
+        1000
+      ],
+      "scroll": "natural full page",
+      "dpr": "generated raster, unspecified"
+    },
+    {
+      "view": "narrow",
+      "path": "capture-duplicate-narrow-v2.png",
+      "sha256": "293efc63849f96e42ef7e8c6fd5dab48ebe4bf34e9268f6b885437ad3733c5a3",
+      "pixels": [
+        789,
+        1994
+      ],
+      "intendedCssViewport": [
+        390,
+        844
+      ],
+      "scroll": "natural full page",
+      "dpr": "generated raster, unspecified"
+    }
+  ],
+  "outsideFrameCaption": "Design proposal \u2014 synthetic test environment.",
+  "requiredCorrections": [
+    "Actual SVG and committed flat tokens, compact common header/progress",
+    "14\u201316CSSpx body/help and44CSSpx actionable controls; natural scrolling",
+    "Exact summary starts with2; generated stray icon is excluded",
+    "Field error says This identifier is also used by item N. Enter a unique identifier.; item numbers are global across pages",
+    "Accessible pale-red#FFB4AB on Midnight; text and aria-invalid/describedby convey the error",
+    "Collapsed rows retain Duplicate identifier text; capture stays disabled until all mappings valid"
+  ],
+  "approval": {
+    "date": "2026-09-11",
+    "reference": "call_G5QcklItNMaj5x5z6YyLXE7W",
+    "response": "Approve diagnostic with corrections"
+  },
+  "verification": "Design proposal only. New cross-page diagnostic test RED: missing alert; rendering pending approval."
+}

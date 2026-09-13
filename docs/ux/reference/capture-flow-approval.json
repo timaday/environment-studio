@@ -1,0 +1,124 @@
+{
+  "status": "APPROVED_WITH_EXPLICIT_CORRECTIONS",
+  "scope": "Mapping, captured review and verified saved draft; desktop and narrow. No component/recovery approval inferred.",
+  "sourceRevision": "dd4d007683dcc2ebefd6694f3bc321ad10fea6bc",
+  "authorizedFixtureBase": "820837cd9c0249bc5646f52733ea2a2b40b559e5",
+  "observationSha256": "5ac6522054e1533375c5b9d2fe6d251a11e23a607dfe8706638b66a74de0a2a3",
+  "observation": "/home/tim/.tmp/es-capture-design-observation-20260911/design-observation.json",
+  "outsideFrameCaption": "Design proposal \u2014 synthetic test environment.",
+  "approval": {
+    "date": "2026-09-11",
+    "response": "Approve these states with the listed corrections",
+    "reference": "call_qicEZ3O3VHQnZ5xCc0tk42n6",
+    "scope": "Six named desktop/narrow mapping, captured review and saved draft states, narrow expandable rows and saved disclosures; mandatory corrections recorded here. Recovery states, pending Definitions designs and release claims excluded."
+  },
+  "requiredCorrections": [
+    "Use original SVG and committed flat tokens consistently rather than generated gradients/color approximations.",
+    "Body/help14\u201316CSSpx and every actionable control44CSSpx minimum with natural scrolling; image scaling does not meet all minima.",
+    "Consistent compact narrow logo/menu/context/progress; one correctly labelled collapsed Plan details disclosure retains full identifiers.",
+    "Review summary is read-only despite desktop input-like borders."
+  ],
+  "verification": {
+    "functionality": "Actual isolated API capture/save/readback passed; renderer not implemented.",
+    "accessibility": "UNVERIFIED; raster text/control sizing corrections remain.",
+    "visualFidelity": "DIFFERENCES_REMAIN; no pixel identity or approved exceptions."
+  },
+  "images": [
+    {
+      "view": "mapping-desktop",
+      "path": "capture-flow-mapping-desktop-v4.png",
+      "sha256": "1b60840143b63646874ec160c7f77f6669352235543fee21c6cf5f537a70fab0",
+      "pixels": [
+        1505,
+        1045
+      ],
+      "intendedCssViewport": [
+        1440,
+        1000
+      ],
+      "scroll": "natural page",
+      "status": "APPROVED_WITH_EXPLICIT_CORRECTIONS",
+      "source": "/home/tim/.codex/generated_images/01a08112-856d-7042-81a1-5897748a6951/exec-ecb467ac-7a76-4497-bc77-3ed2aa4df05f.png"
+    },
+    {
+      "view": "mapping-narrow",
+      "path": "capture-flow-mapping-narrow-v4.png",
+      "sha256": "377ad6c42c2fb76a0375cbea67fe59a59ae423ffd4d8f05cb1accddad2a4b314",
+      "pixels": [
+        821,
+        1916
+      ],
+      "intendedCssViewport": [
+        390,
+        844
+      ],
+      "scroll": "natural page",
+      "status": "APPROVED_WITH_EXPLICIT_CORRECTIONS",
+      "source": "/home/tim/.codex/generated_images/01a08112-856d-7042-81a1-5897748a6951/exec-3ec9170a-3098-4387-a7dd-f7e049cb5653.png"
+    },
+    {
+      "view": "review-desktop",
+      "path": "capture-flow-review-desktop-v4.png",
+      "sha256": "a85ef95f3993ece3e012ad7c2f86b7e3545173d574a82b525f5754b392711785",
+      "pixels": [
+        1505,
+        1045
+      ],
+      "intendedCssViewport": [
+        1440,
+        1000
+      ],
+      "scroll": "natural page",
+      "status": "APPROVED_WITH_EXPLICIT_CORRECTIONS",
+      "source": "/home/tim/.codex/generated_images/01a08112-856d-7042-81a1-5897748a6951/exec-b6400cae-2ad8-41d6-831a-16d24caaab7f.png"
+    },
+    {
+      "view": "review-narrow",
+      "path": "capture-flow-review-narrow-v4.png",
+      "sha256": "5a3c4d0dd5cca885b28f78ff5a1a84f8af2e20f4b0bc251ae8dba4891041c96c",
+      "pixels": [
+        783,
+        2007
+      ],
+      "intendedCssViewport": [
+        390,
+        844
+      ],
+      "scroll": "natural page",
+      "status": "APPROVED_WITH_EXPLICIT_CORRECTIONS",
+      "source": "/home/tim/.codex/generated_images/01a08112-856d-7042-81a1-5897748a6951/exec-32efb242-5a50-482c-9b1a-cb505456041d.png"
+    },
+    {
+      "view": "saved-desktop",
+      "path": "capture-flow-saved-desktop-v4.png",
+      "sha256": "d156d182a51230b2ff42ab4eb462c76b6d0ec2126fe2edf6712d2d58f4625fd1",
+      "pixels": [
+        1505,
+        1045
+      ],
+      "intendedCssViewport": [
+        1440,
+        1000
+      ],
+      "scroll": "natural page",
+      "status": "APPROVED_WITH_EXPLICIT_CORRECTIONS",
+      "source": "/home/tim/.codex/generated_images/01a08112-856d-7042-81a1-5897748a6951/exec-71921fd9-6a27-4953-badc-200374e5c3f4.png"
+    },
+    {
+      "view": "saved-narrow",
+      "path": "capture-flow-saved-narrow-v4.png",
+      "sha256": "e61e3a6c5a30a5bfff98765844686bde4c2873dba509a2a70856896911889011",
+      "pixels": [
+        853,
+        1844
+      ],
+      "intendedCssViewport": [
+        390,
+        844
+      ],
+      "scroll": "natural page",
+      "status": "APPROVED_WITH_EXPLICIT_CORRECTIONS",
+      "source": "/home/tim/.codex/generated_images/01a08112-856d-7042-81a1-5897748a6951/exec-290427a0-c9b3-4d70-937f-38f81ecbcb34.png"
+    }
+  ]
+}

@@ -19,8 +19,10 @@ generic review findings may cross the repository boundary.
 
 Connection lifecycle: new operation → validate approved endpoint/options/TLS →
 request supported authentication → consistent read → close physical connection.
-JDBC readOnly is a hint, not authorization: qualify an actual least-privilege
-read-only account. No shared credential-bearing pool or reconnect loop. A timeout
+JDBC readOnly is a hint, not authorization: enforce the versioned closed
+[read-only operation policy](database-observation.md) on ordinary write-capable
+accounts. No external account/grant mutation makes a caller eligible. No shared
+credential-bearing pool or reconnect loop. A timeout
 with unconfirmed session cleanup is UNKNOWN. Minimize immutable String copies
 but do not claim guaranteed JVM/driver/OS memory erasure.
 
@@ -38,6 +40,10 @@ backups. Do not mount a host Docker socket or allow arbitrary runtime plugins.
 Use bounded DB destination allowlists and egress; uploaded XML/schema must not
 cause network requests. Disable remote resolver access and debug payload logs.
 
-The starter server only accepts `studio.mode=demo`; all mutation requests are
-denied. Real authentication, storage and data access are D02/D04 work. Do not
-change this boundary merely by adding `STUDIO_MODE=production` to deployment.
+Demo mode denies mutations. D02a additionally implements explicitly configured
+`studio.mode=hosted` OIDC/session handling with mock protocol/lifecycle tests;
+its inspection/export remain disabled. D02b adds owned immutable v1 draft storage
+in an explicitly initialized private SQLite workspace. D01c adds native v2
+definition/profile drafts and publication with an explicit offline schema upgrade.
+D04 internal observation is implemented; hosted plan/credential wiring remains
+planned. Unknown modes fail startup; a mode flag does not qualify deployment.

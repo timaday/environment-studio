@@ -1,0 +1,7 @@
+{
+  "logicalDigest": "e652f3131cf9ea1a0a3121188d26969e1f2a3d532a7d706b462a7bc4a64dab26",
+  "bindingDigests": {
+    "mock-pg": "3228690bea92b7eaa004fcc2ea9112226682bafd316eca7c597420a80f6bbd89",
+    "mock-oracle": "ac92d16850f43e2908e4d8235d0831760cb80fc5d4171ce1a700e8211e58bab0"
+  }
+}

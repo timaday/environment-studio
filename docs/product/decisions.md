@@ -5,6 +5,7 @@
 | Environment Studio name and Midnight theme | User | Use approved SVG assets and shared tokens |
 | XML consistently stored across many records | User | Complete inventory and per-document lossless edits are fundamental |
 | Oracle and PostgreSQL | User | Separate adapters and qualification matrices; no silent storage conversion |
+| Read-only operations accept ordinary write-capable accounts | User correction, 2026-09-09 | Replace account-purity checks with versioned enforced read-only transactions and closed qualified reads; no external account/grant/schema changes for eligibility; old qualification does not certify this policy |
 | Java + React | User preference adopted | Java 21 core, Spring Boot adapter, TypeScript React UI |
 | Definitions do not know application concepts | Later user correction | Supersedes fixed server/service/webapp hierarchy in the Full Specification |
 | All or part of profiles reusable | Later user correction | Supersedes earlier full-profile-only MVP boundary |
@@ -18,6 +19,8 @@
 | Use GitHub issues for the Q-to-Codex handoff | Later user direction | Q prepares a generic issue; Tim reviews/authorizes publication and triages it; explicit Codex task produces a linked PR; labels alone do not launch agents |
 | Single container, one replica initially | Engineering proposal | One Java process serves React; session memory cannot be shared across replicas |
 | Runtime demo until DB/auth/writer qualification | Starter safety boundary | Image boot is useful, but does not enable unimplemented operations |
+| Discriminated direct-child fields with additive mechanism dependencies | Amended user instruction, 2026-09-09 | Implement QF-0001/0002 together under the [extension contract](../contracts/child-property-v1.md); preserve unaffected binding digests where independently proven; qualification pending |
+| Derived entities and co-occurrence authority/profile semantics | [Tim's approved direction, 2026-09-09](derived-graph-decision.md) | Authoritative recomputation with physical-only v3 profiles, PUBLIC text inputs and explicit shared graph limits; closed contracts and runtime qualification remain required |
 
 Historical inputs: Environment_Studio_Full_Specification.docx;
 Environment_Studio_Mathematical_Modelling_Research.docx;

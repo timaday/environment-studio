@@ -1,0 +1,254 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://environment.studio/schemas/definition-inspection-v1",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": {
+      "const": "1"
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9.-]{0,63}$"
+    },
+    "revision": {
+      "type": "string",
+      "pattern": "^[1-9][0-9]*$",
+      "maxLength": 1024
+    },
+    "status": {
+      "enum": [
+        "draft",
+        "published"
+      ]
+    },
+    "entityTypes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9.-]{0,63}$"
+          },
+          "label": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "fields": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "pattern": "^[a-z][a-z0-9.-]{0,63}$"
+                },
+                "valueType": {
+                  "enum": [
+                    "text",
+                    "integer",
+                    "boolean",
+                    "uri"
+                  ]
+                },
+                "required": {
+                  "type": "boolean"
+                },
+                "classification": {
+                  "enum": [
+                    "environment",
+                    "structural"
+                  ]
+                },
+                "sensitivity": {
+                  "enum": [
+                    "public",
+                    "internal",
+                    "secret",
+                    "unknown"
+                  ]
+                }
+              },
+              "required": [
+                "id",
+                "valueType",
+                "required",
+                "classification",
+                "sensitivity"
+              ]
+            }
+          }
+        },
+        "required": [
+          "id",
+          "label",
+          "fields"
+        ]
+      },
+      "minItems": 1
+    },
+    "relations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9.-]{0,63}$"
+          },
+          "fromType": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9.-]{0,63}$"
+          },
+          "toType": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9.-]{0,63}$"
+          },
+          "kind": {
+            "enum": [
+              "reference",
+              "containment"
+            ]
+          },
+          "minimum": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]*)$",
+            "maxLength": 1024
+          },
+          "maximum": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]*$",
+            "maxLength": 1024
+          },
+          "includeTargetOnReuse": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "fromType",
+          "toType",
+          "kind",
+          "minimum",
+          "maximum",
+          "includeTargetOnReuse"
+        ]
+      }
+    },
+    "documents": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9.-]{0,63}$"
+          },
+          "logicalStore": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9.-]{0,63}$"
+          },
+          "recordKey": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "namespaces": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "mappings": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "entityType": {
+                  "type": "string",
+                  "pattern": "^[a-z][a-z0-9.-]{0,63}$"
+                },
+                "field": {
+                  "type": "string",
+                  "pattern": "^[a-z][a-z0-9.-]{0,63}$"
+                },
+                "contextXPath": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128
+                },
+                "valueXPath": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128
+                },
+                "expectedMatches": {
+                  "type": "string",
+                  "pattern": "^[1-9][0-9]*$",
+                  "maxLength": 1024
+                },
+                "writerCapability": {
+                  "type": "string",
+                  "pattern": "^[a-z][a-z0-9.-]{0,63}$"
+                }
+              },
+              "required": [
+                "entityType",
+                "field",
+                "contextXPath",
+                "valueXPath",
+                "expectedMatches",
+                "writerCapability"
+              ]
+            }
+          }
+        },
+        "required": [
+          "id",
+          "logicalStore",
+          "recordKey",
+          "namespaces",
+          "mappings"
+        ]
+      },
+      "minItems": 1
+    },
+    "requiredRules": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z][a-z0-9.-]{0,63}$"
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "operationCapabilities": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z][a-z0-9.-]{0,63}$"
+      },
+      "uniqueItems": true
+    }
+  },
+  "required": [
+    "schemaVersion",
+    "id",
+    "revision",
+    "status",
+    "entityTypes",
+    "relations",
+    "documents",
+    "requiredRules",
+    "operationCapabilities"
+  ],
+  "description": "HTTP and persisted v1 compiler projection. Native arbitrary-precision integers are canonical decimal strings; source documents keep their original numeric notation."
+}

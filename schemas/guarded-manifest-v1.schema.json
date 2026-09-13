@@ -1,0 +1,603 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://environment-studio.invalid/schemas/guarded-manifest-v1.schema.json",
+  "title": "Closed guarded manifest v1 — planned contract",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "format",
+    "execution",
+    "programDigest",
+    "counts",
+    "members"
+  ],
+  "properties": {
+    "format": {
+      "const": "es-guarded-package-v1"
+    },
+    "execution": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "engine",
+        "storage",
+        "serverVersion",
+        "client",
+        "supervisorVersion",
+        "templateVersion",
+        "writerVersion",
+        "parserVersion",
+        "mechanisms",
+        "planId",
+        "planRevision",
+        "planInputFingerprint",
+        "observationFingerprint",
+        "definitionPublicationDigest",
+        "profilePublicationDigests",
+        "bindingId",
+        "logicalDigest",
+        "bindingDigest",
+        "destination",
+        "exportPolicies"
+      ],
+      "properties": {
+        "engine": {
+          "enum": [
+            "postgresql",
+            "oracle"
+          ]
+        },
+        "storage": {
+          "enum": [
+            "text",
+            "clob"
+          ]
+        },
+        "serverVersion": {
+          "enum": [
+            "18.6",
+            "23.26.3.0.0",
+            "16.11"
+          ]
+        },
+        "client": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "family",
+            "version",
+            "platform"
+          ],
+          "properties": {
+            "family": {
+              "enum": [
+                "psql",
+                "sqlplus"
+              ]
+            },
+            "version": {
+              "enum": [
+                "18.6",
+                "23.26.3.0.0",
+                "16.11"
+              ]
+            },
+            "platform": {
+              "const": "linux-amd64"
+            }
+          }
+        },
+        "supervisorVersion": {
+          "const": "1"
+        },
+        "templateVersion": {
+          "enum": [
+            "postgresql-text-v1",
+            "oracle-clob-v1",
+            "postgresql16-text-v1"
+          ]
+        },
+        "writerVersion": {
+          "const": "1"
+        },
+        "parserVersion": {
+          "const": "7.2.2-es-xml10-fifth-1"
+        },
+        "mechanisms": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "xml-path-v1",
+            "xml-span-v1",
+            "generic-graph-v1",
+            "structural-target-v1"
+          ],
+          "properties": {
+            "native-compiler-v2": {
+              "const": "2"
+            },
+            "xml-path-v1": {
+              "const": "1"
+            },
+            "xml-span-v1": {
+              "const": "1"
+            },
+            "generic-graph-v1": {
+              "const": "1"
+            },
+            "structural-target-v1": {
+              "const": "1"
+            },
+            "plan-validation-v1": {
+              "const": "1"
+            },
+            "xml-child-property-v1": {
+              "const": "1"
+            },
+            "native-compiler-v3": {
+              "const": "1"
+            },
+            "derived-graph-v1": {
+              "const": "1"
+            },
+            "plan-validation-v3": {
+              "const": "1"
+            }
+          },
+          "oneOf": [
+            {
+              "required": [
+                "native-compiler-v2",
+                "plan-validation-v1"
+              ],
+              "properties": {
+                "native-compiler-v3": false,
+                "derived-graph-v1": false,
+                "plan-validation-v3": false,
+                "native-compiler-v2": {
+                  "const": "2"
+                },
+                "plan-validation-v1": {
+                  "const": "1"
+                }
+              }
+            },
+            {
+              "required": [
+                "native-compiler-v3",
+                "derived-graph-v1",
+                "plan-validation-v3"
+              ],
+              "properties": {
+                "native-compiler-v2": false,
+                "plan-validation-v1": false,
+                "native-compiler-v3": {
+                  "const": "1"
+                },
+                "derived-graph-v1": {
+                  "const": "1"
+                },
+                "plan-validation-v3": {
+                  "const": "1"
+                }
+              }
+            }
+          ]
+        },
+        "planId": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$(?![\\s\\S])",
+          "maxLength": 36
+        },
+        "planRevision": {
+          "type": "string",
+          "pattern": "^[1-9][0-9]{0,1023}$(?![\\s\\S])",
+          "maxLength": 1024
+        },
+        "planInputFingerprint": {
+          "$ref": "#/$defs/sha256"
+        },
+        "observationFingerprint": {
+          "$ref": "#/$defs/sha256"
+        },
+        "definitionPublicationDigest": {
+          "$ref": "#/$defs/sha256"
+        },
+        "profilePublicationDigests": {
+          "type": "array",
+          "maxItems": 100,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/sha256"
+          }
+        },
+        "bindingId": {
+          "$ref": "#/$defs/id"
+        },
+        "logicalDigest": {
+          "$ref": "#/$defs/sha256"
+        },
+        "bindingDigest": {
+          "$ref": "#/$defs/sha256"
+        },
+        "destination": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "host",
+            "port",
+            "database",
+            "transport",
+            "transportIdentity",
+            "provisioningPolicyVersion",
+            "expectedPhysicalIdentity"
+          ],
+          "properties": {
+            "id": {
+              "$ref": "#/$defs/id"
+            },
+            "host": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9.-]{1,253}$(?![\\s\\S])",
+              "maxLength": 253
+            },
+            "port": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 65535
+            },
+            "database": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_]{1,128}$(?![\\s\\S])",
+              "maxLength": 128
+            },
+            "transport": {
+              "enum": [
+                "verified-tls",
+                "disposable-loopback"
+              ]
+            },
+            "transportIdentity": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 1024
+            },
+            "provisioningPolicyVersion": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256
+            },
+            "expectedPhysicalIdentity": {
+              "oneOf": [
+                {
+                  "$ref": "#/$defs/postgresIdentity"
+                },
+                {
+                  "$ref": "#/$defs/oracleIdentity"
+                }
+              ]
+            }
+          },
+          "allOf": [
+            {
+              "if": {
+                "properties": {
+                  "transport": {
+                    "const": "disposable-loopback"
+                  }
+                }
+              },
+              "then": {
+                "properties": {
+                  "host": {
+                    "enum": [
+                      "127.0.0.1",
+                      "localhost"
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        },
+        "exportPolicies": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 128,
+          "uniqueItems": true,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "documentId",
+              "content"
+            ],
+            "properties": {
+              "documentId": {
+                "$ref": "#/$defs/id"
+              },
+              "content": {
+                "const": "protected-self-contained"
+              }
+            }
+          }
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "engine": {
+                "const": "postgresql"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "storage": {
+                "const": "text"
+              },
+              "client": {
+                "properties": {
+                  "family": {
+                    "const": "psql"
+                  }
+                },
+                "type": "object"
+              },
+              "destination": {
+                "properties": {
+                  "expectedPhysicalIdentity": {
+                    "$ref": "#/$defs/postgresIdentity"
+                  }
+                },
+                "type": "object"
+              }
+            },
+            "oneOf": [
+              {
+                "properties": {
+                  "serverVersion": {
+                    "const": "18.6"
+                  },
+                  "templateVersion": {
+                    "const": "postgresql-text-v1"
+                  },
+                  "client": {
+                    "type": "object",
+                    "properties": {
+                      "version": {
+                        "const": "18.6"
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "properties": {
+                  "serverVersion": {
+                    "const": "16.11"
+                  },
+                  "templateVersion": {
+                    "const": "postgresql16-text-v1"
+                  },
+                  "client": {
+                    "type": "object",
+                    "properties": {
+                      "version": {
+                        "const": "16.11"
+                      }
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "else": {
+            "properties": {
+              "storage": {
+                "const": "clob"
+              },
+              "serverVersion": {
+                "const": "23.26.3.0.0"
+              },
+              "templateVersion": {
+                "const": "oracle-clob-v1"
+              },
+              "client": {
+                "properties": {
+                  "family": {
+                    "const": "sqlplus"
+                  },
+                  "version": {
+                    "const": "23.26.3.0.0"
+                  }
+                },
+                "type": "object"
+              },
+              "destination": {
+                "properties": {
+                  "expectedPhysicalIdentity": {
+                    "$ref": "#/$defs/oracleIdentity"
+                  }
+                },
+                "type": "object"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "programDigest": {
+      "$ref": "#/$defs/sha256"
+    },
+    "counts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "records",
+        "changedRecords",
+        "originalBytes",
+        "targetBytes"
+      ],
+      "properties": {
+        "records": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 128
+        },
+        "changedRecords": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 128
+        },
+        "originalBytes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 16777216
+        },
+        "targetBytes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 16777216
+        }
+      }
+    },
+    "members": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "payload.json",
+        "transaction.sql",
+        "instructions.txt"
+      ],
+      "properties": {
+        "payload.json": {
+          "$ref": "#/$defs/member"
+        },
+        "transaction.sql": {
+          "$ref": "#/$defs/member"
+        },
+        "instructions.txt": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "bytes",
+            "sha256"
+          ],
+          "properties": {
+            "bytes": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 65536
+            },
+            "sha256": {
+              "$ref": "#/$defs/sha256"
+            }
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9.-]{0,63}$(?![\\s\\S])",
+      "maxLength": 64
+    },
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$(?![\\s\\S])",
+      "maxLength": 64
+    },
+    "member": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "bytes",
+        "sha256"
+      ],
+      "properties": {
+        "bytes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 83886080
+        },
+        "sha256": {
+          "$ref": "#/$defs/sha256"
+        }
+      }
+    },
+    "postgresIdentity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "systemIdentifier",
+        "databaseOid",
+        "databaseName"
+      ],
+      "properties": {
+        "systemIdentifier": {
+          "type": "string",
+          "pattern": "^[1-9][0-9]{0,19}$(?![\\s\\S])",
+          "maxLength": 20
+        },
+        "databaseOid": {
+          "type": "string",
+          "pattern": "^[1-9][0-9]{0,19}$(?![\\s\\S])",
+          "maxLength": 20
+        },
+        "databaseName": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        }
+      }
+    },
+    "oracleIdentity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "dbid",
+        "dbUniqueName",
+        "conId",
+        "conUid",
+        "conName",
+        "pdbGuid"
+      ],
+      "properties": {
+        "dbid": {
+          "type": "string",
+          "pattern": "^[1-9][0-9]{0,19}$(?![\\s\\S])",
+          "maxLength": 20
+        },
+        "dbUniqueName": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "conId": {
+          "type": "string",
+          "pattern": "^[1-9][0-9]{0,19}$(?![\\s\\S])",
+          "maxLength": 20
+        },
+        "conUid": {
+          "type": "string",
+          "pattern": "^[1-9][0-9]{0,19}$(?![\\s\\S])",
+          "maxLength": 20
+        },
+        "conName": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "pdbGuid": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{32}$(?![\\s\\S])",
+          "maxLength": 32
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "schemaVersion": 1,
+  "purpose": "MOCK_DATABASE_TESTING",
+  "origin": "INVENTED_FROM_SCRATCH",
+  "artifacts": ["expected-state.json", "expected-sql-fragments.json"]
+}

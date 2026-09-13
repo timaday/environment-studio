@@ -12,15 +12,54 @@ COPY frontend/ ./
 COPY fixtures/ /build/fixtures/
 COPY schemas/ /build/schemas/
 COPY scripts/schema.test.mjs /build/scripts/schema.test.mjs
+COPY docs/contracts/openapi-workspace-v2.json docs/contracts/openapi-workspace-v3.json docs/contracts/openapi-plans-v1.json docs/contracts/openapi-plans-v3.json docs/contracts/openapi.yaml /build/docs/contracts/
 RUN npm run check && npm test && npm run build
+
+FROM ui AS browser-check
+RUN npx playwright install --with-deps chromium
+RUN npm run test:e2e
 
 FROM ${MAVEN_IMAGE} AS java-build
 WORKDIR /build
+# These packages build and exercise the invented native/PTY tests; none enter runtime.
+RUN apt-get update -qq && apt-get install -y --no-install-recommends \
+    gcc=4:13.2.0-7ubuntu1 \
+    libc6-dev=2.39-0ubuntu8.9 \
+    libssl-dev=3.0.13-0ubuntu3.15 \
+    libssl3t64=3.0.13-0ubuntu3.15 \
+    python3=3.12.3-0ubuntu2.1 \
+    python3-minimal=3.12.3-0ubuntu2.1 \
+    python3.12=3.12.3-1ubuntu0.17 \
+    python3.12-minimal=3.12.3-1ubuntu0.17 \
+    libpython3.12-stdlib=3.12.3-1ubuntu0.17 \
+    libpython3.12-minimal=3.12.3-1ubuntu0.17 && \
+    test ! -e /usr/bin/java && ln -s /opt/java/openjdk/bin/java /usr/bin/java
 COPY backend/ ./backend/
+COPY schemas/ ./schemas/
+COPY fixtures/native-v2/ ./fixtures/native-v2/
+COPY fixtures/native-v3/ ./fixtures/native-v3/
+COPY fixtures/profile-v2/ ./fixtures/profile-v2/
+COPY fixtures/db-observation/ ./fixtures/db-observation/
+COPY fixtures/structural-target/ ./fixtures/structural-target/
+COPY fixtures/guarded-package-v1/ ./fixtures/guarded-package-v1/
+COPY fixtures/guarded-writer-v1/ ./fixtures/guarded-writer-v1/
+COPY fixtures/guarded-transaction-v1/ ./fixtures/guarded-transaction-v1/
+COPY fixtures/guarded-supervisor-v1/ ./fixtures/guarded-supervisor-v1/
+COPY fixtures/plan-http-v1/ ./fixtures/plan-http-v1/
+COPY fixtures/plan-http-tls/ ./fixtures/plan-http-tls/
+COPY fixtures/plan-views-v1/ ./fixtures/plan-views-v1/
+COPY deploy/HealthProbe.java /build/deploy/HealthProbe.java
 COPY --from=ui /build/frontend/dist/ ./backend/server/src/main/resources/static/
 RUN mvn -B -ntp -f backend/pom.xml verify
-COPY deploy/HealthProbe.java /build/HealthProbe.java
-RUN javac -d /build/probe /build/HealthProbe.java
+RUN cd backend/tools/guarded-supervisor/target/environment-studio-guarded-0.1.0-SNAPSHOT && sha256sum --check SHA256SUMS
+RUN javac -d /build/probe /build/deploy/HealthProbe.java
+RUN mkdir -p /build/sqlite-native && cd /build/sqlite-native && \
+    jar --extract --file /root/.m2/repository/org/xerial/sqlite-jdbc/3.53.4.0/sqlite-jdbc-3.53.4.0.jar \
+    org/sqlite/native/Linux/x86_64/libsqlitejdbc.so
+
+FROM scratch AS supervisor-artifacts
+COPY --from=java-build /build/backend/tools/guarded-supervisor/target/environment-studio-guarded-0.1.0-SNAPSHOT /environment-studio-guarded-0.1.0-SNAPSHOT/
+COPY --from=java-build /build/backend/tools/guarded-supervisor/target/environment-studio-guarded-0.1.0-SNAPSHOT.zip /
 
 FROM ${RUNTIME_IMAGE} AS runtime
 ARG SOURCE_REVISION=unknown
@@ -33,8 +72,9 @@ RUN groupadd --gid 10001 studio && useradd --uid 10001 --gid studio --no-create-
 WORKDIR /opt/studio
 COPY --from=java-build --chown=10001:10001 /build/backend/server/target/environment-studio.jar /opt/studio/app.jar
 COPY --from=java-build --chown=10001:10001 /build/probe/ /opt/studio/probe/
+COPY --from=java-build /build/sqlite-native/org/sqlite/native/Linux/x86_64/libsqlitejdbc.so /opt/studio/native/libsqlitejdbc.so
 USER 10001:10001
 ENV STUDIO_MODE=demo
 EXPOSE 8080
 HEALTHCHECK --interval=30s --timeout=5s --start-period=40s --retries=3 CMD ["java", "-cp", "/opt/studio/probe", "HealthProbe"]
-ENTRYPOINT ["java", "-XX:MaxRAMPercentage=65", "-XX:+ExitOnOutOfMemoryError", "-Djava.io.tmpdir=/tmp", "-jar", "/opt/studio/app.jar"]
+ENTRYPOINT ["java", "-XX:MaxRAMPercentage=65", "-XX:+ExitOnOutOfMemoryError", "-Djava.io.tmpdir=/tmp", "-Dorg.sqlite.lib.path=/opt/studio/native", "-jar", "/opt/studio/app.jar"]

@@ -1,0 +1,73 @@
+# Image approval and visual fidelity
+
+## Image coverage and prompting
+
+Generate one complete image per distinct view, materially different state, or responsive composition. A repeated focus or error treatment may be reviewed as a component state sheet; do not generate every possible combination of repeated states. Do not compress an entire application into an unreadable collage.
+
+Use the product's supported viewports. If none are specified, propose dimensions based on operator devices and content, and record the choice. Record the actual returned pixel dimensions; a requested image size is not proof the tool returned it. Keep the intended CSS viewport and device pixel ratio separate from raster dimensions.
+
+Adapt this prompt structure to the image tool's current supported inputs:
+
+```text
+Product goal and operator task:
+View identifier, state, and intended viewport:
+Exact permitted reference and what it governs:
+Approved shell, tokens, typography, assets, and density:
+Visible labels and permitted content, including its real source/state:
+Primary and supporting actions and their defined behavior:
+Navigation context and responsive composition:
+Details that must remain consistent:
+Avoid invented values/features, clipped controls, microscopic text, and device collages.
+Output one complete application view.
+```
+
+Inspect the exact reference before an edit. If it cannot be read, request it again. Do not substitute a neighboring screenshot or recreate a missing approved target from memory. Follow the current image tool's instructions for passing references; do not fabricate a path or silently switch to another provider.
+
+Inspect every generated image. Reject fabricated records or metrics, incorrect copy, unworkable interactions, inconsistent tokens, unreadable density, and obvious accessibility problems. Put dependency and implementation-status explanations in the review packet, not decorative annotations inside the application frame.
+
+## Approval record
+
+| Field | Record |
+| --- | --- |
+| Scope | View/state, role, route, affected components, and journey |
+| Exact reference | Artifact or supported image result identifier; revision and a hash only if an actual permitted file exists |
+| Dimensions | Actual image pixels, intended CSS viewport, device pixel ratio |
+| Visual contract | Tokens, fonts and weights, assets, density, exact copy, and content/state sources |
+| Approval | User approval reference and date, corrections, exclusions, and approved responsive compositions |
+| Capture conditions | Browser/version, OS, fonts, zoom, locale, theme, motion, scroll, and interaction state |
+| Exceptions | Specifically approved tolerances, dynamic regions, or design corrections, with reason and scope |
+
+Do not invent an approval, hash, or capture result. Reuse an applicable approval. Apply subsequent corrections to the affected scope, preserving other approved decisions. A whole workflow is approved only if the user's approval actually covers its identified views and states.
+
+Before implementing an unapproved design, present the generated images and ask for approval as requested by the user. If approval already covers the exact design, continue. Do not add another blanket permission gate for routine implementation or verification.
+
+## Build a measurable comparison
+
+1. Resolve the original approved image and its scope. Measure layout bounds, spacing, typography, line wrapping, colors, borders, icons, and image placement. Missing source assets or unspecified typography are fidelity risks to resolve, not permission to invent an exact-match claim.
+2. Implement real components and behavior. Preserve the approved copy, permitted content, and content state. Use the existing project's assets and layout system when they meet the approved design.
+3. Capture the browser at the approved viewport and relevant state. Control rendering conditions. Wait for the real application readiness condition, fonts, and assets, rather than relying on arbitrary sleeps or an HTTP health response.
+4. Use an existing pixel comparison tool plus side-by-side or overlay inspection. Inspect critical regions separately: a small global difference can still hide a missing primary action, incorrect label, or inaccessible state.
+5. Keep raw captures intact. Derived overlays and crops are useful for analysis, but do not stretch, crop, blur, recolor, or otherwise alter evidence to conceal an implementation difference. Record the scope of any component-only comparison.
+6. Correct differences, recapture, and compare again. Do not repeatedly update snapshots or loosen thresholds until a failure disappears.
+
+There are two different references:
+
+- **Design matching:** compare implementation against the exact approved image and its approved corrections.
+- **Regression testing:** after design matching is accepted, retain a rendered application baseline to detect later changes under controlled conditions.
+
+A screenshot generated by the implementation cannot establish design fidelity by passing a comparison against itself. Keep the approved design reference separate from regression-baseline maintenance.
+
+## State the result precisely
+
+Target zero unapproved differences. Do not silently substitute a percentage similarity threshold for pixel perfection. A comparator's perceptual default, a passing snapshot test, or a low average error does not establish literal pixel identity.
+
+| Status | Required evidence |
+| --- | --- |
+| PIXEL_IDENTICAL | Equal dimensions and zero differing pixels across the entire declared comparison scope, with no masks within that scope, under recorded conditions; direct inspection also completed. A component-only result is not whole-screen identity. |
+| MATCHED_WITH_APPROVED_EXCEPTIONS | Every remaining difference is within an explicitly approved correction, region, or tolerance; disclose the residual differences. This is not literal pixel identity. |
+| DIFFERENCES_REMAIN | One or more unapproved differences remain; identify the affected view and correction needed. |
+| UNVERIFIED / BLOCKED | The exact reference, state, capture capability, or required environment is unavailable; identify what is missing. |
+
+AI-generated raster text, unavailable fonts/assets, different rendering environments, and changing real content can prevent literal identity. Show the specific mismatch and seek approval for a corrected design or bounded exception instead of weakening the goal silently. Do not invent product data to stabilize a capture. Any mask requires explicit approval and separate verification of the affected behavior/content; never use masking to hide primary information or actions.
+
+One matched screenshot does not prove responsive behavior, accessibility, functional correctness, or identity across browsers. Report each independently. If the approved image conflicts with accessibility or working behavior, propose and obtain approval for the smallest necessary visual correction.

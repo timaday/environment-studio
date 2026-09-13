@@ -1,0 +1,24 @@
+{
+  "schemaVersion": "1",
+  "bindingId": "invented.pg",
+  "engine": "postgresql",
+  "storage": "text",
+  "table": {
+    "schema": "MockSchema",
+    "name": "CanvasRows",
+    "keyColumn": "slot",
+    "xmlColumn": "xml_data",
+    "keyType": "text"
+  },
+  "records": [
+    {
+      "documentId": "packet.one",
+      "key": {
+        "type": "text",
+        "value": "01"
+      },
+      "originalHex": "3c74696c652076616c75653d226f6c64222f3e",
+      "targetHex": "3c74696c652076616c75653d226e6577222f3e"
+    }
+  ]
+}

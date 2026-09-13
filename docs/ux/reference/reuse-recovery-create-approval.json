@@ -1,0 +1,78 @@
+{
+  "status": "APPROVED_WITH_CORRECTIONS",
+  "scope": "Original-owner uncertain apply and explicit new configuration identifier entry; retain existing loaded/preparation approvals.",
+  "source": "Recovery: actual browser5 original command200/revision3 with deliberately lost delivery; raw NETWORK_UNCERTAIN and no success UI; real summary confirms backendrevision3, retry control absent (RED). Source/included/decisions from actual authorized mock workflow. Create: same actual preview with blank unsent inputs, no created result or receipt.",
+  "images": [
+    {
+      "state": "recovery",
+      "view": "desktop",
+      "path": "reuse-recovery-desktop-v2.png",
+      "sha256": "1ea328c3224bf441f5cde83ccbfe286a8dc9461f7e986ebf07f39a3b36b78a8d",
+      "pixels": [
+        1505,
+        1045
+      ],
+      "intendedCssViewport": [
+        1440,
+        1000
+      ]
+    },
+    {
+      "state": "recovery",
+      "view": "narrow",
+      "path": "reuse-recovery-narrow-v4.png",
+      "sha256": "f8256d0c69455e967d4dfcae5c0ae07edb5cacccb779cddceff0f6248521501c",
+      "pixels": [
+        1024,
+        1536
+      ],
+      "intendedCssViewport": [
+        390,
+        844
+      ]
+    },
+    {
+      "state": "create",
+      "view": "desktop",
+      "path": "reuse-create-desktop-v3.png",
+      "sha256": "184f0d22b04572be12180ce8d27d604de835de414b40cbcf628f73040774f918",
+      "pixels": [
+        1506,
+        1045
+      ],
+      "intendedCssViewport": [
+        1440,
+        1000
+      ]
+    },
+    {
+      "state": "create",
+      "view": "narrow",
+      "path": "reuse-create-narrow-v2.png",
+      "sha256": "b1dc3769a93cc99220194e780c3e293fd2ce71650793868a95b869329d504559",
+      "pixels": [
+        893,
+        1760
+      ],
+      "intendedCssViewport": [
+        390,
+        844
+      ]
+    }
+  ],
+  "outsideFrameCaption": "Design proposal \u2014 synthetic test environment.",
+  "requiredCorrections": [
+    "Actual SVG/flat tokens/readable14\u201316 CSS px/minimum44 CSS px controls and natural scrolling.",
+    "Use common compact narrow header/menu, progress labels beneath circles and context details disclosure; generated extra header logout/context expansion are replaced by the established narrow shell.",
+    "Recovery context explicitly says Original plan revision; original plan, source and choices stay read-only across navigation/reentry, with only exact Retry apply and Back to plan.",
+    "Only Neutral2 has a dependency cause in this partial example; no self-dependency or third placement row. Required relations and current details come from retained actual preview/inventory.",
+    "New target identifier remains blank until entered; incomplete choices disable Apply. Creation is configuration only and grants no host provisioning, SQL execution, publication or export authority.",
+    "During an outstanding retry use the same preserved read-only panel and disable Retry apply; do not replace the warning with success until a valid acknowledgement."
+  ],
+  "verification": "Proposals only; incomplete recovery before approval, actual controlled browser RED retained. No release or production publication claim.",
+  "approval": {
+    "date": "2026-09-11",
+    "userResponse": "Approve four layouts with corrections",
+    "scope": "Four exact recovery/new-item images listed here; retain all requiredCorrections."
+  }
+}

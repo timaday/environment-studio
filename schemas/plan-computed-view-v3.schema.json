@@ -1,0 +1,745 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://environment.studio/schemas/plan-computed-view-v3",
+  "title": "Closed transient v3 computed views; shapes grant no authority",
+  "$comment": "Strict UTF8/XML Unicode, UTF16 value length <=1048576, canonical integer tokens, body byte/deadline bounds, source/proof checks, disclosure and page consistency remain Java obligations. Cardinalities are exact decimal strings.",
+  "anyOf": [
+    {
+      "$ref": "#/$defs/collectionRequest"
+    },
+    {
+      "$ref": "#/$defs/contributorsRequest"
+    },
+    {
+      "$ref": "#/$defs/nodesResponse"
+    },
+    {
+      "$ref": "#/$defs/membershipsResponse"
+    },
+    {
+      "$ref": "#/$defs/cooccurrencesResponse"
+    },
+    {
+      "$ref": "#/$defs/rulesResponse"
+    },
+    {
+      "$ref": "#/$defs/contributorsResponse"
+    }
+  ],
+  "$defs": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9.-]{0,63}(?![\\s\\S])"
+    },
+    "revision": {
+      "type": "string",
+      "pattern": "^[1-9][0-9]{0,1023}(?![\\s\\S])"
+    },
+    "decimal": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]*)(?![\\s\\S])"
+    },
+    "index": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]*)(?![\\s\\S])",
+      "maxLength": 10
+    },
+    "sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}(?![\\s\\S])"
+    },
+    "key": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "computedType",
+        "derivation",
+        "value"
+      ],
+      "properties": {
+        "computedType": {
+          "$ref": "#/$defs/id"
+        },
+        "derivation": {
+          "$ref": "#/$defs/id"
+        },
+        "value": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1048576,
+          "pattern": "^[\\u0009\\u000a\\u000d\\u0020-\\ud7ff\\ue000-\\ufffd\\u{10000}-\\u{10ffff}]+(?![\\s\\S])"
+        }
+      }
+    },
+    "physical": {
+      "$ref": "https://environment.studio/schemas/plan-command-v1#/$defs/entityRef"
+    },
+    "selector": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "key"
+          ],
+          "properties": {
+            "kind": {
+              "const": "node"
+            },
+            "key": {
+              "$ref": "#/$defs/key"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "relation",
+            "physical",
+            "computed"
+          ],
+          "properties": {
+            "kind": {
+              "const": "membership"
+            },
+            "relation": {
+              "$ref": "#/$defs/id"
+            },
+            "physical": {
+              "$ref": "#/$defs/physical"
+            },
+            "computed": {
+              "$ref": "#/$defs/key"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "kind",
+            "relation",
+            "source",
+            "target"
+          ],
+          "properties": {
+            "kind": {
+              "const": "cooccurrence"
+            },
+            "relation": {
+              "$ref": "#/$defs/id"
+            },
+            "source": {
+              "$ref": "#/$defs/key"
+            },
+            "target": {
+              "$ref": "#/$defs/key"
+            }
+          }
+        }
+      ]
+    },
+    "collectionRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "revision",
+        "side",
+        "offset",
+        "limit"
+      ],
+      "properties": {
+        "revision": {
+          "$ref": "#/$defs/revision"
+        },
+        "side": {
+          "enum": [
+            "current",
+            "target"
+          ]
+        },
+        "offset": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2147483647
+        },
+        "limit": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100
+        }
+      }
+    },
+    "contributorsRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "revision",
+        "side",
+        "offset",
+        "limit",
+        "selector",
+        "completeDocumentDisclosure"
+      ],
+      "properties": {
+        "revision": {
+          "$ref": "#/$defs/revision"
+        },
+        "side": {
+          "enum": [
+            "current",
+            "target"
+          ]
+        },
+        "offset": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2147483647
+        },
+        "limit": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100
+        },
+        "selector": {
+          "$ref": "#/$defs/selector"
+        },
+        "completeDocumentDisclosure": {
+          "const": true
+        }
+      }
+    },
+    "expandedName": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "namespaceUri",
+        "localName"
+      ],
+      "properties": {
+        "namespaceUri": {
+          "type": "string"
+        },
+        "localName": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "origin": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "documentId",
+        "projectionId",
+        "sourceDigest",
+        "elementIndex",
+        "ancestry"
+      ],
+      "properties": {
+        "documentId": {
+          "$ref": "#/$defs/id"
+        },
+        "projectionId": {
+          "$ref": "#/$defs/id"
+        },
+        "sourceDigest": {
+          "$ref": "#/$defs/sha256"
+        },
+        "elementIndex": {
+          "$ref": "#/$defs/index"
+        },
+        "ancestry": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/index"
+          },
+          "maxItems": 128
+        }
+      }
+    },
+    "attributePin": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "documentId",
+        "sourceDigest",
+        "elementIndex",
+        "name",
+        "qualifiedName",
+        "decodedValue",
+        "valueStart",
+        "valueEnd",
+        "quote"
+      ],
+      "properties": {
+        "documentId": {
+          "$ref": "#/$defs/id"
+        },
+        "sourceDigest": {
+          "$ref": "#/$defs/sha256"
+        },
+        "elementIndex": {
+          "$ref": "#/$defs/index"
+        },
+        "name": {
+          "$ref": "#/$defs/expandedName"
+        },
+        "qualifiedName": {
+          "type": "string",
+          "minLength": 1
+        },
+        "decodedValue": {
+          "type": "string"
+        },
+        "valueStart": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1048576
+        },
+        "valueEnd": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1048576
+        },
+        "quote": {
+          "enum": [
+            "'",
+            "\""
+          ]
+        }
+      }
+    },
+    "childSelector": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "parentElementIndex",
+        "element",
+        "discriminator"
+      ],
+      "properties": {
+        "parentElementIndex": {
+          "$ref": "#/$defs/index"
+        },
+        "element": {
+          "$ref": "#/$defs/expandedName"
+        },
+        "discriminator": {
+          "$ref": "#/$defs/attributePin"
+        }
+      }
+    },
+    "location": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "value",
+        "selector"
+      ],
+      "properties": {
+        "value": {
+          "$ref": "#/$defs/attributePin"
+        },
+        "selector": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/childSelector"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "role": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "field",
+        "location"
+      ],
+      "properties": {
+        "field": {
+          "$ref": "#/$defs/id"
+        },
+        "location": {
+          "$ref": "#/$defs/location"
+        }
+      }
+    },
+    "node": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "key",
+        "contributorTotal"
+      ],
+      "properties": {
+        "key": {
+          "$ref": "#/$defs/key"
+        },
+        "contributorTotal": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100000
+        }
+      }
+    },
+    "membership": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "relation",
+        "physical",
+        "computed",
+        "contributorTotal"
+      ],
+      "properties": {
+        "relation": {
+          "$ref": "#/$defs/id"
+        },
+        "physical": {
+          "$ref": "#/$defs/physical"
+        },
+        "computed": {
+          "$ref": "#/$defs/key"
+        },
+        "contributorTotal": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100000
+        }
+      }
+    },
+    "cooccurrence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "relation",
+        "source",
+        "target",
+        "contributorTotal"
+      ],
+      "properties": {
+        "relation": {
+          "$ref": "#/$defs/id"
+        },
+        "source": {
+          "$ref": "#/$defs/key"
+        },
+        "target": {
+          "$ref": "#/$defs/key"
+        },
+        "contributorTotal": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100000
+        }
+      }
+    },
+    "rule": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "declaration",
+        "source",
+        "actual",
+        "minimum",
+        "maximum",
+        "outcome"
+      ],
+      "properties": {
+        "kind": {
+          "enum": [
+            "ENTITY_COUNT",
+            "COOCCURRENCE"
+          ]
+        },
+        "declaration": {
+          "$ref": "#/$defs/id"
+        },
+        "source": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/key"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "actual": {
+          "$ref": "#/$defs/decimal"
+        },
+        "minimum": {
+          "$ref": "#/$defs/decimal"
+        },
+        "maximum": {
+          "$ref": "#/$defs/decimal"
+        },
+        "outcome": {
+          "enum": [
+            "PASS",
+            "FAIL"
+          ]
+        }
+      }
+    },
+    "contributor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "physical",
+        "origin",
+        "roles"
+      ],
+      "properties": {
+        "physical": {
+          "$ref": "#/$defs/physical"
+        },
+        "origin": {
+          "$ref": "#/$defs/origin"
+        },
+        "roles": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/role"
+          },
+          "minItems": 1,
+          "maxItems": 2
+        }
+      }
+    },
+    "nodesResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "revision",
+        "total",
+        "offset",
+        "nextOffset",
+        "items"
+      ],
+      "properties": {
+        "revision": {
+          "$ref": "#/$defs/revision"
+        },
+        "total": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2147483647
+        },
+        "offset": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2147483647
+        },
+        "nextOffset": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 2147483647
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/node"
+          },
+          "maxItems": 100
+        }
+      }
+    },
+    "membershipsResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "revision",
+        "total",
+        "offset",
+        "nextOffset",
+        "items"
+      ],
+      "properties": {
+        "revision": {
+          "$ref": "#/$defs/revision"
+        },
+        "total": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2147483647
+        },
+        "offset": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2147483647
+        },
+        "nextOffset": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 2147483647
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/membership"
+          },
+          "maxItems": 100
+        }
+      }
+    },
+    "cooccurrencesResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "revision",
+        "total",
+        "offset",
+        "nextOffset",
+        "items"
+      ],
+      "properties": {
+        "revision": {
+          "$ref": "#/$defs/revision"
+        },
+        "total": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2147483647
+        },
+        "offset": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2147483647
+        },
+        "nextOffset": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 2147483647
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/cooccurrence"
+          },
+          "maxItems": 100
+        }
+      }
+    },
+    "rulesResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "revision",
+        "total",
+        "offset",
+        "nextOffset",
+        "items"
+      ],
+      "properties": {
+        "revision": {
+          "$ref": "#/$defs/revision"
+        },
+        "total": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2147483647
+        },
+        "offset": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2147483647
+        },
+        "nextOffset": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 2147483647
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/rule"
+          },
+          "maxItems": 100
+        }
+      }
+    },
+    "contributorsResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "revision",
+        "total",
+        "offset",
+        "nextOffset",
+        "items"
+      ],
+      "properties": {
+        "revision": {
+          "$ref": "#/$defs/revision"
+        },
+        "total": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2147483647
+        },
+        "offset": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2147483647
+        },
+        "nextOffset": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 2147483647
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/contributor"
+          },
+          "maxItems": 100
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,47 @@
+{
+  "schemaVersion": "3",
+  "id": "mock-profile",
+  "revision": 1,
+  "logicalDefinitionDigest": "bbfead638fae8c814ec3a7c697e9645af9714163032a6dd6738af49cd5f9affd",
+  "entities": [
+    {
+      "id": "first",
+      "type": "glyph",
+      "label": "First neutral slot 𐀀",
+      "requiredInputs": [
+        "tag",
+        "tone"
+      ]
+    },
+    {
+      "id": "second",
+      "type": "glyph",
+      "label": "Second neutral slot",
+      "requiredInputs": [
+        "tag",
+        "tone"
+      ]
+    },
+    {
+      "id": "dependency",
+      "type": "palette",
+      "label": "Neutral shared target",
+      "requiredInputs": [
+        "shade",
+        "tag"
+      ]
+    }
+  ],
+  "relations": [
+    {
+      "type": "uses",
+      "from": "second",
+      "to": "dependency"
+    },
+    {
+      "type": "uses",
+      "from": "first",
+      "to": "dependency"
+    }
+  ]
+}

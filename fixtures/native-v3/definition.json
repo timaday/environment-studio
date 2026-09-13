@@ -1,0 +1,369 @@
+{
+  "schemaVersion": "3",
+  "id": "mock-tiles",
+  "revision": 1,
+  "logical": {
+    "entityTypes": [
+      {
+        "id": "glyph",
+        "label": "Glyph",
+        "fields": [
+          {
+            "id": "tag",
+            "valueType": "text",
+            "required": true,
+            "classification": "structural",
+            "sensitivity": "public",
+            "readable": true,
+            "editable": false
+          },
+          {
+            "id": "tone",
+            "valueType": "text",
+            "required": true,
+            "classification": "environment",
+            "sensitivity": "public",
+            "readable": true,
+            "editable": true
+          },
+          {
+            "id": "finish",
+            "valueType": "text",
+            "required": false,
+            "classification": "environment",
+            "sensitivity": "public",
+            "readable": true,
+            "editable": true
+          }
+        ],
+        "identity": {
+          "field": "tag",
+          "scope": "type",
+          "normalization": "exact"
+        }
+      },
+      {
+        "id": "palette",
+        "label": "Palette",
+        "fields": [
+          {
+            "id": "tag",
+            "valueType": "text",
+            "required": true,
+            "classification": "structural",
+            "sensitivity": "public",
+            "readable": true,
+            "editable": false
+          },
+          {
+            "id": "shade",
+            "valueType": "text",
+            "required": true,
+            "classification": "environment",
+            "sensitivity": "public",
+            "readable": true,
+            "editable": true
+          }
+        ],
+        "identity": {
+          "field": "tag",
+          "scope": "type",
+          "normalization": "exact"
+        }
+      }
+    ],
+    "relations": [
+      {
+        "id": "uses",
+        "fromType": "glyph",
+        "toType": "palette",
+        "kind": "reference",
+        "minimum": 1,
+        "maximum": 1,
+        "includeTargetOnReuse": true
+      }
+    ],
+    "rules": [
+      {
+        "id": "glyph-count",
+        "kind": "entity-count",
+        "type": "glyph",
+        "minimum": 2,
+        "maximum": 4
+      },
+      {
+        "id": "palette-count",
+        "kind": "entity-count",
+        "type": "palette",
+        "minimum": 1,
+        "maximum": 4
+      }
+    ],
+    "operationCapabilities": [
+      "retain-entity",
+      "create-entity",
+      "remove-entity",
+      "bind-field",
+      "move-relation"
+    ],
+    "computedTypes": [
+      {
+        "id": "tone-group",
+        "label": "Tone group"
+      },
+      {
+        "id": "finish-group",
+        "label": "Finish group"
+      }
+    ],
+    "derivations": [
+      {
+        "id": "by-tone",
+        "sourceType": "glyph",
+        "sourceField": "tone",
+        "computedType": "tone-group",
+        "membershipRelation": "has-tone"
+      },
+      {
+        "id": "by-finish",
+        "sourceType": "glyph",
+        "sourceField": "finish",
+        "computedType": "finish-group",
+        "membershipRelation": "has-finish"
+      }
+    ],
+    "cooccurrences": [
+      {
+        "id": "tone-finish",
+        "fromDerivation": "by-tone",
+        "toDerivation": "by-finish",
+        "minimum": 0,
+        "maximum": 4
+      }
+    ],
+    "computedRules": [
+      {
+        "id": "tone-count",
+        "kind": "entity-count",
+        "type": "tone-group",
+        "minimum": 0,
+        "maximum": 4
+      }
+    ]
+  },
+  "bindings": [
+    {
+      "id": "mock-pg",
+      "engine": "postgresql",
+      "storage": "text",
+      "schema": "mock_pg",
+      "table": "mock_tiles",
+      "keyColumn": "mock_key",
+      "xmlColumn": "mock_xml",
+      "keyType": "int64",
+      "documents": [
+        {
+          "id": "glyph-sheet",
+          "key": "1",
+          "entities": [
+            {
+              "id": "glyphs",
+              "type": "glyph",
+              "path": [
+                {
+                  "namespaceUri": "urn:mock:tiles",
+                  "localName": "tiles"
+                },
+                {
+                  "namespaceUri": "urn:mock:tiles",
+                  "localName": "glyph"
+                }
+              ],
+              "fields": [
+                {
+                  "field": "tag",
+                  "attribute": {
+                    "namespaceUri": "",
+                    "localName": "id"
+                  }
+                },
+                {
+                  "field": "tone",
+                  "childProperty": {
+                    "element": {
+                      "namespaceUri": "urn:mock:properties",
+                      "localName": "entry"
+                    },
+                    "discriminatorAttribute": {
+                      "namespaceUri": "urn:mock:keys",
+                      "localName": "key"
+                    },
+                    "discriminatorValue": "tone",
+                    "valueAttribute": {
+                      "namespaceUri": "",
+                      "localName": "value"
+                    }
+                  }
+                },
+                {
+                  "field": "finish",
+                  "attribute": {
+                    "namespaceUri": "",
+                    "localName": "finish"
+                  }
+                }
+              ],
+              "references": [
+                {
+                  "relation": "uses",
+                  "attribute": {
+                    "namespaceUri": "",
+                    "localName": "palette"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "palette-sheet",
+          "key": "2",
+          "entities": [
+            {
+              "id": "palettes",
+              "type": "palette",
+              "path": [
+                {
+                  "namespaceUri": "urn:mock:tiles",
+                  "localName": "tiles"
+                },
+                {
+                  "namespaceUri": "urn:mock:tiles",
+                  "localName": "palette"
+                }
+              ],
+              "fields": [
+                {
+                  "field": "tag",
+                  "attribute": {
+                    "namespaceUri": "",
+                    "localName": "id"
+                  }
+                },
+                {
+                  "field": "shade",
+                  "attribute": {
+                    "namespaceUri": "",
+                    "localName": "shade"
+                  }
+                }
+              ],
+              "references": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "mock-oracle",
+      "engine": "oracle",
+      "storage": "clob",
+      "schema": "mock_oracle",
+      "table": "mock_tiles",
+      "keyColumn": "mock_key",
+      "xmlColumn": "mock_xml",
+      "keyType": "int64",
+      "documents": [
+        {
+          "id": "glyph-sheet",
+          "key": "1",
+          "entities": [
+            {
+              "id": "glyphs",
+              "type": "glyph",
+              "path": [
+                {
+                  "namespaceUri": "urn:mock:tiles",
+                  "localName": "tiles"
+                },
+                {
+                  "namespaceUri": "urn:mock:tiles",
+                  "localName": "glyph"
+                }
+              ],
+              "fields": [
+                {
+                  "field": "tag",
+                  "attribute": {
+                    "namespaceUri": "",
+                    "localName": "id"
+                  }
+                },
+                {
+                  "field": "tone",
+                  "attribute": {
+                    "namespaceUri": "",
+                    "localName": "tone"
+                  }
+                },
+                {
+                  "field": "finish",
+                  "attribute": {
+                    "namespaceUri": "",
+                    "localName": "finish"
+                  }
+                }
+              ],
+              "references": [
+                {
+                  "relation": "uses",
+                  "attribute": {
+                    "namespaceUri": "",
+                    "localName": "palette"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "palette-sheet",
+          "key": "2",
+          "entities": [
+            {
+              "id": "palettes",
+              "type": "palette",
+              "path": [
+                {
+                  "namespaceUri": "urn:mock:tiles",
+                  "localName": "tiles"
+                },
+                {
+                  "namespaceUri": "urn:mock:tiles",
+                  "localName": "palette"
+                }
+              ],
+              "fields": [
+                {
+                  "field": "tag",
+                  "attribute": {
+                    "namespaceUri": "",
+                    "localName": "id"
+                  }
+                },
+                {
+                  "field": "shade",
+                  "attribute": {
+                    "namespaceUri": "",
+                    "localName": "shade"
+                  }
+                }
+              ],
+              "references": []
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

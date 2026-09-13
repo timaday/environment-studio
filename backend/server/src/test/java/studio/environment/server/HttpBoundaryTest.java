@@ -26,6 +26,8 @@ class HttpBoundaryTest {
         assertEquals(200, response.statusCode());
         assertTrue(response.body().contains("\"exportEnabled\":false"));
         assertTrue(response.body().contains("\"inspectionEnabled\":false"));
+        assertTrue(response.body().contains("\"inspectionUiEnabled\":false"));
+        assertTrue(response.body().contains("\"inspectionApiConfigured\":false"));
         assertTrue(response.headers().firstValue("Content-Security-Policy").orElseThrow().contains("frame-ancestors 'none'"));
     }
 

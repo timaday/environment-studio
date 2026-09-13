@@ -5,12 +5,34 @@
   <artifactId>server</artifactId>
   <dependencies>
     <dependency><groupId>studio.environment</groupId><artifactId>core</artifactId><version>${project.version}</version></dependency>
+    <dependency><groupId>studio.environment</groupId><artifactId>qualified-xml-parser</artifactId><version>${project.version}</version></dependency>
     <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-webmvc</artifactId></dependency>
     <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-actuator</artifactId></dependency>
     <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-security</artifactId></dependency>
     <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-test</artifactId><scope>test</scope></dependency>
+    <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-oauth2-client</artifactId></dependency>
+    <dependency><groupId>org.springframework.security</groupId><artifactId>spring-security-test</artifactId><scope>test</scope></dependency>
+    <!-- Networknt 3.0.7's Unicode ECMA-262 engine for canonical wire-schema tests only. -->
+    <dependency><groupId>org.graalvm.js</groupId><artifactId>js-language</artifactId><version>25.0.1</version><scope>test</scope></dependency>
+    <dependency><groupId>org.graalvm.truffle</groupId><artifactId>truffle-runtime</artifactId><version>25.0.1</version><scope>test</scope></dependency>
+    <dependency><groupId>org.graalvm.sdk</groupId><artifactId>graal-sdk</artifactId><version>25.0.1</version><scope>test</scope></dependency>
+    <dependency>
+      <groupId>com.networknt</groupId><artifactId>json-schema-validator</artifactId><version>3.0.7</version>
+      <exclusions>
+        <!-- YAML is consumed only through the bounded SnakeYAML Engine event adapter. -->
+        <exclusion><groupId>tools.jackson.dataformat</groupId><artifactId>jackson-dataformat-yaml</artifactId></exclusion>
+      </exclusions>
+    </dependency>
+    <dependency><groupId>org.snakeyaml</groupId><artifactId>snakeyaml-engine</artifactId><version>3.1.1</version></dependency>
+    <dependency><groupId>org.xerial</groupId><artifactId>sqlite-jdbc</artifactId><version>3.53.4.0</version></dependency>
+    <dependency><groupId>org.postgresql</groupId><artifactId>postgresql</artifactId><version>42.7.13</version></dependency>
+    <dependency><groupId>com.oracle.database.jdbc</groupId><artifactId>ojdbc17</artifactId><version>23.26.3.0.0</version></dependency>
   </dependencies>
-  <build><finalName>environment-studio</finalName><plugins>
+  <build><resources>
+    <resource><directory>src/main/resources</directory></resource>
+    <resource><directory>../../schemas</directory><targetPath>schemas</targetPath><includes><include>definition.schema.json</include><include>definition-v2.schema.json</include><include>definition-v3.schema.json</include><include>profile-v2.schema.json</include><include>profile-v3.schema.json</include><include>plan-command-v1.schema.json</include><include>plan-view-v1.schema.json</include><include>definition-inspection-v2.schema.json</include><include>definition-inspection-v3.schema.json</include><include>profile-inspection-v2.schema.json</include><include>profile-inspection-v3.schema.json</include><include>guarded-manifest-v1.schema.json</include><include>guarded-payload-v1.schema.json</include></includes></resource>
+  </resources><finalName>environment-studio</finalName><plugins>
+    <plugin><groupId>org.apache.maven.plugins</groupId><artifactId>maven-jar-plugin</artifactId><version>3.4.2</version><executions><execution><id>supervisor-classes</id><phase>package</phase><goals><goal>jar</goal></goals><configuration><classifier>classes</classifier><includes><include>**/*.class</include><include>schemas/**</include></includes><excludes><exclude>static/**</exclude></excludes></configuration></execution></executions></plugin>
     <plugin><groupId>org.springframework.boot</groupId><artifactId>spring-boot-maven-plugin</artifactId><version>${spring-boot.version}</version><executions><execution><goals><goal>repackage</goal></goals></execution></executions></plugin>
   </plugins></build>
 </project>

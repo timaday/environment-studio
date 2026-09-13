@@ -9,18 +9,21 @@
   "scripts": {
     "dev": "vite --host 127.0.0.1",
     "build": "tsc --noEmit && vite build",
-    "check": "tsc --noEmit && biome check src vite.config.ts",
+    "check": "tsc --noEmit && tsc --noEmit -p tsconfig.e2e.json && biome check src vite.config.ts playwright.config.ts e2e",
     "format": "biome check --write src vite.config.ts",
     "test": "vitest run && npm run test:contracts",
     "test:contracts": "node --test ../scripts/schema.test.mjs",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "react": "19.2.8",
     "react-dom": "19.2.8"
   },
   "devDependencies": {
+    "@axe-core/playwright": "4.13.0",
     "@biomejs/biome": "2.5.12",
+    "@playwright/test": "1.63.0",
     "@testing-library/jest-dom": "7.0.1",
     "@testing-library/react": "16.3.3",
     "@testing-library/user-event": "14.6.7",
@@ -29,7 +32,7 @@
     "@types/react-dom": "19.2.7",
     "@vitejs/plugin-react": "6.1.1",
     "@vitest/coverage-v8": "5.0.0",
-    "ajv": "8.17.1",
+    "ajv": "8.20.0",
     "jsdom": "30.0.1",
     "typescript": "7.0.2",
     "vite": "8.2.2",

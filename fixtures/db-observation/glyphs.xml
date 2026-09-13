@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<t:tiles xmlns:t="urn:mock:tiles">
+  <!-- invented repeated values & untouched markup -->
+  <t:glyph id="alpha" tone="  blue &amp; 𐀀&#9;" palette="shared"/>
+  <?mock untouched?>
+  <t:glyph id="beta" tone="" palette="shared"/>
+  <t:unused><![CDATA[<glyph id="unselected"/>]]></t:unused>
+</t:tiles>

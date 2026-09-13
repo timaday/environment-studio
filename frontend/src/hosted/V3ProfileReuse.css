@@ -1,0 +1,275 @@
+.reuse-workspace {
+  min-width: 0;
+}
+.reuse-recovery-notice {
+  border: 1px solid #f2c35b;
+  border-radius: 10px;
+  padding: 16px;
+  margin-block: 16px;
+}
+.reuse-retained-items {
+  list-style: none;
+  padding: 0;
+}
+.reuse-retained-items li {
+  padding-block: 16px;
+  border-bottom: 1px solid var(--border);
+  overflow-wrap: anywhere;
+}
+.reuse-retained-items p {
+  font-size: 14px;
+}
+.reuse-workspace > h1 {
+  margin-top: 8px;
+  font-size: 32px;
+}
+.reuse-workspace .capture-steps {
+  margin-block: 16px;
+}
+.reuse-workspace .text-button {
+  color: var(--accent);
+  border: 0;
+  padding: 4px;
+}
+.reuse-layout {
+  display: grid;
+  grid-template-columns: minmax(220px, 0.8fr) minmax(300px, 1.3fr) minmax(350px, 1.3fr);
+  gap: 16px;
+}
+.reuse-layout.reuse-applied {
+  grid-template-columns: minmax(240px, 1fr) minmax(0, 2fr);
+}
+.reuse-panel {
+  min-width: 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px;
+}
+.reuse-panel > :is(p, button, details) {
+  margin-top: 12px;
+}
+.reuse-workspace :is(select, input) {
+  min-height: 44px;
+  width: 100%;
+  min-width: 0;
+  font: inherit;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 8px 12px;
+}
+.reuse-profile-choice {
+  display: grid;
+  width: 100%;
+  gap: 4px;
+  text-align: left;
+  overflow-wrap: anywhere;
+}
+.reuse-profile-choice[aria-pressed="true"] {
+  border-color: var(--accent);
+  background: #26365d;
+}
+.reuse-profile-choice span {
+  font-size: 14px;
+}
+.reuse-source {
+  margin-top: 16px;
+  overflow-wrap: anywhere;
+}
+.reuse-source p {
+  font-size: 14px;
+  margin: 8px 0;
+}
+.reuse-source-help {
+  border-top: 1px solid var(--border);
+  padding-top: 20px;
+}
+.reuse-scope {
+  border: 0;
+  padding: 0;
+  margin: 12px 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.reuse-scope legend {
+  font-weight: 600;
+  padding-bottom: 8px;
+}
+.reuse-scope label {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 8px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+.reuse-workspace input:is([type="radio"], [type="checkbox"]) {
+  width: 20px;
+  height: 20px;
+  min-height: 20px;
+  min-width: 20px;
+  accent-color: var(--accent);
+  flex: none;
+}
+.reuse-items {
+  padding: 0;
+  margin: 12px 0;
+  list-style: none;
+}
+.reuse-items li {
+  border-bottom: 1px solid var(--border);
+}
+.reuse-items label {
+  display: flex;
+  align-items: start;
+  gap: 12px;
+  min-height: 44px;
+  padding: 12px 4px;
+  overflow-wrap: anywhere;
+}
+.reuse-items input {
+  margin-top: 4px;
+}
+.reuse-items small {
+  margin-top: 2px;
+}
+.reuse-placement {
+  padding-block: 12px;
+  border-bottom: 1px solid var(--border);
+}
+.reuse-placement-fields {
+  display: grid;
+  gap: 6px;
+  margin-top: 12px;
+}
+.reuse-placement-fields label {
+  font-size: 14px;
+}
+.reuse-receipt-rows {
+  margin-block: 20px;
+}
+.reuse-receipt-rows > section {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  padding: 16px;
+  border: 1px solid var(--border);
+  overflow-wrap: anywhere;
+}
+.reuse-receipt-rows p {
+  font-size: 14px;
+}
+.reuse-outcome {
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+.reuse-outcome > strong {
+  color: #f2c35b;
+}
+.reuse-outcome h3 {
+  margin-top: 12px;
+}
+.reuse-help {
+  margin-top: 16px;
+  padding: 0 16px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+}
+.reuse-help p {
+  padding-bottom: 16px;
+}
+@media (max-width: 1100px) {
+  .reuse-layout {
+    grid-template-columns: 1fr 1fr;
+  }
+  .reuse-layout > :last-child {
+    grid-column: 1 / -1;
+  }
+}
+@media (max-width: 800px) {
+  .reuse-layout,
+  .reuse-layout.reuse-applied {
+    grid-template-columns: 1fr;
+  }
+  .reuse-workspace h1 {
+    font-size: 28px;
+  }
+  .reuse-workspace .capture-steps {
+    gap: 8px;
+  }
+  .reuse-workspace .capture-steps li {
+    flex-direction: column;
+    text-align: center;
+  }
+  .reuse-panel > button {
+    width: 100%;
+  }
+}
+@media (max-width: 380px) {
+  .reuse-receipt-rows > section {
+    grid-template-columns: 1fr;
+  }
+}
+
+.reuse-prerequisite {
+  max-width: 960px;
+  margin: 16px auto;
+  padding: 48px;
+  text-align: center;
+}
+.reuse-prerequisite > p {
+  max-width: 560px;
+  margin-inline: auto;
+}
+.reuse-prerequisite > button {
+  margin: 24px 8px 0;
+}
+@media (max-width: 800px) {
+  .reuse-prerequisite {
+    padding: 24px;
+    text-align: left;
+  }
+  .reuse-prerequisite > button {
+    margin: 16px 0 0;
+    width: 100%;
+  }
+}
+
+@media (min-width: 1101px) {
+  .reuse-placement {
+    display: grid;
+    grid-template-columns: minmax(120px, 0.8fr) minmax(0, 1.5fr);
+    gap: 12px;
+  }
+  .reuse-placement-fields {
+    margin-top: 0;
+  }
+}
+
+.reuse-panel > button + button {
+  margin-left: 8px;
+}
+@media (max-width: 800px) {
+  .reuse-panel > button + button {
+    margin-left: 0;
+  }
+}
+
+@media (max-width: 800px) {
+  .reuse-recovery-selection .reuse-retained-items {
+    display: none;
+  }
+  .reuse-recovery-selection {
+    padding: 16px;
+  }
+  .reuse-receipt-rows > section {
+    grid-template-columns: 1fr;
+  }
+}

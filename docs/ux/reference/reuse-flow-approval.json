@@ -1,0 +1,122 @@
+{
+  "status": "APPROVED_WITH_EXPLICIT_CORRECTIONS",
+  "scope": "Complete partial-reuse selection, explicit placement and acknowledged plan update; desktop and narrow. Whole-profile mode remains available using actual preview scope.",
+  "sourceRevision": "256e1875a6880c83c00402d259ed3b2357212c5d",
+  "integrationBase": "b74ffac25decd95f1207ea30ca2292faaf678bba",
+  "syntheticException": "call_j6NHnB7caeshgTfpgaCafX1z: Authorize the same bounded exception for Reuse",
+  "observationManifest": "31fe0b0e31d14c4e0b1fcc73ac1c95723bbaf4fd634bcb7c6040d02c9c19b9e4",
+  "partialObservationSha256": "de18776a22e4a1e9316dfabe55f50da6cf98348fdf64d6ea84a1aa9d4b67ce37",
+  "images": [
+    {
+      "state": "selection",
+      "view": "desktop",
+      "path": "reuse-selection-desktop-v2.png",
+      "sha256": "6c59a50db848f568b78e0025beed695f74efff42a62dafaecc72a1afccb47e40",
+      "pixels": [
+        1504,
+        1046
+      ],
+      "intendedCssViewport": [
+        1440,
+        1000
+      ],
+      "scroll": "natural full page",
+      "dpr": "generated raster, unspecified"
+    },
+    {
+      "state": "selection",
+      "view": "narrow",
+      "path": "reuse-selection-narrow-v2.png",
+      "sha256": "acfceb908a4aa11e069371d436cd3a89c9a98b4edaa758b0a283a9b8dfe1f916",
+      "pixels": [
+        919,
+        1711
+      ],
+      "intendedCssViewport": [
+        390,
+        844
+      ],
+      "scroll": "natural full page",
+      "dpr": "generated raster, unspecified"
+    },
+    {
+      "state": "placement",
+      "view": "desktop",
+      "path": "reuse-placement-desktop-v2.png",
+      "sha256": "7f5160db1b12f90341fe932efb69ff830179f84228b2dfba4831f5ff33969df4",
+      "pixels": [
+        1505,
+        1045
+      ],
+      "intendedCssViewport": [
+        1440,
+        1000
+      ],
+      "scroll": "natural full page",
+      "dpr": "generated raster, unspecified"
+    },
+    {
+      "state": "placement",
+      "view": "narrow",
+      "path": "reuse-placement-narrow-v3.png",
+      "sha256": "f2fe41b918ef5b68094ed75cd1f2490b7df70602530f355bd453794035b5eeeb",
+      "pixels": [
+        893,
+        1761
+      ],
+      "intendedCssViewport": [
+        390,
+        844
+      ],
+      "scroll": "natural full page",
+      "dpr": "generated raster, unspecified"
+    },
+    {
+      "state": "applied",
+      "view": "desktop",
+      "path": "reuse-applied-desktop-v2.png",
+      "sha256": "89ec3f0ff63bfe851fc161e2eb937c253559f8672456bbd92972da27123bcd43",
+      "pixels": [
+        1505,
+        1045
+      ],
+      "intendedCssViewport": [
+        1440,
+        1000
+      ],
+      "scroll": "natural full page",
+      "dpr": "generated raster, unspecified"
+    },
+    {
+      "state": "applied",
+      "view": "narrow",
+      "path": "reuse-applied-narrow-v3.png",
+      "sha256": "5b0e37ac11f209820407ae49c8f575466e825346bde81612d50261dd0d42b589",
+      "pixels": [
+        962,
+        1635
+      ],
+      "intendedCssViewport": [
+        390,
+        844
+      ],
+      "scroll": "natural full page",
+      "dpr": "generated raster, unspecified"
+    }
+  ],
+  "outsideFrameCaption": "Design proposal — synthetic test environment.",
+  "requiredCorrections": [
+    "Actual approved SVG and committed flat Midnight tokens, consistent icons/status treatments across sizes.",
+    "14–16 CSS px body/help; every actionable control at least44 CSS px. Compact consistent narrow header/progress and natural scrolling.",
+    "Narrow product fills available viewport with normal margins; generated exterior padding is not application layout. Placement fields stack full-width. Read-only receipt cards may stack further for readable reflow.",
+    "Source revision/identity details and applied receipt are visibly read-only text, never input-looking fields. Historical Published state does not establish current production admission.",
+    "Label technical slot identifiers Reusable identifier; exact opaque current handles and all backend field distinctions remain accessible in details.",
+    "Only backend included items appear in the applied receipt: partial example Neutral1 and Neutral2, not unselected Neutral3. No inferred matching, donor values, publication or export success."
+  ],
+  "verification": "Design proposals only. Actual isolated test observation and source provenance review are documented in ../v3-profile-reuse-journey.md; renderer, accessibility and visual verification remain pending. Unseen recovery/conflict states and pending Definitions designs are excluded.",
+  "approval": {
+    "date": "2026-09-11",
+    "reference": "call_Xza3CRiQU6YkL1xpNLSmY9JL",
+    "response": "Approve six states with corrections"
+  }
+}

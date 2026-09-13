@@ -1,0 +1,24 @@
+{
+  "kind": "upsert-entity",
+  "expectedRevision": "2",
+  "requestId": "00000000-0000-4000-8000-000000000041",
+  "decision": {
+    "kind": "create",
+    "entity": {
+      "kind": "fresh",
+      "slotId": "second-slot",
+      "typeId": "palette"
+    },
+    "fields": {
+      "tag": {
+        "kind": "entered",
+        "text": "independent-02"
+      },
+      "shade": {
+        "kind": "unresolved"
+      }
+    },
+    "references": {}
+  },
+  "placements": []
+}

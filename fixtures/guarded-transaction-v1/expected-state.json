@@ -1,0 +1,13 @@
+{
+  "original": {
+    "a": "<palettes><palette id=\"p1\"/></palettes>",
+    "b": "<glyph palette=\"p1\"/>",
+    "c": "<glyph palette=\"p1\"/>"
+  },
+  "target": {
+    "a": "<palettes><palette id=\"p1\"/><palette id=\"p2\"/></palettes>",
+    "b": "<glyph palette=\"p2\"/>",
+    "c": "<glyph palette=\"p1\"/>"
+  },
+  "allRowsRetainNote": "untouched"
+}

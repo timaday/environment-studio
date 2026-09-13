@@ -1,0 +1,61 @@
+{
+  "status": "APPROVED_WITH_EXPLICIT_CORRECTIONS",
+  "scope": "Unknown draft-save response, original session/captured context; desktop and narrow. No unseen context/session recovery approval.",
+  "sourceRevision": "e0ab0af3dbe46619acc4d12cffb4667db30ca386",
+  "sourceWip": "Preserved renderer WIP; actual source/runtime hashes in external observation result",
+  "authorizedFixtureBase": "820837cd9c0249bc5646f52733ea2a2b40b559e5",
+  "observation": "/home/tim/.tmp/es-capture-save-recovery-observation-20260911/observation.json",
+  "observationSha256": "5ee8abfe12651f68c72d7ad81c1ac57f9af24ca483a3eb4b585b84a694e16a83",
+  "outsideFrameCaption": "Design proposal \u2014 synthetic test environment.",
+  "approval": {
+    "date": "2026-09-11",
+    "reference": "call_e8R7H2ZunlkEv5VSo8dfcnd4",
+    "response": "Approve both with listed corrections",
+    "scope": "Unknown draft-save response, original session/captured context; desktop and narrow. No unseen context/session recovery approval."
+  },
+  "requiredCorrections": [
+    "Actual SVG and flat committed tokens",
+    "Body/help14\u201316CSSpx; all actionable controls44CSSpx minimum; natural scrolling",
+    "Compact narrow header, stacked readonly items, one collapsed help disclosure",
+    "Plain edit-lock explanation consistent across sizes, not another status message"
+  ],
+  "images": [
+    {
+      "view": "desktop",
+      "path": "capture-recovery-desktop-v1.png",
+      "source": "/home/tim/.codex/generated_images/01a08112-856d-7042-81a1-5897748a6951/exec-f832a5b3-6b26-4e4f-81d9-0609f55d6352.png",
+      "sha256": "772caa43c1f194e19f5373aa76ab27932bd0e99d7c1faf157944c27255ee79e8",
+      "pixels": [
+        1505,
+        1045
+      ],
+      "intendedCssViewport": [
+        1440,
+        1000
+      ],
+      "scroll": "natural full page",
+      "devicePixelRatio": "UNSPECIFIED generated raster; implementation captures record actual DPR"
+    },
+    {
+      "view": "narrow",
+      "path": "capture-recovery-narrow-v3.png",
+      "source": "/home/tim/.codex/generated_images/01a08112-856d-7042-81a1-5897748a6951/exec-8d67f707-734f-497a-960d-ef780fedcec4.png",
+      "sha256": "a39475e9d0bf1fdf70398831b070b66ad2527641e3a465ca73bec5190b70fa2d",
+      "pixels": [
+        783,
+        2007
+      ],
+      "intendedCssViewport": [
+        390,
+        844
+      ],
+      "scroll": "natural full page",
+      "devicePixelRatio": "UNSPECIFIED generated raster; implementation captures record actual DPR"
+    }
+  ],
+  "verification": {
+    "functionality": "Actual isolated save/lost-delivery/readback/exact API replay PASS; UI retry unimplemented",
+    "accessibility": "UNVERIFIED; required sizing/focus/keyboard/announcement/reflow checks pending",
+    "visualFidelity": "DIFFERENCES_REMAIN; no pixel identity"
+  }
+}

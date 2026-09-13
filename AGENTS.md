@@ -25,6 +25,16 @@ whole repository; a nested AGENTS.md adds local guidance.
 - Preserve exact XML characters outside qualified edits. Never replace strings globally or serialize an entire DOM as a lossless writer.
 - Credentials never enter disk, logs, URLs, browser storage, job queues, exports or test snapshots. Only synthetic fixtures belong in this public repository.
 
+## UX design skill
+
+For any UX/UI design, redesign, improvement or implementation, read and apply
+[enterprise-ux-design](.agents/skills/enterprise-ux-design/SKILL.md) and its
+phase-relevant references alongside `docs/ux/design-system.md` and the approved
+product decisions. This includes journeys, navigation, screens, forms, components,
+responsive layouts and visual polish. Use this repository copy; if it is absent
+from the skill selector, read the linked file directly. Preserve existing
+applicable image approvals and the skill's approval and verification requirements.
+
 ## Engineering practice
 
 1. Take the next dependency-ready slice from the build plan. State the acceptance examples and material unknowns.

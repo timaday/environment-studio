@@ -1,0 +1,40 @@
+{
+  "formatVersion": "es-guarded-supervisor-config-v1",
+  "sessionLauncher": {
+    "path": "/invented/runtime/setsid",
+    "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+  },
+  "terminalControl": {
+    "path": "/invented/runtime/stty",
+    "sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+  },
+  "clients": [
+    {
+      "family": "psql",
+      "version": "18.6",
+      "runtimeRoot": "/invented/postgresql",
+      "runtimeIdentity": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      "executableSha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+    }
+  ],
+  "destinations": [
+    {
+      "id": "invented-mock",
+      "engine": "postgresql",
+      "host": "db.example.invalid",
+      "port": 5432,
+      "database": "mock",
+      "transportIdentity": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+      "provisioningPolicyVersion": "invented-v1",
+      "expectedPhysicalIdentity": {
+        "systemIdentifier": "123",
+        "databaseOid": "456",
+        "databaseName": "mock"
+      },
+      "trustMaterial": {
+        "path": "/invented/trust.pem",
+        "sha256": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+      }
+    }
+  ]
+}

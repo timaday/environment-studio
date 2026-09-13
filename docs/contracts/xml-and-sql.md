@@ -9,8 +9,8 @@ count, chars/bytes, depth, attributes, references, selector work and total
 operation time; measure supported capacities on representative data.
 
 Selectors use explicit namespaces, enclosing record/context and expected
-cardinality. Never select every `application` property in a database. The
-user's sample bean has no unique bean ID; do not invent one. Source spans and
+cardinality. Never broaden a selector to every similarly named property in a
+database. Missing declared unique identity requires refusal, not an invented ID. Source spans and
 patches must preserve unchanged lexical characters including comments, entity
 spelling, quote style, line endings and significant whitespace. Reject overlapping
 patches and ambiguous contexts. Signed/encrypted XML needs dedicated support or

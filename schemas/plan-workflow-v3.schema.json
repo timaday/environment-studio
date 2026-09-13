@@ -1,0 +1,1153 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://environment.studio/schemas/plan-workflow-v3",
+  "title": "Closed v3 capture, preview and paged validation; no export authority",
+  "$comment": "Java enforces UTF8/body limits, canonical numeric tokens, source-only capture, full proof checks, complete counts, fresh versioned previews, fingerprint preconditions and cancellation. Validation never serializes all computed rules.",
+  "anyOf": [
+    {
+      "$ref": "#/$defs/captureRequest"
+    },
+    {
+      "$ref": "#/$defs/captureResponse"
+    },
+    {
+      "$ref": "#/$defs/previewRequest"
+    },
+    {
+      "$ref": "#/$defs/previewResponse"
+    },
+    {
+      "$ref": "#/$defs/validationRequest"
+    },
+    {
+      "$ref": "#/$defs/validationResponse"
+    }
+  ],
+  "$defs": {
+    "captureRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "revision",
+        "profileId",
+        "profileRevision",
+        "mappings"
+      ],
+      "properties": {
+        "revision": {
+          "$ref": "#/$defs/revision"
+        },
+        "profileId": {
+          "$ref": "#/$defs/id"
+        },
+        "profileRevision": {
+          "$ref": "#/$defs/revision"
+        },
+        "mappings": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "entity",
+              "slotId",
+              "label"
+            ],
+            "properties": {
+              "entity": {
+                "$ref": "#/$defs/existing"
+              },
+              "slotId": {
+                "$ref": "#/$defs/id"
+              },
+              "label": {
+                "$ref": "#/$defs/label"
+              }
+            }
+          },
+          "maxItems": 20000,
+          "minItems": 1
+        }
+      }
+    },
+    "captureResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "revision",
+        "definition",
+        "format",
+        "source"
+      ],
+      "properties": {
+        "revision": {
+          "$ref": "#/$defs/revision"
+        },
+        "definition": {
+          "$ref": "#/$defs/publicationRef"
+        },
+        "format": {
+          "const": "json"
+        },
+        "source": {
+          "type": "string"
+        }
+      }
+    },
+    "decimal": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]*)(?![\\s\\S])"
+    },
+    "existing": {
+      "$ref": "https://environment.studio/schemas/plan-command-v1#/$defs/existing"
+    },
+    "id": {
+      "$ref": "https://environment.studio/schemas/plan-command-v1#/$defs/id"
+    },
+    "key": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "computedType",
+        "derivation",
+        "value"
+      ],
+      "properties": {
+        "computedType": {
+          "$ref": "#/$defs/id"
+        },
+        "derivation": {
+          "$ref": "#/$defs/id"
+        },
+        "value": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1048576,
+          "pattern": "^[\\u0009\\u000a\\u000d\\u0020-\\ud7ff\\ue000-\\ufffd\\u{10000}-\\u{10ffff}]+(?![\\s\\S])"
+        }
+      }
+    },
+    "label": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100
+    },
+    "offset": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 50000
+    },
+    "outcome": {
+      "type": "string",
+      "enum": [
+        "PASS",
+        "FAIL",
+        "UNKNOWN",
+        "ERROR"
+      ]
+    },
+    "previewConflictsResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "revision",
+        "total",
+        "offset",
+        "nextOffset",
+        "items",
+        "previewDigest",
+        "pins",
+        "section",
+        "affectedDerivations"
+      ],
+      "properties": {
+        "revision": {
+          "$ref": "#/$defs/revision"
+        },
+        "total": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "offset": {
+          "$ref": "#/$defs/offset"
+        },
+        "nextOffset": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/offset"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "oneOf": [
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "code",
+                  "slotId",
+                  "relationId",
+                  "ruleId"
+                ],
+                "properties": {
+                  "code": {
+                    "enum": [
+                      "RELATION_CARDINALITY",
+                      "MULTIPLE_CONTAINMENT_PARENTS",
+                      "CONTAINMENT_PARENT_MISSING"
+                    ]
+                  },
+                  "slotId": {
+                    "anyOf": [
+                      {
+                        "$ref": "#/$defs/id"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "relationId": {
+                    "$ref": "#/$defs/id"
+                  },
+                  "ruleId": {
+                    "type": "null"
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "code",
+                  "slotId",
+                  "relationId",
+                  "ruleId"
+                ],
+                "properties": {
+                  "code": {
+                    "enum": [
+                      "INVALID_TARGET_RELATION",
+                      "CONTAINMENT_CYCLE"
+                    ]
+                  },
+                  "slotId": {
+                    "type": "null"
+                  },
+                  "relationId": {
+                    "type": "null"
+                  },
+                  "ruleId": {
+                    "type": "null"
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "code",
+                  "slotId",
+                  "relationId",
+                  "ruleId"
+                ],
+                "properties": {
+                  "code": {
+                    "enum": [
+                      "ENTITY_COUNT"
+                    ]
+                  },
+                  "slotId": {
+                    "type": "null"
+                  },
+                  "relationId": {
+                    "type": "null"
+                  },
+                  "ruleId": {
+                    "$ref": "#/$defs/id"
+                  }
+                }
+              }
+            ]
+          },
+          "maxItems": 100
+        },
+        "previewDigest": {
+          "$ref": "#/$defs/sha256"
+        },
+        "pins": {
+          "$ref": "#/$defs/previewPins"
+        },
+        "section": {
+          "const": "conflicts"
+        },
+        "affectedDerivations": {
+          "type": "array",
+          "maxItems": 32,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/id"
+          }
+        }
+      }
+    },
+    "previewDependenciesResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "revision",
+        "total",
+        "offset",
+        "nextOffset",
+        "items",
+        "previewDigest",
+        "pins",
+        "section",
+        "affectedDerivations"
+      ],
+      "properties": {
+        "revision": {
+          "$ref": "#/$defs/revision"
+        },
+        "total": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "offset": {
+          "$ref": "#/$defs/offset"
+        },
+        "nextOffset": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/offset"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "slotId",
+              "causedBy",
+              "relationId",
+              "reason"
+            ],
+            "properties": {
+              "slotId": {
+                "$ref": "#/$defs/id"
+              },
+              "causedBy": {
+                "$ref": "#/$defs/id"
+              },
+              "relationId": {
+                "$ref": "#/$defs/id"
+              },
+              "reason": {
+                "type": "string",
+                "enum": [
+                  "required-reference",
+                  "containment-parent",
+                  "declared-reuse-target"
+                ]
+              }
+            }
+          },
+          "maxItems": 100
+        },
+        "previewDigest": {
+          "$ref": "#/$defs/sha256"
+        },
+        "pins": {
+          "$ref": "#/$defs/previewPins"
+        },
+        "section": {
+          "const": "dependencies"
+        },
+        "affectedDerivations": {
+          "type": "array",
+          "maxItems": 32,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/id"
+          }
+        }
+      }
+    },
+    "previewIncludedResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "revision",
+        "total",
+        "offset",
+        "nextOffset",
+        "items",
+        "previewDigest",
+        "pins",
+        "section",
+        "affectedDerivations"
+      ],
+      "properties": {
+        "revision": {
+          "$ref": "#/$defs/revision"
+        },
+        "total": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "offset": {
+          "$ref": "#/$defs/offset"
+        },
+        "nextOffset": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/offset"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "slotId",
+              "typeId",
+              "label",
+              "requiredInputs"
+            ],
+            "properties": {
+              "slotId": {
+                "$ref": "#/$defs/id"
+              },
+              "typeId": {
+                "$ref": "#/$defs/id"
+              },
+              "label": {
+                "$ref": "#/$defs/label"
+              },
+              "requiredInputs": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/id"
+                },
+                "maxItems": 256
+              }
+            }
+          },
+          "maxItems": 100
+        },
+        "previewDigest": {
+          "$ref": "#/$defs/sha256"
+        },
+        "pins": {
+          "$ref": "#/$defs/previewPins"
+        },
+        "section": {
+          "const": "included"
+        },
+        "affectedDerivations": {
+          "type": "array",
+          "maxItems": 32,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/id"
+          }
+        }
+      }
+    },
+    "previewPins": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "planId",
+        "revision",
+        "observationFingerprint",
+        "profile",
+        "publicationDigest",
+        "selectedRoots",
+        "rootsDigest",
+        "closureDigest"
+      ],
+      "properties": {
+        "planId": {
+          "$ref": "#/$defs/uuid"
+        },
+        "revision": {
+          "$ref": "#/$defs/revision"
+        },
+        "observationFingerprint": {
+          "$ref": "#/$defs/sha256"
+        },
+        "profile": {
+          "$ref": "#/$defs/publicationRef"
+        },
+        "publicationDigest": {
+          "$ref": "#/$defs/sha256"
+        },
+        "selectedRoots": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/id"
+          },
+          "maxItems": 20000,
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "rootsDigest": {
+          "$ref": "#/$defs/sha256"
+        },
+        "closureDigest": {
+          "$ref": "#/$defs/sha256"
+        }
+      }
+    },
+    "previewRelationsResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "revision",
+        "total",
+        "offset",
+        "nextOffset",
+        "items",
+        "previewDigest",
+        "pins",
+        "section",
+        "affectedDerivations"
+      ],
+      "properties": {
+        "revision": {
+          "$ref": "#/$defs/revision"
+        },
+        "total": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "offset": {
+          "$ref": "#/$defs/offset"
+        },
+        "nextOffset": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/offset"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "relationId",
+              "fromSlot",
+              "toSlot"
+            ],
+            "properties": {
+              "relationId": {
+                "$ref": "#/$defs/id"
+              },
+              "fromSlot": {
+                "$ref": "#/$defs/id"
+              },
+              "toSlot": {
+                "$ref": "#/$defs/id"
+              }
+            }
+          },
+          "maxItems": 100
+        },
+        "previewDigest": {
+          "$ref": "#/$defs/sha256"
+        },
+        "pins": {
+          "$ref": "#/$defs/previewPins"
+        },
+        "section": {
+          "const": "relations"
+        },
+        "affectedDerivations": {
+          "type": "array",
+          "maxItems": 32,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/id"
+          }
+        }
+      }
+    },
+    "previewRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "revision",
+        "profile",
+        "selection",
+        "section",
+        "offset",
+        "limit"
+      ],
+      "properties": {
+        "revision": {
+          "$ref": "#/$defs/revision"
+        },
+        "profile": {
+          "$ref": "#/$defs/publicationRef"
+        },
+        "selection": {
+          "oneOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "kind"
+              ],
+              "properties": {
+                "kind": {
+                  "const": "all"
+                }
+              }
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "kind",
+                "roots"
+              ],
+              "properties": {
+                "kind": {
+                  "const": "selected"
+                },
+                "roots": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/$defs/id"
+                  },
+                  "maxItems": 20000,
+                  "minItems": 1,
+                  "uniqueItems": true
+                }
+              }
+            }
+          ]
+        },
+        "section": {
+          "$ref": "#/$defs/section"
+        },
+        "offset": {
+          "$ref": "#/$defs/offset"
+        },
+        "limit": {
+          "$ref": "#/$defs/limit"
+        }
+      }
+    },
+    "previewResponse": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/previewIncludedResponse"
+        },
+        {
+          "$ref": "#/$defs/previewDependenciesResponse"
+        },
+        {
+          "$ref": "#/$defs/previewRelationsResponse"
+        },
+        {
+          "$ref": "#/$defs/previewConflictsResponse"
+        }
+      ]
+    },
+    "publicationRef": {
+      "$ref": "https://environment.studio/schemas/plan-command-v1#/$defs/publicationRef"
+    },
+    "revision": {
+      "$ref": "https://environment.studio/schemas/plan-command-v1#/$defs/revision"
+    },
+    "revisionRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "revision"
+      ],
+      "properties": {
+        "revision": {
+          "$ref": "#/$defs/revision"
+        }
+      }
+    },
+    "rule": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "declaration",
+        "source",
+        "actual",
+        "minimum",
+        "maximum",
+        "outcome"
+      ],
+      "properties": {
+        "kind": {
+          "enum": [
+            "ENTITY_COUNT",
+            "COOCCURRENCE"
+          ]
+        },
+        "declaration": {
+          "$ref": "#/$defs/id"
+        },
+        "source": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/key"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "actual": {
+          "$ref": "#/$defs/decimal"
+        },
+        "minimum": {
+          "$ref": "#/$defs/decimal"
+        },
+        "maximum": {
+          "$ref": "#/$defs/decimal"
+        },
+        "outcome": {
+          "enum": [
+            "PASS",
+            "FAIL"
+          ]
+        }
+      }
+    },
+    "section": {
+      "type": "string",
+      "enum": [
+        "included",
+        "dependencies",
+        "relations",
+        "conflicts"
+      ]
+    },
+    "sha256": {
+      "$ref": "https://environment.studio/schemas/plan-command-v1#/$defs/sha256"
+    },
+    "uuid": {
+      "$ref": "https://environment.studio/schemas/plan-command-v1#/$defs/uuid"
+    },
+    "validationPageRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "revision",
+        "section",
+        "inputFingerprint",
+        "offset",
+        "limit"
+      ],
+      "properties": {
+        "revision": {
+          "$ref": "#/$defs/revision"
+        },
+        "section": {
+          "const": "computed-rules"
+        },
+        "inputFingerprint": {
+          "$ref": "#/$defs/sha256"
+        },
+        "offset": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2147483647
+        },
+        "limit": {
+          "$ref": "#/$defs/limit"
+        }
+      }
+    },
+    "validationPageResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "revision",
+        "inputFingerprint",
+        "targetComplete",
+        "total",
+        "offset",
+        "nextOffset",
+        "items"
+      ],
+      "properties": {
+        "revision": {
+          "$ref": "#/$defs/revision"
+        },
+        "inputFingerprint": {
+          "$ref": "#/$defs/sha256"
+        },
+        "targetComplete": {
+          "const": true
+        },
+        "total": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "offset": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2147483647
+        },
+        "nextOffset": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 2147483647
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "items": {
+          "type": "array",
+          "maxItems": 100,
+          "items": {
+            "$ref": "#/$defs/rule"
+          }
+        }
+      }
+    },
+    "validationRequest": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/revisionRequest"
+        },
+        {
+          "$ref": "#/$defs/validationPageRequest"
+        }
+      ]
+    },
+    "validationResponse": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/validationSummaryResponse"
+        },
+        {
+          "$ref": "#/$defs/validationPageResponse"
+        }
+      ]
+    },
+    "validationSummaryResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "revision",
+        "inputFingerprint",
+        "checks",
+        "applicationRules",
+        "exportAvailable",
+        "targetComplete",
+        "computedRuleCount"
+      ],
+      "properties": {
+        "revision": {
+          "$ref": "#/$defs/revision"
+        },
+        "inputFingerprint": {
+          "$ref": "#/$defs/sha256"
+        },
+        "checks": {
+          "type": "array",
+          "minItems": 10,
+          "maxItems": 10,
+          "prefixItems": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "check",
+                "outcome",
+                "inputFingerprint"
+              ],
+              "properties": {
+                "check": {
+                  "const": "SCOPE"
+                },
+                "outcome": {
+                  "$ref": "#/$defs/outcome"
+                },
+                "inputFingerprint": {
+                  "$ref": "#/$defs/sha256"
+                }
+              }
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "check",
+                "outcome",
+                "inputFingerprint"
+              ],
+              "properties": {
+                "check": {
+                  "const": "DEFINITION"
+                },
+                "outcome": {
+                  "$ref": "#/$defs/outcome"
+                },
+                "inputFingerprint": {
+                  "$ref": "#/$defs/sha256"
+                }
+              }
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "check",
+                "outcome",
+                "inputFingerprint"
+              ],
+              "properties": {
+                "check": {
+                  "const": "MAPPING"
+                },
+                "outcome": {
+                  "$ref": "#/$defs/outcome"
+                },
+                "inputFingerprint": {
+                  "$ref": "#/$defs/sha256"
+                }
+              }
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "check",
+                "outcome",
+                "inputFingerprint"
+              ],
+              "properties": {
+                "check": {
+                  "const": "VALUES"
+                },
+                "outcome": {
+                  "$ref": "#/$defs/outcome"
+                },
+                "inputFingerprint": {
+                  "$ref": "#/$defs/sha256"
+                }
+              }
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "check",
+                "outcome",
+                "inputFingerprint"
+              ],
+              "properties": {
+                "check": {
+                  "const": "SEMANTICS"
+                },
+                "outcome": {
+                  "$ref": "#/$defs/outcome"
+                },
+                "inputFingerprint": {
+                  "$ref": "#/$defs/sha256"
+                }
+              }
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "check",
+                "outcome",
+                "inputFingerprint"
+              ],
+              "properties": {
+                "check": {
+                  "const": "XML_FIDELITY"
+                },
+                "outcome": {
+                  "$ref": "#/$defs/outcome"
+                },
+                "inputFingerprint": {
+                  "$ref": "#/$defs/sha256"
+                }
+              }
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "check",
+                "outcome",
+                "inputFingerprint"
+              ],
+              "properties": {
+                "check": {
+                  "const": "DESTINATION"
+                },
+                "outcome": {
+                  "$ref": "#/$defs/outcome"
+                },
+                "inputFingerprint": {
+                  "$ref": "#/$defs/sha256"
+                }
+              }
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "check",
+                "outcome",
+                "inputFingerprint"
+              ],
+              "properties": {
+                "check": {
+                  "const": "CLIENT_CAPABILITY"
+                },
+                "outcome": {
+                  "$ref": "#/$defs/outcome"
+                },
+                "inputFingerprint": {
+                  "$ref": "#/$defs/sha256"
+                }
+              }
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "check",
+                "outcome",
+                "inputFingerprint"
+              ],
+              "properties": {
+                "check": {
+                  "const": "CONTENT_POLICY"
+                },
+                "outcome": {
+                  "$ref": "#/$defs/outcome"
+                },
+                "inputFingerprint": {
+                  "$ref": "#/$defs/sha256"
+                }
+              }
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "check",
+                "outcome",
+                "inputFingerprint"
+              ],
+              "properties": {
+                "check": {
+                  "const": "REVIEW"
+                },
+                "outcome": {
+                  "$ref": "#/$defs/outcome"
+                },
+                "inputFingerprint": {
+                  "$ref": "#/$defs/sha256"
+                }
+              }
+            }
+          ],
+          "items": false
+        },
+        "applicationRules": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "ruleId",
+              "outcome"
+            ],
+            "properties": {
+              "ruleId": {
+                "$ref": "#/$defs/id"
+              },
+              "outcome": {
+                "$ref": "#/$defs/outcome"
+              }
+            }
+          }
+        },
+        "exportAvailable": {
+          "const": false
+        },
+        "targetComplete": {
+          "type": "boolean"
+        },
+        "computedRuleCount": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        }
+      },
+      "oneOf": [
+        {
+          "properties": {
+            "targetComplete": {
+              "const": false
+            },
+            "computedRuleCount": {
+              "type": "null"
+            }
+          }
+        },
+        {
+          "properties": {
+            "targetComplete": {
+              "const": true
+            },
+            "computedRuleCount": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        }
+      ]
+    }
+  }
+}
