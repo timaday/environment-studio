@@ -1,10 +1,12 @@
 # V3 Midnight operator UI branch — 13 September 2026
 
-Branch `implementation/midnight-operator-ui-20260913` starts from local candidate
-`56457455df46d18f7319cc1ff4f3d2a78fc89509` after the PostgreSQL 16.11 guarded
-package route was locally completed. PR #10 publication of that parent remains
-blocked by the current Codex session's Git push policy; this UI branch therefore
-carries local parent work until it can be pushed, merged or rebased.
+Branch `implementation/midnight-operator-ui-after-pr10-20260913` is the no-force
+publication branch for UI work after PR #10 merged. It rebases the local UI work
+on `origin/main` merge commit `974b51332ffbf333ad47cdad1284412aa6beb459`, which
+merged PostgreSQL 16.11 guarded package candidate
+`56457455df46d18f7319cc1ff4f3d2a78fc89509`. The earlier remote branch
+`implementation/midnight-operator-ui-20260913` remains preserved at its originally
+published history; it was not force-pushed.
 
 The applicable enterprise UX skill, `docs/ux/design-system.md`, approved Capture
 states and approved Reuse states were read before UI verification work. Values and
@@ -178,13 +180,26 @@ python3 /tmp/es-run-hosted-browser.py \
   plan-placeholders-20260913-green4
 ```
 
-Results: narrow-only PASS, 1 test, 320px reflow passed, cleanup complete. Combined
-desktop+narrow PASS, 2 tests, both viewports exercise Raw, Placeholders and
-Formatted over the actual hosted v3 plan-inspection workflow, with explicit
-disclosure, target materialization, binding rail, axe scan, 44px controls, no
-horizontal overflow and cleanup complete. Browser log:
+Results before rebase: narrow-only PASS, 1 test, 320px reflow passed, cleanup
+complete. Combined desktop+narrow PASS, 2 tests, both viewports exercised Raw,
+Placeholders and Formatted over the actual hosted v3 plan-inspection workflow,
+with explicit disclosure, target materialization, binding rail, axe scan, 44px
+controls, no horizontal overflow and cleanup complete. Browser log:
 `/tmp/es-plan-placeholders-20260913-green4-browser.log`. Harness log:
 `/tmp/es-plan-placeholders-20260913-green4-harness.log`.
+
+After rebasing onto merged `origin/main`, the same hosted browser gate was rerun:
+
+```sh
+python3 /tmp/es-run-hosted-browser.py \
+  /home/tim/.tmp/es-midnight-operator-ui-20260913 plans-v3 \
+  plan-placeholders-rebased-20260913
+```
+
+Result: desktop PASS and narrow PASS, 2 tests, 7.3s; 320px reflow passed and
+owned harness cleanup completed. Browser log:
+`/tmp/es-plan-placeholders-rebased-20260913-browser.log`. Harness log:
+`/tmp/es-plan-placeholders-rebased-20260913-harness.log`.
 
 Limit: this is functional/accessibility/reflow evidence for the implemented local
 renderer, not pixel identity against the supplied XML placeholder design image and

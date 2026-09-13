@@ -1277,7 +1277,9 @@ package/read-resource path after repository guards, commit, push and PR checks.
 
 Ready: UI branch `implementation/midnight-operator-ui-20260913` was created in
 `/home/tim/.tmp/es-midnight-operator-ui-20260913` from local parent candidate
-`56457455df46d18f7319cc1ff4f3d2a78fc89509`. Approved Capture/Reuse renderer
+`56457455df46d18f7319cc1ff4f3d2a78fc89509`; after PR #10 merged at
+`974b51332ffbf333ad47cdad1284412aa6beb459`, the branch was rebased for no-force
+publication as `implementation/midnight-operator-ui-after-pr10-20260913`. Approved Capture/Reuse renderer
 states were verified against the real hosted v3 workflow. Capture and Reuse e2e
 specs now support desktop+narrow in one hosted harness by using per-project
 invented profile IDs; the test harness control check now accepts combined profile
@@ -1285,9 +1287,8 @@ observations while preserving canary and cleanup checks. Frontend check/test/bui
 pass, backend test-compile/classpath pass, and hosted Capture/Re-use renderer
 browser gates pass for both viewports.
 
-Awaiting owners: PR #10 parent push still requires a human `git push` because the
-current Codex session rejects Git push under `AskForApproval=Never`. The reviewer
-is retired, so this UI checkpoint is self-reviewed lead evidence.
+Awaiting owners: none for the parent branch; PR #10 is merged. The reviewer is
+retired, so this UI checkpoint is self-reviewed lead evidence.
 
 Blockers: Values/Validation approval remains pending in the checked-in approval
 record, and full release qualification remains blocked by the established
@@ -1295,13 +1296,14 @@ production gates.
 
 ## Plan-inspection Placeholder UI checkpoint — 13 September
 
-Ready: the UI branch now exposes Raw, Placeholders and Formatted in v3 document
-inspection. Placeholder mode loads current/target documents only after explicit
-full-document disclosure and shows a concrete binding rail sourced from actual
-entity, binding and binding-location API calls for the selected document. Focused
-hook/render tests pass, frontend check/test/build pass, backend test-compile/
-classpath passes, and hosted plan-inspection browser gates pass desktop+narrow
-with axe, 44px controls, 320px reflow and cleanup complete.
+Ready: the rebased UI branch now exposes Raw, Placeholders and Formatted in v3
+document inspection. Placeholder mode loads current/target documents only after
+explicit full-document disclosure and shows a concrete binding rail sourced from
+actual entity, binding and binding-location API calls for the selected document.
+Focused hook/render tests pass, frontend check/test/build pass, backend
+test-compile/classpath passes, and hosted plan-inspection browser gates pass
+desktop+narrow with axe, 44px controls, 320px reflow and cleanup complete both
+before and after rebasing onto merged `origin/main`.
 
 Awaiting owners: none for this local slice. Reviewer remains retired; evidence is
 lead-owned.
