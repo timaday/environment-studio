@@ -206,6 +206,29 @@ package download, production PostgreSQL/client/supervisor execution, GHCR publis
 or HiveForge release qualification. HiveMind/HiveMap tools were not exposed in
 this session; durable status is kept in repo evidence and issue #9 instead.
 
+### Export copy refinement — 13 September 2026
+
+After Tim approved the Export view with ‘less is more where possible’, the view copy was tightened without changing package authority or request behavior. The operator still sees plan context, can run readiness, cannot download until every required check is PASS, and receives only an unqualified package candidate for external review. No Run SQL, Deploy, Execute or Commit action exists in the application.
+
+Checks for this refinement:
+
+```sh
+npm test --prefix frontend -- V3ExportJourney.test.tsx
+PATH=/home/tim/.tmp/es-toolchain-20260909/node-v24.20.0-linux-x64/bin:$PATH npm run build --prefix frontend
+/home/tim/.tmp/es-toolchain-20260909/apache-maven-3.9.16/bin/mvn -B -ntp -f backend/pom.xml -pl server process-resources
+python3 /tmp/es-run-hosted-browser-values.py /home/tim/.tmp/es-midnight-operator-ui-20260913 profiles-v3-values values-validation-export-less-copy-20260913-green2 desktop
+python3 /tmp/es-run-hosted-browser-values.py /home/tim/.tmp/es-midnight-operator-ui-20260913 profiles-v3-values values-validation-export-less-copy-20260913-green2 narrow
+npm run check --prefix frontend
+git diff --check
+python3 scripts/check_repository_content.py
+python3 scripts/check_repository.py
+python3 -m unittest discover -s scripts -p 'test_*.py'
+```
+
+Results: focused frontend Export tests passed through 455 Vitest tests plus 61 schema tests; production frontend build passed with `dist/assets/index-DTngD3af.js` and `dist/assets/index-BC651ns4.css`; pinned Maven resource processing passed; hosted desktop and narrow browser checks passed with `VALUES_VALIDATION_RENDERER export-blocked`, axe, 44px controls, 320px reflow, no horizontal overflow and cleanup complete. The first browser attempt used stale packaged assets and failed on the old copy string before resources were rebuilt; it is retained as RED evidence for the packaging dependency, not as product behavior. Repository content, integrity, diff and script-unit guards passed. Logs: `/tmp/es-values-validation-export-less-copy-20260913-green2-desktop-browser.log`, `/tmp/es-values-validation-export-less-copy-20260913-green2-desktop-harness.log`, `/tmp/es-values-validation-export-less-copy-20260913-green2-narrow-browser.log`, `/tmp/es-values-validation-export-less-copy-20260913-green2-narrow-harness.log`.
+
+Limits remain unchanged: no successful hosted browser package-download e2e, no production PostgreSQL/client/supervisor execution, no GHCR/HiveForge release qualification.
+
 ## Values and Validation operator screens — 13 September 2026
 
 This slice implements the approved Values and Validation operator states in the

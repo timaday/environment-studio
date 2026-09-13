@@ -109,10 +109,8 @@ it("keeps package download unavailable until every backend validation check pass
   expect(screen.queryByText(/Run SQL/i)).toBeNull();
   expect(screen.getByRole("button", { name: "Download package candidate" })).toBeDisabled();
   await user.click(screen.getByRole("button", { name: "Check readiness" }));
-  expect(
-    await screen.findByText("10 required checks still block package generation."),
-  ).toBeVisible();
-  expect(screen.getByText("Backend validation result")).toBeVisible();
+  expect(await screen.findByText("10 required checks block package generation.")).toBeVisible();
+  expect(screen.getByText("Latest check")).toBeVisible();
   expect(screen.getByRole("button", { name: "Download package candidate" })).toBeDisabled();
   expect(
     transport.mock.calls.some(([path]) => String(path).endsWith("/package-candidates/guarded")),
@@ -122,10 +120,10 @@ it("keeps package download unavailable until every backend validation check pass
 it("downloads only after an actual unqualified package response", async () => {
   const { user, transport } = await setup("PASS");
   await user.click(screen.getByRole("button", { name: "Check readiness" }));
-  await screen.findByText("Backend validation passed for this exact revision.");
-  expect(screen.getByText("Backend validation result")).toBeVisible();
+  await screen.findByText("Validation passed for this exact revision.");
+  expect(screen.getByText("Latest check")).toBeVisible();
   await user.click(screen.getByRole("button", { name: "Download package candidate" }));
-  expect(await screen.findByText(/received as an unqualified package candidate/i)).toBeVisible();
+  expect(await screen.findByText(/Unqualified candidate/i)).toBeVisible();
   const request = transport.mock.calls.find(([path]) =>
     String(path).endsWith("/package-candidates/guarded"),
   );

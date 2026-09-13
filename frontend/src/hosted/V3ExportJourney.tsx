@@ -17,10 +17,10 @@ function ready(summary: ValidationSummary | null): boolean {
   );
 }
 function blocker(summary: ValidationSummary | null): string {
-  if (!summary) return "Run backend validation before requesting a package candidate.";
+  if (!summary) return "Check readiness before download.";
   const blocked = summary.checks.filter((check) => check.outcome !== "PASS");
-  if (blocked.length === 0) return "Backend validation passed for this exact revision.";
-  return `${blocked.length} required check${blocked.length === 1 ? "" : "s"} still block package generation.`;
+  if (blocked.length === 0) return "Validation passed for this exact revision.";
+  return `${blocked.length} required check${blocked.length === 1 ? "" : "s"} block package generation.`;
 }
 function download(bytes: ArrayBuffer, filename: string) {
   const url = URL.createObjectURL(new Blob([bytes], { type: "application/zip" }));
@@ -92,7 +92,7 @@ export function V3ExportJourney({
             Back to plan
           </button>
           <h1>Export guarded package</h1>
-          <p>Generate an unqualified guarded package candidate for external review.</p>
+          <p>Generate a guarded ZIP candidate for external review.</p>
         </div>
         <button type="button" onClick={reviewDocuments}>
           Review documents
@@ -101,35 +101,28 @@ export function V3ExportJourney({
       <section className="export-status-grid" aria-label="Export readiness">
         <article className={plan?.targetComplete ? "ok" : "warn"}>
           <strong>Target {plan?.targetComplete ? "complete" : "incomplete"}</strong>
-          <span>{plan ? "Backend plan summary" : "No active plan"}</span>
+          <span>{plan ? "Plan summary" : "No active plan"}</span>
         </article>
         <article className={ready(validation.summary) ? "ok" : "warn"}>
           <strong>
             {ready(validation.summary) ? "Validation passed" : "Validation unresolved"}
           </strong>
-          <span>
-            {validation.summary ? "Backend validation result" : "Not checked in this view"}
-          </span>
+          <span>{validation.summary ? "Latest check" : "Not checked"}</span>
         </article>
         <article className={receipt ? "ok" : "neutral"}>
           <strong>{receipt ? "Package received" : "Package not generated"}</strong>
-          <span>
-            {receipt ? "Download started in this browser." : "No package candidate available."}
-          </span>
+          <span>{receipt ? "Browser download started." : "No candidate yet."}</span>
         </article>
       </section>
       {!eligible && (
         <section className="export-panel" role="status">
           <h2>Inspection required</h2>
-          <p>Resume the plan and complete a valid target observation before export review.</p>
+          <p>Resume the plan and complete target observation before export.</p>
         </section>
       )}
       <section className="export-panel export-candidate" aria-label="Package candidate">
         <h2>Package candidate</h2>
-        <p>
-          The backend rechecks revision, inspection, target completeness, validation fingerprint,
-          destination identity and document policies before streaming bytes.
-        </p>
+        <p>Server checks revision, fingerprint, destination and policy before streaming bytes.</p>
         <div className="export-actions">
           <button
             type="button"
@@ -147,8 +140,8 @@ export function V3ExportJourney({
         {error && <p role="alert">{error}</p>}
         {receipt && (
           <p role="status">
-            {receipt.filename} received as an unqualified package candidate. Review and execute it
-            outside Environment Studio.
+            Downloaded {receipt.filename}. Unqualified candidate; review and run it outside
+            Environment Studio.
           </p>
         )}
       </section>
@@ -167,7 +160,7 @@ export function V3ExportJourney({
       )}
       <details className="export-panel">
         <summary>External execution requirements</summary>
-        <p>Use the separately installed and verified guarded supervisor after package review.</p>
+        <p>Use the verified guarded supervisor after package review.</p>
         <code>
           environment-studio-guarded apply --package ABSOLUTE_PATH --sha256 REVIEWED_ARCHIVE_SHA256
           --configuration APPROVED_CLIENT_JSON --destination APPROVED_DESTINATION_ID

@@ -14,3 +14,4 @@ usage is shown as reference guidance only and remains outside the hosted app.
 Implementation must use actual backend package-candidate responses and reduce repeated explanatory copy where possible. A future
 success/download state requires actual route evidence and separate approval if
 it materially changes the screen.
+Implementation note, 13 September 2026: Tim approved the view direction with “less is more where possible”. The implemented copy removes repeated backend explanation while preserving the unqualified-candidate and external-execution boundary.

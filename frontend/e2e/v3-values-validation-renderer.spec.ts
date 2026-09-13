@@ -172,7 +172,7 @@ test("enters one target value and validates backend outcomes without export auth
   const exportWorkspace = page.locator(".export-workspace:visible");
   await exportWorkspace.getByRole("button", { name: "Check readiness", exact: true }).click();
   await expect(
-    exportWorkspace.getByText("3 required checks still block package generation."),
+    exportWorkspace.getByText("3 required checks block package generation."),
   ).toBeVisible();
   await expect(
     exportWorkspace.getByRole("button", { name: "Download package candidate", exact: true }),
