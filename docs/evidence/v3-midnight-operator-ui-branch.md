@@ -106,3 +106,87 @@ local invented hosted browser environment. It is not independent non-author revi
 not pixel identity, not production database qualification, not SQL execution
 qualification and not GHCR/HiveForge release readiness. Values/Validation visuals
 remain pending approval; Definitions approval remains separate.
+
+## Plan-inspection Placeholder mode and binding rail — 13 September 2026
+
+The original v3 plan-inspection journey withheld Placeholder mode until a concrete
+binding rail existed. This slice adds the missing client/renderer support rather
+than exposing placeholders as a value-hiding display mode.
+
+Acceptance examples:
+- Raw, Placeholders and Formatted are all visible document modes after an observed
+  v3 plan is resumed.
+- Loading Placeholders still requires explicit complete-document disclosure.
+- The document request uses `mode: "placeholders"` for current and target panes.
+- The binding rail is derived from actual entity, binding and binding-location
+  endpoints for the selected document. It shows each returned token, field, current
+  value state, target value state, change status and selected-document location
+  counts.
+- Late replies are still cleared by plan/document/mode/consent/version changes.
+- Narrow layout at 320 CSS px has no horizontal page overflow; long placeholder
+  tokens wrap inside the rail.
+
+Meaningful RED:
+
+```sh
+npm run check --prefix frontend
+```
+
+Result before implementation: TypeScript rejected `setMode("placeholders")` and
+`bindingRail` in the new tests because the hook exposed only Raw/Formatted and no
+rail state.
+
+After the first implementation pass, the focused test also failed because the
+placeholder rail needs both current and target entity pages when a target document
+is available; the test fixture was corrected to supply both pages. The first
+hosted narrow browser run failed the 320px reflow assertion, confirming the long
+mode controls/token display needed responsive CSS. The first combined hosted run
+also showed the plan harness/session checks assumed one observation and one final
+session, so the e2e now logs out after its final re-login and the test-only harness
+accepts one or more credentialed observations for combined desktop+narrow runs.
+Production application code remains focused on read-only rendering and backend
+calls; harness changes are test-only.
+
+Focused checks:
+
+```sh
+npm exec vitest run src/hosted/useV3PlanInspection.test.ts src/hosted/V3PlanInspection.test.tsx
+```
+
+Result: PASS, 2 files, 15 tests. Finished 2026-09-13 17:33 Europe/London.
+
+Frontend gates after the slice:
+
+```sh
+npm run check --prefix frontend
+npm test --prefix frontend
+PATH=/home/tim/.tmp/es-toolchain-20260909/node-v24.20.0-linux-x64/bin:$PATH npm run build --prefix frontend
+```
+
+Results: check PASS, 99 files; Vitest PASS, 32 files and 448 tests; schema
+contract tests PASS, 61 tests; production frontend build PASS. Finished
+2026-09-13 17:38 Europe/London.
+
+Hosted browser verification:
+
+```sh
+python3 /tmp/es-run-hosted-browser-project.py \
+  /home/tim/.tmp/es-midnight-operator-ui-20260913 plans-v3 \
+  plan-placeholders-narrow-20260913-green1 narrow
+python3 /tmp/es-run-hosted-browser.py \
+  /home/tim/.tmp/es-midnight-operator-ui-20260913 plans-v3 \
+  plan-placeholders-20260913-green4
+```
+
+Results: narrow-only PASS, 1 test, 320px reflow passed, cleanup complete. Combined
+desktop+narrow PASS, 2 tests, both viewports exercise Raw, Placeholders and
+Formatted over the actual hosted v3 plan-inspection workflow, with explicit
+disclosure, target materialization, binding rail, axe scan, 44px controls, no
+horizontal overflow and cleanup complete. Browser log:
+`/tmp/es-plan-placeholders-20260913-green4-browser.log`. Harness log:
+`/tmp/es-plan-placeholders-20260913-green4-harness.log`.
+
+Limit: this is functional/accessibility/reflow evidence for the implemented local
+renderer, not pixel identity against the supplied XML placeholder design image and
+not production database qualification. Placeholder mode remains read-only and does
+not authorize export.

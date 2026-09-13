@@ -1292,3 +1292,20 @@ is retired, so this UI checkpoint is self-reviewed lead evidence.
 Blockers: Values/Validation approval remains pending in the checked-in approval
 record, and full release qualification remains blocked by the established
 production gates.
+
+## Plan-inspection Placeholder UI checkpoint — 13 September
+
+Ready: the UI branch now exposes Raw, Placeholders and Formatted in v3 document
+inspection. Placeholder mode loads current/target documents only after explicit
+full-document disclosure and shows a concrete binding rail sourced from actual
+entity, binding and binding-location API calls for the selected document. Focused
+hook/render tests pass, frontend check/test/build pass, backend test-compile/
+classpath passes, and hosted plan-inspection browser gates pass desktop+narrow
+with axe, 44px controls, 320px reflow and cleanup complete.
+
+Awaiting owners: none for this local slice. Reviewer remains retired; evidence is
+lead-owned.
+
+Blockers: no full pixel-identity claim, no production DB/export qualification,
+and Values/Validation visuals remain pending approval before their affected UI can
+be implemented.

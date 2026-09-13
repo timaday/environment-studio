@@ -118,7 +118,7 @@ public final class HostedBrowserHarness {
             else if(path.equals("/control/checks")){
                 var canaries=new ArrayList<>(List.of("Db-Password-Canary","Browser-Source-Canary","mock-platform-secret","mock-access-canary",password));canaries.addAll(issuer.issuedCodes);canaries.addAll(issuer.receivedVerifiers);canaries.addAll(issuer.issuedTokens);
                 if(mode==Mode.PLANS_V3)canaries.addAll(List.of("MockV3-Password-𐀀","MOCK-DOC-SECRET"));
-                if(mode==Mode.PLANS_V3 && (!V3DocumentHttpTestConfiguration.exactCredentials.get() || V3DocumentHttpTestConfiguration.observations.get()!=1))status=500;
+                if(mode==Mode.PLANS_V3 && (!V3DocumentHttpTestConfiguration.exactCredentials.get() || V3DocumentHttpTestConfiguration.observations.get()<1))status=500;
                 if(mode==Mode.PROFILES_V3) {
                     canaries.addAll(List.of("MockV3Reader","MockV3-Password","MOCK-DOC-SECRET"));
                     if(!V3WorkflowHttpTestConfiguration.exactCredentials.get() || V3WorkflowHttpTestConfiguration.observations.get()<1)status=500;

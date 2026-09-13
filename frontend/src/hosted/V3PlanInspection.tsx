@@ -152,7 +152,7 @@ export function V3PlanInspection({
           <fieldset>
             <legend>View</legend>
             <div className="v3-plan-modes">
-              {(["raw", "formatted"] as const).map((mode) => (
+              {(["raw", "placeholders", "formatted"] as const).map((mode) => (
                 <button
                   type="button"
                   key={mode}
@@ -160,7 +160,7 @@ export function V3PlanInspection({
                   aria-pressed={state.mode === mode}
                   onClick={() => state.setMode(mode)}
                 >
-                  {mode === "raw" ? "Raw" : "Formatted"}
+                  {mode === "raw" ? "Raw" : mode === "placeholders" ? "Placeholders" : "Formatted"}
                 </button>
               ))}
             </div>
@@ -180,8 +180,8 @@ export function V3PlanInspection({
         ) : (
           <>
             <p>
-              Raw preserves exact characters. Formatted is a display projection. Placeholder
-              comparison requires the concrete binding rail and mapped locations.
+              Raw preserves exact characters. Placeholders show mapped tokens with the concrete
+              binding rail below. Formatted is a display projection.
             </p>
             <button type="button" disabled={!canRead} onClick={() => void state.load()}>
               Load document comparison
@@ -190,6 +190,50 @@ export function V3PlanInspection({
         )}
         {state.reading && (
           <p role="status">Loading the selected revision and checking plan context…</p>
+        )}
+        {state.mode === "placeholders" && state.current && (
+          <section className="v3-binding-rail" aria-labelledby="v3-binding-rail-heading">
+            <h3 id="v3-binding-rail-heading">Binding rail</h3>
+            <p>
+              Placeholder tokens are labels only. Current and target values remain visible here for
+              the selected document.
+            </p>
+            {state.bindingRail.length === 0 ? (
+              <p>No mapped placeholder locations were returned for this document.</p>
+            ) : (
+              <div className="v3-binding-rail-list">
+                {state.bindingRail.map((item) => (
+                  <article key={`${JSON.stringify(item.entity)}:${item.fieldId}`}>
+                    <div>
+                      <strong>{item.fieldId}</strong>
+                      <span>{item.typeId}</span>
+                    </div>
+                    <code>{item.token}</code>
+                    <dl>
+                      <div>
+                        <dt>Current</dt>
+                        <dd>{item.current}</dd>
+                      </div>
+                      <div>
+                        <dt>Target</dt>
+                        <dd>{item.target}</dd>
+                      </div>
+                      <div>
+                        <dt>Status</dt>
+                        <dd>{item.change}</dd>
+                      </div>
+                      <div>
+                        <dt>Selected document locations</dt>
+                        <dd>
+                          Current {item.currentLocations} · Target {item.targetLocations}
+                        </dd>
+                      </div>
+                    </dl>
+                  </article>
+                ))}
+              </div>
+            )}
+          </section>
         )}
         <div className="v3-plan-panes">
           {(
