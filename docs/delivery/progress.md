@@ -1418,3 +1418,33 @@ The exported candidate is still unqualified because CLIENT_CAPABILITY,
 CONTENT_POLICY and REVIEW remain UNKNOWN; production release claims still require
 the guarded-supervisor execution qualification, reviewed client configuration,
 GHCR/HiveForge image evidence and any remaining support-matrix evidence.
+
+## CLOB comparison and relationship map UI checkpoint — 14 September late
+
+Ready: XML/CLOB comparison now color-highlights changed lines in Raw and
+Placeholders views using the approved current-side red and target-side teal
+presentation. Raw uses the loaded current/target text diff and exact mapped spans;
+Placeholders also uses returned binding-rail change states so stable placeholder
+tokens still show changed mapped lines. Target structure now shows a collapsible
+Current/Target relationship map derived from the published v3 definition's entity
+types, declared relationships and derived groups, plus returned current inventory
+and saved target-draft pages. The UI does not infer hidden page totals or invent
+target decisions.
+
+Evidence: `npm run check --prefix frontend` passed. `npm test --prefix frontend --
+V3PlanInspection.test.tsx V3TargetStructure.test.tsx` passed with 477 Vitest tests
+and 61 schema tests. `scripts/studio.sh fast-package` passed and rebuilt the
+runnable no-OIDC hosted image. Fresh desktop and narrow PostgreSQL 16.11 full
+journeys passed through definition publication, read-only inspection, target
+authoring, values, Raw/Placeholders/Formatted comparison, validation and guarded
+package download with `uiGaps: []`. Evidence directories:
+`/home/tim/.tmp/es-full-journey-20260914/journey-1789421854785` and
+`/home/tim/.tmp/es-full-journey-20260914/journey-1789421866532`. Repository
+integrity, repository content and script unit checks passed after recording this
+checkpoint.
+
+Remaining limitations: this is a lead-owned UI/presentation slice on top of the
+PostgreSQL 16.11 pilot workflow. The fast Docker package skipped Docker-stage
+Maven/UI tests by design. Release qualification limitations for client capability,
+content policy, review, GHCR/HiveForge and external production data remain as
+previously recorded.

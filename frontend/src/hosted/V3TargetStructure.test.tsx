@@ -320,3 +320,60 @@ it("loads placement choices before creating a fresh target item", async () => {
     ],
   });
 });
+
+it("shows a side-by-side relationship tree derived from the published definition", async () => {
+  const transport = vi.fn<typeof fetch>().mockImplementation(async (input) => {
+    const pathname = requestPath(input);
+    if (pathname === "/api/v1/session")
+      return json({
+        authenticated: true,
+        csrfHeaderName: "X-CSRF",
+        csrfToken: "token",
+        idleTimeoutSeconds: 1800,
+        absoluteExpiresAt: "2099-01-01T00:00:00Z",
+      });
+    if (pathname === `/api/v3/definitions/${definition.objectId}/revisions/2`)
+      return json(definition);
+    if (pathname.endsWith("/views/entities"))
+      return json({
+        revision: "2",
+        total: 2,
+        offset: 0,
+        nextOffset: null,
+        items: [alpha, palette],
+      });
+    if (pathname.endsWith("/views/draft"))
+      return json({
+        revision: "2",
+        total: 1,
+        offset: 0,
+        nextOffset: null,
+        items: [
+          {
+            entity: { kind: "fresh", slotId: "new-glyph", typeId: "glyph" },
+            disposition: "create",
+            fields: [],
+            references: [{ referenceId: "uses", kind: "unresolved", target: null }],
+            placements: [],
+          },
+        ],
+      });
+    return json({ code: "NOT_FOUND" }, 404);
+  });
+  const api = new HostedApi(transport);
+  await api.session();
+  render(<V3TargetStructure api={api} plan={plan} active back={vi.fn()} refreshPlan={vi.fn()} />);
+
+  const map = await screen.findByRole("region", { name: "Definition relationship map" });
+  expect(within(map).getByRole("heading", { name: "Relationship map" })).toBeVisible();
+  expect(
+    within(map).getByRole("region", { name: "Current returned structure tree" }),
+  ).toBeVisible();
+  expect(within(map).getByRole("region", { name: "Target draft structure tree" })).toBeVisible();
+  expect(within(map).getByText("Glyph · alpha")).toBeVisible();
+  expect(within(map).getByText("Glyph · new-glyph")).toBeVisible();
+  expect(within(map).getByText("uses")).toBeVisible();
+  expect(within(map).getAllByText("Glyph").length).toBeGreaterThan(0);
+  expect(within(map).getAllByText("Palette").length).toBeGreaterThan(0);
+  expect(within(map).getByText(/reference · 1\.\.1 · required for reuse preview/)).toBeVisible();
+});

@@ -16,6 +16,7 @@ type Projection = Binding["documents"][number]["entities"][number];
 type EntityPage = Awaited<ReturnType<HostedV3Physical["entities"]>>["response"];
 type EntityItem = EntityPage["items"][number];
 type DraftPage = Awaited<ReturnType<HostedV3Physical["draft"]>>["response"];
+type DraftItem = DraftPage["items"][number];
 type PlacementPage = Awaited<ReturnType<HostedV3Physical["placements"]>>["response"];
 type EntityRef =
   | EntityItem["entity"]
@@ -124,6 +125,191 @@ function commandLabel(mode: FieldMode | ReferenceMode): string {
         : mode === "absent"
           ? "Set absent"
           : "Leave unresolved";
+}
+
+function typeLabel(model: Model | null, typeId: string): string {
+  return entityType(model, typeId)?.label ?? typeId;
+}
+function relationRange(relation: Relation): string {
+  return `${relation.minimum}..${relation.maximum}`;
+}
+function currentTypeCounts(page: EntityPage | null): ReadonlyMap<string, number> {
+  const counts = new Map<string, number>();
+  page?.items.forEach((item) => {
+    counts.set(item.typeId, (counts.get(item.typeId) ?? 0) + 1);
+  });
+  return counts;
+}
+function draftItemType(page: EntityPage | null, item: DraftItem): string | null {
+  if (item.entity.kind === "fresh") return item.entity.typeId;
+  return (
+    page?.items.find((current) => entityKey(current.entity) === entityKey(item.entity))?.typeId ??
+    null
+  );
+}
+function draftItemLabel(model: Model | null, page: EntityPage | null, item: DraftItem): string {
+  if (item.entity.kind === "fresh")
+    return `${typeLabel(model, item.entity.typeId)} · ${item.entity.slotId}`;
+  const current = page?.items.find(
+    (candidate) => entityKey(candidate.entity) === entityKey(item.entity),
+  );
+  return current ? identityLabel(model, current) : entityKey(item.entity);
+}
+function computedTypeLabel(model: Model | null, id: string): string {
+  return model?.logical.computedTypes.find((type) => type.id === id)?.label ?? id;
+}
+function derivationLabel(model: Model | null, id: string): string {
+  const derivation = model?.logical.derivations.find((item) => item.id === id);
+  return derivation
+    ? `${typeLabel(model, derivation.sourceType)}.${derivation.sourceField} → ${computedTypeLabel(model, derivation.computedType)}`
+    : id;
+}
+
+function RelationshipMap({
+  model,
+  current,
+  draft,
+}: {
+  model: Model | null;
+  current: EntityPage | null;
+  draft: DraftPage | null;
+}) {
+  const counts = currentTypeCounts(current);
+  const types = model?.logical.entityTypes ?? [];
+  const relations = model?.logical.relations ?? [];
+  const derivations = model?.logical.derivations ?? [];
+  const cooccurrences = model?.logical.cooccurrences ?? [];
+  return (
+    <section
+      className="target-panel target-relationship-map"
+      aria-label="Definition relationship map"
+    >
+      <div className="target-map-header">
+        <div>
+          <h2>Relationship map</h2>
+          <p>
+            Derived from the published definition. It explains reference structure before target
+            edits; no relationships are inferred by the UI.
+          </p>
+        </div>
+        <span>{relations.length} declared relationships</span>
+      </div>
+      {model ? (
+        <>
+          <section className="target-map-trees" aria-label="Current and target structure trees">
+            <section aria-label="Current returned structure tree">
+              <h3>Current</h3>
+              <p>
+                {current
+                  ? `${current.items.length} visible items on this page · ${current.total} returned items`
+                  : "Inventory not loaded yet."}
+              </p>
+              {types.map((type) => {
+                const rows = current?.items.filter((item) => item.typeId === type.id) ?? [];
+                return (
+                  <details key={type.id} open>
+                    <summary>
+                      <span>{type.label}</span>
+                      <span>{counts.get(type.id) ?? 0} visible</span>
+                    </summary>
+                    <ul>
+                      {rows.map((item) => (
+                        <li key={entityKey(item.entity)}>
+                          <span>{identityLabel(model, item)}</span>
+                          {relationTargets(model, type.id).length > 0 && (
+                            <span>
+                              {relationTargets(model, type.id)
+                                .map(
+                                  (relation) =>
+                                    `${relation.id} → ${typeLabel(model, relation.toType)} ${relationRange(relation)}`,
+                                )
+                                .join(" · ")}
+                            </span>
+                          )}
+                        </li>
+                      ))}
+                      {rows.length === 0 && <li>No visible current items of this type.</li>}
+                    </ul>
+                  </details>
+                );
+              })}
+            </section>
+            <section aria-label="Target draft structure tree">
+              <h3>Target</h3>
+              <p>
+                {draft
+                  ? `${draft.items.length} visible decisions on this draft page · revision ${draft.revision}`
+                  : "No target draft readback yet."}
+              </p>
+              {types.map((type) => {
+                const rows =
+                  draft?.items.filter((item) => draftItemType(current, item) === type.id) ?? [];
+                return (
+                  <details key={type.id} open>
+                    <summary>
+                      <span>{type.label}</span>
+                      <span>{rows.length} visible decisions</span>
+                    </summary>
+                    <ul>
+                      {rows.map((item) => (
+                        <li key={entityKey(item.entity)}>
+                          <span>{draftItemLabel(model, current, item)}</span>
+                          <span>
+                            {item.disposition} · {item.references.length} references ·{" "}
+                            {item.placements.length} placements
+                          </span>
+                        </li>
+                      ))}
+                      {rows.length === 0 && <li>No visible target decisions of this type.</li>}
+                    </ul>
+                  </details>
+                );
+              })}
+            </section>
+          </section>
+          <section className="target-map-edges" aria-label="Declared relationship edges">
+            {relations.length === 0 ? (
+              <p>No relationships declared by this definition.</p>
+            ) : (
+              relations.map((relation) => (
+                <article key={relation.id}>
+                  <strong>{relation.id}</strong>
+                  <span>{typeLabel(model, relation.fromType)}</span>
+                  <span aria-hidden="true">→</span>
+                  <span>{typeLabel(model, relation.toType)}</span>
+                  <span>
+                    {relation.kind} · {relationRange(relation)}
+                    {relation.includeTargetOnReuse ? " · required for reuse preview" : ""}
+                  </span>
+                </article>
+              ))
+            )}
+          </section>
+          {(derivations.length > 0 || cooccurrences.length > 0) && (
+            <section className="target-map-derived" aria-label="Derived relationship groups">
+              <h3>Derived groups</h3>
+              {derivations.map((derivation) => (
+                <p key={derivation.id}>
+                  <strong>{derivation.id}</strong> · {derivationLabel(model, derivation.id)} ·
+                  membership {derivation.membershipRelation}
+                </p>
+              ))}
+              {cooccurrences.map((cooccurrence) => (
+                <p key={cooccurrence.id}>
+                  <strong>{cooccurrence.id}</strong> ·{" "}
+                  {derivationLabel(model, cooccurrence.fromDerivation)} ↔{" "}
+                  {derivationLabel(model, cooccurrence.toDerivation)} · {cooccurrence.minimum}..
+                  {cooccurrence.maximum}
+                </p>
+              ))}
+            </section>
+          )}
+        </>
+      ) : (
+        <p>Load a published definition to view its declared relationship structure.</p>
+      )}
+    </section>
+  );
 }
 
 export function V3TargetStructure({
@@ -443,6 +629,7 @@ export function V3TargetStructure({
           Structure saved for revision {commands.receipt.revision}. Draft readback is shown below.
         </p>
       )}
+      {eligible && <RelationshipMap model={model} current={load.current} draft={load.draft} />}
       <div className="target-layout">
         <section className="target-panel target-inventory" aria-label="Inspected current inventory">
           <h2>Current inventory</h2>

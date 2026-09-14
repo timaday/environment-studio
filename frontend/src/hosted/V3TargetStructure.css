@@ -126,3 +126,113 @@
     width: 100%;
   }
 }
+
+.target-relationship-map {
+  margin-bottom: 16px;
+}
+.target-map-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: start;
+  margin-bottom: 14px;
+}
+.target-map-header h2 {
+  margin: 0 0 6px;
+}
+.target-map-header span,
+.target-map-trees p,
+.target-map-edges span,
+.target-map-derived p {
+  color: var(--muted);
+}
+.target-map-trees {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+.target-map-trees > section,
+.target-map-edges,
+.target-map-derived {
+  min-width: 0;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: #0d1626;
+  padding: 14px;
+}
+.target-map-trees h3,
+.target-map-derived h3 {
+  margin: 0 0 6px;
+}
+.target-map-trees details {
+  border-top: 1px solid rgba(146, 161, 190, 0.18);
+}
+.target-map-trees summary {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  cursor: pointer;
+  padding: 10px 0;
+  min-height: 44px;
+  color: var(--text, #edf3fd);
+}
+.target-map-trees summary span:first-child {
+  font-weight: 700;
+}
+.target-map-trees summary span:last-child,
+.target-map-trees li span:last-child {
+  color: var(--muted);
+  font-size: 13px;
+}
+.target-map-trees ul {
+  display: grid;
+  gap: 8px;
+  margin: 0 0 12px 20px;
+  padding-left: 16px;
+  border-left: 1px solid rgba(135, 152, 255, 0.32);
+}
+.target-map-trees li {
+  display: grid;
+  gap: 3px;
+  min-height: 36px;
+  overflow-wrap: anywhere;
+}
+.target-map-edges {
+  display: grid;
+  gap: 8px;
+  margin-top: 14px;
+}
+.target-map-edges article {
+  display: grid;
+  grid-template-columns: minmax(90px, 0.7fr) minmax(110px, 1fr) auto minmax(110px, 1fr) minmax(
+      160px,
+      1.2fr
+    );
+  gap: 10px;
+  align-items: center;
+  min-height: 44px;
+  border: 1px solid rgba(94, 114, 148, 0.45);
+  border-radius: 10px;
+  padding: 9px 12px;
+  background: rgba(16, 26, 43, 0.78);
+}
+.target-map-edges article > span:nth-child(4) {
+  color: var(--teal, #43d6c5);
+}
+.target-map-derived {
+  margin-top: 14px;
+}
+.target-map-derived p {
+  margin-block: 8px;
+}
+@media (max-width: 980px) {
+  .target-map-header,
+  .target-map-trees,
+  .target-map-edges article {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .target-map-edges article > span:nth-child(3) {
+    display: none;
+  }
+}

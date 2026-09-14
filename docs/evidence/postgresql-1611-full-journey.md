@@ -142,3 +142,63 @@ Results: all passed in this workspace. `scripts/studio.sh fast-package` builds a
 - The downloaded package is an unqualified candidate; validation still reports unknown release-qualification checks for client capability, content policy and review.
 - The standalone native-supervisor admission path is available only for the pinned PostgreSQL 16.11/psql 16.11/linux-amd64 path covered by separate supervisor-admission evidence. The fresh CLOB-polish package was not externally executed through that launcher.
 - Actual HiveForge deployment, GHCR digest pull, platform routing/TLS and private production definition/data qualification are external and not claimed here.
+
+## CLOB diff and relationship-map UI rerun — 14 September 2026 late
+
+Source checkout: `main` at `d6fd482706feb810a7d8f32428f9017d48d7c7c6` with working-tree UI changes for XML/CLOB line highlighting and the definition-derived relationship map.
+
+Implemented UI behavior:
+
+- Raw XML/CLOB comparison marks changed current lines with the current-side red treatment and changed target lines with the target-side teal treatment while preserving exact loaded text.
+- Placeholder comparison also marks changed mapped-token lines from the binding rail's returned change state, so stable placeholder tokens still show concrete value differences.
+- Target structure now includes a collapsible Current/Target relationship map derived from the published v3 definition's entity types, declared relationships, derived groups and returned current/draft pages. It does not infer hidden page totals or fabricate target decisions.
+
+Focused author checks:
+
+```sh
+npm run check --prefix frontend
+npm test --prefix frontend -- V3PlanInspection.test.tsx V3TargetStructure.test.tsx
+```
+
+Results: PASS. The test command ran the frontend suite with 477 passing Vitest tests and 61 passing schema contract tests.
+
+Packaged hosted image check:
+
+```sh
+scripts/studio.sh fast-package
+scripts/studio.sh hosted-up
+```
+
+Results: PASS. The fast package path built the runtime image, skipped Docker-stage Maven/UI tests by design, verified guarded-supervisor SHA256SUMS, and passed container smoke, private workspace initialization, schema2 initializer/upgrade/refusal and schema3 initialization/refusal checks. Hosted no-OIDC service became healthy on `127.0.0.1:18181`.
+
+Fresh desktop browser journey:
+
+```sh
+node /home/tim/.tmp/es-full-journey-20260914/full-journey.cjs
+```
+
+Result: PASS.
+Evidence directory:
+
+```text
+/home/tim/.tmp/es-full-journey-20260914/journey-1789421854785
+```
+
+Screenshots: 24. Downloaded guarded package SHA-256: `d7618adffa6b0945df6c0cba94b69670df2d0e7592d92143a33f342c0bf3acbf`.
+
+Fresh narrow browser journey:
+
+```sh
+ES_JOURNEY_WIDTH=390 ES_JOURNEY_HEIGHT=900 node /home/tim/.tmp/es-full-journey-20260914/full-journey.cjs
+```
+
+Result: PASS.
+Evidence directory:
+
+```text
+/home/tim/.tmp/es-full-journey-20260914/journey-1789421866532
+```
+
+Screenshots: 24. Downloaded guarded package SHA-256: `c15da79ab496285ce73288af7ed68a6a931aa775c1a8e0f2056604613e0ad14f`.
+
+Observed UI result: `uiGaps: []` for both desktop and narrow. Manual visual spot-check confirmed Raw and Placeholder comparison line highlighting and the side-by-side relationship map. This is a UI/presentation rerun over the PostgreSQL 16.11 pilot workflow; release qualification limitations above remain unchanged.

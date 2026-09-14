@@ -21,6 +21,7 @@ type ComparisonState = Pick<
   | "load"
 >;
 type Side = "current" | "target";
+type BindingRailItem = ComparisonState["bindingRail"][number];
 type TextHit = Readonly<{ side: Side; start: number; end: number }>;
 type LocationHit = Readonly<{
   side: Side;
@@ -94,6 +95,173 @@ function renderText(text: string, highlights: readonly Highlight[]) {
   return parts;
 }
 
+type LineRange = Readonly<{ text: string; start: number; end: number }>;
+type LineDiff = Readonly<{ current: ReadonlySet<number>; target: ReadonlySet<number> }>;
+const emptyLineDiff: LineDiff = Object.freeze({
+  current: new Set<number>(),
+  target: new Set<number>(),
+});
+const maxExactDiffCells = 250_000;
+
+function lineRanges(text: string): readonly LineRange[] {
+  if (!text.length) return [{ text: "", start: 0, end: 0 }];
+  const ranges: LineRange[] = [];
+  let start = 0;
+  for (let index = 0; index < text.length; index += 1) {
+    if (text[index] === "\n") {
+      ranges.push({ text: text.slice(start, index + 1), start, end: index + 1 });
+      start = index + 1;
+    }
+  }
+  if (start < text.length) ranges.push({ text: text.slice(start), start, end: text.length });
+  return ranges;
+}
+
+function positionalLineDiff(current: readonly string[], target: readonly string[]): LineDiff {
+  const currentChanged = new Set<number>();
+  const targetChanged = new Set<number>();
+  const length = Math.max(current.length, target.length);
+  for (let index = 0; index < length; index += 1) {
+    if (current[index] !== target[index]) {
+      if (index < current.length) currentChanged.add(index);
+      if (index < target.length) targetChanged.add(index);
+    }
+  }
+  return { current: currentChanged, target: targetChanged };
+}
+
+function computeLineDiff(currentText?: string, targetText?: string): LineDiff {
+  if (currentText === undefined || targetText === undefined) return emptyLineDiff;
+  const current = lineRanges(currentText).map((line) => line.text);
+  const target = lineRanges(targetText).map((line) => line.text);
+  if (current.length * target.length > maxExactDiffCells)
+    return positionalLineDiff(current, target);
+  const matrix: number[][] = Array.from({ length: current.length + 1 }, () =>
+    Array.from({ length: target.length + 1 }, () => 0),
+  );
+  for (let i = current.length - 1; i >= 0; i -= 1) {
+    for (let j = target.length - 1; j >= 0; j -= 1) {
+      matrix[i][j] =
+        current[i] === target[j]
+          ? matrix[i + 1][j + 1] + 1
+          : Math.max(matrix[i + 1][j], matrix[i][j + 1]);
+    }
+  }
+  const currentChanged = new Set<number>();
+  const targetChanged = new Set<number>();
+  let i = 0;
+  let j = 0;
+  while (i < current.length && j < target.length) {
+    if (current[i] === target[j]) {
+      i += 1;
+      j += 1;
+    } else if (matrix[i + 1][j] >= matrix[i][j + 1]) {
+      currentChanged.add(i);
+      i += 1;
+    } else {
+      targetChanged.add(j);
+      j += 1;
+    }
+  }
+  while (i < current.length) currentChanged.add(i++);
+  while (j < target.length) targetChanged.add(j++);
+  return { current: currentChanged, target: targetChanged };
+}
+
+function lineIndexesForSpan(ranges: readonly LineRange[], start: number, end: number): number[] {
+  if (end <= start) return [];
+  const indexes: number[] = [];
+  ranges.forEach((line, index) => {
+    if (start < line.end && end > line.start) indexes.push(index);
+  });
+  return indexes;
+}
+
+function lineIndexesForToken(text: string, token: string): number[] {
+  if (!token) return [];
+  const ranges = lineRanges(text);
+  const indexes = new Set<number>();
+  for (
+    let index = text.indexOf(token);
+    index >= 0;
+    index = text.indexOf(token, index + Math.max(1, token.length))
+  ) {
+    lineIndexesForSpan(ranges, index, index + token.length).forEach((line) => {
+      indexes.add(line);
+    });
+    if (indexes.size >= 100) break;
+  }
+  return [...indexes];
+}
+
+function changedBindingLineIndexes(
+  text: string,
+  mode: ComparisonState["mode"],
+  side: Side,
+  bindingRail: readonly BindingRailItem[],
+): ReadonlySet<number> {
+  if (mode !== "raw" && mode !== "placeholders") return new Set<number>();
+  const ranges = lineRanges(text);
+  const indexes = new Set<number>();
+  bindingRail
+    .filter((item) => item.change !== "unchanged")
+    .forEach((item) => {
+      if (mode === "placeholders") {
+        lineIndexesForToken(text, item.token).forEach((line) => {
+          indexes.add(line);
+        });
+        return;
+      }
+      const locations =
+        side === "current" ? item.currentDocumentLocations : item.targetDocumentLocations;
+      locations.forEach((location) => {
+        lineIndexesForSpan(ranges, location.span.start, location.span.end).forEach((line) => {
+          indexes.add(line);
+        });
+      });
+    });
+  return indexes;
+}
+
+function combinedLineIndexes(
+  first: ReadonlySet<number>,
+  second: ReadonlySet<number>,
+): ReadonlySet<number> {
+  if (!first.size) return second;
+  if (!second.size) return first;
+  return new Set([...first, ...second]);
+}
+
+function renderLines(
+  text: string,
+  highlights: readonly Highlight[],
+  changedLines: ReadonlySet<number>,
+  side: Side,
+) {
+  return lineRanges(text).map((line, index) => {
+    const lineHighlights = highlights
+      .map((highlight) => ({
+        start: Math.max(highlight.start, line.start) - line.start,
+        end: Math.min(highlight.end, line.end) - line.start,
+        kind: highlight.kind,
+      }))
+      .filter((highlight) => highlight.end > highlight.start);
+    const changed = changedLines.has(index);
+    return (
+      <span
+        key={`${side}-${line.start}-${line.end}-${line.text.length}`}
+        className={`v3-xml-line${changed ? ` v3-xml-line-${side}-diff` : ""}`}
+        data-diff-side={changed ? side : undefined}
+      >
+        <span className="v3-xml-line-number" aria-hidden="true">
+          {index + 1}
+        </span>
+        <span className="v3-xml-line-text">{renderText(line.text, lineHighlights)}</span>
+      </span>
+    );
+  });
+}
+
 export function V3DocumentComparison({ state }: { state: ComparisonState }) {
   const { plan } = state;
   const documents = state.inventory?.documents;
@@ -109,6 +277,21 @@ export function V3DocumentComparison({ state }: { state: ComparisonState }) {
       (item) => `${JSON.stringify(item.entity)}:${item.fieldId}` === mapping,
     ) ?? state.bindingRail[0];
   const canRead = Boolean(state.selected && state.consent && !state.reading);
+  const diffLines = useMemo(
+    () => computeLineDiff(state.current?.text, state.target?.text),
+    [state.current?.text, state.target?.text],
+  );
+  const bindingDiffLines = useMemo(
+    () => ({
+      current: state.current
+        ? changedBindingLineIndexes(state.current.text, state.mode, "current", state.bindingRail)
+        : new Set<number>(),
+      target: state.target
+        ? changedBindingLineIndexes(state.target.text, state.mode, "target", state.bindingRail)
+        : new Set<number>(),
+    }),
+    [state.bindingRail, state.current, state.mode, state.target],
+  );
   const textHits = useMemo<TextHit[]>(() => {
     const hits: TextHit[] = [];
     if (state.current)
@@ -358,7 +541,14 @@ export function V3DocumentComparison({ state }: { state: ComparisonState }) {
                       data-side={side}
                       onScroll={() => sync(side)}
                     >
-                      <pre>{renderText(value.text, paneHighlights(side, value.text))}</pre>
+                      <pre>
+                        {renderLines(
+                          value.text,
+                          paneHighlights(side, value.text),
+                          combinedLineIndexes(diffLines[side], bindingDiffLines[side]),
+                          side,
+                        )}
+                      </pre>
                     </section>
                   </>
                 ) : (

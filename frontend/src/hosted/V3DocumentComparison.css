@@ -183,6 +183,32 @@
   white-space: pre;
   overflow-wrap: normal;
 }
+.v3-xml-line {
+  display: grid;
+  grid-template-columns: 3.25rem minmax(0, max-content);
+  min-width: max-content;
+  border-left: 3px solid transparent;
+  padding-inline: 0 8px;
+}
+.v3-xml-line-number {
+  padding-inline: 0 10px;
+  margin-right: 10px;
+  border-right: 1px solid rgba(146, 161, 190, 0.2);
+  color: #8c9bb4;
+  text-align: right;
+  user-select: none;
+}
+.v3-xml-line-text {
+  white-space: pre;
+}
+.v3-xml-line-current-diff {
+  border-left-color: #ff8a8a;
+  background: rgba(151, 44, 54, 0.34);
+}
+.v3-xml-line-target-diff {
+  border-left-color: var(--teal);
+  background: rgba(39, 137, 119, 0.3);
+}
 .v3-comparison-detail .v3-binding-rail {
   margin-top: 12px;
   padding: 12px;

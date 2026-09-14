@@ -694,3 +694,98 @@ it("highlights verified mapped source spans in Raw mode", () => {
     screen.queryByText("Switch to Raw and reload this document to highlight exact source spans."),
   ).not.toBeInTheDocument();
 });
+
+it("color-highlights changed XML lines in Raw and Placeholder views", async () => {
+  const currentDocument = {
+    revision: "2",
+    side: "current" as const,
+    documentId: "mock-a",
+    mode: "raw" as const,
+    text: '<root>\n  <setting value="before"/>\n</root>',
+    exact: true,
+    redacted: false,
+    unmappedConcreteMayRemain: false,
+    omissions: [],
+  };
+  const targetDocument = {
+    revision: "2",
+    side: "target" as const,
+    documentId: "mock-a",
+    mode: "raw" as const,
+    text: '<root>\n  <setting value="after"/>\n</root>',
+    exact: true,
+    redacted: false,
+    unmappedConcreteMayRemain: false,
+    omissions: [],
+  };
+  const state = stateFixture({
+    mode: "raw",
+    selected: "mock-a",
+    current: currentDocument,
+    target: targetDocument,
+  });
+  const { container, rerender } = render(
+    <V3PlanInspection
+      api={{} as never}
+      state={state}
+      versionSelector={null}
+      openDefinitions={vi.fn()}
+      inspectionUiEnabled
+    />,
+  );
+  expect(container.querySelector(".v3-xml-line-current-diff")?.textContent).toContain(
+    '<setting value="before"/>',
+  );
+  expect(container.querySelector(".v3-xml-line-target-diff")?.textContent).toContain(
+    '<setting value="after"/>',
+  );
+
+  rerender(
+    <V3PlanInspection
+      api={{} as never}
+      state={{
+        ...state,
+        mode: "placeholders",
+        current: {
+          ...currentDocument,
+          mode: "placeholders",
+          exact: false,
+          text: '<root>\n  <setting value="[[value:shared-token]]"/>\n</root>',
+        },
+        target: {
+          ...targetDocument,
+          mode: "placeholders",
+          exact: false,
+          text: '<root>\n  <setting value="[[value:shared-token]]"/>\n</root>',
+        },
+        bindingRail: [
+          {
+            entity: { kind: "existing", handle: "50000000-0000-0000-0000-000000000003" },
+            typeId: "mock-type",
+            fieldId: "mock-tone",
+            token: "[[value:shared-token]]",
+            change: "changed",
+            current: "before-tone",
+            target: "after-tone",
+            currentLocations: 0,
+            targetLocations: 0,
+            currentTotalLocations: 0,
+            targetTotalLocations: 0,
+            currentDocumentLocations: [],
+            targetDocumentLocations: [],
+          },
+        ],
+      }}
+      versionSelector={null}
+      openDefinitions={vi.fn()}
+      inspectionUiEnabled
+    />,
+  );
+  expect(container.querySelector(".v3-xml-line-current-diff")?.textContent).toContain(
+    "[[value:shared-token]]",
+  );
+  expect(container.querySelector(".v3-xml-line-target-diff")?.textContent).toContain(
+    "[[value:shared-token]]",
+  );
+  expect(state.load).not.toHaveBeenCalled();
+});
