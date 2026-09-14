@@ -1,7 +1,7 @@
 # PostgreSQL 16.11 full operator journey evidence
 
 Date: 14 September 2026
-Source checkout: `main` at `60b0069c89e6bbf2624ba6bee483f521d4b054fd`.
+Source checkout: `main` at `64474ee061e0c6922832f08702fb0b3cbc408990`.
 Environment: local no-OIDC hosted container on `127.0.0.1:18181` with disposable `postgres:16.11-bookworm` fixture container `es-e2e-pg16`.
 
 ## Browser journey
@@ -17,7 +17,7 @@ Desktop result: PASS.
 Desktop evidence directory:
 
 ```text
-/home/tim/.tmp/es-full-journey-20260914/journey-1789417419148
+/home/tim/.tmp/es-full-journey-20260914/journey-1789420057378
 ```
 
 The browser journey uses Basic local-operator auth and performs the ordinary UI flow:
@@ -40,7 +40,7 @@ The browser journey uses Basic local-operator auth and performs the ordinary UI 
 The desktop run captured 24 page/view screenshots under:
 
 ```text
-/home/tim/.tmp/es-full-journey-20260914/journey-1789417419148/screenshots
+/home/tim/.tmp/es-full-journey-20260914/journey-1789420057378/screenshots
 ```
 
 
@@ -53,37 +53,37 @@ ES_JOURNEY_WIDTH=390 ES_JOURNEY_HEIGHT=900 node /home/tim/.tmp/es-full-journey-2
 Narrow result: PASS. Evidence directory:
 
 ```text
-/home/tim/.tmp/es-full-journey-20260914/journey-1789417426526
+/home/tim/.tmp/es-full-journey-20260914/journey-1789420082532
 ```
 
 The narrow run captured the same 24 page/view states with `uiGaps: []` and no horizontal overflow at the recorded 390px viewport. The narrow downloaded archive SHA-256 was:
 
 ```text
-96a8e9c61b077f33549e79fa76d4ee616e8b4b393587e3f4c1425f2e76589c1c
+f8a98f62d4233a2545a36ad51cd5f2424d131aad53165772ffd741c8afc9a547
 ```
 
 Captured views: home before definition, definition empty/current, upload before save, draft saved, ready to publish, published, plan create, inspection prerequisite, credentials form, current inspection valid, target structure loaded, target structure saved unresolved, target authored unresolved, values unresolved, values comparison before edit, values target saved, target-complete plan, Raw comparison, Placeholders comparison, Formatted comparison, validation summary, computed rules, export readiness and export downloaded.
 
-Observed UI result: `uiGaps: []`. Screenshots have no horizontal overflow at the recorded desktop or 390px narrow viewport. The comparison screenshots show the many-CLOB navigator, Raw / Placeholders / Formatted modes, loaded-document search, selected binding rail, whole-plan mapped-location totals and Raw-mode mapped-span highlight. Native checkbox render boxes remain smaller than 44px, but they are within labelled rows; this is a browser rendering detail to revisit in visual hardening rather than a journey blocker.
+Observed UI result: `uiGaps: []`. Screenshots have no horizontal overflow at the recorded desktop or 390px narrow viewport. The refreshed implementation keeps prior inspection context visible while plan/document refreshes are in flight and marks those regions busy instead of blanking the workspace. The comparison screenshots show the many-CLOB navigator, Raw / Placeholders / Formatted modes, loaded-document search, selected binding rail, whole-plan mapped-location totals and Raw-mode mapped-span highlight. Native checkbox render boxes remain smaller than 44px, but they are within labelled rows; this is a browser rendering detail to revisit in visual hardening rather than a journey blocker.
 
 ## Downloaded package inspection
 
 Downloaded archive:
 
 ```text
-/home/tim/.tmp/es-full-journey-20260914/journey-1789417419148/downloads/environment-studio-guarded-package.zip
+/home/tim/.tmp/es-full-journey-20260914/journey-1789420057378/downloads/environment-studio-guarded-package.zip
 ```
 
 SHA-256:
 
 ```text
-e9cb2dcc76cc2510518c96b6cf8b7e9f0c254dd518b1755f2be512e63c966ca8
+aa4cc4e0dff8e55d87fa3c3ebd682e2407d95a54024c011bd0cd1295570c8b33
 ```
 
 Inspection artifact:
 
 ```text
-/home/tim/.tmp/es-full-journey-20260914/journey-1789417419148/archive-inspection.json
+/home/tim/.tmp/es-full-journey-20260914/journey-1789420057378/archive-inspection.json
 ```
 
 Confirmed contents:
@@ -95,7 +95,7 @@ Confirmed contents:
 - Records: 2 total, 1 changed, 1 unchanged.
 - Changed record target contains the operator-entered target value.
 - Unchanged record target bytes equal original bytes.
-- SQL contains the PostgreSQL 16.11 server-version pin, physical destination checks, byte-level original/target checks, unsupported write-effect checks and program digest marker.
+- SQL contains the PostgreSQL 16.11 `server_version_num` pin, physical destination checks, byte-level original/target checks and program digest marker. Transaction commit/rollback control remains outside `transaction.sql` and is owned by the supervisor, as stated in `instructions.txt`.
 - Instructions state that `transaction.sql` must not be executed directly; the supervisor owns transaction control and commit acknowledgement.
 
 ## External PostgreSQL execution witness
