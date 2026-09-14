@@ -95,7 +95,10 @@ Compose shape. Actual HiveForge platform deployment, registry pull identity, TLS
 routing and target-host evidence must still be recorded from the deployment
 environment before claiming HiveForge release qualification.
 
-A manual hosted rehearsal with Docker:
+A quick local hosted run uses the same Compose contract. Choose a unique host
+port, create the workspace outside the repo, set the local-operator password from
+your shell or secret manager, and replace the PostgreSQL identity values with
+observed PostgreSQL 16.11 facts before using a real destination.
 
 ```bash
 export STUDIO_IMAGE='ghcr.io/timaday/environment-studio@sha256:REPLACE_WITH_EMITTED_DIGEST'

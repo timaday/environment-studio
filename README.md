@@ -7,7 +7,35 @@ Oracle or PostgreSQL database is copied. Operators reuse value-free profiles,
 map current configuration to a target, supply environment values and export
 guarded SQL for their existing database deployment process.
 
-**Status: implementation in progress.** Native JSON/YAML definitions compile in
+**Current status: PostgreSQL 16.11 pilot candidate.** `main` contains the
+PostgreSQL 16.11/text-XML workflow for definition setup, hosted plan creation,
+read-only inspection, value-free profile capture/reuse, target values, structural
+changes, XML comparison, validation and guarded package download. The image
+defaults to synthetic demo mode; hosted operation requires explicit configuration
+for local-operator or OIDC authentication, a private schema3 workspace and a
+PostgreSQL 16.11 destination. Oracle implementation remains preserved in the
+codebase, but Oracle is explicitly unavailable for this pilot.
+
+For the no-OIDC pilot, use the local-operator hosted mode documented in
+[deploy/README.md](deploy/README.md). Successful `main` builds publish GHCR
+images, and HiveForge deployment files are present in `hiveforge.yaml`,
+`environment-studio-service.hiveforge.yaml` and `deploy/hiveforge/`. The local
+HiveForge-manifest/Compose rehearsal passed for the merged candidate; actual
+HiveForge deployment still needs target-side evidence for registry pull, routing,
+TLS, probes and PostgreSQL identity/trust inputs.
+
+The implementation remains evidence-driven rather than declared complete by a
+single flag. The current repository uses independently invented mock fixtures and
+public contracts only. Real application definitions, XML, database locators,
+profiles and qualification observations stay outside the checkout and build
+context. The current qualification state and remaining limits are recorded in
+[progress](docs/delivery/progress.md), [the build plan](docs/delivery/build-plan.md),
+[the support matrix](docs/quality/qualification-matrix.md) and evidence files such
+as [no-OIDC/HiveForge local rehearsal](docs/evidence/no-oidc-hiveforge-local.md).
+
+Historical implementation evidence below remains useful for traceability:
+
+**Historical status trace.** Native JSON/YAML definitions compile in
 Java; hosted workspace APIs support immutable definition/profile drafts and
 publication, with explicit maintainer authority and private SQLite storage.
 Separate [v3 definition](docs/contracts/workspace-http-v3.md) and

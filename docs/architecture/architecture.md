@@ -64,5 +64,8 @@ credentials and secret values remain bounded session memory. Restart requires
 fresh observation and re-entry. A shared hosted service must prove ownership,
 expiry, OIDC/session/CSRF controls and per-user isolation before accepting a DB
 credential. The image defaults to demo and supports explicitly configured hosted
-authentication and explicitly initialized private SQLite draft revisions.
-Database inspection/export remain disabled; see deploy/README.md.
+authentication and explicitly initialized private SQLite draft revisions. For the
+PostgreSQL 16.11 pilot, hosted database inspection and guarded package download
+are available only through the configured destination, exact owner, pinned
+revision and fail-closed validation paths; the application still never executes
+generated SQL. See deploy/README.md.
