@@ -236,12 +236,19 @@ the workspace and start the service:
 
 ```bash
 scripts/studio.sh init-hosted-env
-# edit deploy/hosted.env with the image digest, workspace and PostgreSQL 16.11 destination/trust values; keep DB login credentials out of this file
+# edit deploy/hosted.env with the image digest, workspace, public origin and operator password
 scripts/studio.sh hosted-config
 scripts/studio.sh hosted-prepare-workspace
 scripts/studio.sh hosted-init
 scripts/studio.sh hosted-up
 ```
+
+After sign-in, upload/publish a definition, then add a PostgreSQL 16.11 JDBC
+target such as `jdbc:postgresql://host:5432/database` in the plan setup screen.
+The application stores only the connection target. Operators enter the database
+username and password for one read-only inspection operation; those credentials
+are not written to deployment configuration, workspace storage, URLs, browser
+storage or exports.
 
 Hosted views use actual server capabilities and authority. Real
 identity-provider/HiveForge qualification and complete browser-to-database

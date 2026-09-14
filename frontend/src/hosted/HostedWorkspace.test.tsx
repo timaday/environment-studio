@@ -145,7 +145,7 @@ it("explicitly resumes v3 without falling back to legacy plans after absence", a
   );
   await screen.findByRole("heading", { name: "PostgreSQL pilot workspace" });
   expect(await screen.findByText("No current plan in this session.")).toBeVisible();
-  expect(screen.getByRole("combobox", { name: "Published v3 definition" })).toBeVisible();
+  expect(await screen.findByRole("combobox", { name: "Published v3 definition" })).toBeVisible();
   expect(get).not.toHaveBeenCalledWith("/api/v1/plans/current");
   expect(get.mock.calls.map(([path]) => path)).toEqual([
     "/api/v3/plans/current",

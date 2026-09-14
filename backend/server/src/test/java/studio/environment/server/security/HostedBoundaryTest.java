@@ -165,20 +165,20 @@ class HostedBoundaryTest {
         } finally {plan.client().request("POST","/api/v1/session/logout","{}",true);}
     }
     static String mockCredentials() {return "{\"username\":\"MockReader\",\"password\":\"Db-Password-Canary-𐀀\"}";}
-    @Test void configuredInspectionApiEnforcesOwnershipWhileUiRemainsUnavailable() throws Exception {
+    @Test void configuredInspectionApiEnforcesOwnershipWhilePostgresqlPilotUiIsAvailable() throws Exception {
         var plan=socketPlan("view-maintainer");
         var foreign=socketLogin("capability-foreign-owner");
         var json=tools.jackson.databind.json.JsonMapper.builder().build();
         try {
             var response=plan.client().get("/api/v1/capabilities");assertEquals(200,response.status());
             var capabilities=json.readTree(response.body());
-            assertEquals(false,capabilities.get("inspectionEnabled").asBoolean());
+            assertEquals(true,capabilities.get("inspectionEnabled").asBoolean());
             assertNotNull(capabilities.get("inspectionUiEnabled"));
-            assertEquals(false,capabilities.get("inspectionUiEnabled").asBoolean());
+            assertEquals(true,capabilities.get("inspectionUiEnabled").asBoolean());
             assertNotNull(capabilities.get("inspectionApiConfigured"));
             assertEquals(true,capabilities.get("inspectionApiConfigured").asBoolean());
-            assertEquals(false,capabilities.get("exportEnabled").asBoolean());
-            assertEquals(0,capabilities.get("qualifiedDatabaseAdapters").size());
+            assertEquals(true,capabilities.get("exportEnabled").asBoolean());
+            assertEquals(1,capabilities.get("qualifiedDatabaseAdapters").size());
             String operation=reserve(plan,"1");
             int before=studio.environment.server.plan.PlanHttpTestConfiguration.connections.get();
             assertEquals(404,foreign.request("POST","/api/v1/operations/"+operation+"/credentials",mockCredentials(),true).status());

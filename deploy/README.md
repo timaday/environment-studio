@@ -61,7 +61,7 @@ build alone as release or publication evidence.
 | Resources | Starting budget 1 CPU / 1 GiB; not measured product capacity |
 | Replicas | One; no shared session/raw observation support |
 | Secrets | Local-operator password or OIDC client secret is supplied by deployment secret handling; database credentials are operation inputs only and are never configured as container env/files |
-| External access | Hosted mode requires authenticated local-operator or OIDC access and an explicitly configured PostgreSQL 16.11 destination; DB credentials are supplied per operation |
+| External access | Hosted mode requires authenticated local-operator or OIDC access and private workspace storage; operators add PostgreSQL 16.11 JDBC targets in the UI and supply DB credentials per operation |
 
 The workflow emits an `image-reference-<commit>` artifact containing the full
 image digest and source revision, and displays the digest in its summary.
@@ -86,7 +86,7 @@ the target's configured Docker access.
 Use the `docker-single-postgres16-local-operator` profile. It deploys one
 linux/amd64 service from an exact GHCR image reference, keeps the container root
 filesystem read-only, runs as UID/GID 10001, requires a private bind-mounted
-workspace, and mounts the PostgreSQL CA bundle read-only. The deployment accepts
+workspace. The deployment accepts
 local-operator Basic sign-in instead of OIDC, but the public origin remains
 strict: HTTPS is required outside localhost/127.0.0.1 rehearsals, and secure
 session cookies remain enabled outside loopback.
@@ -99,10 +99,6 @@ handling. Do not commit them to the repository or bake them into the image:
 - `STUDIO_SECURITY_PUBLIC_ORIGIN`
 - `STUDIO_SECURITY_LOCAL_OPERATOR_PASSWORD`
 - `STUDIO_WORKSPACE_HOST_PATH`
-- `STUDIO_PG_TRUST_MATERIAL_HOST_PATH`
-- `STUDIO_PG_HOST`, `STUDIO_PG_PORT`, `STUDIO_PG_DATABASE`
-- `STUDIO_PG_TRANSPORT_IDENTITY_SHA256`
-- `STUDIO_PG_SYSTEM_IDENTIFIER`, `STUDIO_PG_DATABASE_OID` as observed numeric PostgreSQL identifiers
 
 The deployment template pins the only supported pilot export client tuple:
 PostgreSQL server `16.11`, `psql` client `16.11`, `linux-amd64`, template
@@ -120,8 +116,7 @@ The HiveForge actions are:
   absent, optionally pull the image, start the service and wait for health.
 - `update`: validate environment, render Compose, optionally pull, reconcile the
   service and wait for health.
-- `remove`: stop the service without deleting the bind-mounted workspace or trust
-  material.
+- `remove`: stop the service without deleting the bind-mounted workspace.
 
 A local HiveForge-manifest rehearsal validates the manifests and the rendered
 Compose shape. Actual HiveForge platform deployment, registry pull identity, TLS
@@ -130,9 +125,8 @@ environment before claiming HiveForge release qualification.
 
 A quick local hosted run uses the same Compose contract. Choose a unique host
 port, create the workspace outside the repo, set the local-operator password from
-your shell or secret manager, and replace the PostgreSQL destination/trust
-identity values with observed PostgreSQL 16.11 facts before using a real
-destination. Do not add database usernames or passwords to `deploy/hosted.env`.
+your shell or secret manager, then add a PostgreSQL 16.11 JDBC target in the UI.
+Do not add database usernames or passwords to `deploy/hosted.env`.
 
 ```bash
 scripts/studio.sh init-hosted-env
@@ -144,8 +138,7 @@ scripts/studio.sh hosted-up
 ```
 
 The ignored `deploy/hosted.env` file is copied from
-`deploy/hosted.env.example`. Replace the illustrative digest and PostgreSQL
-destination/trust identity placeholders before running. The example publishes
+`deploy/hosted.env.example`. Replace the illustrative digest before running. The example publishes
 loopback port
 `${STUDIO_HOST_PORT:-18181}` and uses `localhost` as the operator-facing origin;
 for platform ingress, route directly to container port 8080 on its private
@@ -195,14 +188,20 @@ readiness only. Session cookies are Secure/HttpOnly/SameSite=Lax; authenticated
 session/logout responses are no-store. Logout cleanup failure revokes access and
 returns an explicit inconclusive result while capacity stays quarantined.
 
-The hosted PostgreSQL destination must be configured explicitly from observed,
-approved environment facts: destination id, host, port, database name, trust
-material, TLS/transport identity, PostgreSQL system identifier, database OID,
-owner issuer and owner subject. Oracle is not enabled for this pilot. DB
-credentials remain operation inputs held only in session memory; they do not
-become `STUDIO_DB_PASSWORD` or an orchestrator secret. An IdP client secret, if
+The default hosted PostgreSQL pilot starts without a stored database target.
+After sign-in, an operator adds a PostgreSQL 16.11 JDBC target such as
+`jdbc:postgresql://host:5432/database`; the server stores only host, port and
+database metadata. Username and password are operation inputs held only in
+session memory for a single read-only inspection. They do not become
+`STUDIO_DB_PASSWORD`, an orchestrator secret, browser storage, workspace data or
+export content. Oracle is not enabled for this pilot. An IdP client secret, if
 needed, is a separate platform credential supplied by the platform's secret
 mount/integration. No raw observations go to the persistent metadata volume.
+
+Advanced hosted deployments may still configure pinned TLS destinations through
+`studio.plans.destinations` outside the image; those server-side entries require
+observed trust and physical identity evidence as described in the destination
+contract.
 
 For hosted definition/profile storage, provision a private volume directory owned by UID/GID
 10001 with mode 0700, then run the same image once with the argument

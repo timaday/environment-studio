@@ -166,7 +166,7 @@ public final class JdbcObservation implements ObservationPort {
                         var metadata = OracleMetadata.verify(sql, binding); identity = metadata.identity(); version = metadata.version(); encoding = metadata.encoding();
                     }
                 } catch (SQLException denied) { throw new ObservationFailure(Code.METADATA_UNAVAILABLE); }
-                if (!destination.expectedPhysicalIdentity().equals(identity)) throw new ObservationFailure(Code.DESTINATION_MISMATCH);
+                if (destination.physicalIdentityPinnedBeforeInspection() && !destination.expectedPhysicalIdentity().equals(identity)) throw new ObservationFailure(Code.DESTINATION_MISMATCH);
                 String driver = connection.getMetaData().getDriverVersion();
                 if (!(binding.engine() == Engine.POSTGRESQL ? "42.7.13" : "23.26.3.0.0").equals(driver)) throw new ObservationFailure(Code.STORAGE_UNSUPPORTED);
                 beforeSources.run();
@@ -318,8 +318,9 @@ public final class JdbcObservation implements ObservationPort {
         return text.toString();
     }
     private Observation observation(ReadSelection selection, Binding binding, List<Document> documents, Map<String,String> identity, String version, String driver, String encoding) {
+        Map<String,String> expected = destination.physicalIdentityPinnedBeforeInspection() ? destination.expectedPhysicalIdentity() : identity;
         Map<String,Object> endpoint = Map.of("id", destination.id(), "host", destination.host(), "port", destination.port(), "database", destination.database(), "transportIdentity", destination.transportIdentity(),
-                "expectedPhysicalIdentity", destination.expectedPhysicalIdentity(), "observedPhysicalIdentity", identity, "provisioningPolicyVersion", destination.provisioningPolicyVersion());
+                "expectedPhysicalIdentity", expected, "observedPhysicalIdentity", identity, "provisioningPolicyVersion", destination.provisioningPolicyVersion());
         Map<String,Object> metadata = Map.of("adapterVersion", "jdbc-observation-v" + selection.version(), "operationPolicyVersion", destination.operationPolicyVersion(), "visibility", "complete", "readOnlyOperation", "verified", "snapshot", binding.engine() == Engine.POSTGRESQL ? "repeatable-read-read-only" : "read-only");
         var frame = new TreeMap<String,Object>();
         frame.put("logicalDigest",selection.logicalDigest()); frame.put("bindingDigest",selection.bindingDigest());

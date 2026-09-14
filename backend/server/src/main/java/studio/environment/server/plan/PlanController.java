@@ -29,6 +29,12 @@ public final class PlanController {
     public void destinations(HttpServletRequest request,HttpServletResponse response) throws IOException {
         var lease=lease(request); write(response,200,Map.of("destinations",runtime.visible(lease.owner())));
     }
+    @PostMapping("/api/v1/destinations")
+    public void destination(HttpServletRequest request,HttpServletResponse response) throws IOException {
+        var lease=lease(request); runtime.service();
+        var slot=metadata();
+        start(lease,request,response,slot,()->!runtime.service().live(lease),16_384,10,201,body->Map.of("destination",runtime.register(lease,new PlanMetadataReader().destination(body))));
+    }
     @GetMapping("/api/v1/plans/current")
     public void current(HttpServletRequest request,HttpServletResponse response) throws IOException {
         summaryResponse(lease(request),Optional.empty(),response);

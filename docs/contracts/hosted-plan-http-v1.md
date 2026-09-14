@@ -20,8 +20,11 @@ CSRF. Demo denies the routes. Cross-owner, foreign-lease and missing objects
 share a safe 404. Retired plans return 404 for content and new commands; the
 current lease's retained replay and operation metadata follow the exceptions
 below. Request IDs never substitute for current authentication.
-No request contains an owner, driver properties, JDBC URL, observed XML, claimed
-validation outcome, execution command or serialized capability.
+No plan, inspection, operation, command, validation or package request contains an owner, driver properties, observed XML, claimed
+validation outcome, execution command or serialized capability. The PostgreSQL
+16.11 pilot destination-create request may contain only a JDBC URL target and
+requestId; it must not contain credentials, userinfo, query-string properties or
+observed database identity.
 
 These plan/operation routes address model V2 only. The
 [immutable version boundary](plan-http-version-admission-v1.md) requires safe404
@@ -33,7 +36,8 @@ metadata slot, with original final checks retained throughout output.
 
 | Method and path | Closed request / result |
 | --- | --- |
-| GET `/api/v1/destinations` | `{destinations: [...]}` with only destinations authorized by external configuration for the current owner; each item has id, engine, host, port and database |
+| GET `/api/v1/destinations` | `{destinations: [...]}` with only destinations authorized for the current owner; each item has id, engine, host, port and database |
+| POST `/api/v1/destinations` | PostgreSQL 16.11 pilot only; `{requestId,jdbcUrl}` where `jdbcUrl` is `jdbc:postgresql://<host>:<port>/<database>` with no credentials or driver properties → `{destination}` safe metadata |
 | POST `/api/v1/plans` | expectedRevision `0`, requestId, definition `{objectId, workspaceRevision}`, bindingId and destinationId → small Ack |
 | GET `/api/v1/plans/current` | Current lease's live plan summary or 404 |
 | GET `/api/v1/plans/{planId}` | Safe summary with revision, pins, complete counts and evidence/target availability |

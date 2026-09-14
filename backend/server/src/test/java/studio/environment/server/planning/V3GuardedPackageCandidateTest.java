@@ -39,6 +39,31 @@ class V3GuardedPackageCandidateTest {
             });
         }
     }
+    @Test void admitsUnqualifiedOperatorSuppliedPostgresql16TargetForReviewCandidate() throws Exception {
+        var f = fixture(); var service = f.service(); String plan = f.inspected(service);
+        assertTrue(service.materialize(f.lease, plan, "2").complete());
+        var validation = service.validateV3(f.lease, plan, "2");
+        try (var admission = service.reserveView(f.lease, plan)) {
+            admission.run(() -> {
+                admission.pin("2");
+                var prepared = assertInstanceOf(V3GuardedPackageCandidate.Result.Prepared.class,
+                        new V3GuardedPackageCandidate().prepare(admission,
+                                new V3GuardedPackageCandidate.Target("destination", "postgresql", "invented.invalid", 5432,
+                                        "invented_db", "operator-supplied-plaintext", "c".repeat(64),
+                                        "postgresql16-operator-supplied-v1", identity(),
+                                        "16.11", "psql", "16.11", "linux-amd64", "postgresql16-text-v1"),
+                                validation.inputFingerprint()));
+                var out = new ByteArrayOutputStream();
+                var written = assertInstanceOf(GuardedPackageAssembler.Result.Candidate.class,
+                        new V3GuardedPackageCandidate().write(prepared, out,
+                                new studio.environment.core.observation.ObservationPort.Cancellation()));
+                assertFalse(written.qualified());
+                assertTrue(new String(out.toByteArray(), StandardCharsets.ISO_8859_1)
+                        .contains("operator-supplied-plaintext"));
+                return true;
+            });
+        }
+    }
     @Test void refusesUnconfiguredClientTupleBeforeAdmittingPackage() {
         var f = fixture(); var service = f.service(); String plan = f.inspected(service);
         assertTrue(service.materialize(f.lease, plan, "2").complete());

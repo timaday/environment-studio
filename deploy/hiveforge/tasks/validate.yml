@@ -29,20 +29,8 @@
       - lookup('ansible.builtin.env', 'STUDIO_SECURITY_LOCAL_OPERATOR_PASSWORD') | length > 0
     fail_msg: "STUDIO_SECURITY_LOCAL_OPERATOR_PASSWORD must be supplied through HiveForge/target secret handling."
 
-- name: Require PostgreSQL destination facts
-  ansible.builtin.assert:
-    that:
-      - lookup('ansible.builtin.env', 'STUDIO_PG_HOST') | length > 0
-      - lookup('ansible.builtin.env', 'STUDIO_PG_PORT') is match('^[1-9][0-9]{0,4}$')
-      - lookup('ansible.builtin.env', 'STUDIO_PG_DATABASE') | length > 0
-      - lookup('ansible.builtin.env', 'STUDIO_PG_TRANSPORT_IDENTITY_SHA256') is match('^[0-9a-f]{64}$')
-      - lookup('ansible.builtin.env', 'STUDIO_PG_SYSTEM_IDENTIFIER') is match('^[1-9][0-9]{0,19}$')
-      - lookup('ansible.builtin.env', 'STUDIO_PG_DATABASE_OID') is match('^[1-9][0-9]{0,19}$')
-    fail_msg: "PostgreSQL 16.11 destination host, port, database, 64-hex transport identity, system identifier and database oid are required."
-
-- name: Require mounted workspace and trust-material paths
+- name: Require mounted workspace path
   ansible.builtin.assert:
     that:
       - lookup('ansible.builtin.env', 'STUDIO_WORKSPACE_HOST_PATH') | length > 0
-      - lookup('ansible.builtin.env', 'STUDIO_PG_TRUST_MATERIAL_HOST_PATH') | length > 0
-    fail_msg: "STUDIO_WORKSPACE_HOST_PATH and STUDIO_PG_TRUST_MATERIAL_HOST_PATH must be explicit host paths."
+    fail_msg: "STUDIO_WORKSPACE_HOST_PATH must be an explicit host path."

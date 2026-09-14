@@ -137,18 +137,26 @@ not qualify a CLI. Unknown client/version/platform/template combinations refuse;
 SQLcl is not implicitly equivalent to SQL*Plus. The supervisor launches an exact
 trusted executable only after matching destination, endpoint and transport identity
 against independently approved external supervisor configuration. Archive labels
-do not grant endpoint or transport approval. Ordinary supervisor execution and
-hosted export require verified TLS with the qualified client's full certificate
-chain and hostname verification; trust material comes from external configuration,
+do not grant endpoint or transport approval. Ordinary production supervisor
+execution requires verified TLS with the qualified client's full certificate chain
+and hostname verification; trust material comes from external configuration,
 never the package. Qualify that the native client verifies TLS before sending DB
 authentication over the network. A forced local password prompt may precede that
 handshake; its secret is sent only to the already admitted client's owned stdin.
 Unknown trust configuration, verification failure or a transport-policy mismatch
-refuses without fallback. Plaintext is available only through an explicit
-disposable-test composition using literal `127.0.0.1` or `localhost`, with resolved
-addresses checked as loopback. This mode is unavailable to ordinary supervisor
-invocation and hosted export. Schema validation of the loopback label/host does
-not substitute for that independent admission decision.
+refuses without fallback. Plaintext remains unavailable to ordinary production
+supervisor invocation unless a future approved admission record explicitly adds
+that transport.
+
+The hosted PostgreSQL 16.11 pilot may download an unqualified package candidate
+for an operator-added `jdbc:postgresql://host:port/database` target. Its manifest
+uses `operator-supplied-plaintext` and records the observed physical identity
+from the read-only inspection. That candidate is suitable for review and archive
+inspection; it is not a production supervisor execution approval. Plaintext
+execution remains available only through an explicit disposable-test composition
+using literal `127.0.0.1` or `localhost`, with resolved addresses checked as
+loopback. Schema validation of either label does not substitute for independent
+admission.
 
 The supervisor launches the admitted
 trusted executable with a clean allowlisted environment and a new process

@@ -41,7 +41,14 @@ export function V3PlanInspection({
     (definition) => definition.state === "published",
   );
   const canCreate = Boolean(
-    publishedDefinition && state.binding && state.destination && !state.creating,
+    publishedDefinition &&
+      state.binding &&
+      state.destination &&
+      !state.creating &&
+      !state.addingDestination,
+  );
+  const canAddDestination = Boolean(
+    state.connectionUrl.trim() && !state.addingDestination && !state.pendingDestination,
   );
   const showCreate = !plan && state.phase !== "loading";
   const refreshLabel = state.refreshing
@@ -99,7 +106,7 @@ export function V3PlanInspection({
           <section className="v3-plan-create" aria-label="Create Native v3 plan">
             <h2>1. Published definition and one-use connection</h2>
             {state.definitions === null || state.destinations === null ? (
-              <p role="status">Loading published definitions and configured destinations…</p>
+              <p role="status">Loading published definitions and PostgreSQL connections…</p>
             ) : (
               <>
                 <label htmlFor="v3-published-definition">
@@ -148,25 +155,69 @@ export function V3PlanInspection({
                     ))}
                   </select>
                 </label>
-                <label htmlFor="v3-plan-destination">
-                  PostgreSQL connection target
-                  <select
-                    id="v3-plan-destination"
-                    value={state.destination}
-                    disabled={!selectedBinding || state.creating || Boolean(state.pendingCreate)}
-                    onChange={(event) => state.chooseDestination(event.target.value)}
+                <section className="v3-connection-card" aria-labelledby="v3-connection-heading">
+                  <div>
+                    <h3 id="v3-connection-heading">PostgreSQL 16.11 connection</h3>
+                    <p>
+                      Save only the connection target. Username and password are requested later for
+                      one read-only inspection and are not stored.
+                    </p>
+                  </div>
+                  <label htmlFor="v3-plan-jdbc-url">
+                    JDBC connection string
+                    <input
+                      id="v3-plan-jdbc-url"
+                      value={state.connectionUrl}
+                      placeholder="jdbc:postgresql://host:5432/database"
+                      disabled={
+                        state.creating || state.addingDestination || Boolean(state.pendingCreate)
+                      }
+                      onChange={(event) => state.setConnectionUrl(event.target.value)}
+                    />
+                  </label>
+                  <button
+                    type="button"
+                    disabled={!canAddDestination}
+                    onClick={() => void state.addDestination()}
                   >
-                    <option value="">Choose one-use configured target</option>
-                    {compatibleDestinations.map((destination) => (
-                      <option key={destination.id} value={destination.id}>
-                        {destination.id} · {destination.engine} · {destination.host}:
-                        {destination.port}/{destination.database}
-                      </option>
-                    ))}
-                  </select>
-                </label>
+                    {state.addingDestination ? "Saving connection…" : "Save connection target"}
+                  </button>
+                  {state.pendingDestination && !state.addingDestination && (
+                    <section className="v3-plan-notice" aria-label="Unconfirmed connection save">
+                      <p>
+                        The connection save response was unavailable. Retry the same JDBC URL before
+                        creating a different target.
+                      </p>
+                      <button type="button" onClick={() => void state.retryDestination()}>
+                        Retry original connection save
+                      </button>
+                    </section>
+                  )}
+                  <label htmlFor="v3-plan-destination">
+                    Saved PostgreSQL target
+                    <select
+                      id="v3-plan-destination"
+                      value={state.destination}
+                      disabled={
+                        !selectedBinding ||
+                        state.creating ||
+                        state.addingDestination ||
+                        Boolean(state.pendingCreate)
+                      }
+                      onChange={(event) => state.chooseDestination(event.target.value)}
+                    >
+                      <option value="">Choose saved connection target</option>
+                      {compatibleDestinations.map((destination) => (
+                        <option key={destination.id} value={destination.id}>
+                          jdbc:postgresql://{destination.host}:{destination.port}/
+                          {destination.database}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                </section>
                 {selectedBinding && compatibleDestinations.length === 0 && (
-                  <p>No PostgreSQL target matches the selected definition binding.</p>
+                  <p>Add a PostgreSQL connection string before creating the plan.</p>
                 )}
                 <button
                   type="button"

@@ -176,7 +176,7 @@ public class HostedSecurity {
                         "/api/v3/operations/{operationId}/credentials", "/api/v3/operations/{operationId}/cancel").authenticated()
                 .requestMatchers(HttpMethod.PUT, "/api/v1/definitions/{objectId}").authenticated()
                 .requestMatchers(HttpMethod.GET, "/api/v1/destinations", "/api/v1/plans/current", "/api/v1/plans/{planId}", "/api/v1/operations/{operationId}").authenticated()
-                .requestMatchers(HttpMethod.POST, "/api/v1/plans", "/api/v1/plans/{planId}/inspections", "/api/v1/plans/{planId}/commands",
+                .requestMatchers(HttpMethod.POST, "/api/v1/destinations", "/api/v1/plans", "/api/v1/plans/{planId}/inspections", "/api/v1/plans/{planId}/commands",
                         "/api/v1/operations/{operationId}/credentials", "/api/v1/operations/{operationId}/cancel").authenticated()
                 .requestMatchers(HttpMethod.POST, "/api/v1/plans/{planId}/materializations",
                         "/api/v1/plans/{planId}/views/documents", "/api/v1/plans/{planId}/views/entities", "/api/v1/plans/{planId}/views/relations",

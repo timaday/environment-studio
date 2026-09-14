@@ -34,7 +34,10 @@ function stateFixture(
     destinations: null,
     binding: "",
     destination: "",
+    connectionUrl: "",
+    addingDestination: false,
     creating: false,
+    pendingDestination: null,
     pendingCreate: null,
     inventory: null,
     selected: "",
@@ -50,6 +53,9 @@ function stateFixture(
     chooseDefinition: vi.fn(),
     chooseBinding: vi.fn(),
     chooseDestination: vi.fn(),
+    setConnectionUrl: vi.fn(),
+    addDestination: vi.fn(),
+    retryDestination: vi.fn(),
     createPlan: vi.fn(),
     retryCreate: vi.fn(),
     select: vi.fn(),
@@ -317,10 +323,92 @@ it("renders v3 published definition plan creation controls", () => {
     "50000000-0000-0000-0000-000000000002",
   );
   expect(screen.getByRole("combobox", { name: "Binding" })).toHaveValue("mock-pg");
-  expect(screen.getByRole("combobox", { name: "PostgreSQL connection target" })).toHaveValue(
+  expect(screen.getByRole("combobox", { name: "Saved PostgreSQL target" })).toHaveValue(
     "mock-postgres",
   );
   expect(screen.getByRole("button", { name: "Continue to current inspection" })).toBeEnabled();
+});
+
+it("adds a PostgreSQL JDBC target before asking for one-time credentials", async () => {
+  const setConnectionUrl = vi.fn();
+  const addDestination = vi.fn();
+  const state = stateFixture({
+    phase: "absent",
+    definitions: [
+      {
+        objectId: "50000000-0000-0000-0000-000000000002",
+        workspaceRevision: "2",
+        nativeId: "mock-tiles",
+        nativeRevision: "1",
+        state: "published",
+        compilationKind: "historical-ready",
+        logicalDigest: "a".repeat(64),
+      },
+    ],
+    definition: {
+      objectId: "50000000-0000-0000-0000-000000000002",
+      workspaceRevision: "2",
+      sourceDigest: "c".repeat(64),
+      source: "{}",
+      format: "JSON",
+      schemaVersion: "3",
+      compilerVersion: "native-compiler-v3",
+      state: "published",
+      publication: { digest: "d".repeat(64), sourceRevision: "1", exportPolicies: [] },
+      projection: {
+        kind: "historical-ready",
+        model: {
+          schemaVersion: "3",
+          id: "mock-tiles",
+          revision: "1",
+          logical: { entityTypes: [], relations: [], rules: [], operationCapabilities: [] },
+          bindings: [
+            {
+              id: "mock-pg",
+              engine: "postgresql",
+              storage: "text",
+              schema: "mock_pg",
+              table: "mock_tiles",
+              keyColumn: "mock_key",
+              xmlColumn: "mock_xml",
+              keyType: "int64",
+              documents: [],
+            },
+          ],
+        },
+        logicalDigest: "a".repeat(64),
+        bindingDigests: { "mock-pg": "b".repeat(64) },
+        mechanisms: {
+          "xml-path-v1": "1",
+          "xml-span-v1": "1",
+          "generic-graph-v1": "1",
+          "native-compiler-v3": "1",
+          "derived-graph-v1": "1",
+        },
+        diagnostics: [],
+      },
+    } as unknown as NonNullable<ReturnType<typeof useV3PlanInspection>["definition"]>,
+    destinations: [],
+    binding: "mock-pg",
+    connectionUrl: "jdbc:postgresql://mock-db.invalid:5432/mock_database",
+    setConnectionUrl,
+    addDestination,
+  });
+  render(
+    <V3PlanInspection
+      api={{} as never}
+      state={state}
+      versionSelector={null}
+      openDefinitions={vi.fn()}
+      inspectionUiEnabled
+    />,
+  );
+  expect(screen.getByRole("textbox", { name: "JDBC connection string" })).toHaveValue(
+    "jdbc:postgresql://mock-db.invalid:5432/mock_database",
+  );
+  expect(screen.queryByLabelText(/Database password/)).not.toBeInTheDocument();
+  await userEvent.click(screen.getByRole("button", { name: "Save connection target" }));
+  expect(addDestination).toHaveBeenCalledOnce();
 });
 
 it("offers all three document modes without loading before disclosure", () => {

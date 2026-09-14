@@ -8,7 +8,8 @@ import studio.environment.core.plan.*;
 import studio.environment.core.session.*;
 import studio.environment.core.workspace.NativeCommand;
 import studio.environment.server.session.HostedSessions;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 class PlanControllerTest {
@@ -47,5 +48,41 @@ class PlanControllerTest {
             .andExpect(status().isOk()).andExpect(header().string("Cache-Control","no-store"))
             .andExpect(content().json("{\"destinations\":[{\"id\":\"mock\",\"engine\":\"postgresql\",\"host\":\"mock.invalid\",\"port\":5432,\"database\":\"mock_database\"}]}"));
         mvc.perform(get("/api/v1/destinations")).andExpect(status().isUnauthorized());
+    }
+
+    @Test void postgresqlConnectionStringCreatesOwnedDestinationWithoutCredentials() throws Exception {
+        var ledger=new SessionLedger(Clock.systemUTC(),ignored->{});
+        var lease=((SessionLedger.Accepted)ledger.admit("mock-http-session",new Owner("https://mock.invalid","owner"))).lease();
+        PlanPorts.Workspace workspace=new PlanPorts.Workspace() {
+            public PlanPorts.PublishedDefinition definition(Owner owner,NativeCommand.Reference reference){throw new AssertionError("UNEXPECTED_WORKSPACE_READ");}
+            public PlanPorts.PublishedProfile profile(Owner owner,NativeCommand.Reference reference,PlanPorts.PublishedDefinition definition){throw new AssertionError("UNEXPECTED_WORKSPACE_READ");}
+        };
+        var service=new HostedPlanService(ledger::guard,workspace,Map.of(),new PlanContentAdapter(),System::nanoTime);
+        var runtime=new PlanRuntime(service,List.of(),(owner,id)->owner.equals(lease.owner()));
+        var mvc=MockMvcBuilders.standaloneSetup(new PlanController(runtime,new HostedSessions(Clock.systemUTC(),List.of()))).build();
+        String body="{\"requestId\":\"00000000-0000-0000-0000-000000000123\",\"jdbcUrl\":\"jdbc:postgresql://mock-db.invalid:5432/mock_database\"}";
+        var destination=runtime.register(lease,new PlanMetadataReader().destination(new java.io.ByteArrayInputStream(body.getBytes(java.nio.charset.StandardCharsets.UTF_8))));
+        assertEquals("postgresql",destination.engine());
+        assertEquals("mock-db.invalid",destination.host());
+        assertEquals(5432,destination.port());
+        assertEquals("mock_database",destination.database());
+        mvc.perform(get("/api/v1/destinations").requestAttr(HostedSessions.REQUEST_LEASE,lease))
+            .andExpect(status().isOk()).andExpect(jsonPath("$.destinations[0].engine").value("postgresql"));
+    }
+
+    @Test void destinationCreationRejectsJdbcPropertiesAndCredentialUserinfo() throws Exception {
+        var ledger=new SessionLedger(Clock.systemUTC(),ignored->{});
+        var lease=((SessionLedger.Accepted)ledger.admit("mock-http-session",new Owner("https://mock.invalid","owner"))).lease();
+        PlanPorts.Workspace workspace=new PlanPorts.Workspace() {
+            public PlanPorts.PublishedDefinition definition(Owner owner,NativeCommand.Reference reference){throw new AssertionError("UNEXPECTED_WORKSPACE_READ");}
+            public PlanPorts.PublishedProfile profile(Owner owner,NativeCommand.Reference reference,PlanPorts.PublishedDefinition definition){throw new AssertionError("UNEXPECTED_WORKSPACE_READ");}
+        };
+        for(String jdbc:List.of("jdbc:postgresql://user:secret@mock-db.invalid:5432/mock_database",
+                "jdbc:postgresql://mock-db.invalid:5432/mock_database?password=secret",
+                "jdbc:oracle:thin:@mock-db.invalid:1521/MOCK")) {
+            String body="{\"requestId\":\"00000000-0000-0000-0000-000000000124\",\"jdbcUrl\":\""+jdbc+"\"}";
+            org.junit.jupiter.api.Assertions.assertEquals(PlanBodyFailure.Code.MALFORMED_BODY,
+                    org.junit.jupiter.api.Assertions.assertThrows(PlanBodyFailure.class,()->new PlanMetadataReader().destination(new java.io.ByteArrayInputStream(body.getBytes(java.nio.charset.StandardCharsets.UTF_8)))).code());
+        }
     }
 }

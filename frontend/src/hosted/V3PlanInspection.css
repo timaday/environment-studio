@@ -248,6 +248,42 @@
 .v3-plan-create button {
   justify-self: start;
 }
+.v3-connection-card {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: minmax(260px, 1fr) auto;
+  gap: 14px;
+  align-items: end;
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: #121c2e;
+}
+.v3-connection-card > div,
+.v3-connection-card label,
+.v3-connection-card .v3-plan-notice {
+  grid-column: 1 / -1;
+}
+.v3-connection-card h3 {
+  margin: 0 0 4px;
+  font-size: 18px;
+}
+.v3-connection-card p {
+  margin: 0;
+  color: var(--muted);
+}
+.v3-connection-card input {
+  width: 100%;
+  min-height: 44px;
+}
+@media (min-width: 820px) {
+  .v3-connection-card label:first-of-type {
+    grid-column: 1;
+  }
+  .v3-connection-card > button {
+    grid-column: 2;
+  }
+}
 
 .v3-flow-steps {
   display: flex;

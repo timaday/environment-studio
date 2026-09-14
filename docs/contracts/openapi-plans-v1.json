@@ -61,6 +61,71 @@
             "$ref": "#/components/responses/Error503"
           }
         }
+      },
+      "post": {
+        "operationId": "addOwnedPostgresqlDestination",
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddDestination"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Owned PostgreSQL target metadata saved; no credentials or export authority implied",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DestinationCreated"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          }
+        }
       }
     },
     "/api/v1/plans": {
@@ -2288,6 +2353,36 @@
             }
           }
         ]
+      },
+      "AddDestination": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "requestId",
+          "jdbcUrl"
+        ],
+        "properties": {
+          "requestId": {
+            "$ref": "#/components/schemas/Uuid"
+          },
+          "jdbcUrl": {
+            "type": "string",
+            "pattern": "^jdbc:postgresql://[A-Za-z0-9.-]{1,253}:[1-9][0-9]{0,4}/[A-Za-z0-9_]{1,128}$",
+            "maxLength": 512
+          }
+        }
+      },
+      "DestinationCreated": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "destination"
+        ],
+        "properties": {
+          "destination": {
+            "$ref": "#/components/schemas/Destination"
+          }
+        }
       }
     },
     "responses": {

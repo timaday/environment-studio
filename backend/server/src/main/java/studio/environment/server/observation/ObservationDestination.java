@@ -3,11 +3,11 @@ package studio.environment.server.observation;
 import java.util.*;
 import studio.environment.core.definitionv2.NativeDefinition.Engine;
 
-/** Trusted server composition only. No request can construct URLs or driver properties. */
+/** Trusted server composition only. No request can construct driver properties. */
 public record ObservationDestination(String id, Engine engine, String host, int port, String database,
         Transport transport, String trustMaterial, String transportIdentity, Map<String, String> expectedPhysicalIdentity,
         String provisioningPolicyVersion, String operationPolicyVersion) {
-    public enum Transport { VERIFIED_TLS, DISPOSABLE_LOOPBACK }
+    public enum Transport { VERIFIED_TLS, DISPOSABLE_LOOPBACK, OPERATOR_SUPPLIED_PLAINTEXT }
     public ObservationDestination {
         Objects.requireNonNull(engine); Objects.requireNonNull(transport);
         if (id == null || id.isBlank() || host == null || !host.matches("[A-Za-z0-9.-]{1,253}")
@@ -18,7 +18,10 @@ public record ObservationDestination(String id, Engine engine, String host, int 
         if (transport == Transport.VERIFIED_TLS && (trustMaterial == null || trustMaterial.isBlank())) throw new IllegalArgumentException("TRUST_MATERIAL_REQUIRED");
         expectedPhysicalIdentity = Map.copyOf(expectedPhysicalIdentity);
         var keys = engine == Engine.POSTGRESQL ? Set.of("systemIdentifier", "databaseOid", "databaseName") : Set.of("dbid", "dbUniqueName", "conId", "conUid", "conName", "pdbGuid");
-        if (!expectedPhysicalIdentity.keySet().equals(keys) || expectedPhysicalIdentity.values().stream().anyMatch(String::isBlank)) throw new IllegalArgumentException("INDEPENDENT_DESTINATION_REQUIRED");
+        boolean observedAtInspection = engine == Engine.POSTGRESQL && transport == Transport.OPERATOR_SUPPLIED_PLAINTEXT && expectedPhysicalIdentity.isEmpty();
+        if (!observedAtInspection && (!expectedPhysicalIdentity.keySet().equals(keys) || expectedPhysicalIdentity.values().stream().anyMatch(String::isBlank)))
+            throw new IllegalArgumentException("INDEPENDENT_DESTINATION_REQUIRED");
     }
+    public boolean physicalIdentityPinnedBeforeInspection() { return !expectedPhysicalIdentity.isEmpty(); }
     @Override public String toString() { return "ObservationDestination[REDACTED]"; }
 }

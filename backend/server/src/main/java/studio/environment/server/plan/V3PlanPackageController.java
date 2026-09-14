@@ -18,7 +18,7 @@ public final class V3PlanPackageController {
         var lease=PlanController.lease(request); var service=runtime.service();
         service.requireOwned(lease,planId,V3); V3PlanTransport.requireJson(request);
         var summary=service.viewV3(lease,java.util.Optional.of(planId)).summary();
-        var target=runtime.packageTarget(lease.owner(),summary.destinationId());
+        var target=runtime.packageTarget(lease.owner(),summary.destinationId(),summary.observedDestination().orElse(null));
         var admission=service.reserveView(lease,planId,V3); V3PlanTransfers.Operation operation;
         try { operation=runtime.transfers().admitSemantic(lease); }
         catch(RuntimeException failure){admission.close();throw failure;}

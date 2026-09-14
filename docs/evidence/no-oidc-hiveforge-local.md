@@ -121,6 +121,10 @@ diagnostics; it was not copied into the checkout or build context.
 ## Remaining qualification
 
 Actual HiveForge release qualification still requires a real target run using the
-published GHCR digest, platform registry credentials, platform routing/TLS,
-configured PostgreSQL 16.11 identity facts and the real PostgreSQL CA bundle.
-Record the HiveForge run result before claiming G10/release readiness.
+published GHCR digest, platform registry credentials and platform routing/TLS.
+This 13 September evidence predates the 14 September simplified connection flow:
+the default no-OIDC hosted deployment no longer requires configured PostgreSQL
+identity facts or a mounted PostgreSQL CA bundle before startup. Operators add a
+PostgreSQL 16.11 JDBC target in the UI and supply username/password only for the
+read-only inspection operation. Record the HiveForge run result before claiming
+G10/release readiness.

@@ -254,6 +254,63 @@ it("creates a v3 plan from an owned published v3 definition", async () => {
   expect(hook.result.current.inventory).toBeNull();
 });
 
+it("stores a PostgreSQL JDBC target and selects the returned destination", async () => {
+  const transport = vi.fn<typeof fetch>().mockImplementation(async (path, options) => {
+    if (path === "/api/v1/session")
+      return json({
+        authenticated: true,
+        csrfHeaderName: "X-CSRF",
+        csrfToken: "mock-token",
+        idleTimeoutSeconds: 1800,
+        absoluteExpiresAt: "2099-01-01T00:00:00Z",
+      });
+    if (path === "/api/v3/plans/current") return json({ code: "NOT_FOUND" }, 404);
+    if (path === "/api/v1/destinations" && options?.method === "POST") {
+      const command = JSON.parse(String(options.body));
+      expect(command).toMatchObject({
+        jdbcUrl: "jdbc:postgresql://mock-db.invalid:5432/mock_database",
+      });
+      expect(command).not.toHaveProperty("username");
+      expect(command).not.toHaveProperty("password");
+      return json(
+        {
+          destination: {
+            id: "pg-owned",
+            engine: "postgresql",
+            host: "mock-db.invalid",
+            port: 5432,
+            database: "mock_database",
+          },
+        },
+        201,
+      );
+    }
+    if (path === "/api/v3/definitions") return json({ definitions: [v3DefinitionSummary()] });
+    if (path === "/api/v1/destinations") return json({ destinations: [] });
+    throw new Error(`Unexpected invented test route ${path}`);
+  });
+  const api = new HostedApi(transport);
+  owners.push(api);
+  await api.session();
+  const hook = renderHook(() => useV3PlanInspection(api, true));
+  await waitFor(() => expect(hook.result.current.phase).toBe("absent"));
+  act(() =>
+    hook.result.current.setConnectionUrl("jdbc:postgresql://mock-db.invalid:5432/mock_database"),
+  );
+  await act(() => hook.result.current.addDestination());
+  expect(hook.result.current.destination).toBe("pg-owned");
+  expect(hook.result.current.connectionUrl).toBe("");
+  expect(hook.result.current.destinations).toEqual([
+    {
+      id: "pg-owned",
+      engine: "postgresql",
+      host: "mock-db.invalid",
+      port: 5432,
+      database: "mock_database",
+    },
+  ]);
+});
+
 it("keeps the verified inspection view visible while plan refresh is in flight", async () => {
   const { result, transport } = await setup();
   act(() => {

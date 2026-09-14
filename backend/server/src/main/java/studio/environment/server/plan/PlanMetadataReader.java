@@ -11,6 +11,7 @@ import studio.environment.core.workspace.NativeCommand;
 /** Tiny credential-free wrappers; limits apply while reading rather than after a full body copy. */
 final class PlanMetadataReader {
     record Create(String requestId,NativeCommand.Reference definition,String bindingId,String destinationId) { }
+    record Destination(String requestId,String jdbcUrl) { }
     private static final JsonFactory JSON=JsonFactory.builder().enable(StreamReadFeature.STRICT_DUPLICATE_DETECTION)
         .streamReadConstraints(StreamReadConstraints.builder().maxNestingDepth(4).maxTokenCount(128).maxStringLength(16_384).maxNameLength(64).build()).build();
     Create create(InputStream input) {
@@ -25,6 +26,10 @@ final class PlanMetadataReader {
         return new Mutation(revision(text(data.get("expectedRevision"))),uuid(text(data.get("requestId"))));
     }
     void empty(InputStream input) { keys(read(input)); }
+    Destination destination(InputStream input) {
+        var data=read(input); keys(data,"requestId","jdbcUrl");
+        return new Destination(uuid(text(data.get("requestId"))),jdbc(text(data.get("jdbcUrl"))));
+    }
     studio.environment.core.plan.HostedPlanService.ReviewCommand review(InputStream input) {
         var data=read(input);keys(data,"expectedRevision","requestId","inputFingerprint","destinationId","artifactIntent");
         String fingerprint=text(data.get("inputFingerprint"));
@@ -68,6 +73,18 @@ final class PlanMetadataReader {
     private static String tool(String value) { if(!value.matches("[a-z][a-z0-9.-]{0,63}")) throw invalid(); return value; }
     private static String revision(String value) { if(!value.matches("[1-9][0-9]{0,1023}")) throw invalid(); return value; }
     private static String uuid(String value) { try { if(!UUID.fromString(value).toString().equals(value)) throw invalid(); } catch(IllegalArgumentException failure) {throw invalid();}return value; }
+    private static String jdbc(String value) {
+        if(value.length()>512 || !value.startsWith("jdbc:postgresql://")) throw invalid();
+        try {
+            var uri=java.net.URI.create(value.substring(5));
+            if(!"postgresql".equals(uri.getScheme()) || uri.getHost()==null || uri.getUserInfo()!=null || uri.getRawQuery()!=null || uri.getRawFragment()!=null
+                    || uri.getPort()<1 || uri.getPort()>65535 || uri.getPath()==null || !uri.getPath().matches("/[A-Za-z0-9_]{1,128}"))
+                throw invalid();
+            String host=uri.getHost();
+            if(!host.matches("[A-Za-z0-9.-]{1,253}") || host.startsWith(".") || host.endsWith(".") || host.contains("..")) throw invalid();
+            return "jdbc:postgresql://" + host + ":" + uri.getPort() + uri.getPath();
+        } catch(IllegalArgumentException failure) { throw invalid(); }
+    }
     private static PlanBodyFailure invalid() { return new PlanBodyFailure(PlanBodyFailure.Code.MALFORMED_BODY); }
     private static final class Limited extends FilterInputStream {
         int bytes;

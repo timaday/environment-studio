@@ -255,7 +255,8 @@
             "transport": {
               "enum": [
                 "verified-tls",
-                "disposable-loopback"
+                "disposable-loopback",
+                "operator-supplied-plaintext"
               ]
             },
             "transportIdentity": {

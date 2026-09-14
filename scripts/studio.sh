@@ -180,7 +180,8 @@ case "$command_name" in
     chmod 0600 "$hosted_env_file"
     cat <<EOF_CREATED
 Created $hosted_env_file with mode 0600.
-Edit the image, workspace path, PostgreSQL destination/trust/identity values and public origin before hosted-up. Keep database login credentials out of this file.
+Edit the image, workspace path, public origin and local operator password before hosted-up.
+Add the PostgreSQL JDBC target in the UI. Keep database login credentials out of this file.
 EOF_CREATED
     ;;
   hosted-config)

@@ -51,7 +51,10 @@ type State = Readonly<{
   destinations: readonly Destination[] | null;
   binding: string;
   destination: string;
+  connectionUrl: string;
+  addingDestination: boolean;
   creating: boolean;
+  pendingDestination: { requestId: string; jdbcUrl: string } | null;
   pendingCreate: CreatePlan | null;
   inventory: Inventory | null;
   selected: string;
@@ -72,7 +75,10 @@ const empty: State = {
   destinations: null,
   binding: "",
   destination: "",
+  connectionUrl: "",
+  addingDestination: false,
   creating: false,
+  pendingDestination: null,
   pendingCreate: null,
   inventory: null,
   selected: "",
@@ -262,7 +268,8 @@ export function useV3PlanInspection(api: HostedApi, enabled: boolean, definition
   }
   function chooseBinding(binding: string) {
     const captured = latest.current;
-    if (!owner.active || captured.creating || captured.pendingCreate) return;
+    if (!owner.active || captured.creating || captured.addingDestination || captured.pendingCreate)
+      return;
     if (
       binding &&
       !captured.definition?.projection.model.bindings.some((item) => item.id === binding)
@@ -272,9 +279,59 @@ export function useV3PlanInspection(api: HostedApi, enabled: boolean, definition
   }
   function chooseDestination(destination: string) {
     const captured = latest.current;
-    if (!owner.active || captured.creating || captured.pendingCreate) return;
+    if (!owner.active || captured.creating || captured.addingDestination || captured.pendingCreate)
+      return;
     if (destination && !captured.destinations?.some((item) => item.id === destination)) return;
     replace({ ...captured, destination, error: "" });
+  }
+  function setConnectionUrl(connectionUrl: string) {
+    const captured = latest.current;
+    if (!owner.active || captured.creating || captured.addingDestination || captured.pendingCreate)
+      return;
+    replace({ ...captured, connectionUrl, error: "" });
+  }
+  async function executeDestination(command: { requestId: string; jdbcUrl: string }) {
+    const captured = latest.current;
+    if (!owner.active || captured.addingDestination) return;
+    const token = ++owner.generation;
+    replace({ ...captured, addingDestination: true, pendingDestination: command, error: "" });
+    try {
+      const reply = await owner.api.post<{ destination: Destination }>(
+        "/api/v1/destinations",
+        command,
+      );
+      if (!current(token)) return;
+      const destination = reply.destination;
+      const existing = latest.current.destinations ?? [];
+      replace({
+        ...latest.current,
+        destinations: [...existing.filter((item) => item.id !== destination.id), destination],
+        destination: destination.id,
+        connectionUrl: "",
+        addingDestination: false,
+        pendingDestination: null,
+        error: "",
+      });
+    } catch (error) {
+      if (current(token))
+        replace({
+          ...captured,
+          addingDestination: false,
+          pendingDestination: definitiveRefusal(error) ? null : command,
+          error: failureMessage(error),
+        });
+    }
+  }
+  async function addDestination() {
+    const captured = latest.current;
+    if (!owner.active || captured.addingDestination || captured.pendingDestination) return;
+    const jdbcUrl = captured.connectionUrl.trim();
+    if (!jdbcUrl) return;
+    await executeDestination({ requestId: crypto.randomUUID(), jdbcUrl });
+  }
+  async function retryDestination() {
+    const command = latest.current.pendingDestination;
+    if (command) await executeDestination(command);
   }
   async function executeCreate(command: CreatePlan) {
     const captured = latest.current;
@@ -506,6 +563,9 @@ export function useV3PlanInspection(api: HostedApi, enabled: boolean, definition
     chooseDefinition,
     chooseBinding,
     chooseDestination,
+    setConnectionUrl,
+    addDestination,
+    retryDestination,
     createPlan,
     retryCreate,
     select,

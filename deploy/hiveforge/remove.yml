@@ -26,7 +26,7 @@
     - name: Render Environment Studio Compose file
       ansible.builtin.import_tasks: tasks/render-compose.yml
 
-    - name: Remove Environment Studio service without deleting bind-mounted workspace or trust material
+    - name: Remove Environment Studio service without deleting bind-mounted workspace
       ansible.builtin.command:
         cmd: docker compose --project-name {{ environment_studio_compose_project }} -f {{ environment_studio_compose_file }} down --remove-orphans
         chdir: "{{ environment_studio_runtime_dir }}"

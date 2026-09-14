@@ -35,8 +35,8 @@ class PlanDestinationsTest {
         var demo=studio.environment.server.security.RuntimeConfiguration.RuntimeMode.DEMO;
         org.mockito.Mockito.when(workspace.enabled()).thenReturn(true);
         var missing=new PlanRuntime(new MockEnvironment(),hosted,workspace,provider);
-        assertFalse(missing.inspectionApiConfigured());
-        assertThrows(PlanRuntime.Unavailable.class,missing::service);
+        assertTrue(missing.inspectionApiConfigured());
+        assertNotNull(missing.service());
         assertFalse(new PlanRuntime(configured(),demo,workspace,provider).inspectionApiConfigured());
         org.mockito.Mockito.when(workspace.enabled()).thenReturn(false);
         assertFalse(new PlanRuntime(configured(),hosted,workspace,provider).inspectionApiConfigured());

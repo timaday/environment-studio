@@ -43,39 +43,6 @@ services:
                   "subject": "${STUDIO_DEFINITION_PUBLISHER_SUBJECT:-operator}"
                 }
               ]
-            },
-            "plans": {
-              "destinations": [
-                {
-                  "id": "${STUDIO_PG_DESTINATION_ID:-postgresql-pilot}",
-                  "engine": "postgresql",
-                  "host": "${STUDIO_PG_HOST:?Set PostgreSQL 16.11 host name}",
-                  "port": ${STUDIO_PG_PORT:-5432},
-                  "database": "${STUDIO_PG_DATABASE:?Set PostgreSQL database name}",
-                  "trust-material": "/run/studio/postgres-ca.pem",
-                  "transport-identity": "${STUDIO_PG_TRANSPORT_IDENTITY_SHA256:?Set approved 64 lowercase hex endpoint/trust identity}",
-                  "expected-physical-identity": {
-                    "systemIdentifier": "${STUDIO_PG_SYSTEM_IDENTIFIER:?Set observed pg_control_system system_identifier}",
-                    "databaseOid": "${STUDIO_PG_DATABASE_OID:?Set observed database oid}",
-                    "databaseName": "${STUDIO_PG_DATABASE:?Set PostgreSQL database name}"
-                  },
-                  "provisioning-policy-version": "${STUDIO_PG_PROVISIONING_POLICY_VERSION:-postgresql-pilot-readonly-v1}",
-                  "operation-policy-version": "postgresql-read-operation-v1",
-                  "export-client": {
-                    "serverVersion": "16.11",
-                    "family": "psql",
-                    "version": "16.11",
-                    "platform": "linux-amd64",
-                    "templateVersion": "postgresql16-text-v1"
-                  },
-                  "owners": [
-                    {
-                      "issuer": "${STUDIO_DESTINATION_OWNER_ISSUER:-https://local-operator.environment-studio.invalid}",
-                      "subject": "${STUDIO_DESTINATION_OWNER_SUBJECT:-operator}"
-                    }
-                  ]
-                }
-              ]
             }
           }
         }
@@ -89,10 +56,6 @@ services:
       - type: bind
         source: ${STUDIO_WORKSPACE_HOST_PATH:?Set STUDIO_WORKSPACE_HOST_PATH to a private host directory owned by uid/gid 10001}
         target: /workspace
-      - type: bind
-        source: ${STUDIO_PG_TRUST_MATERIAL_HOST_PATH:?Set absolute host path to the PostgreSQL PEM CA bundle}
-        target: /run/studio/postgres-ca.pem
-        read_only: true
     healthcheck:
       test: ["CMD", "java", "-cp", "/opt/studio/probe", "HealthProbe"]
       interval: 15s

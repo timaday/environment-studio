@@ -56,10 +56,12 @@ class V3PlanRuntimeTest {
         var beans=new DefaultListableBeanFactory();beans.registerSingleton("sessions",sessions);
         return new PlanRuntime(env,RuntimeMode.HOSTED,new WorkspaceRuntime(env,RuntimeMode.HOSTED),beans.getBeanProvider(HostedSessions.class));
     }
-    @Test void postgresql16PilotCapabilitiesRequireExactPackageTargetConfiguration() {
+    @Test void postgresql16PilotCapabilitiesAllowRuntimePostgresqlDestinationCreation() {
         SqliteDraftStore.initializeV3(temporary);
         var sessions=new HostedSessions(Clock.systemUTC(),List.of());
-        assertFalse(runtime(temporary,sessions).postgresql16PilotConfigured());
+        assertTrue(runtime(temporary,sessions).postgresql16PilotConfigured());
+        assertTrue(runtime(temporary,sessions).exportConfigured());
+        assertEquals(List.of("postgresql:16.11/psql:16.11/postgresql16-text-v1"), runtime(temporary,sessions).qualifiedDatabaseAdapters());
         var configured = runtime(configuredPostgresql16Pilot(temporary),sessions);
         assertTrue(configured.postgresql16PilotConfigured());
         assertTrue(configured.exportConfigured());

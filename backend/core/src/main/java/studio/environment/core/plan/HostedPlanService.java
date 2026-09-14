@@ -180,7 +180,15 @@ public final class HostedPlanService {
     public HostedPlanService(Authority authority, Workspace workspace, Map<String,Destination> destinations,
             ContentAdapter content, LongSupplier monotonic) {
         this.authority=Objects.requireNonNull(authority); this.workspace=Objects.requireNonNull(workspace);
-        this.destinations=Map.copyOf(destinations); this.content=Objects.requireNonNull(content); this.monotonic=Objects.requireNonNull(monotonic);
+        this.destinations=new LinkedHashMap<>(destinations); this.content=Objects.requireNonNull(content); this.monotonic=Objects.requireNonNull(monotonic);
+    }
+    public void registerDestination(Destination destination) {
+        Objects.requireNonNull(destination);
+        synchronized(lock) {
+            if(destinations.containsKey(destination.id())) return;
+            if(destinations.size()>=32) throw new PlanRefusal(CAPACITY);
+            destinations.put(destination.id(),destination);
+        }
     }
     private <T> T guarded(SessionLedger.Lease lease, Supplier<T> transition) {
         return authority.guard(lease,()-> { synchronized(lock) { return transition.get(); } }).orElseThrow(()->new PlanRefusal(SESSION_REQUIRED));
