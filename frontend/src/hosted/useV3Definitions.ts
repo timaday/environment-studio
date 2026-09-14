@@ -129,7 +129,7 @@ export function useV3Definitions(api: HostedApi, enabled: boolean) {
     setError("");
     try {
       const value = await scope.client.saveDefinition(command);
-      if (!current(token)) return;
+      if (!current(token)) return false;
       acknowledged(value);
       scope.pending = null;
       setPending(false);
@@ -140,8 +140,9 @@ export function useV3Definitions(api: HostedApi, enabled: boolean) {
       } catch (e) {
         if (current(token)) setError(failureMessage(e));
       }
+      return true;
     } catch (e) {
-      if (!current(token)) return;
+      if (!current(token)) return false;
       setError(failureMessage(e));
       setDiagnostics(e instanceof ApiFailure ? e.diagnostics : []);
       if (e instanceof ApiFailure && e.code === "SESSION_REQUIRED") {
@@ -192,8 +193,8 @@ export function useV3Definitions(api: HostedApi, enabled: boolean) {
   async function retry() {
     if (scope.pending) await execute(scope.pending);
   }
-  async function publish(exportPolicies: PublishDefinition["exportPolicies"]) {
-    if (!available() || scope.pending || !selected) return;
+  async function publish(exportPolicies: PublishDefinition["exportPolicies"]): Promise<boolean> {
+    if (!available() || scope.pending || !selected) return false;
     cancelFileRead();
     const token = ++scope.epoch;
     scope.locked = true;
@@ -206,7 +207,7 @@ export function useV3Definitions(api: HostedApi, enabled: boolean) {
         exportPolicies,
       });
       const value = await scope.client.publishDefinition(command);
-      if (!current(token)) return;
+      if (!current(token)) return false;
       acknowledged(value);
       setPending(false);
       scope.pending = null;
@@ -216,10 +217,12 @@ export function useV3Definitions(api: HostedApi, enabled: boolean) {
       } catch (e) {
         if (current(token)) setError(failureMessage(e));
       }
+      return true;
     } catch (e) {
-      if (!current(token)) return;
+      if (!current(token)) return false;
       setError(failureMessage(e));
       setDiagnostics(e instanceof ApiFailure ? e.diagnostics : []);
+      return false;
     } finally {
       if (current(token)) {
         scope.locked = false;

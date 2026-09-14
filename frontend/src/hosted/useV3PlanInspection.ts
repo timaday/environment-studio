@@ -1,8 +1,15 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { ApiFailure, failureMessage, type HostedApi } from "../api/hosted";
+import {
+  ApiFailure,
+  type Destination,
+  definitiveRefusal,
+  failureMessage,
+  type HostedApi,
+} from "../api/hosted";
 import { HostedV3Api } from "../api/hostedV3";
+import { type DefinitionRevision, HostedV3Definitions } from "../api/hostedV3Definitions";
 import { HostedV3Physical } from "../api/hostedV3Physical";
-import type { PlanSummary } from "../api/hostedV3Types";
+import type { CreatePlan, PlanSummary } from "../api/hostedV3Types";
 
 type Inventory = Awaited<ReturnType<HostedV3Physical["documents"]>>["response"];
 type Document = Awaited<ReturnType<HostedV3Physical["document"]>>["response"];
@@ -23,6 +30,23 @@ export type BindingRailItem = Readonly<{
 type State = Readonly<{
   phase: "idle" | "loading" | "absent" | "loaded" | "error";
   plan: PlanSummary | null;
+  definitions:
+    | readonly {
+        readonly objectId: string;
+        readonly workspaceRevision: string;
+        readonly nativeId: string;
+        readonly nativeRevision: string;
+        readonly state: "draft" | "published";
+        readonly compilationKind: "incomplete" | "historical-ready";
+        readonly logicalDigest: string;
+      }[]
+    | null;
+  definition: DefinitionRevision | null;
+  destinations: readonly Destination[] | null;
+  binding: string;
+  destination: string;
+  creating: boolean;
+  pendingCreate: CreatePlan | null;
   inventory: Inventory | null;
   selected: string;
   mode: DocumentMode;
@@ -36,6 +60,13 @@ type State = Readonly<{
 const empty: State = {
   phase: "idle",
   plan: null,
+  definitions: null,
+  definition: null,
+  destinations: null,
+  binding: "",
+  destination: "",
+  creating: false,
+  pendingCreate: null,
   inventory: null,
   selected: "",
   mode: "raw",
@@ -51,9 +82,10 @@ const empty: State = {
 export function useV3PlanInspection(api: HostedApi, enabled: boolean) {
   const client = useMemo(() => new HostedV3Api(api), [api]);
   const physical = useMemo(() => new HostedV3Physical(api), [api]);
+  const definitions = useMemo(() => new HostedV3Definitions(api), [api]);
   const owner = useMemo(
-    () => ({ client, physical, enabled, active: false, generation: 0 }),
-    [client, physical, enabled],
+    () => ({ client, physical, definitions, api, enabled, active: false, generation: 0 }),
+    [client, physical, definitions, api, enabled],
   );
   const [state, setState] = useState<State>(empty);
   const latest = useRef(state);
@@ -72,6 +104,35 @@ export function useV3PlanInspection(api: HostedApi, enabled: boolean) {
     },
     [client],
   );
+  const loadCreateInputs = useCallback(
+    async (token: number) => {
+      const [definitionList, destinationList] = await Promise.all([
+        definitions.definitions(),
+        owner.api.get<{ destinations: Destination[] }>("/api/v1/destinations"),
+      ]);
+      if (!current(token)) return;
+      replace({
+        ...empty,
+        phase: "absent",
+        definitions: definitionList.definitions,
+        destinations: destinationList.destinations,
+      });
+    },
+    [definitions, owner.api, current, replace],
+  );
+  const loadPlan = useCallback(
+    async (token: number, plan: PlanSummary) => {
+      const inventory =
+        plan.observedDestination === null
+          ? null
+          : (await physical.documents(plan.planId, { revision: plan.revision })).response;
+      if (!current(token)) return;
+      await verify(plan);
+      if (!current(token)) return;
+      replace({ ...empty, phase: "loaded", plan, inventory });
+    },
+    [physical, current, verify, replace],
+  );
   const refresh = useCallback(async () => {
     if (!owner.active || !owner.enabled) return;
     const token = ++owner.generation;
@@ -81,25 +142,23 @@ export function useV3PlanInspection(api: HostedApi, enabled: boolean) {
       const plan = await client.current();
       if (!current(token)) return;
       found = true;
-      const inventory =
-        plan.observedDestination === null
-          ? null
-          : (await physical.documents(plan.planId, { revision: plan.revision })).response;
-      if (!current(token)) return;
-      await verify(plan);
-      if (!current(token)) return;
-      replace({ ...empty, phase: "loaded", plan, inventory });
+      await loadPlan(token, plan);
     } catch (error) {
       if (!current(token)) return;
       const absent =
         !found && error instanceof ApiFailure && error.status === 404 && error.code === "NOT_FOUND";
-      replace({
-        ...empty,
-        phase: absent ? "absent" : "error",
-        error: absent ? "" : failureMessage(error),
-      });
+      if (absent) {
+        try {
+          await loadCreateInputs(token);
+        } catch (createInputError) {
+          if (current(token))
+            replace({ ...empty, phase: "error", error: failureMessage(createInputError) });
+        }
+      } else {
+        replace({ ...empty, phase: "error", error: failureMessage(error) });
+      }
     }
-  }, [owner, client, physical, current, replace, verify]);
+  }, [owner, client, current, replace, loadPlan, loadCreateInputs]);
   useEffect(() => {
     owner.active = true;
     replace(empty);
@@ -110,6 +169,110 @@ export function useV3PlanInspection(api: HostedApi, enabled: boolean) {
       latest.current = empty;
     };
   }, [owner, refresh, replace]);
+  async function chooseDefinition(objectId: string) {
+    const captured = latest.current;
+    if (!owner.active || captured.creating || captured.pendingCreate) return;
+    const token = ++owner.generation;
+    replace({
+      ...captured,
+      definition: null,
+      binding: "",
+      destination: "",
+      error: "",
+      creating: Boolean(objectId),
+    });
+    if (!objectId) {
+      replace({ ...captured, definition: null, binding: "", destination: "", error: "" });
+      return;
+    }
+    try {
+      const definition = await definitions.definition(objectId);
+      if (!current(token)) return;
+      replace({
+        ...captured,
+        definition,
+        binding: "",
+        destination: "",
+        creating: false,
+        error: "",
+      });
+    } catch (error) {
+      if (current(token))
+        replace({
+          ...captured,
+          definition: null,
+          binding: "",
+          destination: "",
+          creating: false,
+          error: failureMessage(error),
+        });
+    }
+  }
+  function chooseBinding(binding: string) {
+    const captured = latest.current;
+    if (!owner.active || captured.creating || captured.pendingCreate) return;
+    if (
+      binding &&
+      !captured.definition?.projection.model.bindings.some((item) => item.id === binding)
+    )
+      return;
+    replace({ ...captured, binding, destination: "", error: "" });
+  }
+  function chooseDestination(destination: string) {
+    const captured = latest.current;
+    if (!owner.active || captured.creating || captured.pendingCreate) return;
+    if (destination && !captured.destinations?.some((item) => item.id === destination)) return;
+    replace({ ...captured, destination, error: "" });
+  }
+  async function executeCreate(command: CreatePlan) {
+    const captured = latest.current;
+    if (!owner.active || captured.creating) return;
+    const token = ++owner.generation;
+    replace({ ...captured, creating: true, pendingCreate: command, error: "" });
+    let acknowledged = false;
+    try {
+      const ack = await client.create(command);
+      acknowledged = true;
+      if (!current(token)) return;
+      const plan = await client.summary(ack.planId);
+      if (!current(token)) return;
+      await loadPlan(token, plan);
+    } catch (error) {
+      if (current(token))
+        replace({
+          ...captured,
+          creating: false,
+          pendingCreate: !acknowledged && !definitiveRefusal(error) ? command : null,
+          error: failureMessage(error),
+        });
+    }
+  }
+  async function createPlan() {
+    const captured = latest.current;
+    if (
+      captured.definition?.state !== "published" ||
+      !captured.binding ||
+      !captured.destination ||
+      captured.creating ||
+      captured.pendingCreate
+    )
+      return;
+    const command: CreatePlan = {
+      expectedRevision: "0",
+      requestId: crypto.randomUUID(),
+      definition: {
+        objectId: captured.definition.objectId,
+        workspaceRevision: captured.definition.workspaceRevision,
+      },
+      bindingId: captured.binding,
+      destinationId: captured.destination,
+    };
+    await executeCreate(command);
+  }
+  async function retryCreate() {
+    const command = latest.current.pendingCreate;
+    if (command) await executeCreate(command);
+  }
   function clear(patch: Partial<State>) {
     owner.generation++;
     replace({
@@ -292,5 +455,17 @@ export function useV3PlanInspection(api: HostedApi, enabled: boolean) {
         });
     }
   }
-  return { ...state, refresh, select, setMode: mode, setConsent: consent, load };
+  return {
+    ...state,
+    refresh,
+    chooseDefinition,
+    chooseBinding,
+    chooseDestination,
+    createPlan,
+    retryCreate,
+    select,
+    setMode: mode,
+    setConsent: consent,
+    load,
+  };
 }

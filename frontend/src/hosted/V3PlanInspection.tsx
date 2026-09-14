@@ -22,6 +22,19 @@ export function V3PlanInspection({
 }) {
   const plan = state.plan;
   const documents = state.inventory?.documents;
+  const publishedDefinition = state.definition?.state === "published" ? state.definition : null;
+  const selectedBinding = state.definition?.projection.model.bindings.find(
+    (binding) => binding.id === state.binding,
+  );
+  const compatibleDestinations =
+    state.destinations?.filter((destination) => destination.engine === selectedBinding?.engine) ??
+    [];
+  const publishedDefinitions = state.definitions?.filter(
+    (definition) => definition.state === "published",
+  );
+  const canCreate = Boolean(
+    publishedDefinition && state.binding && state.destination && !state.creating,
+  );
   const canRead = Boolean(state.selected && state.consent && !state.reading);
   return (
     <section className="hosted-panel v3-plans" aria-label="Native v3 plan inspection">
@@ -40,26 +53,122 @@ export function V3PlanInspection({
       </div>
       {state.phase === "loading" && <p role="status">Loading the current Native v3 plan…</p>}
       {state.phase === "absent" && (
-        <div className="v3-plan-notice">
-          <svg
-            aria-hidden="true"
-            className="v3-plan-info-icon"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.5"
-          >
-            <circle cx="12" cy="12" r="10" />
-            <path d="M12 10v7m0-11v1" />
-          </svg>
-          <div>
-            <p>No current Native v3 plan in this session.</p>
-            <p>Saved definitions are separate from session plans.</p>
+        <>
+          <div className="v3-plan-notice">
+            <svg
+              aria-hidden="true"
+              className="v3-plan-info-icon"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+            >
+              <circle cx="12" cy="12" r="10" />
+              <path d="M12 10v7m0-11v1" />
+            </svg>
+            <div>
+              <p>No current Native v3 plan in this session.</p>
+              <p>Choose an owned v3 publication to start the PostgreSQL workflow.</p>
+            </div>
+            <button type="button" onClick={openDefinitions}>
+              Open definitions
+            </button>
           </div>
-          <button type="button" onClick={openDefinitions}>
-            Open definitions
+          <section className="v3-plan-create" aria-label="Create Native v3 plan">
+            <h2>Create Native v3 plan</h2>
+            {state.definitions === null || state.destinations === null ? (
+              <p role="status">Loading published definitions and configured destinations…</p>
+            ) : (
+              <>
+                <label htmlFor="v3-published-definition">
+                  Published v3 definition
+                  <select
+                    id="v3-published-definition"
+                    value={state.definition?.objectId ?? ""}
+                    disabled={state.creating || Boolean(state.pendingCreate)}
+                    onChange={(event) => void state.chooseDefinition(event.target.value)}
+                  >
+                    <option value="">Choose exact owned publication</option>
+                    {publishedDefinitions?.map((definition) => (
+                      <option key={definition.objectId} value={definition.objectId}>
+                        {definition.nativeId} · definition revision {definition.nativeRevision} ·
+                        workspace {definition.workspaceRevision}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                {publishedDefinitions?.length === 0 && (
+                  <p>
+                    No Native v3 published definition is available. Use Definitions to save and
+                    publish an owned v3 revision.
+                  </p>
+                )}
+                {publishedDefinition && (
+                  <p>
+                    Published object <code>{publishedDefinition.objectId}</code> · workspace
+                    revision {publishedDefinition.workspaceRevision} · publication digest{" "}
+                    {publishedDefinition.publication.digest}
+                  </p>
+                )}
+                <label htmlFor="v3-plan-binding">
+                  Binding
+                  <select
+                    id="v3-plan-binding"
+                    value={state.binding}
+                    disabled={!state.definition || state.creating || Boolean(state.pendingCreate)}
+                    onChange={(event) => state.chooseBinding(event.target.value)}
+                  >
+                    <option value="">Choose declared binding</option>
+                    {state.definition?.projection.model.bindings.map((binding) => (
+                      <option key={binding.id} value={binding.id}>
+                        {binding.id} · {binding.engine}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label htmlFor="v3-plan-destination">
+                  Configured destination
+                  <select
+                    id="v3-plan-destination"
+                    value={state.destination}
+                    disabled={!selectedBinding || state.creating || Boolean(state.pendingCreate)}
+                    onChange={(event) => state.chooseDestination(event.target.value)}
+                  >
+                    <option value="">Choose allowlisted destination</option>
+                    {compatibleDestinations.map((destination) => (
+                      <option key={destination.id} value={destination.id}>
+                        {destination.id} · {destination.engine} · {destination.host}:
+                        {destination.port}/{destination.database}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                {selectedBinding && compatibleDestinations.length === 0 && (
+                  <p>No configured destination matches the selected binding engine.</p>
+                )}
+                <button
+                  type="button"
+                  className="primary"
+                  disabled={!canCreate}
+                  onClick={() => void state.createPlan()}
+                >
+                  Create plan
+                </button>
+              </>
+            )}
+          </section>
+        </>
+      )}
+      {state.pendingCreate && !state.creating && (
+        <section className="v3-plan-notice" aria-label="Unconfirmed Native v3 plan creation">
+          <p>
+            The plan creation response was unavailable. Retry the original command before starting a
+            different plan.
+          </p>
+          <button type="button" onClick={() => void state.retryCreate()}>
+            Retry original plan creation
           </button>
-        </div>
+        </section>
       )}
       {state.error && (
         <p role="alert">

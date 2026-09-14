@@ -48,10 +48,12 @@ export function V3Definitions({
   state,
   enabled,
   versionSelector,
+  changed,
 }: {
   state: ReturnType<typeof useV3Definitions>;
   enabled: boolean;
   versionSelector: ReactNode;
+  changed: () => void;
 }) {
   const [tab, setTab] = useState("Model");
   const [policies, setPolicies] = useState<
@@ -414,13 +416,17 @@ export function V3Definitions({
                   type="button"
                   disabled={publicationDisabled}
                   onClick={() =>
-                    void state.publish(
-                      publicationDocuments.map((document) => ({
-                        bindingId: document.bindingId,
-                        documentId: document.documentId,
-                        content: policies[document.key] as "deny" | "protected-self-contained",
-                      })),
-                    )
+                    void state
+                      .publish(
+                        publicationDocuments.map((document) => ({
+                          bindingId: document.bindingId,
+                          documentId: document.documentId,
+                          content: policies[document.key] as "deny" | "protected-self-contained",
+                        })),
+                      )
+                      .then((published) => {
+                        if (published) changed();
+                      })
                   }
                 >
                   Publish definition

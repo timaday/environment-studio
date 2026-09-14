@@ -1,10 +1,15 @@
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { afterEach, expect, it, vi } from "vitest";
+import native from "../../../fixtures/native-v3/definition.json";
 import { HostedApi } from "../api/hosted";
 import { useV3PlanInspection } from "./useV3PlanInspection";
 
 const id = "50000000-0000-0000-0000-000000000001";
 const digest = "a".repeat(64);
+const definitionId = "50000000-0000-0000-0000-000000000002";
+const model = JSON.parse(JSON.stringify(native), (_key, value) =>
+  typeof value === "number" ? String(value) : value,
+);
 const summary = {
   planId: id,
   revision: "2",
@@ -43,6 +48,67 @@ afterEach(() => {
   owners.length = 0;
 });
 const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status });
+function v3Definition() {
+  return {
+    objectId: definitionId,
+    workspaceRevision: "2",
+    sourceDigest: "c".repeat(64),
+    source: JSON.stringify(native),
+    format: "JSON",
+    schemaVersion: "3",
+    compilerVersion: "native-compiler-v3",
+    state: "published",
+    publication: {
+      digest: "d".repeat(64),
+      sourceRevision: "1",
+      exportPolicies: model.bindings
+        .flatMap((binding: { id: string; documents: { id: string }[] }) =>
+          binding.documents.map((document) => ({
+            bindingId: binding.id,
+            documentId: document.id,
+            content: "protected-self-contained",
+          })),
+        )
+        .sort(
+          (
+            a: { bindingId: string; documentId: string },
+            b: { bindingId: string; documentId: string },
+          ) =>
+            a.bindingId === b.bindingId
+              ? a.documentId.localeCompare(b.documentId)
+              : a.bindingId.localeCompare(b.bindingId),
+        ),
+    },
+    projection: {
+      kind: "historical-ready",
+      model,
+      logicalDigest: digest,
+      bindingDigests: Object.fromEntries(
+        model.bindings.map((binding: { id: string }) => [binding.id, "b".repeat(64)]),
+      ),
+      mechanisms: {
+        "xml-path-v1": "1",
+        "xml-span-v1": "1",
+        "generic-graph-v1": "1",
+        "native-compiler-v3": "1",
+        "derived-graph-v1": "1",
+      },
+      diagnostics: [],
+    },
+  };
+}
+function v3DefinitionSummary() {
+  return {
+    objectId: definitionId,
+    workspaceRevision: "2",
+    nativeId: "mock-tiles",
+    nativeRevision: "1",
+    sourceDigest: "c".repeat(64),
+    state: "published",
+    compilationKind: "historical-ready",
+    logicalDigest: digest,
+  };
+}
 function document(side = "current", documentId = "mock-a", mode = "raw") {
   return {
     revision: "2",
@@ -83,6 +149,81 @@ async function setup() {
   await waitFor(() => expect(hook.result.current.phase).toBe("loaded"));
   return { ...hook, transport };
 }
+it("creates a v3 plan from an owned published v3 definition", async () => {
+  let created = false;
+  const transport = vi.fn<typeof fetch>().mockImplementation(async (path, options) => {
+    if (path === "/api/v1/session")
+      return json({
+        authenticated: true,
+        csrfHeaderName: "X-CSRF",
+        csrfToken: "mock-token",
+        idleTimeoutSeconds: 1800,
+        absoluteExpiresAt: "2099-01-01T00:00:00Z",
+      });
+    if (path === "/api/v3/plans/current")
+      return created
+        ? json({
+            ...summary,
+            revision: "1",
+            definition: { objectId: definitionId, workspaceRevision: "2" },
+            observedDestination: null,
+          })
+        : json({ code: "NOT_FOUND" }, 404);
+    if (path === "/api/v3/definitions") return json({ definitions: [v3DefinitionSummary()] });
+    if (path === `/api/v3/definitions/${definitionId}`) return json(v3Definition());
+    if (path === "/api/v1/destinations")
+      return json({
+        destinations: [
+          {
+            id: "mock-postgres",
+            engine: "postgresql",
+            host: "127.0.0.1",
+            port: 5432,
+            database: "mockdb",
+          },
+        ],
+      });
+    if (path === "/api/v3/plans" && options?.method === "POST") {
+      const command = JSON.parse(String(options.body));
+      expect(command).toMatchObject({
+        expectedRevision: "0",
+        definition: { objectId: definitionId, workspaceRevision: "2" },
+        bindingId: "mock-pg",
+        destinationId: "mock-postgres",
+      });
+      created = true;
+      return json({ planId: id, revision: "1" });
+    }
+    if (path === `/api/v3/plans/${id}`)
+      return json({
+        ...summary,
+        revision: "1",
+        definition: { objectId: definitionId, workspaceRevision: "2" },
+        observedDestination: null,
+      });
+    throw new Error(`Unexpected invented test route ${path}`);
+  });
+  const api = new HostedApi(transport);
+  owners.push(api);
+  await api.session();
+  const hook = renderHook(() => useV3PlanInspection(api, true));
+  await waitFor(() => expect(hook.result.current.phase).toBe("absent"));
+  expect(transport.mock.calls.map(([path]) => path)).toContain("/api/v3/definitions");
+  expect(transport.mock.calls.map(([path]) => path)).not.toContain("/api/v2/definitions");
+
+  await act(() => hook.result.current.chooseDefinition(definitionId));
+  expect(hook.result.current.definition?.objectId).toBe(definitionId);
+  act(() => hook.result.current.chooseBinding("mock-pg"));
+  act(() => hook.result.current.chooseDestination("mock-postgres"));
+  await act(() => hook.result.current.createPlan());
+  await waitFor(() => expect(hook.result.current.plan?.planId).toBe(id));
+  expect(hook.result.current.plan?.definition).toEqual({
+    objectId: definitionId,
+    workspaceRevision: "2",
+  });
+  expect(hook.result.current.inventory).toBeNull();
+});
+
 it("requires explicit disclosure, preserves complete inventory and displays only a verified pair", async () => {
   const { result, transport } = await setup();
   expect(result.current.inventory?.documents).toHaveLength(2);

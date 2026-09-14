@@ -50,6 +50,7 @@ export function VersionedDefinitions({
             state={state}
             enabled={enabled}
             versionSelector={version === "3" ? selector : null}
+            changed={changed}
           />
         </div>
       )}

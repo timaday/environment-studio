@@ -219,6 +219,28 @@
     padding-left: 28px;
   }
 }
+
+.v3-plan-create {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px;
+  margin-top: 18px;
+  padding: 18px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: #0d1626;
+}
+.v3-plan-create h2,
+.v3-plan-create p,
+.v3-plan-create button {
+  grid-column: 1 / -1;
+}
+.v3-plan-create code {
+  overflow-wrap: anywhere;
+}
+.v3-plan-create button {
+  justify-self: start;
+}
 .v3-binding-rail {
   margin-top: 20px;
   padding: 18px;

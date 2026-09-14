@@ -124,6 +124,7 @@ it("explicitly resumes v3 without falling back to legacy plans after absence", a
     .spyOn(HostedApi.prototype, "get")
     .mockImplementation(async <T,>(path: string): Promise<T> => {
       if (path === "/api/v2/definitions") return { definitions: [], canPublish: false } as T;
+      if (path === "/api/v3/definitions") return { definitions: [] } as T;
       if (path === "/api/v1/destinations") return { destinations: [] } as T;
       throw new ApiFailure(404, "NOT_FOUND");
     });
@@ -147,5 +148,10 @@ it("explicitly resumes v3 without falling back to legacy plans after absence", a
     .setup()
     .selectOptions(screen.getByRole("combobox", { name: "Model version" }), "3");
   expect(await screen.findByText("No current Native v3 plan in this session.")).toBeVisible();
-  expect(get.mock.calls.map(([path]) => path)).toEqual(["/api/v3/plans/current"]);
+  expect(screen.getByRole("combobox", { name: "Published v3 definition" })).toBeVisible();
+  expect(get.mock.calls.map(([path]) => path)).toEqual([
+    "/api/v3/plans/current",
+    "/api/v3/definitions",
+    "/api/v1/destinations",
+  ]);
 });
