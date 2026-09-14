@@ -211,6 +211,22 @@
   }
 }
 
+.definition-policy-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 12px;
+  width: 100%;
+}
+.definition-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.v3-definitions .definition-checkbox input {
+  min-width: 20px;
+  min-height: 20px;
+}
+
 /* The approved Definitions shell; other workspace views retain their existing layout. */
 :is(.definitions-active, .plans-active) {
   position: relative;

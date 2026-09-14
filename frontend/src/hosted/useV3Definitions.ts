@@ -5,6 +5,8 @@ import {
   type DefinitionRevision,
   HostedV3Definitions,
   type PreparedDefinitionSave,
+  type PublishDefinition,
+  prepareDefinitionPublication,
   prepareDefinitionSave,
 } from "../api/hostedV3Definitions";
 
@@ -190,6 +192,41 @@ export function useV3Definitions(api: HostedApi, enabled: boolean) {
   async function retry() {
     if (scope.pending) await execute(scope.pending);
   }
+  async function publish(exportPolicies: PublishDefinition["exportPolicies"]) {
+    if (!available() || scope.pending || !selected) return;
+    cancelFileRead();
+    const token = ++scope.epoch;
+    scope.locked = true;
+    setBusy(true);
+    setError("");
+    try {
+      const command = prepareDefinitionPublication(selected.objectId, {
+        expectedRevision: selected.workspaceRevision,
+        requestId: crypto.randomUUID(),
+        exportPolicies,
+      });
+      const value = await scope.client.publishDefinition(command);
+      if (!current(token)) return;
+      acknowledged(value);
+      setPending(false);
+      scope.pending = null;
+      try {
+        const list = await scope.client.definitions();
+        if (current(token)) setInventory(list);
+      } catch (e) {
+        if (current(token)) setError(failureMessage(e));
+      }
+    } catch (e) {
+      if (!current(token)) return;
+      setError(failureMessage(e));
+      setDiagnostics(e instanceof ApiFailure ? e.diagnostics : []);
+    } finally {
+      if (current(token)) {
+        scope.locked = false;
+        setBusy(false);
+      }
+    }
+  }
   function editSource(value: string) {
     if (available() && !scope.pending) {
       cancelFileRead();
@@ -300,6 +337,7 @@ export function useV3Definitions(api: HostedApi, enabled: boolean) {
     setFormat: editFormat,
     save,
     retry,
+    publish,
     load,
     refreshList,
     newDefinition,

@@ -1,4 +1,4 @@
-import { type ReactNode, useRef, useState } from "react";
+import { type ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import type { Diagnostic } from "../api/hosted";
 import type { useV3Definitions } from "./useV3Definitions";
 
@@ -54,10 +54,49 @@ export function V3Definitions({
   versionSelector: ReactNode;
 }) {
   const [tab, setTab] = useState("Model");
+  const [policies, setPolicies] = useState<
+    Record<string, "deny" | "protected-self-contained" | "">
+  >({});
+  const [publicationConsent, setPublicationConsent] = useState(false);
   const tabs = useRef<(HTMLButtonElement | null)[]>([]);
   const fileInput = useRef<HTMLInputElement | null>(null);
   const locked = !enabled || state.busy || state.pending;
   const selected = state.selected;
+  const publicationDocuments = useMemo(
+    () =>
+      selected?.projection.model.bindings
+        .flatMap((binding) =>
+          binding.documents.map((document) => ({
+            bindingId: binding.id,
+            documentId: document.id,
+            key: `${binding.id}/${document.id}`,
+          })),
+        )
+        .sort((a, b) =>
+          a.bindingId === b.bindingId
+            ? a.documentId.localeCompare(b.documentId)
+            : a.bindingId.localeCompare(b.bindingId),
+        ) ?? [],
+    [selected],
+  );
+  const publicationResetKey = selected
+    ? `${selected.objectId}:${selected.workspaceRevision}:${selected.state}`
+    : "";
+  useEffect(() => {
+    if (publicationResetKey) setPolicies({});
+    else setPolicies({});
+    setPublicationConsent(false);
+  }, [publicationResetKey]);
+  const publishable =
+    selected?.state === "draft" && selected.projection.kind === "historical-ready";
+  const allPoliciesSelected =
+    publicationDocuments.length > 0 &&
+    publicationDocuments.every(
+      (document) =>
+        policies[document.key] === "deny" || policies[document.key] === "protected-self-contained",
+    );
+  const publicationDisabled =
+    locked || !publishable || state.dirty || !publicationConsent || !allPoliciesSelected;
   const replace = () =>
     !state.dirty ||
     window.confirm("Replace the unsaved definition source? Your existing edits will be discarded.");
@@ -308,11 +347,90 @@ export function V3Definitions({
             </>
           )}
         </div>
-        <p className="definition-publication">
-          <DefinitionIcon kind="info" />
-          Saving a draft does not make it available for plan use. Publication requires qualified
-          validation.
-        </p>
+        {selected?.state === "published" ? (
+          <p className="definition-publication">
+            <DefinitionIcon kind="info" />
+            Published revision {selected.workspaceRevision} from source revision{" "}
+            {selected.publication.sourceRevision}. Plans can use this immutable definition where
+            supported.
+          </p>
+        ) : (
+          <section className="definition-publication" aria-label="Definition publication">
+            <h3>Publish immutable definition</h3>
+            <p>
+              <DefinitionIcon kind="info" />
+              Saving a draft does not make it available for plan use. Publication requires a saved,
+              qualified revision and explicit document export policies.
+            </p>
+            {selected ? (
+              <>
+                <p>
+                  {publishable
+                    ? "This draft has no publication diagnostics. Choose how each declared document may appear in generated packages."
+                    : "Resolve publication diagnostics before publishing this draft."}
+                </p>
+                {state.dirty && <p>Save the current source edits before publishing.</p>}
+                {publicationDocuments.length > 0 ? (
+                  <div className="definition-policy-grid">
+                    {publicationDocuments.map((document) => (
+                      <label key={document.key}>
+                        {document.bindingId} / {document.documentId} export policy
+                        <select
+                          value={policies[document.key] ?? ""}
+                          disabled={locked || !publishable}
+                          onChange={(event) =>
+                            setPolicies((current) => ({
+                              ...current,
+                              [document.key]: event.target.value as
+                                | "deny"
+                                | "protected-self-contained"
+                                | "",
+                            }))
+                          }
+                        >
+                          <option value="">Choose policy</option>
+                          <option value="deny">Deny document content</option>
+                          <option value="protected-self-contained">
+                            Protected self-contained content
+                          </option>
+                        </select>
+                      </label>
+                    ))}
+                  </div>
+                ) : (
+                  <p>No declared documents are available for publication.</p>
+                )}
+                <label className="definition-checkbox">
+                  <input
+                    type="checkbox"
+                    checked={publicationConsent}
+                    disabled={locked || !publishable}
+                    onChange={(event) => setPublicationConsent(event.target.checked)}
+                  />
+                  I reviewed complete-document disclosure and every document policy.
+                </label>
+                <button
+                  className="definition-primary"
+                  type="button"
+                  disabled={publicationDisabled}
+                  onClick={() =>
+                    void state.publish(
+                      publicationDocuments.map((document) => ({
+                        bindingId: document.bindingId,
+                        documentId: document.documentId,
+                        content: policies[document.key] as "deny" | "protected-self-contained",
+                      })),
+                    )
+                  }
+                >
+                  Publish definition
+                </button>
+              </>
+            ) : (
+              <p>Save a draft before publication controls are available.</p>
+            )}
+          </section>
+        )}
       </section>
     </section>
   );
