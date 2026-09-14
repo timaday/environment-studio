@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "engines": {
-    "node": ">=24 <25"
+    "node": ">=24 <27"
   },
   "scripts": {
     "dev": "vite --host 127.0.0.1",
@@ -14,7 +14,8 @@
     "test": "vitest run && npm run test:contracts",
     "test:contracts": "node --test ../scripts/schema.test.mjs",
     "test:coverage": "vitest run --coverage",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "preflight": "node ../scripts/frontend-preflight.mjs"
   },
   "dependencies": {
     "react": "19.2.8",

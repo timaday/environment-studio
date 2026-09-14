@@ -169,7 +169,7 @@ Starter CI and GHCR publication have passed. [Verification evidence](docs/eviden
 
 ## Run the starter
 
-Use Node 24, JDK 21, Maven 3.9.16 and Python 3.11+. Dependencies are pinned in
+Use Node 24–26, JDK 21, Maven 3.9.16 and Python 3.11+. Dependencies are pinned in
 the manifests/lockfile. Docker is needed for the container and database gates.
 
 Start the loopback demo backend before opening the Vite application:
@@ -183,12 +183,18 @@ mvn -f backend/server/pom.xml spring-boot:run -Dspring-boot.run.arguments="--stu
 In a second terminal:
 
 ```bash
+nvm use
 npm ci --prefix frontend
+npm run preflight --prefix frontend
 npm run dev --prefix frontend
 ```
 
 The Vite development server binds to loopback and forwards `/api` requests only
-to `127.0.0.1:18080`. Backend capabilities select the labelled synthetic demo;
+to `127.0.0.1:18080`. If the frontend build fails in WSL, run the preflight from
+the same distro and checkout path. The frontend is qualified on Node 24–26; after
+changing Node versions, remove only `frontend/node_modules` and reinstall with
+`npm ci --prefix frontend`. Do not share one `node_modules` tree between Windows
+and WSL filesystems. Backend capabilities select the labelled synthetic demo;
 an unavailable backend displays Workspace unavailable. Demo accepts no database
 credentials and cannot connect to a database. This development proxy does not
 configure hosted local-operator/OIDC access or change the container's normal port 8080. Vite
@@ -197,6 +203,10 @@ preview does not inherit the proxy.
 Build and run the combined Java + React application:
 
 ```bash
+nvm use
+npm ci --prefix frontend
+npm run preflight --prefix frontend
+npm run build --prefix frontend
 docker build --target runtime -t environment-studio:dev .
 docker run --rm --read-only --cap-drop ALL --security-opt no-new-privileges \
   --tmpfs /tmp:rw,noexec,nosuid,size=128m -p 127.0.0.1:18181:8080 environment-studio:dev

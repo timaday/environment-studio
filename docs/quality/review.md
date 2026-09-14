@@ -9,7 +9,7 @@ Applied perspectives during repository design; not sign-offs by human experts.
 | QA | Build success could masquerade as safe export | Separate starter CI, capability evidence and release gate |
 | Data | Many CLOBs and unchanged dependencies could be omitted | Complete inventory/read set and cross-document acceptance tests |
 | Security | Hosted deployment changes credential/session threat model | Demo-only starter; D02 precedes DB access; transient DB credentials |
-| Operations | HiveForge format/identity not supplied | Standard OCI contract + Compose example; no fictitious platform manifest |
+| Operations | HiveForge pilot manifests now supplied; target-platform execution still external | Standard OCI contract, Compose example and HiveForge service files exist for the PostgreSQL 16.11 no-OIDC pilot; actual registry pull, TLS/ingress and target identity checks remain the external HiveForge gate |
 | UX | Placeholder views could hide different current/target values | Binding rail and changed-value badges persist across all XML modes |
 | Performance | Virtualized previews could hide validation scope | Complete backend model; visible filtered/global counts and limits |
 | RST | Same parser/writer can confirm its own mistakes | Independent expected XML and actual-client state observations |
