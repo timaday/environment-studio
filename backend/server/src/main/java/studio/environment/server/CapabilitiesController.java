@@ -18,10 +18,12 @@ class CapabilitiesController {
 
     @GetMapping("/api/v1/capabilities")
     Capabilities capabilities() {
-        return new Capabilities(mode.name().toLowerCase(java.util.Locale.ROOT), workspace.enabled(), false,
-                false, plans.inspectionApiConfigured(), false, List.of(),
-                mode == studio.environment.server.security.RuntimeConfiguration.RuntimeMode.DEMO
-                        ? List.of("HOSTED_MODE_REQUIRED", "DATABASE_ADAPTERS_NOT_QUALIFIED", "SQL_WRITERS_NOT_IMPLEMENTED")
-                        : List.of("DATABASE_ADAPTERS_NOT_QUALIFIED", "SQL_WRITERS_NOT_IMPLEMENTED"));
+        var blockers = new java.util.ArrayList<String>();
+        if (mode != studio.environment.server.security.RuntimeConfiguration.RuntimeMode.HOSTED) blockers.add("HOSTED_MODE_REQUIRED");
+        if (!plans.postgresql16PilotConfigured()) blockers.add("DATABASE_ADAPTERS_NOT_QUALIFIED");
+        if (!plans.exportConfigured()) blockers.add("SQL_WRITERS_NOT_IMPLEMENTED");
+        boolean enabled = blockers.isEmpty();
+        return new Capabilities(mode.name().toLowerCase(java.util.Locale.ROOT), workspace.enabled(), enabled,
+                enabled, plans.inspectionApiConfigured(), plans.exportConfigured(), plans.qualifiedDatabaseAdapters(), List.copyOf(blockers));
     }
 }

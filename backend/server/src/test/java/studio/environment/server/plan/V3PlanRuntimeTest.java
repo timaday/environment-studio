@@ -34,6 +34,15 @@ class V3PlanRuntimeTest {
                 .withProperty(p+"expected-physical-identity.databaseName","mock_database")
                 .withProperty(p+"owners[0].issuer","https://mock-issuer.invalid").withProperty(p+"owners[0].subject","MockOwner");
     }
+    static MockEnvironment configuredPostgresql16Pilot(Path directory) {
+        String p="studio.plans.destinations[0].export-client.";
+        return configured(directory)
+                .withProperty(p+"server-version","16.11")
+                .withProperty(p+"family","psql")
+                .withProperty(p+"version","16.11")
+                .withProperty(p+"platform","linux-amd64")
+                .withProperty(p+"template-version","postgresql16-text-v1");
+    }
     static SessionLedger.Lease lease(HostedSessions sessions,String subject) {
         var request=new MockHttpServletRequest();assertTrue(sessions.reserveLogin(request));
         var now=Instant.now();var token=new OidcIdToken("mock-token",now,now.plusSeconds(3600),Map.of("iss","https://mock-issuer.invalid","sub",subject));
@@ -41,8 +50,20 @@ class V3PlanRuntimeTest {
         return assertInstanceOf(SessionLedger.Accepted.class,sessions.authenticated(request.getSession(),principal)).lease();
     }
     static PlanRuntime runtime(Path directory,HostedSessions sessions) {
-        var env=configured(directory);var beans=new DefaultListableBeanFactory();beans.registerSingleton("sessions",sessions);
+        return runtime(configured(directory),sessions);
+    }
+    static PlanRuntime runtime(MockEnvironment env,HostedSessions sessions) {
+        var beans=new DefaultListableBeanFactory();beans.registerSingleton("sessions",sessions);
         return new PlanRuntime(env,RuntimeMode.HOSTED,new WorkspaceRuntime(env,RuntimeMode.HOSTED),beans.getBeanProvider(HostedSessions.class));
+    }
+    @Test void postgresql16PilotCapabilitiesRequireExactPackageTargetConfiguration() {
+        SqliteDraftStore.initializeV3(temporary);
+        var sessions=new HostedSessions(Clock.systemUTC(),List.of());
+        assertFalse(runtime(temporary,sessions).postgresql16PilotConfigured());
+        var configured = runtime(configuredPostgresql16Pilot(temporary),sessions);
+        assertTrue(configured.postgresql16PilotConfigured());
+        assertTrue(configured.exportConfigured());
+        assertEquals(List.of("postgresql:16.11/psql:16.11/postgresql16-text-v1"), configured.qualifiedDatabaseAdapters());
     }
     @Test void actualRuntimeReachesOwnedV3HistoryInsteadOfTheDefaultUnsupportedPort() {
         Path directory=temporary;SqliteDraftStore.initializeV3(directory);

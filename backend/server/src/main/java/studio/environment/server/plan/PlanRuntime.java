@@ -58,6 +58,17 @@ public final class PlanRuntime {
     }
     /** Configuration diagnostic only; every operation still enforces its own admission. */
     public boolean inspectionApiConfigured() { return service.isPresent(); }
+    public boolean postgresql16PilotConfigured() { return service.isPresent() && !qualifiedDatabaseAdapters().isEmpty() && !packageTargets.isEmpty(); }
+    public boolean exportConfigured() { return postgresql16PilotConfigured(); }
+    public List<String> qualifiedDatabaseAdapters() {
+        if(service.isEmpty()) return List.of();
+        return packageTargets.values().stream()
+                .filter(target -> target.engine().equals("postgresql") && target.serverVersion().equals("16.11")
+                        && target.clientFamily().equals("psql") && target.clientVersion().equals("16.11")
+                        && target.clientPlatform().equals("linux-amd64") && target.templateVersion().equals("postgresql16-text-v1"))
+                .map(target -> "postgresql:16.11/psql:16.11/postgresql16-text-v1")
+                .distinct().sorted().toList();
+    }
     List<PlanDestinations.Display> visible(Owner owner) {service();return destinations.stream().filter(d->allowed.test(owner,d.id())).toList();}
     HostedPlanService.Ack create(SessionLedger.Lease lease,PlanMetadataReader.Create command) {
         if(!allowed.test(lease.owner(),command.destinationId())) throw new DestinationDenied();
