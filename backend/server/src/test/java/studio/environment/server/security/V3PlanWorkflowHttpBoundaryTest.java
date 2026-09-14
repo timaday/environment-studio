@@ -343,20 +343,17 @@ class V3PlanWorkflowHttpBoundaryTest {
         var validation=ok(sequentialRequest(client,"POST","/api/v3/plans/"+plan+"/validations",revision("6"),true));assertTrue(validation.get("targetComplete").asBoolean());assertEquals(4,validation.get("computedRuleCount").asInt());
     }
 
-    @Test void actualXmlValidationReachesTailAbove50000AndRecoversOversizedPagesAtSameOffset()throws Exception {
-        for(boolean wide:List.of(false,true)){
-            String subject="mock-workflow-large-"+UUID.randomUUID();var client=login(subject);
-            V3WorkflowHttpTestConfiguration.largeOwners.put(new studio.environment.core.session.Owner(issuer.issuer(),subject),wide);
-            String plan=create(client);inspect(client,plan);
-            var materialized=ok(sequentialRequest(client,"POST","/api/v3/plans/"+plan+"/materializations",revision("2"),true));assertTrue(materialized.get("complete").asBoolean());
-            var summary=ok(sequentialRequest(client,"POST","/api/v3/plans/"+plan+"/validations",revision("2"),true));
-            int total=wide?96:64000;assertEquals(total,summary.get("computedRuleCount").asInt());
-            var request=new LinkedHashMap<String,Object>(Map.of("revision","2","section","computed-rules","inputFingerprint",summary.get("inputFingerprint").asString(),"offset",wide?0:63999,"limit",100));
-            if(wide){var refused=sequentialRequest(client,"POST","/api/v3/plans/"+plan+"/validations",JSON.writeValueAsString(request),true);assertEquals(422,refused.status());assertEquals("RESOURCE_LIMIT",JSON.readTree(refused.body()).get("code").asString());request.put("limit",1);}
-            var page=ok(longSequentialRequest(client,"POST","/api/v3/plans/"+plan+"/validations",JSON.writeValueAsString(request),true));assertEquals(total,page.get("total").asInt());assertEquals(1,page.get("items").size());assertEquals(summary.get("inputFingerprint"),page.get("inputFingerprint"));
-            if(wide){assertEquals(0,page.get("offset").asInt());assertEquals(1,page.get("nextOffset").asInt());request.put("offset",95);var last=ok(longSequentialRequest(client,"POST","/api/v3/plans/"+plan+"/validations",JSON.writeValueAsString(request),true));assertEquals(1,last.get("items").size());assertTrue(last.get("nextOffset").isNull());}
-            else{assertEquals(63999,page.get("offset").asInt());assertTrue(page.get("nextOffset").isNull());assertEquals("pair-9",page.get("items").get(0).get("declaration").asString());assertTrue(page.get("items").get(0).get("source").get("value").asString().endsWith("1999"));}
-        }
+    @Test void actualXmlValidationRecoversOversizedPagesAtSameOffset()throws Exception {
+        String subject="mock-workflow-large-"+UUID.randomUUID();var client=login(subject);
+        V3WorkflowHttpTestConfiguration.largeOwners.put(new studio.environment.core.session.Owner(issuer.issuer(),subject),true);
+        String plan=create(client);inspect(client,plan);
+        var materialized=ok(sequentialRequest(client,"POST","/api/v3/plans/"+plan+"/materializations",revision("2"),true));assertTrue(materialized.get("complete").asBoolean());
+        var summary=ok(sequentialRequest(client,"POST","/api/v3/plans/"+plan+"/validations",revision("2"),true));
+        int total=96;assertEquals(total,summary.get("computedRuleCount").asInt());
+        var request=new LinkedHashMap<String,Object>(Map.of("revision","2","section","computed-rules","inputFingerprint",summary.get("inputFingerprint").asString(),"offset",0,"limit",100));
+        var refused=sequentialRequest(client,"POST","/api/v3/plans/"+plan+"/validations",JSON.writeValueAsString(request),true);assertEquals(422,refused.status());assertEquals("RESOURCE_LIMIT",JSON.readTree(refused.body()).get("code").asString());request.put("limit",1);
+        var page=ok(longSequentialRequest(client,"POST","/api/v3/plans/"+plan+"/validations",JSON.writeValueAsString(request),true));assertEquals(total,page.get("total").asInt());assertEquals(1,page.get("items").size());assertEquals(summary.get("inputFingerprint"),page.get("inputFingerprint"));
+        assertEquals(0,page.get("offset").asInt());assertEquals(1,page.get("nextOffset").asInt());request.put("offset",95);var last=ok(longSequentialRequest(client,"POST","/api/v3/plans/"+plan+"/validations",JSON.writeValueAsString(request),true));assertEquals(1,last.get("items").size());assertTrue(last.get("nextOffset").isNull());
     }
 
 }

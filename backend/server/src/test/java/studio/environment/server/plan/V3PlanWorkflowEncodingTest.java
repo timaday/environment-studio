@@ -1,6 +1,8 @@
 package studio.environment.server.plan;
 
 import static org.junit.jupiter.api.Assertions.*;
+import java.io.ByteArrayOutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.Test;
@@ -28,6 +30,13 @@ class V3PlanWorkflowEncodingTest {
         var page=V3PlanWorkflowEncoding.validation(new V3PlanWorkflowReader.Validation.Page("2","a".repeat(64),60000,1),value,verify);
         assertEquals(60001,page.get("total"));assertNull(page.get("nextOffset"));
         try(var encoder=new PlanViewEncoding(134217728)){assertThrows(RuntimeException.class,()->encoder.encode(page));}
+    }
+    @Test void computedRulePagesEncodeTailAboveFiftyThousandWithoutHttpStress()throws Exception{
+        var rule=new studio.environment.core.derived.DerivedResult.RuleCheck(studio.environment.core.derived.DerivedResult.RuleKind.COOCCURRENCE,"mock-pair",Optional.of(new studio.environment.core.derived.ComputedGraph.Key("mock-group","mock-key","tail-60000")),java.math.BigInteger.ONE,java.math.BigInteger.ZERO,java.math.BigInteger.TEN,studio.environment.core.Outcome.PASS);
+        var value=new HostedPlanService.V3Validation("c".repeat(64),List.of(),Map.of(),Optional.of(Collections.nCopies(60001,rule)));
+        var page=V3PlanWorkflowEncoding.validation(new V3PlanWorkflowReader.Validation.Page("2","c".repeat(64),60000,1),value,()->{});
+        assertEquals(60001,page.get("total"));assertEquals(60000,page.get("offset"));assertNull(page.get("nextOffset"));
+        try(var encoder=new PlanViewEncoding(134217728);var output=new ByteArrayOutputStream()){encoder.encode(page);encoder.write(output,()->{});var json=output.toString(StandardCharsets.UTF_8);assertTrue(json.contains("\"offset\":60000"));assertTrue(json.contains("tail-60000"));}
     }
     @Test void legacyPreviewCannotLoseItsVersionAndStillBecomeAValidV3Reply(){
         var physical=new studio.environment.core.profile.ProfileComposer.Preview("mock-profile",java.math.BigInteger.ONE,"c".repeat(64),"d".repeat(64),List.of(),List.of(),List.of(),List.of(),List.of());
