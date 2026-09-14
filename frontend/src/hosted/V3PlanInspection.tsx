@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import type { HostedApi } from "../api/hosted";
 import type { useV3PlanInspection } from "./useV3PlanInspection";
+import { V3DocumentComparison } from "./V3DocumentComparison";
 import { V3Inspection } from "./V3Inspection";
 
 export function V3PlanInspection({
@@ -29,7 +30,6 @@ export function V3PlanInspection({
   inspectionUiEnabled: boolean;
 }) {
   const plan = state.plan;
-  const documents = state.inventory?.documents;
   const publishedDefinition = state.definition?.state === "published" ? state.definition : null;
   const selectedBinding = state.definition?.projection.model.bindings.find(
     (binding) => binding.id === state.binding,
@@ -43,7 +43,6 @@ export function V3PlanInspection({
   const canCreate = Boolean(
     publishedDefinition && state.binding && state.destination && !state.creating,
   );
-  const canRead = Boolean(state.selected && state.consent && !state.reading);
   const showCreate = !plan && state.phase !== "loading";
   return (
     <section className="hosted-panel v3-plans" aria-label="Native v3 plan inspection">
@@ -316,167 +315,10 @@ export function V3PlanInspection({
           )}
         </section>
       )}
-      <section className="v3-plan-documents" aria-labelledby="v3-documents-heading">
-        <h2 id="v3-documents-heading">Document comparison</h2>
-        {documents && (
-          <p>
-            {documents.length} documents · {documents.filter((d) => d.changed === true).length}{" "}
-            changed · {documents.filter((d) => d.changed === null).length} unknown
-          </p>
-        )}
-        {documents?.length === 0 && <p>No documents in the complete returned inventory.</p>}
-        <div className="v3-plan-document-controls">
-          <label>
-            Document
-            <select
-              value={state.selected}
-              disabled={!documents?.length}
-              onChange={(e) => state.select(e.target.value)}
-            >
-              <option value="">No document selected</option>
-              {documents?.map((d) => (
-                <option key={d.documentId} value={d.documentId}>
-                  {d.documentId} ·{" "}
-                  {d.changed === null ? "Unknown" : d.changed ? "Changed" : "Unchanged"}
-                </option>
-              ))}
-            </select>
-          </label>
-          <fieldset>
-            <legend>View</legend>
-            <div className="v3-plan-modes">
-              {(["raw", "placeholders", "formatted"] as const).map((mode) => (
-                <button
-                  type="button"
-                  key={mode}
-                  disabled={!state.selected}
-                  aria-pressed={state.mode === mode}
-                  onClick={() => state.setMode(mode)}
-                >
-                  {mode === "raw" ? "Raw" : mode === "placeholders" ? "Placeholders" : "Formatted"}
-                </button>
-              ))}
-            </div>
-          </fieldset>
-        </div>
-        <label className="v3-plan-consent">
-          <input
-            type="checkbox"
-            checked={state.consent}
-            disabled={!state.selected}
-            onChange={(e) => state.setConsent(e.target.checked)}
-          />
-          I understand complete documents may include unmapped or sensitive values.
-        </label>
-        {!plan || !documents ? (
-          <p>Resume a plan with an observation before loading documents.</p>
-        ) : (
-          <>
-            <p>
-              Raw preserves exact characters. Placeholders show mapped tokens with the concrete
-              binding rail below. Formatted is a display projection.
-            </p>
-            <button type="button" disabled={!canRead} onClick={() => void state.load()}>
-              Load document comparison
-            </button>
-          </>
-        )}
-        {state.reading && (
-          <p role="status">Loading the selected revision and checking plan context…</p>
-        )}
-        {state.mode === "placeholders" && state.current && (
-          <section className="v3-binding-rail" aria-labelledby="v3-binding-rail-heading">
-            <h3 id="v3-binding-rail-heading">Binding rail</h3>
-            <p>
-              Placeholder tokens are labels only. Current and target values remain visible here for
-              the selected document.
-            </p>
-            {state.bindingRail.length === 0 ? (
-              <p>No mapped placeholder locations were returned for this document.</p>
-            ) : (
-              <div className="v3-binding-rail-list">
-                {state.bindingRail.map((item) => (
-                  <article key={`${JSON.stringify(item.entity)}:${item.fieldId}`}>
-                    <div>
-                      <strong>{item.fieldId}</strong>
-                      <span>{item.typeId}</span>
-                    </div>
-                    <code>{item.token}</code>
-                    <dl>
-                      <div>
-                        <dt>Current</dt>
-                        <dd>{item.current}</dd>
-                      </div>
-                      <div>
-                        <dt>Target</dt>
-                        <dd>{item.target}</dd>
-                      </div>
-                      <div>
-                        <dt>Status</dt>
-                        <dd>{item.change}</dd>
-                      </div>
-                      <div>
-                        <dt>Selected document locations</dt>
-                        <dd>
-                          Current {item.currentLocations} · Target {item.targetLocations}
-                        </dd>
-                      </div>
-                    </dl>
-                  </article>
-                ))}
-              </div>
-            )}
-          </section>
-        )}
-        <div className="v3-plan-panes">
-          {(
-            [
-              ["Current", state.current],
-              ["Target", state.target],
-            ] as const
-          ).map(([label, value]) => (
-            <section key={label} aria-label={`${label} XML`}>
-              <h3>{label}</h3>
-              {value ? (
-                <>
-                  <p>
-                    {value.documentId} · revision {value.revision} · {value.mode}
-                  </p>
-                  <p>
-                    {value.exact ? "Exact characters" : "Display projection only"} ·{" "}
-                    {value.redacted ? "Redacted" : "Concrete document"}
-                  </p>
-                  {value.unmappedConcreteMayRemain && <p>Unmapped concrete values may remain.</p>}
-                  {value.omissions.length > 0 && <p>Omissions: {value.omissions.join(", ")}</p>}
-                  {/* biome-ignore lint/a11y/noNoninteractiveTabindex: Keyboard users must scroll the read-only XML pane. */}
-                  <pre tabIndex={0}>{value.text}</pre>
-                </>
-              ) : (
-                <div className="v3-plan-empty-document">
-                  <svg
-                    aria-hidden="true"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                  >
-                    <path d="M5 2h10l5 5v15H5zM15 2v6h5M8 12h9m-9 4h9" />
-                  </svg>
-                  <p>
-                    {!plan
-                      ? label === "Current"
-                        ? "No observed document available."
-                        : "No target document available."
-                      : label === "Target" && !plan.targetComplete
-                        ? "Target unavailable · not evidence of unchanged content."
-                        : "Select a document, confirm disclosure and load."}
-                  </p>
-                </div>
-              )}
-            </section>
-          ))}
-        </div>
-      </section>
+      <V3DocumentComparison
+        key={`${plan?.planId ?? "none"}:${plan?.revision ?? "none"}`}
+        state={state}
+      />
     </section>
   );
 }

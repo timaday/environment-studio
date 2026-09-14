@@ -1,4 +1,5 @@
 import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { expect, it, vi } from "vitest";
 import type { useV3PlanInspection } from "./useV3PlanInspection";
 import { V3PlanInspection } from "./V3PlanInspection";
@@ -309,4 +310,142 @@ it("offers all three document modes without loading before disclosure", () => {
   expect(screen.getByRole("button", { name: "Placeholders" })).toBeVisible();
   expect(screen.getByRole("button", { name: "Formatted" })).toBeVisible();
   expect(screen.getByRole("button", { name: "Load document comparison" })).toBeDisabled();
+});
+
+it("searches the complete document inventory without concealing global change counts or loading content", async () => {
+  const state = stateFixture({
+    inventory: {
+      revision: "2",
+      documents: Array.from({ length: 120 }, (_, index) => ({
+        documentId: `mock-document-${index.toString().padStart(3, "0")}`,
+        currentDigest: "a".repeat(64),
+        targetDigest: "b".repeat(64),
+        changed: index % 2 === 0,
+      })),
+    },
+    selected: "mock-document-000",
+  });
+  render(
+    <V3PlanInspection
+      api={{} as never}
+      state={state}
+      versionSelector={null}
+      openDefinitions={vi.fn()}
+      inspectionUiEnabled
+    />,
+  );
+  await userEvent.type(screen.getByRole("searchbox", { name: "Find a document" }), "119");
+  expect(screen.getByText("1 of 120 documents shown")).toBeVisible();
+  expect(screen.getByText("120 documents · 60 changed · 0 unknown")).toBeVisible();
+  expect(screen.getByRole("button", { name: "mock-document-119 · Unchanged" })).toBeVisible();
+  expect(
+    screen.queryByRole("button", { name: "mock-document-000 · Changed" }),
+  ).not.toBeInTheDocument();
+  expect(state.load).not.toHaveBeenCalled();
+  expect(state.select).not.toHaveBeenCalled();
+});
+
+it("navigates changed documents in inventory order without treating unknown documents as unchanged", async () => {
+  const state = stateFixture({
+    inventory: {
+      revision: "2",
+      documents: [
+        {
+          documentId: "mock-a",
+          currentDigest: "a".repeat(64),
+          targetDigest: "b".repeat(64),
+          changed: true,
+        },
+        { documentId: "mock-b", currentDigest: "a".repeat(64), targetDigest: null, changed: null },
+        {
+          documentId: "mock-c",
+          currentDigest: "a".repeat(64),
+          targetDigest: "b".repeat(64),
+          changed: true,
+        },
+      ],
+    },
+    selected: "mock-a",
+  });
+  render(
+    <V3PlanInspection
+      api={{} as never}
+      state={state}
+      versionSelector={null}
+      openDefinitions={vi.fn()}
+      inspectionUiEnabled
+    />,
+  );
+  await userEvent.click(screen.getByRole("button", { name: "Next changed document" }));
+  expect(state.select).toHaveBeenCalledWith("mock-c");
+  expect(state.load).not.toHaveBeenCalled();
+  await userEvent.selectOptions(
+    screen.getByRole("combobox", { name: "Document status" }),
+    "unknown",
+  );
+  expect(screen.getByRole("button", { name: "mock-b · Unknown" })).toBeVisible();
+  expect(screen.getByRole("button", { name: "Next changed document" })).toBeDisabled();
+});
+
+it("keeps concrete current and target values inspectable when choosing a placeholder mapping", async () => {
+  const entity = { kind: "existing" as const, handle: "50000000-0000-0000-0000-000000000003" };
+  const state = stateFixture({
+    mode: "placeholders",
+    selected: "mock-a",
+    current: {
+      revision: "2",
+      side: "current",
+      documentId: "mock-a",
+      mode: "placeholders",
+      text: "<mock/>",
+      exact: false,
+      redacted: false,
+      unmappedConcreteMayRemain: false,
+      omissions: [],
+    },
+    bindingRail: [
+      {
+        entity,
+        typeId: "mock-type",
+        fieldId: "mock-tone",
+        token: "[[value:mock-tone]]",
+        change: "changed",
+        current: "before-tone",
+        target: "after-tone",
+        currentLocations: 2,
+        targetLocations: 2,
+      },
+      {
+        entity,
+        typeId: "mock-type",
+        fieldId: "mock-finish",
+        token: "[[value:mock-finish]]",
+        change: "changed",
+        current: "before-finish",
+        target: "after-finish",
+        currentLocations: 1,
+        targetLocations: 3,
+      },
+    ],
+  });
+  render(
+    <V3PlanInspection
+      api={{} as never}
+      state={state}
+      versionSelector={null}
+      openDefinitions={vi.fn()}
+      inspectionUiEnabled
+    />,
+  );
+  expect(screen.getByText("before-tone")).toBeVisible();
+  expect(screen.getByText("after-tone")).toBeVisible();
+  await userEvent.selectOptions(
+    screen.getByRole("combobox", { name: "Selected mapping" }),
+    `${JSON.stringify(entity)}:mock-finish`,
+  );
+  expect(screen.getByText("before-finish")).toBeVisible();
+  expect(screen.getByText("after-finish")).toBeVisible();
+  expect(screen.getByText("Current 1 · Target 3")).toBeVisible();
+  expect(screen.queryByText("before-tone")).not.toBeInTheDocument();
+  expect(state.load).not.toHaveBeenCalled();
 });

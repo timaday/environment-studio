@@ -1,5 +1,5 @@
 .v3-plans {
-  padding: 24px 46px;
+  padding: 24px;
   background: #101b2c;
   border-radius: 10px;
   font-size: 14px;
@@ -181,7 +181,7 @@
 }
 
 .plans-active main {
-  max-width: 1344px;
+  max-width: 1600px;
   padding-top: 20px;
 }
 .v3-plans {
