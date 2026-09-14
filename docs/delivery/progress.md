@@ -1,3 +1,5 @@
+Latest lead checkpoint — 14 September 2026, 19:55 Europe/London: Full PostgreSQL 16.11 operator journey is now working through the UI with target-structure authoring, not API target seeding. The hosted browser proof publishes a PostgreSQL-only v3 definition, creates a plan, performs read-only inspection with one-use credentials, authors target structure, enters target values, checks Raw/Placeholders/Formatted XML comparison, validates, downloads a guarded package candidate and captures 24 desktop page/view screenshots with `uiGaps: []`; the same full journey also passes at a 390px narrow viewport with 24 screenshots and `uiGaps: []`. Downloaded ZIP `d8debd9920314317ccddf81a306c7806d8401f43e4b4b44647952a75b5a4b920` contains manifest/payload/transaction/instructions; inspection confirms PostgreSQL 16.11 pins, destination checks, digest checks, one changed record and one unchanged record. A temporary external PostgreSQL witness drove the actual downloaded package through the guarded `SessionEngine`/`ClientProtocol`: normal apply returned APPLIED/COMPLETE and the injected pre-program fault returned NOT_APPLIED/COMPLETE with original data preserved. Focused target UI test, frontend check/test, repository content, script unit and integrity checks pass. Evidence: [PostgreSQL 16.11 full operator journey](../evidence/postgresql-1611-full-journey.md). Remaining limit: standalone native-supervisor production admission remains fail-closed behind runtime privacy/registry qualification, so this is a workable PostgreSQL pilot package path, not a full production supervisor release claim.
+
 Latest lead checkpoint — 14 September 2026, 11:08 Europe/London: Docker build usability follow-up adds BuildKit cache mounts for npm and Maven inside the Dockerfile while preserving the release-grade UI and Maven verification steps. `scripts/studio.sh` now forces BuildKit for local `ui` and `image/package` builds so repeated WSL builds can reuse dependency caches. This does not create a fast unverified release path. The first full runtime package attempt ran the complete Maven reactor successfully, then exposed the expected BuildKit cache-layer issue for the later SQLite native extraction; the extraction step now mounts the same Maven cache. Next: rerun runtime package and repository guards.
 
 Latest lead checkpoint — 14 September 2026, 10:58 Europe/London: Configuration simplification is implemented on `main`. Added `scripts/studio.sh` as the golden wrapper for frontend checks, local runtime image build, protected container smoke, synthetic demo, hosted env initialization, hosted Compose validation, workspace preparation, hosted start/logs/stop. `deploy/hosted.env` is ignored because it can contain the local-operator password and PostgreSQL environment facts. The hosted Compose contract remains strict for PostgreSQL 16.11 and no-OIDC local-operator mode; HiveForge still requires an immutable GHCR digest and target-side registry/routing/TLS/PostgreSQL identity evidence. The WSL Docker UI failure in `InspectionCapabilities.test.tsx` is corrected by waiting for the actual Inspect configuration region and scoping assertions inside it. Verification so far: frontend check/test/build PASS, Docker `--target ui` PASS, hosted Compose config PASS using the example env with a local image override, repository content/integrity/script checks PASS, protected container smoke PASS against the existing runtime image. Next: commit and publish after final gates.
@@ -1367,3 +1369,46 @@ Remaining limitations: populated inspection, values, validation and export still
 require a reachable PostgreSQL 16.11 target plus one-use credentials at runtime.
 No application SQL is executed by Environment Studio. Production GHCR/HiveForge
 qualification remains separate from the local Docker-hosted audit.
+
+## Full PostgreSQL 16.11 hosted journey checkpoint — 14 September
+
+Ready: a clean Docker-hosted Environment Studio image at
+`ce829ccc55611799f7266e70600c970e8cbae9c1` completed the operator path against a
+disposable PostgreSQL 16.11 database loaded with independently invented XML
+fixtures matching the published v3 definition. The journey exercised definition
+upload, draft save, explicit protected document publication, plan creation with a
+published definition and configured PostgreSQL destination, one-use credentialed
+read-only inspection, target value editing, Raw / Placeholders / Formatted current
+versus target XML comparison, backend validation and guarded package download.
+The downloaded archive is external evidence at
+`/home/tim/.tmp/es-full-journey-20260914/journey-1789409364508/downloads/environment-studio-guarded-package.zip`
+with SHA-256 `5686b61a6d33356670f40316fbdbfa12bb131da016c8e7f1ec728e764aa68a17`.
+It contains `manifest.json`, `payload.json`, `transaction.sql` and
+`instructions.txt`; payload readback shows two records, one changed XML document,
+and the target XML carries the entered synthetic `target-tone-1` value. The SQL
+program begins a transaction body, verifies destination identity, table shape,
+record membership and original bytes, updates one row, verifies target bytes and
+sets the program digest for guarded-supervisor readiness. Commit/rollback remain
+supervisor-owned, as documented in `instructions.txt`; `transaction.sql` is not a
+standalone script to run directly.
+
+Evidence: full browser screenshots for 22 states are under
+`/home/tim/.tmp/es-full-journey-20260914/journey-1789409364508/screenshots/`.
+The recorded desktop run found no horizontal overflow; Values, Validation and
+Export controls met the 44px target. The automated size probe still flags native
+checkbox glyphs and a 43px details summary in the plan context, which should be
+polished in the UI branch rather than treated as release qualification. Browser
+storage remained empty after the journey. Console errors in the completed run
+were not URL-attributed; a later diagnostic rerun showed repeated session-scoped
+plan capacity can return `CAPACITY` during local back-to-back tests until sessions
+expire or the service restarts.
+
+Remaining limitations: the current hosted UI does not yet expose the full
+target-structure authoring wizard. For this proof, the selected entity retention
+seed was issued through the same authenticated browser session via the public v3
+plan command API, then the UI completed value editing, comparison, validation and
+export. This is a user-flow gap for the UI branch, not a backend/export blocker.
+The exported candidate is still unqualified because CLIENT_CAPABILITY,
+CONTENT_POLICY and REVIEW remain UNKNOWN; production release claims still require
+the guarded-supervisor execution qualification, reviewed client configuration,
+GHCR/HiveForge image evidence and any remaining support-matrix evidence.

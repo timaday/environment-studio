@@ -7,6 +7,7 @@ import { V3ExportJourney } from "./V3ExportJourney";
 import { V3PlanInspection } from "./V3PlanInspection";
 import { V3ProfileCapture } from "./V3ProfileCapture";
 import { V3ProfileReuse } from "./V3ProfileReuse";
+import { V3TargetStructure } from "./V3TargetStructure";
 import { V3ValuesValidation } from "./V3ValuesValidation";
 export function VersionedPlans({
   api,
@@ -29,10 +30,11 @@ export function VersionedPlans({
 }) {
   const state = useV3PlanInspection(api, active && compatibilityMode === "3", definitionVersion);
   const [journey, setJourney] = useState<
-    "capture" | "reuse" | "values" | "validation" | "export" | null
+    "capture" | "reuse" | "target" | "values" | "validation" | "export" | null
   >(null);
   const captureOpen = journey === "capture";
   const reuseOpen = journey === "reuse";
+  const targetOpen = journey === "target";
   const valuesOpen = journey === "values";
   const validationOpen = journey === "validation";
   const exportOpen = journey === "export";
@@ -82,6 +84,10 @@ export function VersionedPlans({
               setJourney("capture");
               captureChanged?.(true);
             }}
+            editTarget={() => {
+              setJourney("target");
+              captureChanged?.(true);
+            }}
             editValues={() => {
               setJourney("values");
               captureChanged?.(true);
@@ -103,6 +109,19 @@ export function VersionedPlans({
           refreshPlan={state.refresh}
           plan={state.plan}
           active={active && compatibilityMode === "3" && reuseOpen}
+          back={() => {
+            setJourney(null);
+            captureChanged?.(false);
+            void state.refresh();
+          }}
+        />
+      </div>
+      <div hidden={!targetOpen || compatibilityMode !== "3"}>
+        <V3TargetStructure
+          api={api}
+          plan={state.plan}
+          active={active && compatibilityMode === "3" && targetOpen}
+          refreshPlan={state.refresh}
           back={() => {
             setJourney(null);
             captureChanged?.(false);

@@ -10,6 +10,7 @@ export function V3PlanInspection({
   openDefinitions,
   captureProfile,
   reuseProfile,
+  editTarget,
   editValues,
   validatePlan,
   exportPlan,
@@ -21,6 +22,7 @@ export function V3PlanInspection({
   openDefinitions: () => void;
   captureProfile?: () => void;
   reuseProfile?: () => void;
+  editTarget?: () => void;
   editValues?: () => void;
   validatePlan?: () => void;
   exportPlan?: () => void;
@@ -285,6 +287,11 @@ export function V3PlanInspection({
           {reuseProfile && (
             <button type="button" onClick={reuseProfile}>
               Reuse profile
+            </button>
+          )}
+          {editTarget && (
+            <button type="button" onClick={editTarget}>
+              Model target structure
             </button>
           )}
           {editValues && (
