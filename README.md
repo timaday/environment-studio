@@ -13,8 +13,9 @@ read-only inspection, value-free profile capture/reuse, target values, structura
 changes, XML comparison, validation and guarded package download. The image
 defaults to synthetic demo mode; hosted operation requires explicit configuration
 for local-operator or OIDC authentication, a private schema3 workspace and a
-PostgreSQL 16.11 destination. Oracle implementation remains preserved in the
-codebase, but Oracle is explicitly unavailable for this pilot.
+PostgreSQL 16.11 destination. Database login credentials are never deployment
+configuration; operators enter them per operation. Oracle implementation remains
+preserved in the codebase, but Oracle is explicitly unavailable for this pilot.
 
 For the no-OIDC pilot, use the local-operator hosted mode documented in
 [deploy/README.md](deploy/README.md). Successful `main` builds publish GHCR
@@ -225,7 +226,7 @@ the workspace and start the service:
 
 ```bash
 scripts/studio.sh init-hosted-env
-# edit deploy/hosted.env with the image digest, operator password, workspace and PostgreSQL 16.11 identity/trust values
+# edit deploy/hosted.env with the image digest, workspace and PostgreSQL 16.11 destination/trust values; keep DB login credentials out of this file
 scripts/studio.sh hosted-config
 scripts/studio.sh hosted-prepare-workspace
 scripts/studio.sh hosted-init

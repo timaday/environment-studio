@@ -26,7 +26,7 @@ scripts/studio.sh demo
 
 # Prepare a private local-operator/PostgreSQL env file, then validate and start hosted mode.
 scripts/studio.sh init-hosted-env
-# edit deploy/hosted.env; keep it private and out of commits
+# edit deploy/hosted.env; keep DB login credentials out of this file
 scripts/studio.sh hosted-config
 scripts/studio.sh hosted-prepare-workspace
 scripts/studio.sh hosted-init
@@ -127,8 +127,9 @@ environment before claiming HiveForge release qualification.
 
 A quick local hosted run uses the same Compose contract. Choose a unique host
 port, create the workspace outside the repo, set the local-operator password from
-your shell or secret manager, and replace the PostgreSQL identity values with
-observed PostgreSQL 16.11 facts before using a real destination.
+your shell or secret manager, and replace the PostgreSQL destination/trust
+identity values with observed PostgreSQL 16.11 facts before using a real
+destination. Do not add database usernames or passwords to `deploy/hosted.env`.
 
 ```bash
 scripts/studio.sh init-hosted-env
@@ -141,12 +142,13 @@ scripts/studio.sh hosted-up
 
 The ignored `deploy/hosted.env` file is copied from
 `deploy/hosted.env.example`. Replace the illustrative digest and PostgreSQL
-identity placeholders before running. The example publishes loopback port
+destination/trust identity placeholders before running. The example publishes
+loopback port
 `${STUDIO_HOST_PORT:-18181}` and uses `localhost` as the operator-facing origin;
 for platform ingress, route directly to container port 8080 on its private
 service network. Do not expose an unauthenticated real-data service. Database
-credentials are not deployment variables; operators enter them for a scoped
-read-only inspection operation.
+usernames and passwords are not deployment variables; operators enter them for
+scoped read-only inspection/export operations.
 
 
 ## No-OIDC Dockerized demo
