@@ -169,11 +169,15 @@
   color: var(--muted);
   margin-block: 8px;
 }
-.v3-comparison-detail .v3-plan-panes pre {
+.v3-comparison-detail .v3-xml-scroll-region {
   min-height: 280px;
   max-height: 520px;
   padding-block: 12px;
   border-top: 1px solid var(--border);
+  overflow: auto;
+}
+.v3-comparison-detail .v3-plan-panes pre {
+  margin: 0;
   font-size: 13px;
   line-height: 1.6;
   white-space: pre;
@@ -224,7 +228,7 @@
     border-radius: 0;
     font-size: 12px;
   }
-  .v3-comparison-detail .v3-plan-panes pre {
+  .v3-comparison-detail .v3-xml-scroll-region {
     min-height: 180px;
     max-height: 360px;
   }
@@ -241,4 +245,84 @@
 }
 .v3-document-navigator .v3-document-list {
   margin-top: 12px;
+}
+.v3-text-find {
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) auto minmax(160px, auto);
+  gap: 12px;
+  align-items: end;
+  margin-top: 12px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: #101a2b;
+}
+.v3-text-find label {
+  min-width: 0;
+}
+.v3-text-find input {
+  width: 100%;
+  min-height: 44px;
+  margin-top: 6px;
+}
+.v3-text-find-actions {
+  display: flex;
+  gap: 8px;
+}
+.v3-comparison-detail .v3-text-find > p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+.v3-xml-mark {
+  border-radius: 3px;
+  padding: 0 2px;
+  color: inherit;
+}
+.v3-xml-mark-search {
+  background: rgba(135, 152, 255, 0.22);
+  outline: 1px solid rgba(135, 152, 255, 0.38);
+}
+.v3-xml-mark-active-search {
+  background: rgba(67, 214, 197, 0.28);
+  outline: 2px solid var(--teal);
+}
+.v3-xml-mark-location {
+  background: rgba(255, 204, 102, 0.28);
+  outline: 2px solid #ffcc66;
+}
+.v3-location-navigation {
+  display: flex;
+  border-inline: 0;
+  border-bottom: 0;
+  padding-inline: 0;
+  padding-bottom: 0;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  align-items: center;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+.v3-comparison-detail .v3-location-navigation p,
+.v3-location-navigation legend {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+.v3-location-detail {
+  margin-top: 12px;
+}
+.v3-location-note {
+  color: var(--muted);
+  font-size: 13px;
+}
+@media (max-width: 760px) {
+  .v3-text-find {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .v3-text-find-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }

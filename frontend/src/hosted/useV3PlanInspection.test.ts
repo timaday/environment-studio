@@ -138,6 +138,36 @@ async function setup() {
       const request = JSON.parse(String(options?.body));
       return json(document(request.side, request.documentId, request.mode));
     }
+    if (path === `/api/v3/plans/${id}/views/entities`) {
+      const request = JSON.parse(String(options?.body));
+      return json({
+        revision: request.revision,
+        total: 0,
+        offset: request.offset,
+        nextOffset: null,
+        items: [],
+      });
+    }
+    if (path === `/api/v3/plans/${id}/views/bindings`) {
+      const request = JSON.parse(String(options?.body));
+      return json({
+        revision: request.revision,
+        total: 0,
+        offset: request.offset,
+        nextOffset: null,
+        items: [],
+      });
+    }
+    if (path === `/api/v3/plans/${id}/views/binding-locations`) {
+      const request = JSON.parse(String(options?.body));
+      return json({
+        revision: request.revision,
+        total: 0,
+        offset: request.offset,
+        nextOffset: null,
+        items: [],
+      });
+    }
     throw new Error("Unexpected invented test route");
   });
   const api = new HostedApi(transport);
@@ -479,6 +509,32 @@ it("loads placeholder documents with a concrete binding rail", async () => {
       target: "after",
       currentLocations: 1,
       targetLocations: 1,
+      currentTotalLocations: 1,
+      targetTotalLocations: 1,
+      currentDocumentLocations: [
+        {
+          documentId: "mock-a",
+          sourceDigest: "a".repeat(64),
+          projectionId: "mock-projection",
+          elementIndex: "0",
+          attribute: { namespaceUri: "", localName: "value" },
+          span: { start: 13, end: 19 },
+          role: "field",
+          declarationId: "mock-field",
+        },
+      ],
+      targetDocumentLocations: [
+        {
+          documentId: "mock-a",
+          sourceDigest: "b".repeat(64),
+          projectionId: "mock-projection",
+          elementIndex: "0",
+          attribute: { namespaceUri: "", localName: "value" },
+          span: { start: 13, end: 18 },
+          role: "field",
+          declarationId: "mock-field",
+        },
+      ],
     },
   ]);
   expect(

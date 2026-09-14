@@ -15,6 +15,8 @@ type Inventory = Awaited<ReturnType<HostedV3Physical["documents"]>>["response"];
 type Document = Awaited<ReturnType<HostedV3Physical["document"]>>["response"];
 type EntityPage = Awaited<ReturnType<HostedV3Physical["entities"]>>["response"];
 type BindingPage = Awaited<ReturnType<HostedV3Physical["bindings"]>>["response"];
+type LocationPage = Awaited<ReturnType<HostedV3Physical["bindingLocations"]>>["response"];
+type BindingLocation = LocationPage["items"][number];
 type DocumentMode = "raw" | "placeholders" | "formatted";
 export type BindingRailItem = Readonly<{
   entity: EntityPage["items"][number]["entity"];
@@ -26,6 +28,10 @@ export type BindingRailItem = Readonly<{
   target: string;
   currentLocations: number;
   targetLocations: number;
+  currentTotalLocations: number;
+  targetTotalLocations: number;
+  currentDocumentLocations: readonly BindingLocation[];
+  targetDocumentLocations: readonly BindingLocation[];
 }>;
 type State = Readonly<{
   phase: "idle" | "loading" | "absent" | "loaded" | "error";
@@ -333,16 +339,16 @@ export function useV3PlanInspection(api: HostedApi, enabled: boolean, definition
     }
     return items;
   }
-  async function readDocumentLocationCount(
+  async function readDocumentLocations(
     plan: PlanSummary,
     documentId: string,
     entity: EntityPage["items"][number]["entity"],
     fieldId: string,
     side: "current" | "target",
   ) {
-    let count = 0;
+    const locations: BindingLocation[] = [];
     for (let offset: number | null = 0; offset !== null; ) {
-      const page: Awaited<ReturnType<HostedV3Physical["bindingLocations"]>>["response"] = (
+      const page: LocationPage = (
         await physical.bindingLocations(plan.planId, {
           revision: plan.revision,
           entity,
@@ -353,10 +359,10 @@ export function useV3PlanInspection(api: HostedApi, enabled: boolean, definition
           completeDocumentDisclosure: true,
         })
       ).response;
-      count += page.items.filter((item) => item.documentId === documentId).length;
+      locations.push(...page.items.filter((item) => item.documentId === documentId));
       offset = page.nextOffset;
     }
-    return count;
+    return Object.freeze(locations);
   }
   async function readBindingRail(plan: PlanSummary, documentId: string, targetAvailable: boolean) {
     const scoped = new Map<string, EntityPage["items"][number]>();
@@ -368,28 +374,18 @@ export function useV3PlanInspection(api: HostedApi, enabled: boolean, definition
     const rail: BindingRailItem[] = [];
     for (const item of scoped.values()) {
       for (const binding of await readAllBindings(plan, item.entity)) {
-        const currentLocations =
+        const currentDocumentLocations =
           binding.currentLocations.state === "complete" && binding.currentLocations.total > 0
-            ? await readDocumentLocationCount(
-                plan,
-                documentId,
-                item.entity,
-                binding.fieldId,
-                "current",
-              )
-            : 0;
-        const targetLocations =
+            ? await readDocumentLocations(plan, documentId, item.entity, binding.fieldId, "current")
+            : [];
+        const targetDocumentLocations =
           targetAvailable &&
           binding.targetLocations.state === "complete" &&
           binding.targetLocations.total > 0
-            ? await readDocumentLocationCount(
-                plan,
-                documentId,
-                item.entity,
-                binding.fieldId,
-                "target",
-              )
-            : 0;
+            ? await readDocumentLocations(plan, documentId, item.entity, binding.fieldId, "target")
+            : [];
+        const currentLocations = currentDocumentLocations.length;
+        const targetLocations = targetDocumentLocations.length;
         if (currentLocations + targetLocations === 0) continue;
         rail.push({
           entity: item.entity,
@@ -401,6 +397,12 @@ export function useV3PlanInspection(api: HostedApi, enabled: boolean, definition
           target: bindingValue(binding.target),
           currentLocations,
           targetLocations,
+          currentTotalLocations:
+            binding.currentLocations.state === "complete" ? binding.currentLocations.total : 0,
+          targetTotalLocations:
+            binding.targetLocations.state === "complete" ? binding.targetLocations.total : 0,
+          currentDocumentLocations,
+          targetDocumentLocations,
         });
       }
     }
@@ -439,7 +441,7 @@ export function useV3PlanInspection(api: HostedApi, enabled: boolean, definition
       await verify(captured.plan);
       if (!current(token)) return;
       const bindingRail =
-        captured.mode === "placeholders"
+        captured.mode === "placeholders" || captured.mode === "raw"
           ? await readBindingRail(captured.plan, captured.selected, targetAvailable)
           : [];
       if (!current(token)) return;

@@ -23,9 +23,14 @@ is unavailable.
 
 The comparison uses a bounded document list, Current/Target panes and a selected
 mapping rail below the XML. The selected mapping keeps concrete current/target
-values, status and selected-document location counts visible. Raw remains exact;
-placeholder/formatting remain projections. The hosted content area uses more of
-the available desktop width and the panes stack at narrower widths.
+values, status, selected-document mapped locations and whole-plan location totals
+visible. Raw remains exact and now highlights the selected mapped source span when
+the backend returns verified coordinates. Placeholder/formatting remain display
+projections and preserve concrete values in the rail. The current and target XML
+scroll regions synchronize their relative scroll position, and loaded-document text
+search highlights matches in both panes without fetching unopened content. The
+hosted content area uses more of the available desktop width and the panes stack at
+narrower widths.
 
 All product data still comes from existing typed server responses. No new API,
 fixture fallback, persisted browser state, fake publication or success state was
@@ -38,11 +43,15 @@ added. The acceptance tests use independently invented `mock-*` records only.
   two new navigation/search tests failed because the controls were absent; five
   existing tests passed. An earlier run from the repo root failed due to missing
   jsdom configuration and is not the behavior RED evidence.
-- GREEN focused test: eight tests passed, including the two RED examples and
-  concrete mapping selection. Search example uses 120 documents and preserves
-  the full 60-change total while showing one search result.
+- GREEN focused test on the initial slice: eight tests passed, including the two
+  RED examples and concrete mapping selection. Search example uses 120 documents
+  and preserves the full 60-change total while showing one search result.
+- Follow-up RED/GREEN for CLOB comparison polish: from `frontend`,
+  `npx vitest run src/hosted/V3PlanInspection.test.tsx src/hosted/useV3PlanInspection.test.ts`
+  passed 25 tests after adding loaded XML search, real selected-document location
+  details, Raw-mode span highlighting and binding-location reads for Raw views.
 - `npm run check --prefix frontend`: passed, TypeScript and Biome, no findings.
-- `npm test --prefix frontend`: passed, 37 files / 468 frontend tests and 61 schema tests.
+- `npm test --prefix frontend`: passed, 37 files / 471 frontend tests and 61 schema tests.
 - `npm run build --prefix frontend`: passed; production assets built.
 - Isolated real Chromium harness: 1543, 900, 390 and 320 CSS-pixel widths, DPR 1;
   120 documents, search, changed navigation, explicit disclosure/load/clear,
@@ -77,10 +86,10 @@ content/states and do not establish pixel identity or approval of every remainin
 spacing/density difference. The full operator shell and all five populated design
 states have not been qualified against the reference images by this slice.
 
-Search covers document identities and status, not content across unopened CLOBs.
-Change navigation moves between changed documents, not individual XML hunks.
-The existing binding hook exposes selected-document location counts; this slice
-does not add full cross-document mapped-location paths or synchronized XML scrolling.
-Those capabilities need follow-up through the existing qualified document/location
-contracts. PostgreSQL text is the current pilot target; this UI change does not
-qualify Oracle CLOB access or production native-supervisor admission.
+Search covers document identities and status plus the currently loaded current/target
+XML text. It does not search unopened CLOB content. Change navigation moves between
+changed documents, not individual XML hunks. The binding rail reads mapped-location
+pages for the selected document and shows whole-plan location totals; it does not
+open every other document that shares the mapping. PostgreSQL text is the current
+pilot target; this UI change does not qualify Oracle CLOB access or production
+native-supervisor admission.

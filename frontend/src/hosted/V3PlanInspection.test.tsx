@@ -4,6 +4,25 @@ import { expect, it, vi } from "vitest";
 import type { useV3PlanInspection } from "./useV3PlanInspection";
 import { V3PlanInspection } from "./V3PlanInspection";
 
+function location(
+  documentId: string,
+  start: number,
+  end: number,
+  role: "field" | "reference",
+  declarationId: string,
+) {
+  return {
+    documentId,
+    sourceDigest: "a".repeat(64),
+    projectionId: "mock-projection",
+    elementIndex: "2",
+    attribute: { namespaceUri: "", localName: "value" },
+    span: { start, end },
+    role,
+    declarationId,
+  };
+}
+
 function stateFixture(
   patch: Partial<ReturnType<typeof useV3PlanInspection>>,
 ): ReturnType<typeof useV3PlanInspection> {
@@ -414,6 +433,16 @@ it("keeps concrete current and target values inspectable when choosing a placeho
         target: "after-tone",
         currentLocations: 2,
         targetLocations: 2,
+        currentTotalLocations: 4,
+        targetTotalLocations: 5,
+        currentDocumentLocations: [
+          location("mock-a", 6, 17, "field", "mock-tone"),
+          location("mock-a", 24, 35, "reference", "mock-tone"),
+        ],
+        targetDocumentLocations: [
+          location("mock-a", 6, 16, "field", "mock-tone"),
+          location("mock-a", 23, 33, "reference", "mock-tone"),
+        ],
       },
       {
         entity,
@@ -425,6 +454,14 @@ it("keeps concrete current and target values inspectable when choosing a placeho
         target: "after-finish",
         currentLocations: 1,
         targetLocations: 3,
+        currentTotalLocations: 1,
+        targetTotalLocations: 6,
+        currentDocumentLocations: [location("mock-a", 42, 55, "field", "mock-finish")],
+        targetDocumentLocations: [
+          location("mock-a", 42, 54, "field", "mock-finish"),
+          location("mock-a", 58, 70, "reference", "mock-finish"),
+          location("mock-a", 74, 86, "reference", "mock-finish"),
+        ],
       },
     ],
   });
@@ -445,7 +482,158 @@ it("keeps concrete current and target values inspectable when choosing a placeho
   );
   expect(screen.getByText("before-finish")).toBeVisible();
   expect(screen.getByText("after-finish")).toBeVisible();
-  expect(screen.getByText("Current 1 · Target 3")).toBeVisible();
+  expect(
+    screen.getByText("This document: Current 1 · Target 3. Whole plan: Current 1 · Target 6."),
+  ).toBeVisible();
   expect(screen.queryByText("before-tone")).not.toBeInTheDocument();
   expect(state.load).not.toHaveBeenCalled();
+});
+
+it("searches loaded current and target XML text without fetching another document", async () => {
+  const state = stateFixture({
+    selected: "mock-a",
+    current: {
+      revision: "2",
+      side: "current",
+      documentId: "mock-a",
+      mode: "raw",
+      text: "<settings>before-token</settings>",
+      exact: true,
+      redacted: false,
+      unmappedConcreteMayRemain: true,
+      omissions: [],
+    },
+    target: {
+      revision: "2",
+      side: "target",
+      documentId: "mock-a",
+      mode: "raw",
+      text: "<settings>after-token</settings>",
+      exact: true,
+      redacted: false,
+      unmappedConcreteMayRemain: true,
+      omissions: [],
+    },
+  });
+  render(
+    <V3PlanInspection
+      api={{} as never}
+      state={state}
+      versionSelector={null}
+      openDefinitions={vi.fn()}
+      inspectionUiEnabled
+    />,
+  );
+  await userEvent.type(screen.getByRole("searchbox", { name: "Find in loaded XML" }), "token");
+  expect(screen.getByText("1 of 2 visible text matches")).toBeVisible();
+  await userEvent.click(screen.getByRole("button", { name: "Next match" }));
+  expect(screen.getByText("2 of 2 visible text matches")).toBeVisible();
+  expect(state.load).not.toHaveBeenCalled();
+});
+
+it("shows real selected-document location detail and raw-only span highlighting", async () => {
+  const entity = { kind: "existing" as const, handle: "50000000-0000-0000-0000-000000000003" };
+  const state = stateFixture({
+    mode: "placeholders",
+    selected: "mock-a",
+    current: {
+      revision: "2",
+      side: "current",
+      documentId: "mock-a",
+      mode: "placeholders",
+      text: '<property value="[[value:mock-tone]]"/>',
+      exact: false,
+      redacted: false,
+      unmappedConcreteMayRemain: false,
+      omissions: [],
+    },
+    bindingRail: [
+      {
+        entity,
+        typeId: "mock-type",
+        fieldId: "mock-tone",
+        token: "[[value:mock-tone]]",
+        change: "changed",
+        current: "before-tone",
+        target: "after-tone",
+        currentLocations: 1,
+        targetLocations: 0,
+        currentTotalLocations: 3,
+        targetTotalLocations: 2,
+        currentDocumentLocations: [location("mock-a", 17, 28, "field", "mock-tone")],
+        targetDocumentLocations: [],
+      },
+    ],
+  });
+  render(
+    <V3PlanInspection
+      api={{} as never}
+      state={state}
+      versionSelector={null}
+      openDefinitions={vi.fn()}
+      inspectionUiEnabled
+    />,
+  );
+  expect(
+    screen.getByText("This document: Current 1 · Target 0. Whole plan: Current 3 · Target 2."),
+  ).toBeVisible();
+  expect(
+    screen.getByText("Switch to Raw and reload this document to highlight exact source spans."),
+  ).toBeVisible();
+  expect(screen.getByText("17–28")).toBeVisible();
+  expect(state.load).not.toHaveBeenCalled();
+});
+
+it("highlights verified mapped source spans in Raw mode", () => {
+  const entity = { kind: "existing" as const, handle: "50000000-0000-0000-0000-000000000003" };
+  const state = stateFixture({
+    mode: "raw",
+    selected: "mock-a",
+    current: {
+      revision: "2",
+      side: "current",
+      documentId: "mock-a",
+      mode: "raw",
+      text: '<property value="before-tone"/>',
+      exact: true,
+      redacted: false,
+      unmappedConcreteMayRemain: false,
+      omissions: [],
+    },
+    bindingRail: [
+      {
+        entity,
+        typeId: "mock-type",
+        fieldId: "mock-tone",
+        token: "[[value:mock-tone]]",
+        change: "changed",
+        current: "before-tone",
+        target: "after-tone",
+        currentLocations: 1,
+        targetLocations: 0,
+        currentTotalLocations: 3,
+        targetTotalLocations: 2,
+        currentDocumentLocations: [location("mock-a", 17, 28, "field", "mock-tone")],
+        targetDocumentLocations: [],
+      },
+    ],
+  });
+  const { container } = render(
+    <V3PlanInspection
+      api={{} as never}
+      state={state}
+      versionSelector={null}
+      openDefinitions={vi.fn()}
+      inspectionUiEnabled
+    />,
+  );
+  expect(
+    screen.getByText(
+      "Mapped locations use verified raw spans. Current and target values remain visible here.",
+    ),
+  ).toBeVisible();
+  expect(container.querySelector(".v3-xml-mark-location")?.textContent).toBe("before-tone");
+  expect(
+    screen.queryByText("Switch to Raw and reload this document to highlight exact source spans."),
+  ).not.toBeInTheDocument();
 });
