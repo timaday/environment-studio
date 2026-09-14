@@ -206,6 +206,10 @@ Build and smoke-test the combined Java + React image with the repo wrapper:
 scripts/studio.sh package
 ```
 
+The first Docker build can be slow because it runs the UI checks and full Maven
+reactor inside the image. Later builds reuse BuildKit npm and Maven caches. Keep
+Docker BuildKit enabled on WSL; the wrapper sets it for local image builds.
+
 Run the local synthetic demo on `http://localhost:18181`:
 
 ```bash

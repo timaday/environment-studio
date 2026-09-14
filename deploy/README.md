@@ -36,7 +36,10 @@ scripts/studio.sh hosted-up
 Use `STUDIO_IMAGE_LOCAL`, `STUDIO_IMAGE`, `STUDIO_HOST_PORT`,
 `STUDIO_ENV_FILE` and `STUDIO_COMPOSE_PROJECT` to override the defaults.
 `hosted-config` validates Compose interpolation before starting the service;
-`hosted-down` stops the container without deleting the workspace.
+`hosted-down` stops the container without deleting the workspace. The first
+`package` build downloads npm and Maven dependencies inside Docker and can be
+slow on WSL; subsequent builds reuse BuildKit caches while still running the
+release-grade checks.
 
 ## Image contract
 

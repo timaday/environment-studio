@@ -7,7 +7,7 @@ ARG RUNTIME_IMAGE=eclipse-temurin:21-jre-jammy@sha256:eebd356ad7358b7094758e5787
 FROM ${NODE_IMAGE} AS ui
 WORKDIR /build/frontend
 COPY frontend/package.json frontend/package-lock.json ./
-RUN npm ci
+RUN --mount=type=cache,target=/root/.npm npm ci
 COPY frontend/ ./
 COPY fixtures/ /build/fixtures/
 COPY schemas/ /build/schemas/
@@ -50,10 +50,10 @@ COPY fixtures/plan-http-tls/ ./fixtures/plan-http-tls/
 COPY fixtures/plan-views-v1/ ./fixtures/plan-views-v1/
 COPY deploy/HealthProbe.java /build/deploy/HealthProbe.java
 COPY --from=ui /build/frontend/dist/ ./backend/server/src/main/resources/static/
-RUN mvn -B -ntp -f backend/pom.xml verify
+RUN --mount=type=cache,target=/root/.m2 mvn -B -ntp -f backend/pom.xml verify
 RUN cd backend/tools/guarded-supervisor/target/environment-studio-guarded-0.1.0-SNAPSHOT && sha256sum --check SHA256SUMS
 RUN javac -d /build/probe /build/deploy/HealthProbe.java
-RUN mkdir -p /build/sqlite-native && cd /build/sqlite-native && \
+RUN --mount=type=cache,target=/root/.m2 mkdir -p /build/sqlite-native && cd /build/sqlite-native && \
     jar --extract --file /root/.m2/repository/org/xerial/sqlite-jdbc/3.53.4.0/sqlite-jdbc-3.53.4.0.jar \
     org/sqlite/native/Linux/x86_64/libsqlitejdbc.so
 

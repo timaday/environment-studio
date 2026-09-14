@@ -143,10 +143,10 @@ case "$command_name" in
     npm run build --prefix frontend
     ;;
   ui)
-    docker build --target ui -t "$ui_image" .
+    DOCKER_BUILDKIT=1 docker build --target ui -t "$ui_image" .
     ;;
   image|build)
-    docker build --target runtime --build-arg "SOURCE_REVISION=$(source_revision)" -t "$local_image" .
+    DOCKER_BUILDKIT=1 docker build --target runtime --build-arg "SOURCE_REVISION=$(source_revision)" -t "$local_image" .
     ;;
   smoke)
     bash scripts/container_smoke.sh "$local_image"
