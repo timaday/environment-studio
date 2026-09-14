@@ -27,3 +27,6 @@ __pycache__/
 !fixtures/plan-http-tls/mock-ca.pem
 !fixtures/guarded-supervisor-v1/mock-ca.pem
 .hiveforge/
+
+# Local hosted deployment settings can contain passwords and environment facts.
+deploy/hosted.env

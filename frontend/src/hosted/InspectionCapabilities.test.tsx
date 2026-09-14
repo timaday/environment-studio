@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import { afterEach, expect, it, vi } from "vitest";
 import App from "../App";
 import { ApiFailure, HostedApi } from "../api/hosted";
@@ -62,12 +62,17 @@ it("configured API availability leaves the unqualified inspection UI disabled", 
   respond(capabilities);
   const post = vi.spyOn(HostedApi.prototype, "post");
   render(<App />);
-  expect(await screen.findByRole("button", { name: "Reserve inspection" })).toBeDisabled();
+  const inspection = await screen.findByRole(
+    "region",
+    { name: "Inspect configuration" },
+    { timeout: 10_000 },
+  );
+  expect(within(inspection).getByRole("button", { name: "Reserve inspection" })).toBeDisabled();
   expect(
-    screen.getByRole("checkbox", { name: /Successful inspection may replace/ }),
+    within(inspection).getByRole("checkbox", { name: /Successful inspection may replace/ }),
   ).toBeDisabled();
   expect(
-    screen.getByText("Browser inspection is not yet available in this deployment."),
+    within(inspection).getByText("Browser inspection is not yet available in this deployment."),
   ).toBeVisible();
   expect(screen.queryByLabelText("Database password")).not.toBeInTheDocument();
   expect(post).not.toHaveBeenCalled();

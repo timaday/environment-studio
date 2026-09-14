@@ -11,6 +11,33 @@ storage and a psql 16.11/linux-amd64 export client with template
 qualification, but Oracle destinations with export clients are rejected for this
 pilot and must be treated as unavailable.
 
+
+## Quick commands
+
+The `scripts/studio.sh` wrapper keeps local and hosted commands consistent. It
+does not bake credentials or database facts into the image.
+
+```bash
+# Build and smoke-test a local runtime image tagged environment-studio:dev.
+scripts/studio.sh package
+
+# Run the synthetic no-database demo on http://localhost:18181.
+scripts/studio.sh demo
+
+# Prepare a private local-operator/PostgreSQL env file, then validate and start hosted mode.
+scripts/studio.sh init-hosted-env
+# edit deploy/hosted.env; keep it private and out of commits
+scripts/studio.sh hosted-config
+scripts/studio.sh hosted-prepare-workspace
+scripts/studio.sh hosted-init
+scripts/studio.sh hosted-up
+```
+
+Use `STUDIO_IMAGE_LOCAL`, `STUDIO_IMAGE`, `STUDIO_HOST_PORT`,
+`STUDIO_ENV_FILE` and `STUDIO_COMPOSE_PROJECT` to override the defaults.
+`hosted-config` validates Compose interpolation before starting the service;
+`hosted-down` stops the container without deleting the workspace.
+
 ## Image contract
 
 | Property | Implemented starter behavior |
@@ -101,50 +128,22 @@ your shell or secret manager, and replace the PostgreSQL identity values with
 observed PostgreSQL 16.11 facts before using a real destination.
 
 ```bash
-export STUDIO_IMAGE='ghcr.io/timaday/environment-studio@sha256:REPLACE_WITH_EMITTED_DIGEST'
-export STUDIO_HOST_PORT=18181
-export STUDIO_WORKSPACE_HOST_PATH=/path/to/private/studio-workspace
-export STUDIO_PG_TRUST_MATERIAL_HOST_PATH=/path/to/postgres-ca.pem
-
-# Local operator / public origin. Supply the password from your shell or secret manager;
-# do not commit it or place it in a shared .env file.
-export STUDIO_SECURITY_PUBLIC_ORIGIN=http://localhost:18181
-export STUDIO_SECURITY_LOCAL_OPERATOR_USERNAME=operator
-export STUDIO_SECURITY_LOCAL_OPERATOR_PASSWORD='set-outside-the-repository'
-export STUDIO_SECURITY_LOCAL_OPERATOR_ISSUER=https://local-operator.environment-studio.invalid
-export STUDIO_SECURITY_LOCAL_OPERATOR_SUBJECT=operator
-export STUDIO_SESSION_COOKIE_SECURE=false
-
-# Hosted definition publisher authority.
-export STUDIO_DEFINITION_PUBLISHER_ISSUER=https://local-operator.environment-studio.invalid
-export STUDIO_DEFINITION_PUBLISHER_SUBJECT=operator
-
-# PostgreSQL 16.11 destination admission and ownership.
-export STUDIO_PG_DESTINATION_ID=postgresql-pilot
-export STUDIO_PG_HOST=postgres.example.test
-export STUDIO_PG_PORT=5432
-export STUDIO_PG_DATABASE=appdb
-export STUDIO_PG_TRANSPORT_IDENTITY_SHA256=REPLACE_WITH_64_LOWERCASE_HEX_SHA256
-export STUDIO_PG_SYSTEM_IDENTIFIER=REPLACE_WITH_OBSERVED_SYSTEM_IDENTIFIER
-export STUDIO_PG_DATABASE_OID=REPLACE_WITH_OBSERVED_DATABASE_OID
-export STUDIO_DESTINATION_OWNER_ISSUER=https://local-operator.environment-studio.invalid
-export STUDIO_DESTINATION_OWNER_SUBJECT=operator
-
-# Run once for a new private workspace, then start the service.
-mkdir -p "$STUDIO_WORKSPACE_HOST_PATH"
-sudo chown 10001:10001 "$STUDIO_WORKSPACE_HOST_PATH"
-chmod 0700 "$STUDIO_WORKSPACE_HOST_PATH"
-docker compose -f deploy/compose.yaml --profile init run --rm environment-studio-workspace-init
-docker compose -f deploy/compose.yaml pull environment-studio
-docker compose -f deploy/compose.yaml up -d environment-studio
+scripts/studio.sh init-hosted-env
+# edit deploy/hosted.env; use chmod 0600 and keep it out of commits
+scripts/studio.sh hosted-config
+scripts/studio.sh hosted-prepare-workspace
+scripts/studio.sh hosted-init
+scripts/studio.sh hosted-up
 ```
 
-Replace the illustrative digest and PostgreSQL identity placeholders before
-running. The example publishes loopback port `${STUDIO_HOST_PORT:-18181}` and uses
-`localhost` as the operator-facing origin; for platform ingress, route
-directly to container port 8080 on its private service network. Do not expose an
-unauthenticated real-data service. Database credentials are not deployment
-variables; operators enter them for a scoped read-only inspection operation.
+The ignored `deploy/hosted.env` file is copied from
+`deploy/hosted.env.example`. Replace the illustrative digest and PostgreSQL
+identity placeholders before running. The example publishes loopback port
+`${STUDIO_HOST_PORT:-18181}` and uses `localhost` as the operator-facing origin;
+for platform ingress, route directly to container port 8080 on its private
+service network. Do not expose an unauthenticated real-data service. Database
+credentials are not deployment variables; operators enter them for a scoped
+read-only inspection operation.
 
 
 ## No-OIDC Dockerized demo
@@ -154,10 +153,7 @@ demo Compose file. It starts the same published image in `STUDIO_MODE=demo` and
 binds loopback port `${STUDIO_HOST_PORT:-18080}` to container port 8080.
 
 ```bash
-export STUDIO_HOST_PORT=18080
-docker compose -f deploy/compose.demo.yaml pull
-docker compose -f deploy/compose.demo.yaml up -d
-curl -f http://localhost:${STUDIO_HOST_PORT}/actuator/health/readiness
+STUDIO_HOST_PORT=18080 scripts/studio.sh demo
 ```
 
 Demo mode is intentionally synthetic and denies hosted workspace, inspection,

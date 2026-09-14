@@ -200,24 +200,37 @@ credentials and cannot connect to a database. This development proxy does not
 configure hosted local-operator/OIDC access or change the container's normal port 8080. Vite
 preview does not inherit the proxy.
 
-Build and run the combined Java + React application:
+Build and smoke-test the combined Java + React image with the repo wrapper:
 
 ```bash
-nvm use
-npm ci --prefix frontend
-npm run preflight --prefix frontend
-npm run build --prefix frontend
-docker build --target runtime -t environment-studio:dev .
-docker run --rm --read-only --cap-drop ALL --security-opt no-new-privileges \
-  --tmpfs /tmp:rw,noexec,nosuid,size=128m -p 127.0.0.1:18181:8080 environment-studio:dev
+scripts/studio.sh package
 ```
 
-Open `http://localhost:18181`. Default mode is `demo`; it accepts no credentials.
-Health probes report process health, **not configuration validity**.
-Hosted authentication requires explicit local-operator or OIDC/public-origin configuration; see
-[the session contract](docs/contracts/hosted-session.md). Hosted views use actual
-server capabilities and authority. Real identity-provider/HiveForge qualification
-and complete browser-to-database workflow evidence remain separate work.
+Run the local synthetic demo on `http://localhost:18181`:
+
+```bash
+scripts/studio.sh demo
+```
+
+Default image mode is `demo`; it accepts no credentials and cannot connect to a
+database. Health probes report process health, **not configuration validity**.
+Hosted PostgreSQL requires explicit local-operator or OIDC/public-origin
+configuration; see [the session contract](docs/contracts/hosted-session.md).
+For a no-OIDC hosted pilot, create and edit the ignored env file, then initialize
+the workspace and start the service:
+
+```bash
+scripts/studio.sh init-hosted-env
+# edit deploy/hosted.env with the image digest, operator password, workspace and PostgreSQL 16.11 identity/trust values
+scripts/studio.sh hosted-config
+scripts/studio.sh hosted-prepare-workspace
+scripts/studio.sh hosted-init
+scripts/studio.sh hosted-up
+```
+
+Hosted views use actual server capabilities and authority. Real
+identity-provider/HiveForge qualification and complete browser-to-database
+workflow evidence remain separate work.
 
 ## CI and container publication
 
