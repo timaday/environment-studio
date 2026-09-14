@@ -163,6 +163,7 @@
 }
 .definition-saved summary {
   cursor: pointer;
+  min-height: 44px;
   padding-block: 12px;
 }
 .definition-publication {
@@ -221,6 +222,7 @@
   display: flex;
   align-items: center;
   gap: 10px;
+  min-height: 44px;
 }
 .v3-definitions .definition-checkbox input {
   min-width: 20px;

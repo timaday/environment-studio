@@ -345,3 +345,110 @@
     max-width: 100%;
   }
 }
+.v3-plan-context {
+  display: grid;
+  gap: 14px;
+  margin-top: 20px;
+  overflow-wrap: anywhere;
+}
+.v3-plan-context-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+.v3-plan-context article,
+.v3-plan-counts,
+.v3-plan-blockers {
+  min-width: 0;
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: #121c2e;
+}
+.v3-plan-card-label {
+  display: block;
+  color: var(--muted);
+  font-size: 13px;
+  margin-bottom: 6px;
+}
+.v3-plan-context article strong {
+  display: block;
+  margin-bottom: 6px;
+}
+.v3-plan-card-note,
+.v3-plan-count-line,
+.v3-plan-blockers {
+  margin: 0;
+  color: var(--muted);
+}
+.v3-plan-context article code {
+  display: block;
+  color: #b9c4ff;
+  white-space: normal;
+}
+.v3-plan-counts {
+  display: grid;
+  gap: 6px;
+}
+.v3-plan-blockers {
+  color: #ffcc66;
+}
+.v3-plan-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 16px;
+}
+@media (max-width: 900px) {
+  .v3-plan-context-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 650px) {
+  .v3-plan-context-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .v3-plan-actions {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .v3-plan-actions button {
+    width: 100%;
+  }
+}
+.v3-inspection-panel {
+  display: grid;
+  gap: 14px;
+  margin-top: 16px;
+  padding: 18px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: #0d1626;
+}
+.v3-inspection-panel h2 {
+  margin: 0 0 6px;
+  font-size: 22px;
+}
+.v3-inspection-panel p {
+  margin: 0;
+  color: var(--muted);
+}
+.v3-inspection-credentials {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 260px)) auto;
+  gap: 14px;
+  align-items: end;
+}
+.v3-inspection-credentials input {
+  min-height: 44px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: #111d30;
+  color: var(--text);
+  padding: 10px 12px;
+}
+@media (max-width: 650px) {
+  .v3-inspection-credentials {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

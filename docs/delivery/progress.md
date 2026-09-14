@@ -1342,3 +1342,28 @@ lead-owned.
 Blockers: no full pixel-identity claim, no production DB/export qualification,
 and Values/Validation visuals remain pending approval before their affected UI can
 be implemented.
+
+## PostgreSQL connection-with-definition UI checkpoint — 14 September
+
+Ready: the hosted v3 plan journey now treats published definition selection and
+PostgreSQL read-only inspection as one inseparable setup flow. Plan creation is
+only offered from a published definition and configured destination, later
+operator actions stay hidden until current inspection is valid, and an incomplete plan now
+surfaces a dedicated one-use credential handoff for `/api/v3/plans/{planId}/inspections`
+and `/api/v3/operations/{operationId}/credentials`. Credentials are submitted
+from transient form state and cleared immediately after send. The Plans selector
+refreshes when the Definitions workspace changes, so newly published v3
+definitions become available without restarting the hosted UI.
+
+Evidence: focused frontend coverage exercises reserve-before-credentials,
+credential clearing, definition refresh and hidden pre-plan actions. A clean
+Docker-hosted Playwright audit captured every current hosted view in desktop and
+narrow viewports with zero axe findings, no horizontal overflow and no
+non-input controls below 44px. The screenshot set is external evidence under
+`/home/tim/.tmp/environment-studio-live-ux-audit-20260914/`; it uses
+only repository synthetic fixtures and does not prove a production database read.
+
+Remaining limitations: populated inspection, values, validation and export still
+require a reachable PostgreSQL 16.11 target plus one-use credentials at runtime.
+No application SQL is executed by Environment Studio. Production GHCR/HiveForge
+qualification remains separate from the local Docker-hosted audit.

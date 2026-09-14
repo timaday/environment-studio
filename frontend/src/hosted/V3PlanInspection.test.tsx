@@ -73,11 +73,88 @@ it("does not report unobserved physical counts as a measured empty graph", () =>
     setConsent: vi.fn(),
     load: vi.fn(),
   });
-  render(<V3PlanInspection state={state} versionSelector={null} openDefinitions={vi.fn()} />);
+  render(
+    <V3PlanInspection
+      api={{} as never}
+      state={state}
+      versionSelector={null}
+      openDefinitions={vi.fn()}
+      inspectionUiEnabled
+    />,
+  );
   expect(
     screen.getByText("Current physical counts unavailable · no observation captured."),
   ).toBeVisible();
   expect(screen.queryByText(/Current physical: 0 documents/)).not.toBeInTheDocument();
+});
+
+it("hides later workflow actions until a plan exists", () => {
+  const state = stateFixture({
+    phase: "absent",
+    definitions: [],
+    destinations: [],
+  });
+  render(
+    <V3PlanInspection
+      api={{} as never}
+      state={state}
+      versionSelector={null}
+      openDefinitions={vi.fn()}
+      inspectionUiEnabled
+      reuseProfile={vi.fn()}
+      editValues={vi.fn()}
+      validatePlan={vi.fn()}
+      exportPlan={vi.fn()}
+      captureProfile={vi.fn()}
+    />,
+  );
+  expect(screen.queryByRole("button", { name: "Reuse profile" })).not.toBeInTheDocument();
+  expect(screen.queryByRole("button", { name: "Define values" })).not.toBeInTheDocument();
+  expect(screen.queryByRole("button", { name: "Validate plan" })).not.toBeInTheDocument();
+  expect(screen.queryByRole("button", { name: "Export package" })).not.toBeInTheDocument();
+  expect(screen.queryByRole("button", { name: "Capture profile" })).not.toBeInTheDocument();
+});
+
+it("hides target actions until current inspection is valid", () => {
+  const state = stateFixture({
+    phase: "loaded",
+    plan: {
+      planId: "50000000-0000-0000-0000-000000000001",
+      revision: "1",
+      definition: { objectId: "50000000-0000-0000-0000-000000000002", workspaceRevision: "2" },
+      bindingId: "mock",
+      destinationId: "mock",
+      currentCounts: { documents: 0, entities: 0, relations: 0 },
+      targetCounts: { documents: 0, entities: 0, relations: 0 },
+      inspectionValid: false,
+      targetComplete: false,
+      exportAvailable: false,
+      blockers: ["INSPECTION_REQUIRED"],
+      observedDestination: null,
+      currentComputedCounts: null,
+      targetComputedCounts: null,
+    },
+  });
+  render(
+    <V3PlanInspection
+      api={{ post: vi.fn() } as never}
+      state={state}
+      versionSelector={null}
+      openDefinitions={vi.fn()}
+      inspectionUiEnabled
+      reuseProfile={vi.fn()}
+      editValues={vi.fn()}
+      validatePlan={vi.fn()}
+      exportPlan={vi.fn()}
+      captureProfile={vi.fn()}
+    />,
+  );
+  expect(screen.getByRole("heading", { name: "Inspect current PostgreSQL" })).toBeVisible();
+  expect(screen.queryByRole("button", { name: "Reuse profile" })).not.toBeInTheDocument();
+  expect(screen.queryByRole("button", { name: "Define values" })).not.toBeInTheDocument();
+  expect(screen.queryByRole("button", { name: "Validate plan" })).not.toBeInTheDocument();
+  expect(screen.queryByRole("button", { name: "Export package" })).not.toBeInTheDocument();
+  expect(screen.queryByRole("button", { name: "Capture profile" })).not.toBeInTheDocument();
 });
 
 it("renders v3 published definition plan creation controls", () => {
@@ -151,7 +228,15 @@ it("renders v3 published definition plan creation controls", () => {
     destination: "mock-postgres",
     createPlan,
   });
-  render(<V3PlanInspection state={state} versionSelector={null} openDefinitions={vi.fn()} />);
+  render(
+    <V3PlanInspection
+      api={{} as never}
+      state={state}
+      versionSelector={null}
+      openDefinitions={vi.fn()}
+      inspectionUiEnabled
+    />,
+  );
   expect(screen.getByRole("combobox", { name: "Published v3 definition" })).toHaveValue(
     "50000000-0000-0000-0000-000000000002",
   );
@@ -211,7 +296,15 @@ it("offers all three document modes without loading before disclosure", () => {
     setConsent: vi.fn(),
     load: vi.fn(),
   });
-  render(<V3PlanInspection state={state} versionSelector={null} openDefinitions={vi.fn()} />);
+  render(
+    <V3PlanInspection
+      api={{} as never}
+      state={state}
+      versionSelector={null}
+      openDefinitions={vi.fn()}
+      inspectionUiEnabled
+    />,
+  );
   expect(screen.getByRole("button", { name: "Raw" })).toBeVisible();
   expect(screen.getByRole("button", { name: "Placeholders" })).toBeVisible();
   expect(screen.getByRole("button", { name: "Formatted" })).toBeVisible();

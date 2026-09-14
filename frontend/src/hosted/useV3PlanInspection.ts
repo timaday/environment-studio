@@ -79,7 +79,7 @@ const empty: State = {
 };
 
 /** Read-only state; complete document authority remains with each server request. */
-export function useV3PlanInspection(api: HostedApi, enabled: boolean) {
+export function useV3PlanInspection(api: HostedApi, enabled: boolean, definitionVersion = 0) {
   const client = useMemo(() => new HostedV3Api(api), [api]);
   const physical = useMemo(() => new HostedV3Physical(api), [api]);
   const definitions = useMemo(() => new HostedV3Definitions(api), [api]);
@@ -162,13 +162,14 @@ export function useV3PlanInspection(api: HostedApi, enabled: boolean) {
   useEffect(() => {
     owner.active = true;
     replace(empty);
-    if (owner.enabled) void refresh();
+    const observedDefinitionVersion = definitionVersion;
+    if (owner.enabled && observedDefinitionVersion >= 0) void refresh();
     return () => {
       owner.active = false;
       owner.generation++;
       latest.current = empty;
     };
-  }, [owner, refresh, replace]);
+  }, [owner, refresh, replace, definitionVersion]);
   async function chooseDefinition(objectId: string) {
     const captured = latest.current;
     if (!owner.active || captured.creating || captured.pendingCreate) return;

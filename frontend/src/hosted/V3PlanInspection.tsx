@@ -1,7 +1,10 @@
 import type { ReactNode } from "react";
+import type { HostedApi } from "../api/hosted";
 import type { useV3PlanInspection } from "./useV3PlanInspection";
+import { V3Inspection } from "./V3Inspection";
 
 export function V3PlanInspection({
+  api,
   state,
   versionSelector,
   openDefinitions,
@@ -10,7 +13,9 @@ export function V3PlanInspection({
   editValues,
   validatePlan,
   exportPlan,
+  inspectionUiEnabled,
 }: {
+  api: HostedApi;
   state: ReturnType<typeof useV3PlanInspection>;
   versionSelector: ReactNode;
   openDefinitions: () => void;
@@ -19,6 +24,7 @@ export function V3PlanInspection({
   editValues?: () => void;
   validatePlan?: () => void;
   exportPlan?: () => void;
+  inspectionUiEnabled: boolean;
 }) {
   const plan = state.plan;
   const documents = state.inventory?.documents;
@@ -36,6 +42,7 @@ export function V3PlanInspection({
     publishedDefinition && state.binding && state.destination && !state.creating,
   );
   const canRead = Boolean(state.selected && state.consent && !state.reading);
+  const showCreate = !plan && state.phase !== "loading";
   return (
     <section className="hosted-panel v3-plans" aria-label="Native v3 plan inspection">
       <h1>PostgreSQL pilot workspace</h1>
@@ -52,7 +59,7 @@ export function V3PlanInspection({
         </button>
       </div>
       {state.phase === "loading" && <p role="status">Loading the current Native v3 plan…</p>}
-      {state.phase === "absent" && (
+      {showCreate && (
         <>
           <div className="v3-plan-notice">
             <svg
@@ -68,14 +75,17 @@ export function V3PlanInspection({
             </svg>
             <div>
               <p>No current plan in this session.</p>
-              <p>Start with a published definition and a one-use PostgreSQL connection target.</p>
+              <p>
+                Start with a published definition; then provide the one-use PostgreSQL connection
+                for read-only inspection.
+              </p>
             </div>
             <button type="button" onClick={openDefinitions}>
               Create or publish definition
             </button>
           </div>
           <section className="v3-plan-create" aria-label="Create Native v3 plan">
-            <h2>1. Definition and connection</h2>
+            <h2>1. Published definition and one-use connection</h2>
             {state.definitions === null || state.destinations === null ? (
               <p role="status">Loading published definitions and configured destinations…</p>
             ) : (
@@ -100,7 +110,7 @@ export function V3PlanInspection({
                 {publishedDefinitions?.length === 0 && (
                   <p>
                     No published definition is available. Create or upload a definition, then
-                    publish the v3 revision before connecting.
+                    publish the v3 revision before the connection and inspection step can start.
                   </p>
                 )}
                 {publishedDefinition && (
@@ -178,57 +188,86 @@ export function V3PlanInspection({
       {plan && (
         <section className="v3-flow-steps" aria-label="Pilot workflow">
           <span aria-current={!plan.inspectionValid ? "step" : undefined}>Current inspection</span>
-          <span aria-current={plan.inspectionValid && !plan.targetComplete ? "step" : undefined}>
-            Target model and values
-          </span>
-          <span>Compare</span>
-          <span>Validate</span>
-          <span>Export</span>
+          {plan.inspectionValid ? (
+            <>
+              <span aria-current={!plan.targetComplete ? "step" : undefined}>
+                Target model and values
+              </span>
+              <span>Compare</span>
+              <span>Validate</span>
+              <span>Export</span>
+            </>
+          ) : (
+            <span>Next: target model and values after inspection</span>
+          )}
         </section>
       )}
       {plan && (
         <section className="v3-plan-context" aria-label="Current plan context">
-          <p>
-            Plan {plan.planId} · revision {plan.revision}
-          </p>
-          <p>
-            Definition {plan.definition.objectId} · revision {plan.definition.workspaceRevision} ·
-            binding {plan.bindingId} · destination {plan.destinationId}
-          </p>
-          <p>
-            Observation {plan.inspectionValid ? "valid" : "missing or expired"} · Target{" "}
-            {plan.targetComplete ? "complete" : "incomplete"}
-          </p>
-          {plan.observedDestination ? (
-            <p>
-              Current physical: {plan.currentCounts.documents} documents ·{" "}
-              {plan.currentCounts.entities} entities · {plan.currentCounts.relations} relations.
-            </p>
-          ) : (
-            <p>Current physical counts unavailable · no observation captured.</p>
-          )}
-          {plan.currentComputedCounts && (
-            <p>
-              Current computed: {plan.currentComputedCounts.nodes} nodes ·{" "}
-              {plan.currentComputedCounts.memberships} memberships ·{" "}
-              {plan.currentComputedCounts.cooccurrences} co-occurrences.
-            </p>
-          )}
-          {!plan.currentComputedCounts && <p>Current computed counts unavailable.</p>}
-          {plan.targetComplete && (
-            <p>
-              Target physical: {plan.targetCounts.documents} documents ·{" "}
-              {plan.targetCounts.entities} entities · {plan.targetCounts.relations} relations.
-            </p>
-          )}
-          {plan.targetComputedCounts ? (
-            <p>
-              Target computed: {plan.targetComputedCounts.nodes} nodes ·{" "}
-              {plan.targetComputedCounts.memberships} memberships ·{" "}
-              {plan.targetComputedCounts.cooccurrences} co-occurrences.
-            </p>
-          ) : (
-            <p>Target computed counts unavailable.</p>
+          <div className="v3-plan-context-grid">
+            <article>
+              <span className="v3-plan-card-label">Plan</span>
+              <strong>Revision {plan.revision}</strong>
+              <code>{plan.planId}</code>
+            </article>
+            <article>
+              <span className="v3-plan-card-label">Definition required</span>
+              <strong>Published revision {plan.definition.workspaceRevision}</strong>
+              <code>{plan.definition.objectId}</code>
+            </article>
+            <article>
+              <span className="v3-plan-card-label">Connection and inspection</span>
+              <strong>{plan.inspectionValid ? "Observation valid" : "Inspection required"}</strong>
+              <p className="v3-plan-card-note">
+                Binding {plan.bindingId} · destination {plan.destinationId}
+              </p>
+            </article>
+            <article>
+              <span className="v3-plan-card-label">Target</span>
+              <strong>{plan.targetComplete ? "Complete" : "Incomplete"}</strong>
+              <p className="v3-plan-card-note">
+                {plan.exportAvailable ? "Export can be requested." : "Export remains blocked."}
+              </p>
+            </article>
+          </div>
+          <section className="v3-plan-counts" aria-label="Plan counts">
+            {plan.observedDestination ? (
+              <p className="v3-plan-count-line">
+                Current physical: {plan.currentCounts.documents} documents ·{" "}
+                {plan.currentCounts.entities} entities · {plan.currentCounts.relations} relations.
+              </p>
+            ) : (
+              <p className="v3-plan-count-line">
+                Current physical counts unavailable · no observation captured.
+              </p>
+            )}
+            {plan.currentComputedCounts ? (
+              <p className="v3-plan-count-line">
+                Current computed: {plan.currentComputedCounts.nodes} nodes ·{" "}
+                {plan.currentComputedCounts.memberships} memberships ·{" "}
+                {plan.currentComputedCounts.cooccurrences} co-occurrences.
+              </p>
+            ) : (
+              <p className="v3-plan-count-line">Current computed counts unavailable.</p>
+            )}
+            {plan.targetComplete && (
+              <p className="v3-plan-count-line">
+                Target physical: {plan.targetCounts.documents} documents ·{" "}
+                {plan.targetCounts.entities} entities · {plan.targetCounts.relations} relations.
+              </p>
+            )}
+            {plan.targetComputedCounts ? (
+              <p className="v3-plan-count-line">
+                Target computed: {plan.targetComputedCounts.nodes} nodes ·{" "}
+                {plan.targetComputedCounts.memberships} memberships ·{" "}
+                {plan.targetComputedCounts.cooccurrences} co-occurrences.
+              </p>
+            ) : (
+              <p className="v3-plan-count-line">Target computed counts unavailable.</p>
+            )}
+          </section>
+          {plan.blockers.length > 0 && (
+            <p className="v3-plan-blockers">Backend blockers: {plan.blockers.join(", ")}</p>
           )}
           {plan.observedDestination && (
             <details>
@@ -236,33 +275,39 @@ export function V3PlanInspection({
               <pre>{JSON.stringify(plan.observedDestination, null, 2)}</pre>
             </details>
           )}
-          {plan.blockers.length > 0 && <p>Backend blockers: {plan.blockers.join(", ")}</p>}
         </section>
       )}
-      {reuseProfile && (
-        <button type="button" onClick={reuseProfile}>
-          Reuse profile
-        </button>
+      {plan && !plan.inspectionValid && (
+        <V3Inspection api={api} plan={plan} enabled={inspectionUiEnabled} refresh={state.refresh} />
       )}
-      {editValues && (
-        <button type="button" onClick={editValues}>
-          Define values
-        </button>
-      )}
-      {validatePlan && (
-        <button type="button" onClick={validatePlan}>
-          Validate plan
-        </button>
-      )}
-      {exportPlan && (
-        <button type="button" onClick={exportPlan}>
-          Export package
-        </button>
-      )}
-      {captureProfile && (
-        <button type="button" onClick={captureProfile}>
-          Capture profile
-        </button>
+      {plan?.inspectionValid && (
+        <section className="v3-plan-actions" aria-label="Plan actions">
+          {reuseProfile && (
+            <button type="button" onClick={reuseProfile}>
+              Reuse profile
+            </button>
+          )}
+          {editValues && (
+            <button type="button" onClick={editValues}>
+              Define values
+            </button>
+          )}
+          {validatePlan && (
+            <button type="button" onClick={validatePlan}>
+              Validate plan
+            </button>
+          )}
+          {exportPlan && (
+            <button type="button" onClick={exportPlan}>
+              Export package
+            </button>
+          )}
+          {captureProfile && (
+            <button type="button" onClick={captureProfile}>
+              Capture profile
+            </button>
+          )}
+        </section>
       )}
       <section className="v3-plan-documents" aria-labelledby="v3-documents-heading">
         <h2 id="v3-documents-heading">Document comparison</h2>

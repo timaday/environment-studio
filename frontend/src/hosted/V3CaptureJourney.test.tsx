@@ -132,7 +132,9 @@ async function setup(observed = true, count = 1, shell = false) {
     );
   }
   const user = userEvent.setup();
-  await screen.findByText(new RegExp(`Plan ${id}`));
+  await waitFor(() =>
+    expect(screen.getAllByText((content) => content.includes(id)).length).toBeGreaterThan(0),
+  );
   return { user, transport };
 }
 it("requires explicit complete mappings, captures for review, and saves only on a separate action", async () => {
@@ -281,10 +283,10 @@ it("keeps mappings across pages and refuses duplicate identifiers without a capt
   );
 });
 
-it("requires valid inspection before revealing mapping controls", async () => {
-  const { user, transport } = await setup(false);
-  await user.click(screen.getByRole("button", { name: "Capture profile" }));
-  expect(screen.getByRole("heading", { name: "An inspected plan is required" })).toBeVisible();
+it("requires valid inspection before revealing capture controls", async () => {
+  const { transport } = await setup(false);
+  expect(screen.getByRole("heading", { name: "Inspect current PostgreSQL" })).toBeVisible();
+  expect(screen.queryByRole("button", { name: "Capture profile" })).not.toBeInTheDocument();
   expect(screen.queryByLabelText("Profile identifier")).not.toBeInTheDocument();
   expect(
     screen.queryByRole("button", { name: "Load inspected structure" }),
@@ -292,8 +294,6 @@ it("requires valid inspection before revealing mapping controls", async () => {
   expect(transport.mock.calls.some(([path]) => String(path).endsWith("/views/entities"))).toBe(
     false,
   );
-  await user.click(screen.getByRole("button", { name: "Back to plan" }));
-  expect(screen.getByRole("heading", { name: "PostgreSQL pilot workspace" })).toBeVisible();
 });
 
 it("invalidates unsaved mapping work when leaving capture without implicitly capturing or saving", async () => {

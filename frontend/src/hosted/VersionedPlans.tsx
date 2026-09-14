@@ -27,7 +27,7 @@ export function VersionedPlans({
   setCompatibilityMode: (version: "2" | "3") => void;
   captureChanged?: (open: boolean) => void;
 }) {
-  const state = useV3PlanInspection(api, active && compatibilityMode === "3");
+  const state = useV3PlanInspection(api, active && compatibilityMode === "3", definitionVersion);
   const [journey, setJourney] = useState<
     "capture" | "reuse" | "values" | "validation" | "export" | null
   >(null);
@@ -69,9 +69,11 @@ export function VersionedPlans({
       {compatibilityMode === "3" && (
         <div hidden={journey !== null}>
           <V3PlanInspection
+            api={api}
             state={state}
             versionSelector={selector}
             openDefinitions={openDefinitions}
+            inspectionUiEnabled={inspectionUiEnabled}
             reuseProfile={() => {
               setJourney("reuse");
               captureChanged?.(true);
