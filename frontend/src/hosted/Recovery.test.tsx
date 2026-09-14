@@ -133,6 +133,7 @@ it("clears retained source at known absolute expiry without another request", as
   });
   vi.spyOn(HostedApi.prototype, "get").mockImplementation(async <T,>(path: string): Promise<T> => {
     if (path === "/api/v2/definitions") return { definitions: [], canPublish: false } as T;
+    if (path === "/api/v3/definitions") return { definitions: [] } as T;
     if (path === "/api/v1/destinations") return { destinations: [] } as T;
     throw new ApiFailure(404, "NOT_FOUND");
   });
@@ -151,6 +152,14 @@ it("clears retained source at known absolute expiry without another request", as
   );
   await act(async () => {
     await Promise.resolve();
+  });
+  fireEvent.click(screen.getByRole("button", { name: "Definitions" }));
+  await act(async () => {
+    await Promise.resolve();
+    await Promise.resolve();
+  });
+  fireEvent.change(screen.getByRole("combobox", { name: "Compatibility mode" }), {
+    target: { value: "2" },
   });
   fireEvent.change(screen.getByLabelText("Native definition source", { exact: true }), {
     target: { value: "mock-expiry-source" },

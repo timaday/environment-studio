@@ -38,8 +38,8 @@ export function V3PlanInspection({
   const canRead = Boolean(state.selected && state.consent && !state.reading);
   return (
     <section className="hosted-panel v3-plans" aria-label="Native v3 plan inspection">
-      <h1>Plans</h1>
-      <p>Resume your session plan and inspect current and target documents.</p>
+      <h1>PostgreSQL pilot workspace</h1>
+      <p>Connect once, inspect read-only, model the target, validate, then download SQL.</p>
       <div className="v3-plan-selection">
         {versionSelector}
         <button
@@ -67,15 +67,15 @@ export function V3PlanInspection({
               <path d="M12 10v7m0-11v1" />
             </svg>
             <div>
-              <p>No current Native v3 plan in this session.</p>
-              <p>Choose an owned v3 publication to start the PostgreSQL workflow.</p>
+              <p>No current plan in this session.</p>
+              <p>Start with a published definition and a one-use PostgreSQL connection target.</p>
             </div>
             <button type="button" onClick={openDefinitions}>
-              Open definitions
+              Create or publish definition
             </button>
           </div>
           <section className="v3-plan-create" aria-label="Create Native v3 plan">
-            <h2>Create Native v3 plan</h2>
+            <h2>1. Definition and connection</h2>
             {state.definitions === null || state.destinations === null ? (
               <p role="status">Loading published definitions and configured destinations…</p>
             ) : (
@@ -99,8 +99,8 @@ export function V3PlanInspection({
                 </label>
                 {publishedDefinitions?.length === 0 && (
                   <p>
-                    No Native v3 published definition is available. Use Definitions to save and
-                    publish an owned v3 revision.
+                    No published definition is available. Create or upload a definition, then
+                    publish the v3 revision before connecting.
                   </p>
                 )}
                 {publishedDefinition && (
@@ -127,14 +127,14 @@ export function V3PlanInspection({
                   </select>
                 </label>
                 <label htmlFor="v3-plan-destination">
-                  Configured destination
+                  PostgreSQL connection target
                   <select
                     id="v3-plan-destination"
                     value={state.destination}
                     disabled={!selectedBinding || state.creating || Boolean(state.pendingCreate)}
                     onChange={(event) => state.chooseDestination(event.target.value)}
                   >
-                    <option value="">Choose allowlisted destination</option>
+                    <option value="">Choose one-use configured target</option>
                     {compatibleDestinations.map((destination) => (
                       <option key={destination.id} value={destination.id}>
                         {destination.id} · {destination.engine} · {destination.host}:
@@ -144,7 +144,7 @@ export function V3PlanInspection({
                   </select>
                 </label>
                 {selectedBinding && compatibleDestinations.length === 0 && (
-                  <p>No configured destination matches the selected binding engine.</p>
+                  <p>No PostgreSQL target matches the selected definition binding.</p>
                 )}
                 <button
                   type="button"
@@ -152,7 +152,7 @@ export function V3PlanInspection({
                   disabled={!canCreate}
                   onClick={() => void state.createPlan()}
                 >
-                  Create plan
+                  Continue to current inspection
                 </button>
               </>
             )}
@@ -174,6 +174,17 @@ export function V3PlanInspection({
         <p role="alert">
           {state.error} Refresh the plan before relying on earlier document context.
         </p>
+      )}
+      {plan && (
+        <section className="v3-flow-steps" aria-label="Pilot workflow">
+          <span aria-current={!plan.inspectionValid ? "step" : undefined}>Current inspection</span>
+          <span aria-current={plan.inspectionValid && !plan.targetComplete ? "step" : undefined}>
+            Target model and values
+          </span>
+          <span>Compare</span>
+          <span>Validate</span>
+          <span>Export</span>
+        </section>
       )}
       {plan && (
         <section className="v3-plan-context" aria-label="Current plan context">

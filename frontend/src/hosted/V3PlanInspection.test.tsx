@@ -156,10 +156,10 @@ it("renders v3 published definition plan creation controls", () => {
     "50000000-0000-0000-0000-000000000002",
   );
   expect(screen.getByRole("combobox", { name: "Binding" })).toHaveValue("mock-pg");
-  expect(screen.getByRole("combobox", { name: "Configured destination" })).toHaveValue(
+  expect(screen.getByRole("combobox", { name: "PostgreSQL connection target" })).toHaveValue(
     "mock-postgres",
   );
-  expect(screen.getByRole("button", { name: "Create plan" })).toBeEnabled();
+  expect(screen.getByRole("button", { name: "Continue to current inspection" })).toBeEnabled();
 });
 
 it("offers all three document modes without loading before disclosure", () => {

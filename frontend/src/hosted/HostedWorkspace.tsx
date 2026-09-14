@@ -8,12 +8,12 @@ export function HostedWorkspace({ capabilities }: { capabilities: Capabilities }
   const [checking, setChecking] = useState(true);
   const [message, setMessage] = useState("");
   const [view, setView] = useState<"Plans" | "Definitions">("Plans");
-  const [version, setVersion] = useState(0);
-  const [planVersion, setPlanVersion] = useState("2");
+  const [definitionRefresh, setDefinitionRefresh] = useState(0);
+  const [compatibilityMode, setCompatibilityMode] = useState<"2" | "3">("3");
   const [capturing, setCapturing] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const narrow = useNarrowLayout();
-  const captureActive = view === "Plans" && planVersion === "3" && capturing;
+  const captureActive = view === "Plans" && compatibilityMode === "3" && capturing;
   const compactMenu = captureActive && narrow;
   const [api] = useState(
     () =>
@@ -71,7 +71,7 @@ export function HostedWorkspace({ capabilities }: { capabilities: Capabilities }
   }
   return (
     <div
-      className={`hosted-workspace${captureActive ? " capture-active" : ""}${view === "Definitions" ? " definitions-active" : planVersion === "3" ? " plans-active" : ""}`}
+      className={`hosted-workspace${captureActive ? " capture-active" : ""}${view === "Definitions" ? " definitions-active" : compatibilityMode === "3" ? " plans-active" : ""}`}
     >
       <header className="app-header">
         <img
@@ -150,7 +150,10 @@ export function HostedWorkspace({ capabilities }: { capabilities: Capabilities }
               <VersionedDefinitions
                 api={api}
                 enabled={capabilities.definitionWorkspaceEnabled}
-                changed={() => setVersion((value) => value + 1)}
+                active={view === "Definitions"}
+                compatibilityMode={compatibilityMode}
+                setCompatibilityMode={setCompatibilityMode}
+                changed={() => setDefinitionRefresh((value) => value + 1)}
               />
             </div>
             <div hidden={view !== "Plans"}>
@@ -158,9 +161,10 @@ export function HostedWorkspace({ capabilities }: { capabilities: Capabilities }
                 api={api}
                 inspectionUiEnabled={capabilities.inspectionUiEnabled}
                 active={view === "Plans"}
-                definitionVersion={version}
+                definitionVersion={definitionRefresh}
                 openDefinitions={() => setView("Definitions")}
-                versionChanged={setPlanVersion}
+                compatibilityMode={compatibilityMode}
+                setCompatibilityMode={setCompatibilityMode}
                 captureChanged={setCapturing}
               />
             </div>

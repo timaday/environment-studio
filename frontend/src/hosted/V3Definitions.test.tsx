@@ -103,9 +103,17 @@ async function setupView() {
   const api = new HostedApi(fetcher);
   owners.push(api);
   await api.session();
-  const view = render(<VersionedDefinitions api={api} enabled={true} changed={() => {}} />);
+  const view = render(
+    <VersionedDefinitions
+      api={api}
+      enabled={true}
+      active={true}
+      compatibilityMode="3"
+      setCompatibilityMode={vi.fn()}
+      changed={() => {}}
+    />,
+  );
   const user = userEvent.setup();
-  await user.selectOptions(screen.getByRole("combobox", { name: "Model version" }), "3");
   await screen.findByText("No saved definitions for this model version.");
   return { ...view, user, fetcher, api };
 }
@@ -211,7 +219,7 @@ it("retains an uncertain v3 save and locks upload and version changes until exac
     screen.queryByText("No saved definitions for this model version."),
   ).not.toBeInTheDocument();
   const original = fetcher.mock.calls.at(-1);
-  expect(screen.getByRole("combobox", { name: "Model version" })).toBeDisabled();
+  expect(screen.getByRole("combobox", { name: "Compatibility mode" })).toBeDisabled();
   expect(screen.getByRole("button", { name: "Upload definition" })).toBeDisabled();
   expect(screen.getByRole("textbox", { name: /^Source$/ })).toBeDisabled();
   fetcher.mockImplementationOnce(async (path, options) => {
@@ -221,7 +229,7 @@ it("retains an uncertain v3 save and locks upload and version changes until exac
   });
   await user.click(screen.getByRole("button", { name: "Retry original save" }));
   await screen.findByText("Saved revision 1 · draft · incomplete");
-  expect(screen.getByRole("combobox", { name: "Model version" })).toBeEnabled();
+  expect(screen.getByRole("combobox", { name: "Compatibility mode" })).toBeEnabled();
 });
 it("requires replacement consent and keeps existing edits when file selection is cancelled", async () => {
   const { user } = await setupView();

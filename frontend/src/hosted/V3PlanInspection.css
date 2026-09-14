@@ -241,6 +241,26 @@
 .v3-plan-create button {
   justify-self: start;
 }
+
+.v3-flow-steps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 18px;
+}
+.v3-flow-steps span {
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--muted);
+  background: #121c2e;
+}
+.v3-flow-steps span[aria-current="step"] {
+  color: #0b1220;
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
 .v3-binding-rail {
   margin-top: 20px;
   padding: 18px;

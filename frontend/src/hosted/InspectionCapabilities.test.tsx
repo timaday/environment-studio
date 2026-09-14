@@ -1,4 +1,5 @@
 import { render, screen, within } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { afterEach, expect, it, vi } from "vitest";
 import App from "../App";
 import { ApiFailure, HostedApi } from "../api/hosted";
@@ -26,6 +27,7 @@ function respond(value: object) {
   vi.spyOn(HostedApi.prototype, "get").mockImplementation(async <T,>(path: string): Promise<T> => {
     if (path === "/api/v1/capabilities") return value as T;
     if (path === "/api/v2/definitions") return { definitions: [], canPublish: false } as T;
+    if (path === "/api/v3/definitions") return { definitions: [] } as T;
     if (path === "/api/v1/destinations") return { destinations: [] } as T;
     if (path === "/api/v1/plans/current")
       return {
@@ -62,6 +64,10 @@ it("configured API availability leaves the unqualified inspection UI disabled", 
   respond(capabilities);
   const post = vi.spyOn(HostedApi.prototype, "post");
   render(<App />);
+  await screen.findByRole("heading", { name: "PostgreSQL pilot workspace" });
+  await userEvent
+    .setup()
+    .selectOptions(screen.getByRole("combobox", { name: "Compatibility mode" }), "2");
   const inspection = await screen.findByRole(
     "region",
     { name: "Inspect configuration" },

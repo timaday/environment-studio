@@ -14,7 +14,8 @@ export function VersionedPlans({
   active,
   definitionVersion,
   openDefinitions,
-  versionChanged,
+  compatibilityMode,
+  setCompatibilityMode,
   captureChanged,
 }: {
   api: HostedApi;
@@ -22,11 +23,11 @@ export function VersionedPlans({
   active: boolean;
   definitionVersion: number;
   openDefinitions: () => void;
-  versionChanged: (version: string) => void;
+  compatibilityMode: "2" | "3";
+  setCompatibilityMode: (version: "2" | "3") => void;
   captureChanged?: (open: boolean) => void;
 }) {
-  const [version, setVersion] = useState("2");
-  const state = useV3PlanInspection(api, active && version === "3");
+  const state = useV3PlanInspection(api, active && compatibilityMode === "3");
   const [journey, setJourney] = useState<
     "capture" | "reuse" | "values" | "validation" | "export" | null
   >(null);
@@ -35,34 +36,37 @@ export function VersionedPlans({
   const valuesOpen = journey === "values";
   const validationOpen = journey === "validation";
   const exportOpen = journey === "export";
-  const capture = useV3ProfileCapture(api, state.plan, active && version === "3" && captureOpen);
+  const capture = useV3ProfileCapture(
+    api,
+    state.plan,
+    active && compatibilityMode === "3" && captureOpen,
+  );
   const selector = (
     <label>
-      Model version
+      Compatibility mode
       <select
-        value={version}
+        value={compatibilityMode}
         onChange={(e) => {
-          setVersion(e.target.value);
-          versionChanged(e.target.value);
+          setCompatibilityMode(e.target.value === "2" ? "2" : "3");
         }}
       >
-        <option value="2">Native v2</option>
-        <option value="3">Native v3</option>
+        <option value="3">PostgreSQL pilot (Native v3)</option>
+        <option value="2">Legacy Native v2</option>
       </select>
     </label>
   );
   return (
     <>
-      {version === "2" && <div className="hosted-panel">{selector}</div>}
-      <div hidden={version !== "2"}>
+      {compatibilityMode === "2" && <div className="hosted-panel">{selector}</div>}
+      {compatibilityMode === "2" && (
         <Plans
           api={api}
           inspectionUiEnabled={inspectionUiEnabled}
-          active={active && version === "2"}
+          active={active}
           definitionVersion={definitionVersion}
         />
-      </div>
-      {version === "3" && (
+      )}
+      {compatibilityMode === "3" && (
         <div hidden={journey !== null}>
           <V3PlanInspection
             state={state}
@@ -91,12 +95,12 @@ export function VersionedPlans({
           />
         </div>
       )}
-      <div hidden={!reuseOpen || version !== "3"}>
+      <div hidden={!reuseOpen || compatibilityMode !== "3"}>
         <V3ProfileReuse
           api={api}
           refreshPlan={state.refresh}
           plan={state.plan}
-          active={active && version === "3" && reuseOpen}
+          active={active && compatibilityMode === "3" && reuseOpen}
           back={() => {
             setJourney(null);
             captureChanged?.(false);
@@ -104,11 +108,11 @@ export function VersionedPlans({
           }}
         />
       </div>
-      <div hidden={!valuesOpen || version !== "3"}>
+      <div hidden={!valuesOpen || compatibilityMode !== "3"}>
         <V3ValuesValidation
           api={api}
           plan={state.plan}
-          active={active && version === "3" && valuesOpen}
+          active={active && compatibilityMode === "3" && valuesOpen}
           view="values"
           refreshPlan={state.refresh}
           back={() => {
@@ -118,11 +122,11 @@ export function VersionedPlans({
           }}
         />
       </div>
-      <div hidden={!validationOpen || version !== "3"}>
+      <div hidden={!validationOpen || compatibilityMode !== "3"}>
         <V3ValuesValidation
           api={api}
           plan={state.plan}
-          active={active && version === "3" && validationOpen}
+          active={active && compatibilityMode === "3" && validationOpen}
           view="validation"
           refreshPlan={state.refresh}
           back={() => {
@@ -132,11 +136,11 @@ export function VersionedPlans({
           }}
         />
       </div>
-      <div hidden={!exportOpen || version !== "3"}>
+      <div hidden={!exportOpen || compatibilityMode !== "3"}>
         <V3ExportJourney
           api={api}
           plan={state.plan}
-          active={active && version === "3" && exportOpen}
+          active={active && compatibilityMode === "3" && exportOpen}
           back={() => {
             setJourney(null);
             captureChanged?.(false);
@@ -148,11 +152,11 @@ export function VersionedPlans({
           }}
         />
       </div>
-      <div hidden={!captureOpen || version !== "3"}>
+      <div hidden={!captureOpen || compatibilityMode !== "3"}>
         <V3ProfileCapture
           state={capture}
           plan={state.plan}
-          active={active && version === "3" && captureOpen}
+          active={active && compatibilityMode === "3" && captureOpen}
           back={() => {
             setJourney(null);
             captureChanged?.(false);

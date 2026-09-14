@@ -106,7 +106,9 @@ export function V3Definitions({
   return (
     <section className="hosted-panel v3-definitions" aria-label="Native v3 definitions">
       <h1>Definitions</h1>
-      <p>Save application definitions and inspect their declared model.</p>
+      <p>
+        Create or upload the application definition, save a draft, then publish it for the pilot.
+      </p>
       <div className="definition-selection">
         {versionSelector}
         <label>

@@ -16,6 +16,7 @@ it("retains an uncertain definition command across workspace navigation", async 
   });
   vi.spyOn(HostedApi.prototype, "get").mockImplementation(async <T,>(path: string): Promise<T> => {
     if (path === "/api/v2/definitions") return { definitions: [], canPublish: false } as T;
+    if (path === "/api/v3/definitions") return { definitions: [] } as T;
     if (path === "/api/v1/destinations") return { destinations: [] } as T;
     throw new ApiFailure(404, "NOT_FOUND");
   });
@@ -37,12 +38,14 @@ it("retains an uncertain definition command across workspace navigation", async 
     />,
   );
   await user.click(await screen.findByRole("button", { name: "Definitions" }));
-  await user.click(screen.getByLabelText("Native definition source", { exact: true }));
+  await user.selectOptions(screen.getByRole("combobox", { name: "Compatibility mode" }), "2");
+  await user.click(await screen.findByLabelText("Native definition source", { exact: true }));
   await user.paste("{}");
   await user.click(screen.getByRole("button", { name: "Save immutable draft" }));
   expect(await screen.findByRole("button", { name: "Retry original command" })).toBeVisible();
   await user.click(screen.getByRole("button", { name: "Plans" }));
   await user.click(screen.getByRole("button", { name: "Definitions" }));
+  await user.selectOptions(screen.getByRole("combobox", { name: "Compatibility mode" }), "2");
   expect(screen.getByRole("button", { name: "Save immutable draft" })).toBeDisabled();
   expect(screen.getByRole("button", { name: "Retry original command" })).toBeVisible();
   expect(put).toHaveBeenCalledOnce();
@@ -82,8 +85,7 @@ it.each(["ordinary", "held"])(
       />,
     );
     await user.click(await screen.findByRole("button", { name: "Definitions" }));
-    expect(get).not.toHaveBeenCalledWith("/api/v3/definitions");
-    await user.selectOptions(screen.getByRole("combobox", { name: "Model version" }), "3");
+    expect(get).toHaveBeenCalledWith("/api/v3/definitions");
     expect(await screen.findByText("No saved definitions for this model version.")).toBeVisible();
     const file = new File(["{}"], "invented.JSON", { type: "application/json" });
     const originalRead = FileReader.prototype.readAsArrayBuffer;
@@ -141,14 +143,10 @@ it("explicitly resumes v3 without falling back to legacy plans after absence", a
       }}
     />,
   );
-  await screen.findByRole("heading", { name: "Plans" });
-  expect(get).not.toHaveBeenCalledWith("/api/v3/plans/current");
-  get.mockClear();
-  await userEvent
-    .setup()
-    .selectOptions(screen.getByRole("combobox", { name: "Model version" }), "3");
-  expect(await screen.findByText("No current Native v3 plan in this session.")).toBeVisible();
+  await screen.findByRole("heading", { name: "PostgreSQL pilot workspace" });
+  expect(await screen.findByText("No current plan in this session.")).toBeVisible();
   expect(screen.getByRole("combobox", { name: "Published v3 definition" })).toBeVisible();
+  expect(get).not.toHaveBeenCalledWith("/api/v1/plans/current");
   expect(get.mock.calls.map(([path]) => path)).toEqual([
     "/api/v3/plans/current",
     "/api/v3/definitions",

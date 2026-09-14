@@ -117,7 +117,7 @@ async function setup(observed = true, count = 1, shell = false) {
         }}
       />,
     );
-    await screen.findByRole("heading", { name: "Plans" });
+    await screen.findByRole("heading", { name: "PostgreSQL pilot workspace" });
   } else {
     render(
       <VersionedPlans
@@ -126,12 +126,12 @@ async function setup(observed = true, count = 1, shell = false) {
         active
         definitionVersion={0}
         openDefinitions={vi.fn()}
-        versionChanged={vi.fn()}
+        compatibilityMode="3"
+        setCompatibilityMode={vi.fn()}
       />,
     );
   }
   const user = userEvent.setup();
-  await user.selectOptions(screen.getByRole("combobox", { name: "Model version" }), "3");
   await screen.findByText(new RegExp(`Plan ${id}`));
   return { user, transport };
 }
@@ -293,7 +293,7 @@ it("requires valid inspection before revealing mapping controls", async () => {
     false,
   );
   await user.click(screen.getByRole("button", { name: "Back to plan" }));
-  expect(screen.getByRole("heading", { name: "Plans" })).toBeVisible();
+  expect(screen.getByRole("heading", { name: "PostgreSQL pilot workspace" })).toBeVisible();
 });
 
 it("invalidates unsaved mapping work when leaving capture without implicitly capturing or saving", async () => {
