@@ -44,6 +44,11 @@ export function V3PlanInspection({
     publishedDefinition && state.binding && state.destination && !state.creating,
   );
   const showCreate = !plan && state.phase !== "loading";
+  const refreshLabel = state.refreshing
+    ? plan
+      ? "Refreshing current plan…"
+      : "Loading current plan…"
+    : "Resume current plan / refresh";
   return (
     <section className="hosted-panel v3-plans" aria-label="Native v3 plan inspection">
       <h1>PostgreSQL pilot workspace</h1>
@@ -53,13 +58,19 @@ export function V3PlanInspection({
         <button
           type="button"
           className="primary"
-          disabled={state.phase === "loading"}
+          disabled={state.phase === "loading" || state.refreshing}
           onClick={() => void state.refresh()}
         >
-          Resume current plan / refresh
+          {refreshLabel}
         </button>
       </div>
-      {state.phase === "loading" && <p role="status">Loading the current Native v3 plan…</p>}
+      {state.refreshing && (
+        <p role="status" className="v3-refresh-status">
+          {plan
+            ? "Refreshing plan status. Current context remains visible until the verified update arrives."
+            : "Loading the current Native v3 plan…"}
+        </p>
+      )}
       {showCreate && (
         <>
           <div className="v3-plan-notice">
@@ -204,7 +215,11 @@ export function V3PlanInspection({
         </section>
       )}
       {plan && (
-        <section className="v3-plan-context" aria-label="Current plan context">
+        <section
+          className="v3-plan-context"
+          aria-label="Current plan context"
+          aria-busy={state.refreshing ? "true" : undefined}
+        >
           <div className="v3-plan-context-grid">
             <article>
               <span className="v3-plan-card-label">Plan</span>

@@ -41,6 +41,7 @@ function stateFixture(
     mode: "raw",
     consent: false,
     reading: false,
+    refreshing: false,
     current: null,
     target: null,
     bindingRail: [],
@@ -83,6 +84,7 @@ it("does not report unobserved physical counts as a measured empty graph", () =>
     mode: "raw",
     consent: false,
     reading: false,
+    refreshing: false,
     current: null,
     target: null,
     bindingRail: [],
@@ -106,6 +108,60 @@ it("does not report unobserved physical counts as a measured empty graph", () =>
     screen.getByText("Current physical counts unavailable · no observation captured."),
   ).toBeVisible();
   expect(screen.queryByText(/Current physical: 0 documents/)).not.toBeInTheDocument();
+});
+
+it("keeps the inspected workspace visible while refresh is pending", () => {
+  const state = stateFixture({
+    phase: "loaded",
+    refreshing: true,
+    plan: {
+      planId: "50000000-0000-0000-0000-000000000001",
+      revision: "2",
+      definition: { objectId: "50000000-0000-0000-0000-000000000002", workspaceRevision: "2" },
+      bindingId: "mock",
+      destinationId: "mock",
+      currentCounts: { documents: 2, entities: 2, relations: 0 },
+      targetCounts: { documents: 2, entities: 2, relations: 0 },
+      inspectionValid: true,
+      targetComplete: true,
+      exportAvailable: false,
+      blockers: [],
+      observedDestination: {
+        engine: "postgresql",
+        identity: { systemIdentifier: "7", databaseOid: "8", databaseName: "mock" },
+        observationFingerprint: "a".repeat(64),
+        evidenceValid: true,
+      },
+      currentComputedCounts: { nodes: 0, memberships: 0, cooccurrences: 0 },
+      targetComputedCounts: { nodes: 0, memberships: 0, cooccurrences: 0 },
+    },
+    inventory: {
+      revision: "2",
+      documents: [
+        {
+          documentId: "mock-a",
+          currentDigest: "a".repeat(64),
+          targetDigest: "b".repeat(64),
+          changed: true,
+        },
+      ],
+    },
+  });
+  render(
+    <V3PlanInspection
+      api={{} as never}
+      state={state}
+      versionSelector={null}
+      openDefinitions={vi.fn()}
+      inspectionUiEnabled
+    />,
+  );
+
+  expect(screen.getByRole("button", { name: "Refreshing current plan…" })).toBeDisabled();
+  expect(screen.getByText(/Current context remains visible/)).toBeVisible();
+  expect(screen.getByRole("heading", { name: "Document comparison" })).toBeVisible();
+  expect(screen.getByRole("button", { name: "mock-a · Changed" })).toBeVisible();
+  expect(screen.queryByText("No current plan in this session.")).not.toBeInTheDocument();
 });
 
 it("hides later workflow actions until a plan exists", () => {
@@ -306,6 +362,7 @@ it("offers all three document modes without loading before disclosure", () => {
     mode: "raw",
     consent: false,
     reading: false,
+    refreshing: false,
     current: null,
     target: null,
     bindingRail: [],

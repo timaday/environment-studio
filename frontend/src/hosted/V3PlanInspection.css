@@ -49,6 +49,13 @@
 .v3-plans label {
   margin: 0;
 }
+.v3-refresh-status {
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  margin: 0 0 16px;
+  color: var(--muted);
+}
 .v3-plan-notice {
   display: flex;
   justify-content: space-between;

@@ -321,7 +321,11 @@ export function V3DocumentComparison({ state }: { state: ComparisonState }) {
             <p>Resume a plan with an observation before loading documents.</p>
           )}
           {state.reading && (
-            <p role="status">Loading the selected revision and checking plan context…</p>
+            <p role="status">
+              {state.current || state.target
+                ? "Updating the loaded comparison and checking plan context…"
+                : "Loading the selected revision and checking plan context…"}
+            </p>
           )}
           <div className="v3-plan-panes">
             {(
@@ -330,7 +334,11 @@ export function V3DocumentComparison({ state }: { state: ComparisonState }) {
                 ["Target", "target", state.target, targetPre],
               ] as const
             ).map(([label, side, value, paneRef]) => (
-              <section key={label} aria-label={`${label} XML`}>
+              <section
+                key={label}
+                aria-label={`${label} XML`}
+                aria-busy={state.reading ? "true" : undefined}
+              >
                 <h3>{label}</h3>
                 {value ? (
                   <>

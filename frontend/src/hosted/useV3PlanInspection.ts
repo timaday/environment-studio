@@ -58,6 +58,7 @@ type State = Readonly<{
   mode: DocumentMode;
   consent: boolean;
   reading: boolean;
+  refreshing: boolean;
   current: Document | null;
   target: Document | null;
   bindingRail: readonly BindingRailItem[];
@@ -78,6 +79,7 @@ const empty: State = {
   mode: "raw",
   consent: false,
   reading: false,
+  refreshing: false,
   current: null,
   target: null,
   bindingRail: [],
@@ -135,14 +137,47 @@ export function useV3PlanInspection(api: HostedApi, enabled: boolean, definition
       if (!current(token)) return;
       await verify(plan);
       if (!current(token)) return;
-      replace({ ...empty, phase: "loaded", plan, inventory });
+      const prior = latest.current;
+      const selectedStillAvailable = prior.selected
+        ? inventory?.documents.some((document) => document.documentId === prior.selected) === true
+        : false;
+      const loadedPairStillCurrent =
+        selectedStillAvailable &&
+        prior.plan?.planId === plan.planId &&
+        prior.plan.revision === plan.revision &&
+        prior.current?.documentId === prior.selected &&
+        prior.current.revision === plan.revision &&
+        prior.current.mode === prior.mode &&
+        (prior.target === null ||
+          (prior.target.documentId === prior.selected &&
+            prior.target.revision === plan.revision &&
+            prior.target.mode === prior.mode));
+      replace({
+        ...empty,
+        phase: "loaded",
+        plan,
+        inventory,
+        selected: selectedStillAvailable ? prior.selected : "",
+        mode: prior.mode,
+        consent: selectedStillAvailable ? prior.consent : false,
+        current: loadedPairStillCurrent ? prior.current : null,
+        target: loadedPairStillCurrent ? prior.target : null,
+        bindingRail: loadedPairStillCurrent ? prior.bindingRail : [],
+      });
     },
     [physical, current, verify, replace],
   );
   const refresh = useCallback(async () => {
     if (!owner.active || !owner.enabled) return;
     const token = ++owner.generation;
-    replace({ ...empty, phase: "loading" });
+    const before = latest.current;
+    replace({
+      ...before,
+      phase: before.plan ? "loaded" : "loading",
+      refreshing: true,
+      creating: false,
+      error: "",
+    });
     let found = false;
     try {
       const plan = await client.current();
@@ -158,10 +193,20 @@ export function useV3PlanInspection(api: HostedApi, enabled: boolean, definition
           await loadCreateInputs(token);
         } catch (createInputError) {
           if (current(token))
-            replace({ ...empty, phase: "error", error: failureMessage(createInputError) });
+            replace({
+              ...latest.current,
+              phase: "error",
+              refreshing: false,
+              error: failureMessage(createInputError),
+            });
         }
       } else {
-        replace({ ...empty, phase: "error", error: failureMessage(error) });
+        replace({
+          ...latest.current,
+          phase: "error",
+          refreshing: false,
+          error: failureMessage(error),
+        });
       }
     }
   }, [owner, client, current, replace, loadPlan, loadCreateInputs]);
@@ -421,7 +466,7 @@ export function useV3PlanInspection(api: HostedApi, enabled: boolean, definition
     )
       return;
     const token = ++owner.generation;
-    replace({ ...captured, current: null, target: null, reading: true, error: "" });
+    replace({ ...captured, reading: true, error: "" });
     const request = {
       revision: captured.plan.revision,
       documentId: captured.selected,
@@ -450,9 +495,6 @@ export function useV3PlanInspection(api: HostedApi, enabled: boolean, definition
       if (current(token))
         replace({
           ...captured,
-          current: null,
-          target: null,
-          bindingRail: [],
           reading: false,
           error: failureMessage(error),
         });

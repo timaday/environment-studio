@@ -254,6 +254,94 @@ it("creates a v3 plan from an owned published v3 definition", async () => {
   expect(hook.result.current.inventory).toBeNull();
 });
 
+it("keeps the verified inspection view visible while plan refresh is in flight", async () => {
+  const { result, transport } = await setup();
+  act(() => {
+    result.current.select("mock-a");
+    result.current.setConsent(true);
+  });
+  await act(() => result.current.load());
+  expect(result.current.current?.text).toBe('<mock value="before"/>\r\n');
+  transport.mockClear();
+  let release!: (value: Response) => void;
+  transport.mockReturnValueOnce(
+    new Promise<Response>((resolve) => {
+      release = resolve;
+    }),
+  );
+  let pending!: Promise<void>;
+  act(() => {
+    pending = result.current.refresh();
+  });
+  await waitFor(() => expect(result.current.refreshing).toBe(true));
+  expect(result.current.phase).toBe("loaded");
+  expect(result.current.plan?.planId).toBe(id);
+  expect(result.current.inventory?.documents).toHaveLength(2);
+  expect(result.current.current?.text).toBe('<mock value="before"/>\r\n');
+
+  await act(async () => {
+    release(json(summary));
+    await pending;
+  });
+  expect(result.current.refreshing).toBe(false);
+  expect(result.current.phase).toBe("loaded");
+});
+
+it("keeps the document panes visible while a same-document reload is in flight", async () => {
+  const { result, transport } = await setup();
+  act(() => {
+    result.current.select("mock-a");
+    result.current.setConsent(true);
+  });
+  await act(() => result.current.load());
+  expect(result.current.current?.text).toBe('<mock value="before"/>\r\n');
+  expect(result.current.target?.text).toBe('<mock value="after"/>\r\n');
+  transport.mockClear();
+  let release!: (value: Response) => void;
+  transport.mockReturnValueOnce(
+    new Promise<Response>((resolve) => {
+      release = resolve;
+    }),
+  );
+  let pending!: Promise<void>;
+  act(() => {
+    pending = result.current.load();
+  });
+  await waitFor(() => expect(result.current.reading).toBe(true));
+  expect(result.current.current?.text).toBe('<mock value="before"/>\r\n');
+  expect(result.current.target?.text).toBe('<mock value="after"/>\r\n');
+
+  await act(async () => {
+    release(json(document()));
+    await pending;
+  });
+  expect(result.current.reading).toBe(false);
+  expect(result.current.current?.text).toBe('<mock value="before"/>\r\n');
+});
+
+it("keeps document choice but clears loaded panes after a verified refreshed revision changes", async () => {
+  const { result, transport } = await setup();
+  act(() => {
+    result.current.select("mock-a");
+    result.current.setConsent(true);
+  });
+  await act(() => result.current.load());
+  transport.mockReset();
+  transport
+    .mockResolvedValueOnce(json({ ...summary, revision: "3" }))
+    .mockResolvedValueOnce(json({ ...inventory, revision: "3" }))
+    .mockResolvedValueOnce(json({ ...summary, revision: "3" }));
+
+  await act(() => result.current.refresh());
+
+  expect(result.current.phase).toBe("loaded");
+  expect(result.current.plan?.revision).toBe("3");
+  expect(result.current.selected).toBe("mock-a");
+  expect(result.current.consent).toBe(true);
+  expect(result.current.current).toBeNull();
+  expect(result.current.target).toBeNull();
+});
+
 it("requires explicit disclosure, preserves complete inventory and displays only a verified pair", async () => {
   const { result, transport } = await setup();
   expect(result.current.inventory?.documents).toHaveLength(2);
@@ -349,13 +437,16 @@ it("rejects a same-revision observation invalidation before revealing the pair",
   expect(result.current.target).toBeNull();
   expect(result.current.error).not.toBe("");
 });
-it("does not turn an unavailable workspace into an absent plan or a legacy lookup", async () => {
+it("does not turn an unavailable refresh into an absent plan or a legacy lookup", async () => {
   const { result, transport } = await setup();
+  const visiblePlan = result.current.plan;
   transport.mockClear();
   transport.mockResolvedValueOnce(json({ code: "UNAVAILABLE" }, 503));
   await act(() => result.current.refresh());
   expect(result.current.phase).toBe("error");
-  expect(result.current.plan).toBeNull();
+  expect(result.current.refreshing).toBe(false);
+  expect(result.current.plan).toBe(visiblePlan);
+  expect(result.current.error).not.toBe("");
   expect(transport.mock.calls.map(([path]) => path)).toEqual(["/api/v3/plans/current"]);
 });
 
