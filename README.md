@@ -209,7 +209,17 @@ scripts/studio.sh package
 
 The first Docker build can be slow because it runs the UI checks and full Maven
 reactor inside the image. Later builds reuse BuildKit npm and Maven caches. Keep
-Docker BuildKit enabled on WSL; the wrapper sets it for local image builds.
+Docker BuildKit enabled on WSL; the wrapper sets it for local image builds. For
+local iteration after a passing checked build, use the explicit no-test path:
+
+```bash
+scripts/studio.sh fast-package
+```
+
+`fast-package` skips the Docker-stage UI and Maven test executions, but still
+builds the production assets, assembles the Java application and runs the
+container smoke check. Use `scripts/studio.sh package` before treating an image
+as release evidence or publishing it as a qualified candidate.
 
 Run the local synthetic demo on `http://localhost:18181`:
 

@@ -39,7 +39,10 @@ Use `STUDIO_IMAGE_LOCAL`, `STUDIO_IMAGE`, `STUDIO_HOST_PORT`,
 `hosted-down` stops the container without deleting the workspace. The first
 `package` build downloads npm and Maven dependencies inside Docker and can be
 slow on WSL; subsequent builds reuse BuildKit caches while still running the
-release-grade checks.
+release-grade checks. For local image iteration after a tested candidate,
+`scripts/studio.sh fast-package` skips Docker-stage UI and Maven tests, builds
+the same runtime target and still runs the container smoke. Do not use a fast
+build alone as release or publication evidence.
 
 ## Image contract
 

@@ -22,9 +22,11 @@ Usage: scripts/studio.sh COMMAND
 Common commands:
   preflight        Run the frontend Node/version preflight.
   check-ui         Run frontend preflight, static check, tests and production build.
-  image            Build the runtime Docker image. Defaults to environment-studio:dev.
+  image            Build the runtime Docker image with tests. Defaults to environment-studio:dev.
+  fast-image       Build the runtime Docker image without UI/Maven tests.
   smoke            Run the existing hardened container smoke against the local image.
-  package          Build the runtime image and run the smoke check.
+  package          Build the runtime image with tests and run the smoke check.
+  fast-package     Build without tests, then run the smoke check.
   demo             Run the local synthetic demo on http://localhost:${STUDIO_HOST_PORT:-18181}.
 
 Hosted PostgreSQL 16.11 commands:
@@ -43,6 +45,7 @@ Useful environment overrides:
   STUDIO_HOST_PORT         Loopback host port. Defaults to 18181.
   STUDIO_ENV_FILE          Hosted env file. Defaults to deploy/hosted.env.
   STUDIO_COMPOSE_PROJECT   Compose project name. Defaults to environment-studio.
+  STUDIO_BUILD_TESTS       Set false to skip UI and Maven tests during Docker image build.
 USAGE
 }
 
@@ -146,13 +149,20 @@ case "$command_name" in
     DOCKER_BUILDKIT=1 docker build --target ui -t "$ui_image" .
     ;;
   image|build)
-    DOCKER_BUILDKIT=1 docker build --target runtime --build-arg "SOURCE_REVISION=$(source_revision)" -t "$local_image" .
+    DOCKER_BUILDKIT=1 docker build --target runtime --build-arg "SOURCE_REVISION=$(source_revision)" --build-arg "STUDIO_BUILD_TESTS=${STUDIO_BUILD_TESTS:-true}" -t "$local_image" .
+    ;;
+  fast-image|fast-build)
+    STUDIO_BUILD_TESTS=false "$repo_root/scripts/studio.sh" image
     ;;
   smoke)
     bash scripts/container_smoke.sh "$local_image"
     ;;
   package)
     "$repo_root/scripts/studio.sh" image
+    "$repo_root/scripts/studio.sh" smoke
+    ;;
+  fast-package)
+    STUDIO_BUILD_TESTS=false "$repo_root/scripts/studio.sh" image
     "$repo_root/scripts/studio.sh" smoke
     ;;
   demo)

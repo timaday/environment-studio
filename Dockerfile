@@ -5,6 +5,7 @@ ARG MAVEN_IMAGE=maven:3.9.16-eclipse-temurin-21@sha256:8f6ac126f7810bb5549c4cd12
 ARG RUNTIME_IMAGE=eclipse-temurin:21-jre-jammy@sha256:eebd356ad7358b7094758e5787a6726f332917cfd56feab6457c56dab895cdbf
 
 FROM ${NODE_IMAGE} AS ui
+ARG STUDIO_BUILD_TESTS=true
 WORKDIR /build/frontend
 COPY frontend/package.json frontend/package-lock.json ./
 RUN --mount=type=cache,target=/root/.npm npm ci
@@ -13,13 +14,14 @@ COPY fixtures/ /build/fixtures/
 COPY schemas/ /build/schemas/
 COPY scripts/schema.test.mjs /build/scripts/schema.test.mjs
 COPY docs/contracts/openapi-workspace-v2.json docs/contracts/openapi-workspace-v3.json docs/contracts/openapi-plans-v1.json docs/contracts/openapi-plans-v3.json docs/contracts/openapi.yaml /build/docs/contracts/
-RUN npm run check && npm test && npm run build
+RUN if [ "$STUDIO_BUILD_TESTS" = "false" ]; then npm run build; else npm run check && npm test && npm run build; fi
 
 FROM ui AS browser-check
 RUN npx playwright install --with-deps chromium
 RUN npm run test:e2e
 
 FROM ${MAVEN_IMAGE} AS java-build
+ARG STUDIO_BUILD_TESTS=true
 WORKDIR /build
 # These packages build and exercise the invented native/PTY tests; none enter runtime.
 RUN apt-get update -qq && apt-get install -y --no-install-recommends \
@@ -50,7 +52,7 @@ COPY fixtures/plan-http-tls/ ./fixtures/plan-http-tls/
 COPY fixtures/plan-views-v1/ ./fixtures/plan-views-v1/
 COPY deploy/HealthProbe.java /build/deploy/HealthProbe.java
 COPY --from=ui /build/frontend/dist/ ./backend/server/src/main/resources/static/
-RUN --mount=type=cache,target=/root/.m2 mvn -B -ntp -f backend/pom.xml verify
+RUN --mount=type=cache,target=/root/.m2 if [ "$STUDIO_BUILD_TESTS" = "false" ]; then mvn -B -ntp -f backend/pom.xml -DskipTests package; else mvn -B -ntp -f backend/pom.xml verify; fi
 RUN cd backend/tools/guarded-supervisor/target/environment-studio-guarded-0.1.0-SNAPSHOT && sha256sum --check SHA256SUMS
 RUN javac -d /build/probe /build/deploy/HealthProbe.java
 RUN --mount=type=cache,target=/root/.m2 mkdir -p /build/sqlite-native && cd /build/sqlite-native && \
