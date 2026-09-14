@@ -4,6 +4,74 @@ Date: 14 September 2026
 Source checkout: `main` at `64474ee061e0c6922832f08702fb0b3cbc408990`.
 Environment: local no-OIDC hosted container on `127.0.0.1:18181` with disposable `postgres:16.11-bookworm` fixture container `es-e2e-pg16`.
 
+
+## Connection-string hosted rerun — 15 September 2026 early
+
+Source checkout: `main` at `d8a4795b0f68ac03d9408026e02205d0c6e021e5`.
+Environment: local no-OIDC hosted container on `127.0.0.1:18181` with disposable `postgres:16.11-bookworm` fixture container `es-e2e-pg16`.
+
+This rerun verifies the simplified PostgreSQL 16.11 connection flow. The hosted
+deployment starts without stored database target facts or database credentials.
+The operator publishes a definition, enters the JDBC target
+`jdbc:postgresql://es-e2e-pg16:5432/appdb` in the plan setup screen, then enters
+username/password only for the read-only inspection operation. The application
+stores only host, port and database metadata for the target.
+
+Desktop command:
+
+```sh
+node /home/tim/.tmp/es-full-journey-20260914/full-journey.cjs
+```
+
+Desktop result: PASS. Evidence directory:
+
+```text
+/home/tim/.tmp/es-full-journey-20260914/journey-1789427120405
+```
+
+Desktop screenshots: 24 complete page/view captures. Downloaded guarded package
+SHA-256: `9140f58539a69dba9701c498c9fc1246fe19bb9abb0671ba035484885db43625`.
+Archive inspection artifact:
+
+```text
+/home/tim/.tmp/es-full-journey-20260914/journey-1789427120405/archive-inspection.json
+```
+
+Narrow command:
+
+```sh
+ES_JOURNEY_WIDTH=390 ES_JOURNEY_HEIGHT=900 node /home/tim/.tmp/es-full-journey-20260914/full-journey.cjs
+```
+
+Narrow result: PASS. Evidence directory:
+
+```text
+/home/tim/.tmp/es-full-journey-20260914/journey-1789427147449
+```
+
+Narrow screenshots: 24 complete page/view captures with `uiGaps: []`. Downloaded
+guarded package SHA-256: `40c34b042bc5551f2584c18326b7d550dd87072079e5cc120f03b7a414eae149`.
+Archive inspection artifact:
+
+```text
+/home/tim/.tmp/es-full-journey-20260914/journey-1789427147449/archive-inspection.json
+```
+
+Both archive inspections confirm exact ZIP members `manifest.json`,
+`payload.json`, `transaction.sql` and `instructions.txt`; PostgreSQL 16.11 and
+psql 16.11/linux-amd64 pins; template `postgresql16-text-v1`; operator-supplied
+plaintext pilot transport; observed destination host `es-e2e-pg16`, port `5432`,
+database `appdb`; two XML text records with one changed and one unchanged; the
+operator-entered target value in the changed target XML; unchanged target bytes
+equal to original bytes; SQL server-version, physical-destination, original-byte
+and target-byte guards; no COMMIT/ROLLBACK in `transaction.sql`; and instructions
+that `transaction.sql` must not be executed directly.
+
+Validation result in both browser runs: target complete; SCOPE, DEFINITION,
+MAPPING, VALUES, SEMANTICS, XML_FIDELITY and DESTINATION pass; CLIENT_CAPABILITY,
+CONTENT_POLICY and REVIEW remain UNKNOWN, so `exportAvailable` remains false and
+the downloaded ZIP is an unqualified package candidate for external review.
+
 ## Browser journey
 
 Command:
