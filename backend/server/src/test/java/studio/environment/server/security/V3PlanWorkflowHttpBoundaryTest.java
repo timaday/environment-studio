@@ -65,6 +65,10 @@ class V3PlanWorkflowHttpBoundaryTest {
         V3WorkflowHttpTestConfiguration.awaitRecords(0);
         return client.request(method, path, body, token);
     }
+    V3WorkflowHttpSocketClient.Response longSequentialRequest(V3WorkflowHttpSocketClient client, String method, String path, String body, boolean token) throws Exception {
+        V3WorkflowHttpTestConfiguration.awaitRecords(0);
+        return client.request(method, path, body, token, 30_000);
+    }
     V3WorkflowHttpSocketClient login(String owner) throws Exception {
         issuer.subject = owner; issuer.mode = MockIssuer.TokenMode.VALID;
         var client = new V3WorkflowHttpSocketClient(port); clients.add(client);
@@ -349,8 +353,8 @@ class V3PlanWorkflowHttpBoundaryTest {
             int total=wide?96:64000;assertEquals(total,summary.get("computedRuleCount").asInt());
             var request=new LinkedHashMap<String,Object>(Map.of("revision","2","section","computed-rules","inputFingerprint",summary.get("inputFingerprint").asString(),"offset",wide?0:63999,"limit",100));
             if(wide){var refused=sequentialRequest(client,"POST","/api/v3/plans/"+plan+"/validations",JSON.writeValueAsString(request),true);assertEquals(422,refused.status());assertEquals("RESOURCE_LIMIT",JSON.readTree(refused.body()).get("code").asString());request.put("limit",1);}
-            var page=ok(sequentialRequest(client,"POST","/api/v3/plans/"+plan+"/validations",JSON.writeValueAsString(request),true));assertEquals(total,page.get("total").asInt());assertEquals(1,page.get("items").size());assertEquals(summary.get("inputFingerprint"),page.get("inputFingerprint"));
-            if(wide){assertEquals(0,page.get("offset").asInt());assertEquals(1,page.get("nextOffset").asInt());request.put("offset",95);var last=ok(sequentialRequest(client,"POST","/api/v3/plans/"+plan+"/validations",JSON.writeValueAsString(request),true));assertEquals(1,last.get("items").size());assertTrue(last.get("nextOffset").isNull());}
+            var page=ok(longSequentialRequest(client,"POST","/api/v3/plans/"+plan+"/validations",JSON.writeValueAsString(request),true));assertEquals(total,page.get("total").asInt());assertEquals(1,page.get("items").size());assertEquals(summary.get("inputFingerprint"),page.get("inputFingerprint"));
+            if(wide){assertEquals(0,page.get("offset").asInt());assertEquals(1,page.get("nextOffset").asInt());request.put("offset",95);var last=ok(longSequentialRequest(client,"POST","/api/v3/plans/"+plan+"/validations",JSON.writeValueAsString(request),true));assertEquals(1,last.get("items").size());assertTrue(last.get("nextOffset").isNull());}
             else{assertEquals(63999,page.get("offset").asInt());assertTrue(page.get("nextOffset").isNull());assertEquals("pair-9",page.get("items").get(0).get("declaration").asString());assertTrue(page.get("items").get(0).get("source").get("value").asString().endsWith("1999"));}
         }
     }

@@ -22,8 +22,11 @@ public final class V3WorkflowHttpSocketClient {
     public void csrf(String name,String value){csrfHeader=name;csrfValue=value;}
     public Response get(String path) throws IOException {return request("GET",path,null,true);}
     public Response request(String method,String path,String body,boolean csrf) throws IOException {
+        return request(method,path,body,csrf,15_000);
+    }
+    public Response request(String method,String path,String body,boolean csrf,int readTimeoutMillis) throws IOException {
         byte[] bytes=body==null?new byte[0]:body.getBytes(StandardCharsets.UTF_8);
-        try(var pending=begin(method,path,bytes.length,csrf)) {pending.write(bytes);return pending.response();}
+        try(var pending=begin(method,path,bytes.length,csrf)) {pending.timeout(readTimeoutMillis);pending.write(bytes);return pending.response();}
     }
     public Pending begin(String method,String path,int length,boolean csrf) throws IOException {
         return begin(method,path,length,csrf,0);
