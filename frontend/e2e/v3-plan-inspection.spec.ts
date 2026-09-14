@@ -86,7 +86,7 @@ test("resumes actual v3 current and target documents with explicit disclosure", 
   await settled();
   await page.getByRole("button", { name: "Resume current plan / refresh" }).click();
   await expect(page.getByText("Observation valid · Target incomplete")).toBeVisible();
-  await page.getByRole("combobox", { name: "Document", exact: true }).selectOption("sheet");
+  await page.getByRole("button", { name: /^sheet · / }).click();
   await expect(page.getByRole("button", { name: "Load document comparison" })).toBeDisabled();
   const consent = page.getByRole("checkbox", {
     name: "I understand complete documents may include unmapped or sensitive values.",
@@ -142,7 +142,7 @@ test("resumes actual v3 current and target documents with explicit disclosure", 
     ["sheet", sheet, target],
     ["tail", tail, tail],
   ]) {
-    await page.getByRole("combobox", { name: "Document", exact: true }).selectOption(name);
+    await page.getByRole("button", { name: new RegExp(`^${name} · `) }).click();
     await expect(consent).not.toBeChecked();
     await consent.check();
     await settled();
@@ -155,7 +155,7 @@ test("resumes actual v3 current and target documents with explicit disclosure", 
       await page.getByRole("region", { name: "Target XML" }).locator("pre").textContent(),
     ).toBe(proposed);
   }
-  await page.getByRole("combobox", { name: "Document", exact: true }).selectOption("sheet");
+  await page.getByRole("button", { name: /^sheet · / }).click();
   await expect(consent).not.toBeChecked();
   await consent.check();
   await page.getByRole("button", { name: "Placeholders", exact: true }).click();
@@ -192,7 +192,7 @@ test("resumes actual v3 current and target documents with explicit disclosure", 
     await expect(page.getByRole("region", { name: "Target XML" })).toBeVisible();
     console.log("UI_PROBE_REFLOW_320 passed");
   }
-  await page.getByRole("combobox", { name: "Document", exact: true }).selectOption("");
+  await page.getByRole("button", { name: "Clear document selection" }).click();
   await expect(consent).not.toBeChecked();
   await expect(consent).toBeDisabled();
   await expect(page.getByRole("region", { name: "Current XML" }).locator("pre")).toHaveCount(0);
