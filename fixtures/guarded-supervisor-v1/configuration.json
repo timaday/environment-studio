@@ -11,7 +11,7 @@
   "clients": [
     {
       "family": "psql",
-      "version": "18.6",
+      "version": "16.11",
       "runtimeRoot": "/invented/postgresql",
       "runtimeIdentity": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
       "executableSha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
