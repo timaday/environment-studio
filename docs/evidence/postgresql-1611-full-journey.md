@@ -1,7 +1,7 @@
 # PostgreSQL 16.11 full operator journey evidence
 
 Date: 14 September 2026
-Source checkout: `main` at `f769ecf82108785363265b85b77573292c54d27e`.
+Source checkout: `main` at `60b0069c89e6bbf2624ba6bee483f521d4b054fd`.
 Environment: local no-OIDC hosted container on `127.0.0.1:18181` with disposable `postgres:16.11-bookworm` fixture container `es-e2e-pg16`.
 
 ## Browser journey
@@ -17,7 +17,7 @@ Desktop result: PASS.
 Desktop evidence directory:
 
 ```text
-/home/tim/.tmp/es-full-journey-20260914/journey-1789412042783
+/home/tim/.tmp/es-full-journey-20260914/journey-1789417419148
 ```
 
 The browser journey uses Basic local-operator auth and performs the ordinary UI flow:
@@ -40,7 +40,7 @@ The browser journey uses Basic local-operator auth and performs the ordinary UI 
 The desktop run captured 24 page/view screenshots under:
 
 ```text
-/home/tim/.tmp/es-full-journey-20260914/journey-1789412042783/screenshots
+/home/tim/.tmp/es-full-journey-20260914/journey-1789417419148/screenshots
 ```
 
 
@@ -53,37 +53,37 @@ ES_JOURNEY_WIDTH=390 ES_JOURNEY_HEIGHT=900 node /home/tim/.tmp/es-full-journey-2
 Narrow result: PASS. Evidence directory:
 
 ```text
-/home/tim/.tmp/es-full-journey-20260914/journey-1789412173685
+/home/tim/.tmp/es-full-journey-20260914/journey-1789417426526
 ```
 
 The narrow run captured the same 24 page/view states with `uiGaps: []` and no horizontal overflow at the recorded 390px viewport. The narrow downloaded archive SHA-256 was:
 
 ```text
-80e956ac94ca0ebc79d850dcb291eadd741e9503e29804ea92342b49e4c541e8
+96a8e9c61b077f33549e79fa76d4ee616e8b4b393587e3f4c1425f2e76589c1c
 ```
 
 Captured views: home before definition, definition empty/current, upload before save, draft saved, ready to publish, published, plan create, inspection prerequisite, credentials form, current inspection valid, target structure loaded, target structure saved unresolved, target authored unresolved, values unresolved, values comparison before edit, values target saved, target-complete plan, Raw comparison, Placeholders comparison, Formatted comparison, validation summary, computed rules, export readiness and export downloaded.
 
-Observed UI result: `uiGaps: []`. Screenshots have no horizontal overflow at the recorded desktop viewport. Native checkbox render boxes remain smaller than 44px, but they are within labelled rows; this is a browser rendering detail to revisit in visual hardening rather than a journey blocker.
+Observed UI result: `uiGaps: []`. Screenshots have no horizontal overflow at the recorded desktop or 390px narrow viewport. The comparison screenshots show the many-CLOB navigator, Raw / Placeholders / Formatted modes, loaded-document search, selected binding rail, whole-plan mapped-location totals and Raw-mode mapped-span highlight. Native checkbox render boxes remain smaller than 44px, but they are within labelled rows; this is a browser rendering detail to revisit in visual hardening rather than a journey blocker.
 
 ## Downloaded package inspection
 
 Downloaded archive:
 
 ```text
-/home/tim/.tmp/es-full-journey-20260914/journey-1789412042783/downloads/environment-studio-guarded-package.zip
+/home/tim/.tmp/es-full-journey-20260914/journey-1789417419148/downloads/environment-studio-guarded-package.zip
 ```
 
 SHA-256:
 
 ```text
-d8debd9920314317ccddf81a306c7806d8401f43e4b4b44647952a75b5a4b920
+e9cb2dcc76cc2510518c96b6cf8b7e9f0c254dd518b1755f2be512e63c966ca8
 ```
 
 Inspection artifact:
 
 ```text
-/home/tim/.tmp/es-full-journey-20260914/journey-1789412042783/archive-inspection.json
+/home/tim/.tmp/es-full-journey-20260914/journey-1789417419148/archive-inspection.json
 ```
 
 Confirmed contents:
@@ -95,40 +95,43 @@ Confirmed contents:
 - Records: 2 total, 1 changed, 1 unchanged.
 - Changed record target contains the operator-entered target value.
 - Unchanged record target bytes equal original bytes.
-- SQL contains the PostgreSQL 16.11 server-version pin, physical destination checks, original/target digest checks, unsupported write-effect checks and program digest marker.
+- SQL contains the PostgreSQL 16.11 server-version pin, physical destination checks, byte-level original/target checks, unsupported write-effect checks and program digest marker.
 - Instructions state that `transaction.sql` must not be executed directly; the supervisor owns transaction control and commit acknowledgement.
 
 ## External PostgreSQL execution witness
 
-A temporary same-package Java witness outside the repository checkout used the actual downloaded archive with the existing guarded `PackageCheck`, `SessionEngine`, `ClientProtocol` and `OwnedNativeProcess` classes. It used a transient write-capable role created only in the disposable PostgreSQL 16.11 container. The application inspection account remained read-only.
+Historical execution witness from the earlier 14 September full-journey run: a temporary same-package Java witness outside the repository checkout used that run's downloaded archive with the existing guarded `PackageCheck`, `SessionEngine`, `ClientProtocol` and `OwnedNativeProcess` classes. It used a transient write-capable role created only in the disposable PostgreSQL 16.11 container. The application inspection account remained read-only. This witness was not rerun for the CLOB-comparison polish; the fresh committed rerun above covers browser journey and archive inspection only.
 
-Witness result artifact:
+Historical witness result artifact:
 
 ```text
 /home/tim/.tmp/es-full-journey-20260914/journey-1789412042783/supervisor-witness.json
 ```
 
-Result: PASS.
+Historical result: PASS.
 
-Observed outcomes:
+Observed outcomes in that earlier run:
 
 - Normal package application: `APPLIED`, cleanup `COMPLETE`, changed row contains the target value after commit acknowledgement.
 - Injected pre-program write failure: `NOT_APPLIED`, cleanup `COMPLETE`, original row preserved.
 
-This proves the downloaded package can be driven through the guarded PostgreSQL client protocol against the disposable PostgreSQL 16.11 fixture. It does not claim that the standalone native-supervisor launcher is production-admitted, because the current compiled runtime registry still fails closed without native privacy/runtime qualification.
+This proves that earlier downloaded package could be driven through the guarded PostgreSQL client protocol against the disposable PostgreSQL 16.11 fixture. It does not prove execution of the fresh CLOB-polish rerun package. Standalone launcher admission is covered separately by the PostgreSQL 16.11 supervisor-admission evidence.
 
 ## Verification commands
 
 ```sh
-npm exec -- vitest run --config vite.config.ts src/hosted/V3TargetStructure.test.tsx
+npx vitest run src/hosted/V3PlanInspection.test.tsx src/hosted/useV3PlanInspection.test.ts
 npm run check --prefix frontend
 npm test --prefix frontend
+npm run build --prefix frontend
+git diff --check
+python3 scripts/check_repository.py
 python3 scripts/check_repository_content.py
 python3 -m unittest discover -s scripts -p 'test_*.py'
-python3 scripts/check_repository.py
 scripts/studio.sh fast-package
 scripts/studio.sh hosted-up
 node /home/tim/.tmp/es-full-journey-20260914/full-journey.cjs
+ES_JOURNEY_WIDTH=390 ES_JOURNEY_HEIGHT=900 node /home/tim/.tmp/es-full-journey-20260914/full-journey.cjs
 ```
 
 Results: all passed in this workspace. `scripts/studio.sh fast-package` builds a runnable local Docker image while skipping Docker-stage Maven/UI tests for iteration speed; it does not replace full release-grade Docker test evidence.
@@ -137,5 +140,5 @@ Results: all passed in this workspace. `scripts/studio.sh fast-package` builds a
 
 - The pilot scope is PostgreSQL 16.11 only. Oracle remains unavailable for this pilot.
 - The downloaded package is an unqualified candidate; validation still reports unknown release-qualification checks for client capability, content policy and review.
-- The standalone native-supervisor `Main` remains fail-closed behind runtime privacy/admission. The external witness uses the same transaction protocol classes, but it is not a production launcher admission claim.
+- The standalone native-supervisor admission path is available only for the pinned PostgreSQL 16.11/psql 16.11/linux-amd64 path covered by separate supervisor-admission evidence. The fresh CLOB-polish package was not externally executed through that launcher.
 - Actual HiveForge deployment, GHCR digest pull, platform routing/TLS and private production definition/data qualification are external and not claimed here.
