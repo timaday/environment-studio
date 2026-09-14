@@ -12,12 +12,15 @@ notices and `SHA256SUMS`. The ZIP is a portable content archive; installation mu
 restore the launcher's executable mode and independently verify its inventory.
 No native client, Java runtime, trust configuration or package is bundled.
 
-The ordinary entry point has an empty compiled runtime registry and an unavailable
-console/native-runtime composition. It refuses before credential entry or client
-launch. There is no test flag, execution override, environment credential or HTTP
-route. Package admission, regenerated SQL, transcript framing, commit/acknowledgement
-and owned-process mechanisms are exercised through package-private test ports.
-Those tests do not authorize a runtime combination.
+The ordinary entry point admits only the explicitly scoped PostgreSQL 16.11 pilot
+runtime: Linux amd64/x86_64, `psql` 16.11, verified TLS transport and the compiled
+runtime identity recorded in the runtime composition. Any other engine, client
+version, architecture, identity or transport remains refused before credential
+entry or client launch. There is no test flag, execution override, environment
+credential or HTTP route. Package admission, regenerated SQL, transcript framing,
+commit/acknowledgement and owned-process mechanisms remain covered by tests; a
+separate host witness is still required for an installed native toolchain and
+trust bundle before a production environment is claimed qualified.
 
 `ProcessBuilder` is confined to this tools module. The server dependency is its
 explicit thin `classes` classifier, containing classes and schemas, with all
