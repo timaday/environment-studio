@@ -20,6 +20,7 @@ class Postgres16TemplateTest {
         String sql = new String(candidate.bytes(), StandardCharsets.US_ASCII);
         assertTrue(sql.contains("current_setting('server_version_num') <> '160011'"));
         assertTrue(sql.contains("c.contype NOT IN ('p','u') OR c.condeferrable OR NOT c.convalidated"));
+        assertTrue(sql.contains("WHERE \"xml_data\" IS NOT NULL AND \"xml_data\"<>''"));
         assertFalse(sql.contains("pg_catalog.pg_trigger"));
         assertFalse(sql.contains("conenforced"));
         assertFalse(sql.contains("180006"));

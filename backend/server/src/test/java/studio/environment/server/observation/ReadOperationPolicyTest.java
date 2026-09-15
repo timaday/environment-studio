@@ -84,9 +84,9 @@ class ReadOperationPolicyTest {
             if(s.startsWith("select case when sys_context")) return one(readAccess?"1":"0");
             if(s.contains("sys.dba_tab_cols")) return List.of(Arrays.asList("mock_key","NUMBER",null,"19","0","N",null,null,"NO","NO","NO"),Arrays.asList("mock_xml","CLOB",null,null,null,"Y",null,null,"NO","NO","NO"));
             if(s.contains("sys.dba_constraints")) return one("1");
-            if(s.equals("select count(*) from \"mock_owner\".\"mock_tiles\"")) return one("1");
-            if(s.equals("select \"mock_key\",\"mock_xml\" from \"mock_owner\".\"mock_tiles\"")) return List.of(List.of("1",XML));
-            if(s.equals("select \"mock_key\",pg_catalog.char_length(\"mock_xml\"),pg_catalog.octet_length(\"mock_xml\") from \"mock_owner\".\"mock_tiles\"") || s.equals("select \"mock_key\",sys.dbms_lob.getlength(\"mock_xml\"),sys.dbms_lob.getlength(\"mock_xml\") from \"mock_owner\".\"mock_tiles\"")) return List.of(List.of("1",Integer.toString(XML.length()),Integer.toString(XML.length())));
+            if(s.equals("select count(*) from \"mock_owner\".\"mock_tiles\" where \"mock_xml\" is not null and \"mock_xml\"<>''") || s.equals("select count(*) from \"mock_owner\".\"mock_tiles\"")) return one("1");
+            if(s.equals("select \"mock_key\",\"mock_xml\" from \"mock_owner\".\"mock_tiles\" where \"mock_xml\" is not null and \"mock_xml\"<>''") || s.equals("select \"mock_key\",\"mock_xml\" from \"mock_owner\".\"mock_tiles\"")) return List.of(List.of("1",XML));
+            if(s.equals("select \"mock_key\",pg_catalog.char_length(\"mock_xml\"),pg_catalog.octet_length(\"mock_xml\") from \"mock_owner\".\"mock_tiles\" where \"mock_xml\" is not null and \"mock_xml\"<>''") || s.equals("select \"mock_key\",sys.dbms_lob.getlength(\"mock_xml\"),sys.dbms_lob.getlength(\"mock_xml\") from \"mock_owner\".\"mock_tiles\"")) return List.of(List.of("1",Integer.toString(XML.length()),Integer.toString(XML.length())));
             throw new SQLException("unexpected-query");
         }
         boolean sourceRead() { return statements.stream().anyMatch(s->s.startsWith("SELECT") && s.contains("FROM \"mock_owner\".\"mock_tiles\"")); }
@@ -104,6 +104,15 @@ class ReadOperationPolicyTest {
             assertEquals("jdbc-observation-v2",metadata.get("adapterVersion"));
         }
     }
+    @Test void postgresqlObservationDefaultsToRowsWithNonNullNonEmptyXml() {
+        var database=new Database(Engine.POSTGRESQL);
+        assertInstanceOf(Complete.class,database.observe());
+        assertTrue(database.statements.contains("SELECT COUNT(*) FROM \"mock_owner\".\"mock_tiles\" WHERE \"mock_xml\" IS NOT NULL AND \"mock_xml\"<>''"));
+        assertTrue(database.statements.contains("SELECT \"mock_key\",pg_catalog.char_length(\"mock_xml\"),pg_catalog.octet_length(\"mock_xml\") FROM \"mock_owner\".\"mock_tiles\" WHERE \"mock_xml\" IS NOT NULL AND \"mock_xml\"<>''"));
+        assertTrue(database.statements.contains("SELECT \"mock_key\",\"mock_xml\" FROM \"mock_owner\".\"mock_tiles\" WHERE \"mock_xml\" IS NOT NULL AND \"mock_xml\"<>''"));
+        assertFalse(database.statements.contains("SELECT COUNT(*) FROM \"mock_owner\".\"mock_tiles\""));
+    }
+
     @Test void failedConnectionOpenHasNoOwnedConnectionToCleanAndReleasesCapacity() {
         var database=new Database(Engine.POSTGRESQL);database.openFailure=true;
         var refused=assertInstanceOf(Refused.class,database.observe());

@@ -36,20 +36,20 @@ final class PostgresTransaction {
         guard(s,"EXISTS(SELECT 1 FROM pg_catalog.pg_index i JOIN pg_catalog.pg_class c ON c.oid=i.indexrelid JOIN pg_catalog.pg_am a ON a.oid=c.relam WHERE i.indrelid=es_oid AND (NOT i.indisvalid OR NOT i.indisready OR NOT i.indislive OR NOT i.indimmediate OR i.indpred IS NOT NULL OR i.indexprs IS NOT NULL OR a.amname<>'btree' OR a.oid>=16384))","ES_INDEX_UNSUPPORTED");
         guard(s,"EXISTS(SELECT 1 FROM pg_catalog.pg_index i CROSS JOIN LATERAL unnest(i.indclass) x(oid) JOIN pg_catalog.pg_opclass o ON o.oid=x.oid JOIN pg_catalog.pg_namespace n ON n.oid=o.opcnamespace WHERE i.indrelid=es_oid AND (n.nspname<>'pg_catalog' OR o.oid>=16384 OR o.opcname NOT IN ('text_ops','int2_ops','int4_ops','int8_ops','bool_ops','numeric_ops','float4_ops','float8_ops','bytea_ops','date_ops','timestamp_ops','timestamptz_ops','uuid_ops','bpchar_ops')))","ES_INDEX_OPERATOR_UNSUPPORTED");
         guard(s,"EXISTS(SELECT 1 FROM pg_catalog.pg_index i CROSS JOIN LATERAL unnest(i.indcollation) x(oid) LEFT JOIN pg_catalog.pg_collation c ON c.oid=x.oid WHERE i.indrelid=es_oid AND x.oid<>0 AND (c.oid IS NULL OR c.oid>=16384 OR c.collname NOT IN ('C','POSIX','default') OR NOT c.collisdeterministic)) OR (EXISTS(SELECT 1 FROM pg_catalog.pg_index i CROSS JOIN LATERAL unnest(i.indcollation) x(oid) JOIN pg_catalog.pg_collation c ON c.oid=x.oid WHERE i.indrelid=es_oid AND c.collname='default') AND NOT EXISTS(SELECT 1 FROM pg_catalog.pg_database WHERE datname=current_database() AND datlocprovider='c' AND datcollate IN ('C','C.UTF-8','C.UTF8','POSIX') AND datctype IN ('C','C.UTF-8','C.UTF8','POSIX')))","ES_COLLATION_UNSUPPORTED");
-        membership(s,target,input.payload().records().size());
+        membership(s,target,xml,input.payload().records().size());
         for(int i=0;i<input.payload().records().size();i++){var d=input.payload().records().get(i);compare(s,target,xml,key(table,d.key()),"es_original["+(i+1)+"]","ES_ORIGINAL_MISMATCH");}
         for(int i=0;i<input.payload().records().size();i++){var d=input.payload().records().get(i);if(!d.originalHex().equals(d.targetHex())) {
             s.line("  UPDATE "+target+" SET "+xml+"=pg_catalog.convert_from(es_target["+(i+1)+"],'UTF8') WHERE "+key(table,d.key())+";");
             s.line("  GET DIAGNOSTICS es_count = ROW_COUNT;");guard(s,"es_count<>1","ES_ROW_COUNT_MISMATCH");
         }}
-        membership(s,target,input.payload().records().size());
+        membership(s,target,xml,input.payload().records().size());
         for(int i=0;i<input.payload().records().size();i++){var d=input.payload().records().get(i);compare(s,target,xml,key(table,d.key()),"es_target["+(i+1)+"]","ES_TARGET_MISMATCH");}
         s.line("  PERFORM pg_catalog.set_config('environment_studio.program_digest','"+input.programDigest()+"',true);");
         s.line("EXCEPTION WHEN OTHERS THEN\n  RAISE EXCEPTION 'ES_GUARDED_TRANSACTION_FAILED';\nEND;\n$es$;");
     }
     private static void guard(Source s,String condition,String code){s.line("  IF "+condition+" THEN RAISE EXCEPTION '"+code+"'; END IF;");}
     private static String key(PackageData.Table t,PackageData.Key k){return k.type()==PackageData.KeyType.INT64?id(t.keyColumn())+"='"+k.value()+"'::bigint":"pg_catalog.convert_to("+id(t.keyColumn())+",'UTF8')=pg_catalog.decode('"+hex(k.value())+"','hex')";}
-    private static void membership(Source s,String target,int count){guard(s,"(SELECT count(*) FROM "+target+")<>"+count,"ES_MEMBERSHIP_MISMATCH");}
+    private static void membership(Source s,String target,String xml,int count){guard(s,"(SELECT count(*) FROM "+target+" WHERE "+xml+" IS NOT NULL AND "+xml+"<>'')<>"+count,"ES_MEMBERSHIP_MISMATCH");}
     private static void compare(Source s,String table,String xml,String key,String value,String code){guard(s,"(SELECT count(*) FROM "+table+" WHERE "+key+" AND "+xml+" IS NOT NULL AND pg_catalog.convert_to("+xml+",'UTF8')="+value+")<>1",code);}
     private static void values(Source s,PackageAdmission.Result.Accepted input,boolean target) {
         s.line("  "+(target?"es_target":"es_original")+" bytea[] := ARRAY[");

@@ -58,3 +58,13 @@ Saved external source: `es-pg1611-observe-20260911.py` and
 `es-pg1611-observation-runtime-20260911/Observe16Main.java` under `/home/tim/.tmp/`.
 Only explicit test code can inject the negative write probe; production source
 continues to expose the closed read-only adapter.
+
+15 September 2026 update: PostgreSQL 16.11 source reads now use a fixed adapter-owned
+eligibility predicate over the declared XML text column: non-null and non-empty.
+Null or empty XML rows outside the declared document set are ignored and preserved;
+they do not satisfy a declared document and are not package targets. Complete
+inventory/membership now means complete eligible membership. Mock checks cover the
+generated source queries and duplicate eligible-key refusal; guarded package tests
+cover the matching eligible-row membership predicate in generated SQL. Disposable
+PostgreSQL requalification of this exact update remains to be rerun before claiming
+new production execution evidence.

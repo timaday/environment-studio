@@ -11,9 +11,11 @@ Do not mix server/client/template versions or accept other patch releases by
 range. The shared supervisor format remains1; accepting candidate metadata does
 not register an installed client as qualified.
 
-Reuse the existing complete membership, original bytes, destination, bounded
-locking, row-count and post-state guards and the existing hex transport. The
-generated block requires `server_version_num=160011`. PostgreSQL16's constraint
+Reuse the existing original bytes, destination, bounded locking, row-count and
+post-state guards and the existing hex transport. Complete membership is evaluated
+over the eligible row set where the XML text column is non-null and non-empty, so
+null/empty rows are preserved outside the guarded package scope. The generated
+block requires `server_version_num=160011`. PostgreSQL16's constraint
 catalog supports the same conservative eligible primary/unique key subset but
 has no `conenforced` column and does not represent NOT NULL as constraint rows.
 For16 only, permit primary/unique constraints with immediate, validated semantics;

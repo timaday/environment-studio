@@ -66,14 +66,18 @@ expressions. Schema/table and key/XML columns are explicit, with distinct column
 names. Physical destination, driver options and credentials are separate
 operation-scoped inputs, never native definition fields.
 
-The initial scope is the **whole named table**, with no uploaded query, predicate
-or row-limit shortcut. Every document declares unique `id`, typed exact `key`,
-and `entities`. The document key set is the expected complete table membership;
-missing or extra rows block observation/export. An int64 key is a canonical
-decimal string within signed 64-bit range. A text key is a nonempty exact string
-of at most 256 code points. NULL/empty XML values remain distinct and cannot
-masquerade as valid documents. This mechanism changes XML inside existing rows;
-it does not insert/delete database rows or invent a row-key/trigger strategy.
+The initial scope is the **whole named table**, with no uploaded query, caller
+predicate or row-limit shortcut. For the PostgreSQL 16.11 text pilot, the closed
+adapter applies one fixed default eligibility rule: only rows where the XML text
+column is non-null and non-empty are in the declared document set. Null or empty
+XML rows are ignored and preserved; they cannot satisfy a declared document and
+are never touched by export. Every document declares unique `id`, typed exact
+`key`, and `entities`. The document key set is the expected complete eligible
+membership; missing declared keys or extra eligible rows block observation/export.
+An int64 key is a canonical decimal string within signed 64-bit range. A text key
+is a nonempty exact string of at most 256 code points. This mechanism changes XML
+inside existing eligible rows; it does not insert/delete database rows or invent a
+row-key/trigger strategy.
 
 Each entity projection declares `id`, `type`, `path`, `fields` and `references`.
 The path is a nonempty ordered list of expanded names `{namespaceUri, localName}`

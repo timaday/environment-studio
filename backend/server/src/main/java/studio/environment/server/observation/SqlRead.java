@@ -59,15 +59,16 @@ final class SqlRead {
         String key=quoted(binding.keyColumn()), xml=quoted(binding.xmlColumn());
         String length=binding.engine()==Engine.POSTGRESQL ? "pg_catalog.char_length("+xml+")" : "SYS.DBMS_LOB.GETLENGTH("+xml+")";
         String bytes=binding.engine()==Engine.POSTGRESQL ? "pg_catalog.octet_length("+xml+")" : length;
+        String eligible=binding.engine()==Engine.POSTGRESQL ? " WHERE "+xml+" IS NOT NULL AND "+xml+"<>''" : "";
         String boundedKey=key;
         if(binding.keyType()==KeyType.TEXT) {
             String keyLength=binding.engine()==Engine.POSTGRESQL ? "pg_catalog.char_length("+key+")" : "LENGTHC("+key+")";
             boundedKey="CASE WHEN "+keyLength+" BETWEEN 1 AND 256 THEN "+key+" ELSE NULL END";
         }
         return switch(source) {
-            case COUNT -> "SELECT COUNT(*) FROM "+table;
-            case LENGTHS -> "SELECT "+boundedKey+","+length+","+bytes+" FROM "+table;
-            case DOCUMENTS -> "SELECT "+key+","+xml+" FROM "+table;
+            case COUNT -> "SELECT COUNT(*) FROM "+table+eligible;
+            case LENGTHS -> "SELECT "+boundedKey+","+length+","+bytes+" FROM "+table+eligible;
+            case DOCUMENTS -> "SELECT "+key+","+xml+" FROM "+table+eligible;
         };
     }
     PreparedStatement sourceStatement(Source source) throws SQLException { return rawStatement(source(source)); }

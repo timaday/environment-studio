@@ -252,15 +252,17 @@ establish the exact catalog predicates, supported builtin variants and runtime
 write effects before either template is advertised as qualified. Permission or
 metadata uncertainty cannot be converted to absence of an effect.
 
-Compare complete row membership and full original content for every document,
-including unchanged dependencies, before the first UPDATE. NULL, empty and
-missing are distinct. PostgreSQL compares exact UTF-8 bytea, not collation-sensitive
-text equality. Oracle uses complete LOB comparison with explicit NULL/empty and
-strict encoding/round-trip checks. Typed keys must identify exactly one row;
-collation cannot collapse distinct text keys. Each intended UPDATE asserts
-exactly one affected row. Re-read the complete expected target membership/content
-after the last UPDATE and before commit. Wrong destination, schema drift,
-unexpected row counts or any final mismatch aborts.
+Compare complete eligible row membership and full original content for every
+document, including unchanged dependencies, before the first UPDATE. For the
+PostgreSQL 16.11 text pilot, eligible rows are those with non-null and non-empty
+XML text; null/empty rows are preserved outside the package scope. PostgreSQL
+compares exact UTF-8 bytea, not collation-sensitive text equality. Oracle uses
+complete LOB comparison with explicit NULL/empty and strict encoding/round-trip
+checks. Typed keys must identify exactly one row; collation cannot collapse
+distinct text keys. Each intended UPDATE asserts exactly one affected row. Re-read
+the complete expected eligible target membership/content after the last UPDATE
+and before commit. Wrong destination, schema drift, unexpected eligible row counts
+or any final mismatch aborts.
 
 For Oracle, payload hex remains unchanged. Derive canonical base64 from its
 validated bytes and load two aggregate BLOBs through the bounded transport blocks,

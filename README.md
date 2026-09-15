@@ -307,6 +307,9 @@ psql "postgresql://<host>:<port>/<database>" \
   -f scripts/postgres16_storage_probe.sql
 ```
 
-Use `key_type=TEXT` when the definition declares a text key. The probe reports
+Use `key_type=TEXT` when the definition declares a text key. The runtime
+PostgreSQL 16.11 pilot treats rows with null or empty XML text as outside the
+definition scope by default; declare only the non-null, non-empty XML rows you
+intend to manage. The probe reports
 only catalog checks such as version, encoding, ordinary table status, enabled-trigger count, RLS
 restrictions, column types and the single-column unique key requirement.

@@ -60,7 +60,7 @@ class PostgresUniqueKeyTest {
         for(String key:List.of("1","2")) {
             var database=new Database("2") {
                 @Override List<List<String>> rows(String sql)throws SQLException {
-                    if(sql.equals("SELECT \"mock_key\",\"mock_xml\" FROM \"mock_owner\".\"mock_tiles\""))
+                    if(sql.equals("SELECT \"mock_key\",\"mock_xml\" FROM \"mock_owner\".\"mock_tiles\" WHERE \"mock_xml\" IS NOT NULL AND \"mock_xml\"<>''"))
                         return List.of(List.of("1",ReadOperationPolicyTest.XML),List.of(key,ReadOperationPolicyTest.XML));
                     return super.rows(sql);
                 }
