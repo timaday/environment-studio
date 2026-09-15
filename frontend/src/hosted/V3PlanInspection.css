@@ -490,8 +490,54 @@
   color: var(--text);
   padding: 10px 12px;
 }
+.v3-inspection-outcome {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 16px;
+  align-items: start;
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: #121c2e;
+}
+.v3-inspection-outcome-title {
+  display: block;
+  margin-bottom: 6px;
+}
+.v3-inspection-outcome p {
+  margin-top: 4px;
+}
+.v3-inspection-outcome-refused,
+.v3-inspection-outcome-expired {
+  border-color: #ffb4ab;
+}
+.v3-inspection-outcome-succeeded {
+  border-color: #6ee7b7;
+}
+.v3-inspection-outcome dl {
+  display: grid;
+  gap: 8px;
+  min-width: 180px;
+  margin: 0;
+}
+.v3-inspection-outcome dt {
+  color: var(--muted);
+  font-size: 13px;
+}
+.v3-inspection-outcome dd {
+  margin: 0;
+  font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
 @media (max-width: 650px) {
   .v3-inspection-credentials {
     grid-template-columns: minmax(0, 1fr);
+  }
+  .v3-inspection-outcome {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .v3-inspection-outcome dl {
+    min-width: 0;
   }
 }

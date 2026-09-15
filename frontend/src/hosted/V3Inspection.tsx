@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { ApiFailure, definitiveRefusal, failureMessage, type HostedApi } from "../api/hosted";
 import {
   ack as decodeAck,
@@ -16,6 +16,43 @@ const terminal = (operation: Operation | null) =>
   operation !== null && ["succeeded", "refused", "cancelled", "expired"].includes(operation.phase);
 const settled = (operation: Operation | null) =>
   terminal(operation) && operation?.cleanup === "complete";
+const phaseLabel = (phase: string) =>
+  phase === "reserved"
+    ? "Reserved"
+    : phase === "running"
+      ? "Reading"
+      : phase === "succeeded"
+        ? "Inspection complete"
+        : phase === "refused"
+          ? "Inspection did not complete"
+          : phase === "cancelled"
+            ? "Inspection cancelled"
+            : phase === "expired"
+              ? "Inspection expired"
+              : "Inspection status";
+const outcomeMessage = (operation: Operation) => {
+  if (operation.phase === "succeeded")
+    return "The current PostgreSQL configuration was captured for this plan revision.";
+  if (operation.phase === "cancelled")
+    return "The operation was cancelled. Start another inspection when you are ready.";
+  if (operation.phase === "expired")
+    return "The reserved operation expired before completion. Start another inspection and send fresh credentials.";
+  if (operation.code === "INVALID_CREDENTIALS")
+    return "The database rejected the supplied credentials. Start another inspection and enter the credentials again.";
+  if (operation.code === "DESTINATION_DENIED" || operation.code === "INVALID_DESTINATION")
+    return "The destination did not match the allowed PostgreSQL target. Check the connection target before retrying.";
+  if (operation.code === "OBSERVATION_REFUSED")
+    return "The read-only observation was refused before current configuration evidence could be captured.";
+  if (operation.code === "RESOURCE_LIMIT" || operation.code === "CAPACITY")
+    return "The inspection exceeded an application safety limit. Reduce scope or wait for capacity before retrying.";
+  return "No current configuration evidence was installed. Review the failure code and start another inspection when ready.";
+};
+const cleanupMessage = (operation: Operation) =>
+  operation.cleanup === "complete"
+    ? "Credentials were discarded and operation cleanup is confirmed."
+    : operation.cleanup === "in-progress"
+      ? "Cleanup is still in progress. Do not start another inspection until the server reports completion."
+      : "Cleanup was not confirmed. Inspection capacity remains quarantined until server cleanup is confirmed.";
 
 export function V3Inspection({
   api,
@@ -41,6 +78,16 @@ export function V3Inspection({
   const sending = useRef(false);
   const reserving = useRef(false);
   const activeOperation = useRef<string | null>(plan.activeOperationId ?? null);
+  const applyStatus = useCallback(
+    async (status: Operation, operationId: string) => {
+      if (!alive.current || activeOperation.current !== operationId) return;
+      if (status.planId !== plan.planId) throw new ApiFailure(200, "RESPONSE_UNAVAILABLE");
+      setOperation((previous) => (settled(previous) && !settled(status) ? previous : status));
+      setError("");
+      if (terminal(status)) await refresh();
+    },
+    [plan.planId, refresh],
+  );
 
   useEffect(() => {
     if (
@@ -62,7 +109,7 @@ export function V3Inspection({
     };
   }, []);
   useEffect(() => {
-    if (!reserved || !sent || settled(operation)) return;
+    if (!reserved || !sent || terminal(operation)) return;
     let active = true;
     let timer: ReturnType<typeof setTimeout>;
     const poll = async () => {
@@ -73,11 +120,8 @@ export function V3Inspection({
           await api.get<unknown>(`/api/v3/operations/${encodeURIComponent(reserved)}`),
         );
         if (!active || activeOperation.current !== reserved) return;
-        if (status.planId !== plan.planId) throw new ApiFailure(200, "RESPONSE_UNAVAILABLE");
-        setOperation((previous) => (settled(previous) && !settled(status) ? previous : status));
-        setError("");
-        finished = settled(status);
-        if (terminal(status)) await refresh();
+        await applyStatus(status, reserved);
+        finished = terminal(status);
       } catch (failure) {
         if (active) setError(failureMessage(failure));
       } finally {
@@ -92,7 +136,7 @@ export function V3Inspection({
       active = false;
       clearTimeout(timer);
     };
-  }, [api, reserved, sent, operation, refresh, plan.planId, pollVersion]);
+  }, [api, reserved, sent, operation, pollVersion, applyStatus]);
 
   async function reserve(command: ReserveInspection) {
     if (reserving.current || !enabled) return;
@@ -169,6 +213,21 @@ export function V3Inspection({
       }
     } catch (failure) {
       if (alive.current && activeOperation.current === reserved) setError(failureMessage(failure));
+    }
+  }
+
+  async function checkStatusNow() {
+    if (!reserved || checking) return;
+    setChecking(true);
+    try {
+      const status = decodeOperation(
+        await api.get<unknown>(`/api/v3/operations/${encodeURIComponent(reserved)}`),
+      );
+      await applyStatus(status, reserved);
+    } catch (failure) {
+      if (alive.current && activeOperation.current === reserved) setError(failureMessage(failure));
+    } finally {
+      if (alive.current && activeOperation.current === reserved) setChecking(false);
     }
   }
 
@@ -267,9 +326,12 @@ export function V3Inspection({
         <button
           type="button"
           disabled={checking}
-          onClick={() => setPollVersion((value) => value + 1)}
+          onClick={() => {
+            if (terminal(operation)) void checkStatusNow();
+            else setPollVersion((value) => value + 1);
+          }}
         >
-          Check operation status
+          {terminal(operation) ? "Check cleanup status" : "Check operation status"}
         </button>
       )}
       {terminal(operation) && operation?.cleanup === "complete" && !busy && (
@@ -291,14 +353,33 @@ export function V3Inspection({
       )}
       {busy && sent && <p role="status">Credentials sent once · awaiting operation status…</p>}
       {operation && (
-        <p role="status">
-          {operation.phase} · {operation.code} · cleanup {operation.cleanup}
-        </p>
-      )}
-      {operation?.cleanup === "inconclusive" && (
-        <p>
-          Cleanup is inconclusive. Capacity remains quarantined until server cleanup is confirmed.
-        </p>
+        <section
+          className={`v3-inspection-outcome v3-inspection-outcome-${operation.phase}`}
+          aria-label="Inspection outcome"
+          role={
+            operation.cleanup === "inconclusive" || operation.phase === "refused"
+              ? "alert"
+              : "status"
+          }
+        >
+          <div>
+            <strong className="v3-inspection-outcome-title">{phaseLabel(operation.phase)}</strong>
+            <p>{outcomeMessage(operation)}</p>
+            <p>{cleanupMessage(operation)}</p>
+          </div>
+          <dl>
+            <div>
+              <dt>Status code</dt>
+              <dd>{operation.code}</dd>
+            </div>
+            {operation.installedRevision && (
+              <div>
+                <dt>Installed revision</dt>
+                <dd>{operation.installedRevision}</dd>
+              </div>
+            )}
+          </dl>
+        </section>
       )}
       {error && <p role="alert">{error}</p>}
     </section>

@@ -1,6 +1,6 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { act, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { expect, it, vi } from "vitest";
+import { afterEach, expect, it, vi } from "vitest";
 import type { HostedApi } from "../api/hosted";
 import type { Operation, PlanSummary } from "../api/hostedV3Types";
 import { V3Inspection } from "./V3Inspection";
@@ -30,6 +30,10 @@ const operation: Operation = {
   cleanup: "complete",
   installedRevision: "2",
 };
+
+afterEach(() => {
+  vi.useRealTimers();
+});
 
 it("reserves v3 inspection only after explicit confirmation", async () => {
   const post = vi
@@ -77,4 +81,79 @@ it("sends credentials through the v3 one-use endpoint and clears the form", asyn
   );
   expect(screen.queryByDisplayValue("operator")).not.toBeInTheDocument();
   expect(refresh).toHaveBeenCalled();
+});
+
+it("explains refused inspection outcomes with recovery instead of raw status text", async () => {
+  const get = vi.fn().mockResolvedValue({
+    operationId: operation.operationId,
+    planId: plan.planId,
+    phase: "refused",
+    code: "INVALID_CREDENTIALS",
+    cleanup: "complete",
+  });
+  render(
+    <V3Inspection
+      api={{ get } as unknown as HostedApi}
+      plan={{ ...plan, activeOperationId: operation.operationId }}
+      enabled
+      refresh={vi.fn()}
+    />,
+  );
+  await userEvent.click(screen.getByRole("button", { name: "Check operation status" }));
+  expect(await screen.findByText("Inspection did not complete")).toBeVisible();
+  expect(screen.getByText(/The database rejected the supplied credentials/)).toBeVisible();
+  expect(screen.getByText(/Credentials were discarded/)).toBeVisible();
+  expect(screen.queryByText(/refused · INVALID_CREDENTIALS/)).not.toBeInTheDocument();
+});
+
+it("reports inconclusive cleanup as quarantined capacity", async () => {
+  const get = vi.fn().mockResolvedValue({
+    operationId: operation.operationId,
+    planId: plan.planId,
+    phase: "refused",
+    code: "OBSERVATION_REFUSED",
+    cleanup: "inconclusive",
+  });
+  render(
+    <V3Inspection
+      api={{ get } as unknown as HostedApi}
+      plan={{ ...plan, activeOperationId: operation.operationId }}
+      enabled
+      refresh={vi.fn()}
+    />,
+  );
+  await userEvent.click(screen.getByRole("button", { name: "Check operation status" }));
+  expect(await screen.findByRole("alert")).toHaveTextContent(
+    "Cleanup was not confirmed. Inspection capacity remains quarantined until server cleanup is confirmed.",
+  );
+});
+
+it("stops automatic refresh after a refused terminal status with pending cleanup", async () => {
+  vi.useFakeTimers();
+  const get = vi.fn().mockResolvedValue({
+    operationId: operation.operationId,
+    planId: plan.planId,
+    phase: "refused",
+    code: "INVALID_CREDENTIALS",
+    cleanup: "in-progress",
+  });
+  const refresh = vi.fn();
+  render(
+    <V3Inspection
+      api={{ get } as unknown as HostedApi}
+      plan={{ ...plan, activeOperationId: operation.operationId }}
+      enabled
+      refresh={refresh}
+    />,
+  );
+  await act(async () => {
+    await vi.advanceTimersByTimeAsync(1000);
+  });
+  expect(screen.getByText("Inspection did not complete")).toBeVisible();
+  await act(async () => {
+    await vi.advanceTimersByTimeAsync(5000);
+  });
+  expect(get).toHaveBeenCalledTimes(1);
+  expect(refresh).toHaveBeenCalledTimes(1);
+  expect(screen.getByRole("button", { name: "Check cleanup status" })).toBeVisible();
 });
