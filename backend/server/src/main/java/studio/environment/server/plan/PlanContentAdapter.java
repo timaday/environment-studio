@@ -7,6 +7,7 @@ import studio.environment.core.observation.ObservationResult;
 import studio.environment.core.plan.PlanPorts.*;
 import studio.environment.core.plan.PlanRefusal;
 import studio.environment.core.plan.PlanDefinition;
+import studio.environment.core.plan.PlanDiagnostic;
 import studio.environment.core.plan.V3PlanContent;
 import studio.environment.core.derived.DerivedInput;
 import studio.environment.core.observation.ObservationPort.Cancellation;
@@ -30,7 +31,7 @@ public final class PlanContentAdapter implements ContentAdapter {
         var result=v3.project((PlanDefinition.V3)definition.model(),binding,observation,cancellation);
         return switch(result) {
             case V3PlanContent.Result.Complete complete -> new ContentResult.Complete(complete.content());
-            case V3PlanContent.Result.Refused refused -> rejected(refused.code());
+            case V3PlanContent.Result.Refused refused -> new ContentResult.Rejected(List.of(refused.code()), refused.diagnostics());
             case V3PlanContent.Result.Incomplete ignored -> rejected("PROJECTION_INCOMPLETE");
         };
     }
@@ -41,7 +42,8 @@ public final class PlanContentAdapter implements ContentAdapter {
     }
     @Override public ContentResult project(PublishedDefinition definition,String binding,ObservationResult.Observation observation) {
         var result=projection.project(definition.compiled(),binding,observation.documents().stream().map(document->new DocumentSource(document.documentId(),document.xml())).toList());
-        if(!(result instanceof ProjectionResult.Accepted accepted)) return rejected("PROJECTION_REFUSED");
+        if(result instanceof ProjectionResult.Rejected refused) return new ContentResult.Rejected(List.of("PROJECTION_REFUSED"), diagnostics(refused.diagnostics()));
+        var accepted=(ProjectionResult.Accepted)result;
         if(!accepted.logicalDigest().equals(observation.logicalDigest()) || !accepted.bindingDigest().equals(observation.bindingDigest())) return rejected("PROJECTION_PIN_MISMATCH");
         var supplied=new HashMap<String,String>(); observation.documents().forEach(document->supplied.put(document.documentId(),document.sourceDigest()));
         if(accepted.projection().documents().stream().anyMatch(document->!document.digest().equals(supplied.get(document.documentId())))) return rejected("SOURCE_DIGEST_MISMATCH");
@@ -68,6 +70,7 @@ public final class PlanContentAdapter implements ContentAdapter {
     }
     @Override public Capture capture(PublishedDefinition definition,String binding,Content current,ProfileCapture.Command command) {
         var projected=projection.project(definition.compiled(),binding,current.sources().stream().map(source->new DocumentSource(source.documentId(),source.xml())).toList());
+        if(projected instanceof ProjectionResult.Rejected refused) throw new PlanRefusal(PlanRefusal.Code.PROJECTION_REFUSED, diagnostics(refused.diagnostics()));
         if(!(projected instanceof ProjectionResult.Accepted observation) || !observation.graph().equals(current.graph())) throw new PlanRefusal(PlanRefusal.Code.PROJECTION_REFUSED);
         var result=profiles.capture(definition.compiled(),observation,command);
         if(!(result instanceof ProfileBytesAdapter.Result.Accepted accepted)) throw new PlanRefusal(PlanRefusal.Code.PROFILE_REFUSED);
@@ -98,4 +101,15 @@ public final class PlanContentAdapter implements ContentAdapter {
         return new Content(projection.projection().documents().stream().map(document->new Source(document.documentId(),document.source(),document.digest())).toList(),projection.graph(),provenance);
     }
     private static ContentResult.Rejected rejected(String code) { return new ContentResult.Rejected(List.of(code)); }
+    private static List<PlanDiagnostic> diagnostics(List<GraphDiagnostic> diagnostics) {
+        return diagnostics.stream().limit(256).map(diagnostic -> {
+            String pointer = diagnostic.documentId().isBlank() ? "/documents" : "/documents/" + diagnostic.documentId();
+            if(!diagnostic.projectionId().isBlank()) pointer += "/projections/" + diagnostic.projectionId();
+            String message = diagnostic.projectionId().isBlank()
+                    ? "Projection refused while reading document " + display(diagnostic.documentId()) + "."
+                    : "Projection refused while reading document " + display(diagnostic.documentId()) + " and projection " + display(diagnostic.projectionId()) + ".";
+            return new PlanDiagnostic("semantic", diagnostic.code(), pointer, message);
+        }).toList();
+    }
+    private static String display(String value) { return value == null || value.isBlank() ? "the declared inventory" : value; }
 }

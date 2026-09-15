@@ -401,7 +401,8 @@
 }
 .v3-plan-context article,
 .v3-plan-counts,
-.v3-plan-blockers {
+.v3-plan-blockers,
+.v3-plan-diagnostics {
   min-width: 0;
   padding: 14px;
   border: 1px solid var(--border);
@@ -420,7 +421,8 @@
 }
 .v3-plan-card-note,
 .v3-plan-count-line,
-.v3-plan-blockers {
+.v3-plan-blockers,
+.v3-plan-diagnostics p {
   margin: 0;
   color: var(--muted);
 }
@@ -435,6 +437,37 @@
 }
 .v3-plan-blockers {
   color: #ffcc66;
+}
+.v3-plan-diagnostics {
+  display: grid;
+  gap: 10px;
+}
+.v3-plan-diagnostics h3 {
+  margin: 0;
+  font-size: 16px;
+}
+.v3-plan-diagnostics ul {
+  display: grid;
+  gap: 8px;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+.v3-plan-diagnostics li {
+  display: grid;
+  gap: 4px;
+  padding: 10px;
+  border: 1px solid rgba(255, 204, 102, 0.35);
+  border-radius: 8px;
+  background: rgba(255, 204, 102, 0.08);
+}
+.v3-plan-context section.v3-plan-diagnostics li code {
+  color: #b9c4ff;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.v3-plan-context section.v3-plan-diagnostics li span {
+  color: var(--muted);
 }
 .v3-plan-actions {
   display: flex;

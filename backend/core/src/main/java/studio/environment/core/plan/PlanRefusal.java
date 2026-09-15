@@ -8,6 +8,13 @@ public final class PlanRefusal extends RuntimeException {
         OBSERVATION_REFUSED, PROJECTION_REFUSED, INCOMPLETE_TARGET, RESOURCE_LIMIT, CLEANUP_INCONCLUSIVE,
         DISCLOSURE_REQUIRED, STALE_PREVIEW, PROFILE_REFUSED, EXPORT_UNAVAILABLE }
     private final Code code;
-    public PlanRefusal(Code code) { super(code.name(), null, false, false); this.code = code; }
+    private final java.util.List<PlanDiagnostic> diagnostics;
+    public PlanRefusal(Code code) { this(code, java.util.List.of()); }
+    public PlanRefusal(Code code, java.util.List<PlanDiagnostic> diagnostics) {
+        super(code.name(), null, false, false); this.code = code;
+        this.diagnostics = java.util.List.copyOf(diagnostics);
+        if (this.diagnostics.size() > 256) throw new IllegalArgumentException("Diagnostic limit exceeded.");
+    }
     public Code code() { return code; }
+    public java.util.List<PlanDiagnostic> diagnostics() { return diagnostics; }
 }

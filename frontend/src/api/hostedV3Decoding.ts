@@ -41,6 +41,16 @@ function string(min: number, max: number, pattern?: RegExp, excluded?: RegExp): 
       : invalid();
   };
 }
+function safeText(min: number, max: number): Decoder<string> {
+  return (value) => {
+    const decoded = string(min, max)(value);
+    for (let index = 0; index < decoded.length; index += 1) {
+      const unit = decoded.charCodeAt(index);
+      if ((unit < 0x20 && unit !== 0x09) || (unit >= 0xd800 && unit <= 0xdfff)) invalid();
+    }
+    return decoded;
+  };
+}
 function array<T>(
   decode: Decoder<T>,
   min: number,
@@ -218,6 +228,15 @@ const pObservedDestination = union(
     {},
   ),
 );
+const pPlanDiagnostic = object(
+  {
+    phase: choice("parse", "shape", "semantic", "publication"),
+    code: pCode,
+    pointer: safeText(0, 512),
+    message: safeText(1, 512),
+  },
+  {},
+);
 const pComputedCounts = object(
   { nodes: integer(0, 20000), memberships: integer(0, 50000), cooccurrences: integer(0, 50000) },
   {},
@@ -235,6 +254,7 @@ const pPlanSummary = object(
     targetComplete: boolean,
     exportAvailable: literal(false),
     blockers: array(pCode, 0, 256, false),
+    diagnostics: array(pPlanDiagnostic, 0, 256, false),
     observedDestination: pObservedDestination,
     currentComputedCounts: union(literal(null), pComputedCounts),
     targetComputedCounts: union(literal(null), pComputedCounts),

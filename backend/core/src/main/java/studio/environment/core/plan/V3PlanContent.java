@@ -22,6 +22,9 @@ public interface V3PlanContent {
                 references = List.copyOf(references);
             }
         }
-        record Refused(String code) implements Result { public Refused { Objects.requireNonNull(code); } }
+        record Refused(String code, List<PlanDiagnostic> diagnostics) implements Result {
+            public Refused { Objects.requireNonNull(code); diagnostics = List.copyOf(diagnostics); if (diagnostics.size() > 256) throw new IllegalArgumentException("Diagnostic limit exceeded."); }
+            public Refused(String code) { this(code, List.of()); }
+        }
     }
 }

@@ -644,7 +644,7 @@ const emptyV3Summary = () => ({
   bindingId: "invented.binding", destinationId: "invented.destination",
   currentCounts: { documents: 0, entities: 0, relations: 0 }, targetCounts: { documents: 0, entities: 0, relations: 0 },
   observedDestination: null, inspectionValid: false, targetComplete: false, exportAvailable: false,
-  blockers: ["INSPECTION_REQUIRED", "EXPORT_UNAVAILABLE"], currentComputedCounts: null, targetComputedCounts: null,
+  blockers: ["INSPECTION_REQUIRED", "EXPORT_UNAVAILABLE"], diagnostics: [], currentComputedCounts: null, targetComputedCounts: null,
 });
 test("v3 summary requires separate bounded computed counts and keeps absent distinct from empty", () => {
   const validate = planV3Schema("PlanSummary");

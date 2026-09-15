@@ -13,6 +13,22 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 class PlanControllerTest {
+
+    @Test void refusalsExposeSafeDiagnosticsWithoutSourceContent() throws Exception {
+        var ledger=new SessionLedger(Clock.systemUTC(),ignored->{});
+        PlanPorts.Workspace workspace=new PlanPorts.Workspace() {
+            public PlanPorts.PublishedDefinition definition(Owner owner,NativeCommand.Reference reference){throw new AssertionError("UNEXPECTED_WORKSPACE_READ");}
+            public PlanPorts.PublishedProfile profile(Owner owner,NativeCommand.Reference reference,PlanPorts.PublishedDefinition definition){throw new AssertionError("UNEXPECTED_WORKSPACE_READ");}
+        };
+        var service=new HostedPlanService(ledger::guard,workspace,Map.of(),new PlanContentAdapter(),System::nanoTime);
+        var controller=new PlanController(new PlanRuntime(service,List.of(),(owner,id)->false),new HostedSessions(Clock.systemUTC(),List.of()));
+        var response=new org.springframework.mock.web.MockHttpServletResponse();
+        controller.failure(new PlanRefusal(PlanRefusal.Code.PROJECTION_REFUSED,List.of(new PlanDiagnostic("semantic","REQUIRED_FIELD_MISSING","/documents/sheet-0/projections/items-0","Projection refused while reading document sheet-0 and projection items-0."))),response);
+        assertEquals(422,response.getStatus());
+        org.junit.jupiter.api.Assertions.assertEquals("application/json",response.getContentType());
+        org.junit.jupiter.api.Assertions.assertTrue(response.getContentAsString().contains("/documents/sheet-0/projections/items-0"));
+        org.junit.jupiter.api.Assertions.assertFalse(response.getContentAsString().contains("<items"));
+    }
     @Test void completionRegistrationFailureKeepsContainerTimeoutAndClosesApplicationAdmission()throws Exception {
         var ledger=new SessionLedger(Clock.systemUTC(),ignored->{});
         var lease=((SessionLedger.Accepted)ledger.admit("mock-failed-registration",new Owner("https://mock.invalid","registration-owner"))).lease();

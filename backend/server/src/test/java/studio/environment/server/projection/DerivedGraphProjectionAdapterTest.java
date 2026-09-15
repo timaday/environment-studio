@@ -65,9 +65,17 @@ class DerivedGraphProjectionAdapterTest {
         var sources = List.of(new DocumentSource("sheet-0", source)); var pin = pin(definition, sources);
         return assertInstanceOf(DerivedGraphProjectionAdapter.Complete.class, adapter.project(definition, pin, snapshot(pin, sources), () -> false));
     }
-    private void refused(NativeCompilationResult.Checked definition, String source, String code) {
+    private DerivedGraphProjectionAdapter.Refused refused(NativeCompilationResult.Checked definition, String source, String code) {
         var sources = List.of(new DocumentSource("sheet-0", source)); var pin = pin(definition, sources);
-        assertEquals(new DerivedGraphProjectionAdapter.Refused(code), adapter.project(definition, pin, snapshot(pin, sources), () -> false));
+        var result = assertInstanceOf(DerivedGraphProjectionAdapter.Refused.class, adapter.project(definition, pin, snapshot(pin, sources), () -> false));
+        assertEquals(code, result.code());
+        if (!result.diagnostics().isEmpty()) {
+            assertEquals(code, result.diagnostics().getFirst().code());
+            assertEquals("semantic", result.diagnostics().getFirst().phase());
+            assertTrue(result.diagnostics().getFirst().pointer().startsWith("/documents"));
+        }
+        assertFalse(result.toString().contains(source));
+        return result;
     }
     @Test void actualDirectXmlProducesCompletePhysicalAndComputedPartitionsWithExactSourceProofs() {
         var result = project(definition(false, 1, false), DIRECT);
@@ -126,6 +134,16 @@ class DerivedGraphProjectionAdapterTest {
         refused(definition(false, 1, false), "<items xmlns='urn:mock'><item id='one' tone=''/></items>", "INVALID_DERIVED_IDENTITY");
         refused(definition(false, 1, false), "<items xmlns='urn:mock'><item id='same' tone='alpha'/><item id='same' tone='beta'/></items>", "DUPLICATE_IDENTITY");
     }
+
+    @Test void physicalProjectionRefusalsCarrySafeDocumentAndProjectionDiagnostics() {
+        var result = refused(definition(true, 1, true), CHILD.replace(" p:value=\"al&#x70;ha\"", ""), "REQUIRED_FIELD_MISSING");
+        var diagnostic = result.diagnostics().getFirst();
+        assertTrue(diagnostic.pointer().contains("/projections/"));
+        assertTrue(diagnostic.message().contains("sheet-0"));
+        assertTrue(diagnostic.message().contains("items-0"));
+        assertFalse(diagnostic.message().contains("al&#x70;ha"));
+        assertThrows(UnsupportedOperationException.class, () -> result.diagnostics().clear());
+    }
     @Test void independentSnapshotMetadataCannotBeReplacedWithExpectedPins() {
         var definition = definition(false, 1, false); var sources = List.of(new DocumentSource("sheet-0", DIRECT)); var pin = pin(definition, sources);
         var stale = new DerivedGraphProjectionAdapter.Snapshot("observation-older", pin.logicalDigest(), pin.bindingId(), pin.bindingDigest(), sources);
@@ -135,8 +153,11 @@ class DerivedGraphProjectionAdapterTest {
     }
     @Test void fullInventoryAndPhysicalValidationPrecedeDerivedSuccess() {
         var definition = definition(false, 1, false); var sources = List.of(new DocumentSource("sheet-0", DIRECT)); var pin = pin(definition, sources);
-        for (var incomplete : List.of(List.<DocumentSource>of(), List.of(new DocumentSource("foreign", DIRECT)), List.of(sources.getFirst(), sources.getFirst())))
-            assertEquals(new DerivedGraphProjectionAdapter.Refused("INVENTORY_MISMATCH"), adapter.project(definition, pin, snapshot(pin, incomplete), () -> false));
+        for (var incomplete : List.of(List.<DocumentSource>of(), List.of(new DocumentSource("foreign", DIRECT)), List.of(sources.getFirst(), sources.getFirst()))) {
+            var result = assertInstanceOf(DerivedGraphProjectionAdapter.Refused.class, adapter.project(definition, pin, snapshot(pin, incomplete), () -> false));
+            assertEquals("INVENTORY_MISMATCH", result.code());
+            assertEquals("/documents", result.diagnostics().getFirst().pointer());
+        }
         refused(definition, "<items xmlns='urn:mock'><item tone='alpha'/></items>", "INVALID_IDENTITY");
     }
     @Test void hostileIneligibleDeclarationIsRefusedBeforeMalformedXmlIsParsed() {
@@ -154,7 +175,8 @@ class DerivedGraphProjectionAdapterTest {
         var definition = definition(false, 1, false); var sources = List.of(new DocumentSource("sheet-0", DIRECT)); var pin = pin(definition, sources);
         assertEquals(new DerivedGraphProjectionAdapter.Refused("CANCELLED"), adapter.project(definition, pin, snapshot(pin, sources), () -> true));
         var calls = new java.util.concurrent.atomic.AtomicInteger();
-        assertEquals(new DerivedGraphProjectionAdapter.Refused("CANCELLED"), adapter.project(definition, pin, snapshot(pin, sources), () -> calls.incrementAndGet() > 4));
+        var cancelled = assertInstanceOf(DerivedGraphProjectionAdapter.Refused.class, adapter.project(definition, pin, snapshot(pin, sources), () -> calls.incrementAndGet() > 4));
+        assertEquals("CANCELLED", cancelled.code());
         refused(definition, "x".repeat(1_048_577), "RESOURCE_LIMIT");
     }
     @Test void retainedSourceAndResultWrappersAreImmutableAndRedacted() {

@@ -2634,6 +2634,14 @@
         "properties": {
           "code": {
             "$ref": "#/components/schemas/Code"
+          },
+          "diagnostics": {
+            "type": "array",
+            "maxItems": 256,
+            "items": {
+              "$ref": "#/components/schemas/PlanDiagnostic"
+            },
+            "description": "Optional safe diagnostics for refused requests when the backend can identify a declaration location. Empty or absent means only the refusal code is available."
           }
         }
       },
@@ -2684,6 +2692,7 @@
           "targetComplete",
           "exportAvailable",
           "blockers",
+          "diagnostics",
           "observedDestination",
           "currentComputedCounts",
           "targetComputedCounts"
@@ -2754,6 +2763,14 @@
               }
             ],
             "description": "Null means no complete retained partition; a present all-zero object is an empty complete partition."
+          },
+          "diagnostics": {
+            "type": "array",
+            "maxItems": 256,
+            "items": {
+              "$ref": "#/components/schemas/PlanDiagnostic"
+            },
+            "description": "Safe plan-level diagnostics for operator location hints. These never contain observed XML/database values."
           }
         }
       },
@@ -2950,6 +2967,41 @@
             "type": "integer",
             "minimum": 0,
             "maximum": 50000
+          }
+        }
+      },
+      "PlanDiagnostic": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "phase",
+          "code",
+          "pointer",
+          "message"
+        ],
+        "properties": {
+          "phase": {
+            "type": "string",
+            "enum": [
+              "parse",
+              "shape",
+              "semantic",
+              "publication"
+            ]
+          },
+          "code": {
+            "$ref": "#/components/schemas/Code"
+          },
+          "pointer": {
+            "type": "string",
+            "maxLength": 512,
+            "description": "Declaration-oriented JSON pointer such as /documents/{documentId}/projections/{projectionId}; not a source XML excerpt."
+          },
+          "message": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512,
+            "description": "Operator-safe explanation without observed XML/database values."
           }
         }
       },

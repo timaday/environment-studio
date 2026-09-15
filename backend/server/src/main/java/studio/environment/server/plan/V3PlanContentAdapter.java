@@ -46,7 +46,7 @@ public final class V3PlanContentAdapter implements V3PlanContent {
             var pin=new DerivedInput.Pin(observation.fingerprint(),checked.logicalDigest(),binding,observation.bindingDigest(),digests);
             var snapshot=new DerivedGraphProjectionAdapter.Snapshot(pin.revisionToken(),pin.logicalDigest(),binding,pin.bindingDigest(),sources);
             var projected=new DerivedGraphProjectionAdapter().project(checked,pin,snapshot,cancellation::cancelled);
-            if(projected instanceof DerivedGraphProjectionAdapter.Refused rejected) return refused(rejected.code());
+            if(projected instanceof DerivedGraphProjectionAdapter.Refused rejected) return refused(rejected.code(), rejected.diagnostics());
             var complete=(DerivedGraphProjectionAdapter.Complete)projected;
             var provenance=new HashMap<ObservedGraph.Key,TargetIntent.Ref>();
             for(var entity:complete.physical().entities()) if(provenance.putIfAbsent(entity.key(),new TargetIntent.Ref.Existing(entity.key()))!=null) fail("PROJECTION_MISMATCH");
@@ -80,7 +80,7 @@ public final class V3PlanContentAdapter implements V3PlanContent {
             if(!supplied.equals(expectedCurrent.documentDigests().keySet())) fail("INVENTORY_MISMATCH");
             var snapshot=new DerivedGraphProjectionAdapter.Snapshot(expectedCurrent.revisionToken(),expectedCurrent.logicalDigest(),expectedCurrent.bindingId(),expectedCurrent.bindingDigest(),sources);
             var reprojected=new DerivedGraphProjectionAdapter().project(definition.checked(),expectedCurrent,snapshot,cancellation::cancelled);
-            if(reprojected instanceof DerivedGraphProjectionAdapter.Refused rejected) return refused(rejected.code());
+            if(reprojected instanceof DerivedGraphProjectionAdapter.Refused rejected) return refused(rejected.code(), rejected.diagnostics());
             var verified=(DerivedGraphProjectionAdapter.Complete)reprojected;
             originalMatches(original,observed,verified,cancellation);
             var bases=new HashMap<String,Optional<String>>();supplied.forEach(id->bases.put(id,Optional.empty()));
@@ -146,6 +146,7 @@ public final class V3PlanContentAdapter implements V3PlanContent {
     private static boolean digest(String value) { return value!=null && value.matches("[0-9a-f]{64}"); }
     private static void live(Cancellation cancellation) { if(cancellation.cancelled()) fail("CANCELLED"); }
     private static Result.Refused refused(String code) { return new Result.Refused(code); }
+    private static Result.Refused refused(String code, List<PlanDiagnostic> diagnostics) { return new Result.Refused(code, diagnostics); }
     private static void fail(String code) { throw new Failure(code); }
     private static final class Failure extends RuntimeException {
         final String code;

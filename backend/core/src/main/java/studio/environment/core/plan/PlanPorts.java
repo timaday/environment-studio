@@ -70,7 +70,10 @@ public final class PlanPorts {
     }
     public sealed interface ContentResult {
         record Complete(Content content) implements ContentResult { }
-        record Rejected(List<String> codes) implements ContentResult { public Rejected { codes = List.copyOf(codes); } }
+        record Rejected(List<String> codes, List<PlanDiagnostic> diagnostics) implements ContentResult {
+            public Rejected { codes = List.copyOf(codes); diagnostics = List.copyOf(diagnostics); if (diagnostics.size() > 256) throw new PlanRefusal(PlanRefusal.Code.RESOURCE_LIMIT); }
+            public Rejected(List<String> codes) { this(codes, List.of()); }
+        }
     }
     public interface ContentAdapter {
         default void verifyV3(HostedPlanService.ViewSnapshot snapshot, boolean target, ObservationPort.Cancellation cancellation) {

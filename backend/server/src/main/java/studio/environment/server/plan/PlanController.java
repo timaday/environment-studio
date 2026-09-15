@@ -165,11 +165,13 @@ public final class PlanController {
     public void failure(RuntimeException failure,HttpServletResponse response) throws IOException {refuse(response,failure);}
     private static void refuse(HttpServletResponse response,RuntimeException failure) throws IOException {
         int status=500; String code="PLAN_INTERNAL_REFUSAL";
+        List<PlanDiagnostic> diagnostics=List.of();
         if(failure instanceof PlanRuntime.Unavailable) {status=503;code="PLAN_SERVICES_UNAVAILABLE";}
         else if(failure instanceof PlanRuntime.DestinationDenied) {status=403;code="DESTINATION_DENIED";}
         else if(failure instanceof PlanBodyFailure body) {status=body.code()==PlanBodyFailure.Code.BODY_TOO_LARGE?413:body.code()==PlanBodyFailure.Code.CANCELLED?409:400;code=body.code().name();response.setHeader("Connection","close");}
         else if(failure instanceof PlanRefusal refused) {
             code=refused.code().name();
+            diagnostics=refused.diagnostics();
             status=switch(refused.code()) {
                 case SESSION_REQUIRED -> 401; case NOT_FOUND -> 404;
                 case CONFLICT,PLAN_BUSY,CREDENTIALS_ALREADY_CONSUMED,RESERVATION_EXPIRED,STALE_PREVIEW,CANCELLED -> 409;
@@ -177,7 +179,18 @@ public final class PlanController {
                 default -> 422;
             };
         }
-        write(response,status,Map.of("code",code));
+        var body=new LinkedHashMap<String,Object>();
+        body.put("code",code);
+        if(!diagnostics.isEmpty()) body.put("diagnostics",diagnostics.stream().map(PlanController::diagnostic).toList());
+        write(response,status,body);
+    }
+    private static Map<String,Object> diagnostic(PlanDiagnostic diagnostic) {
+        var result=new LinkedHashMap<String,Object>();
+        result.put("phase",diagnostic.phase());
+        result.put("code",diagnostic.code());
+        result.put("pointer",diagnostic.pointer());
+        result.put("message",diagnostic.message());
+        return Collections.unmodifiableMap(result);
     }
     private static void write(HttpServletResponse response,int status,Object value) throws IOException {
         if(value instanceof PlanResponse owned){owned.write(response,status);return;}

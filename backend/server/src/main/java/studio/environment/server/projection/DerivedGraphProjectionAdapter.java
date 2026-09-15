@@ -13,6 +13,8 @@ import studio.environment.core.definitionv3.NativeCompilationResult;
 import studio.environment.core.derived.DerivedInput;
 import studio.environment.core.derived.DerivedResult;
 import studio.environment.core.graph.ObservedGraph;
+import studio.environment.core.graph.GraphDiagnostic;
+import studio.environment.core.plan.PlanDiagnostic;
 import studio.environment.core.derived.DerivedGraphEngine;
 import studio.environment.core.definitionv2.NativeDefinition;
 import studio.environment.core.definitionv3.NativeDefinitionCompiler;
@@ -38,12 +40,15 @@ public final class DerivedGraphProjectionAdapter {
         public Complete { Objects.requireNonNull(physical); Objects.requireNonNull(sources); Objects.requireNonNull(input); Objects.requireNonNull(derived); }
         @Override public String toString() { return "DerivedProjection[redacted]"; }
     }
-    public record Refused(String code) implements Result { public Refused { Objects.requireNonNull(code); } }
+    public record Refused(String code, List<PlanDiagnostic> diagnostics) implements Result {
+        public Refused { Objects.requireNonNull(code); diagnostics = List.copyOf(diagnostics); if (diagnostics.size() > 256) throw new IllegalArgumentException("Diagnostic limit exceeded."); }
+        public Refused(String code) { this(code, List.of()); }
+    }
     public Result project(NativeCompilationResult.Checked definition, DerivedInput.Pin expected,
             Snapshot supplied, BooleanSupplier cancelled) {
         if (definition == null || expected == null || supplied == null || cancelled == null) return new Refused("INVALID_INPUT");
         try { return observe(definition, expected, supplied, cancelled); }
-        catch (Failure failure) { return new Refused(failure.code); }
+        catch (Failure failure) { return new Refused(failure.code, failure.diagnostics); }
     }
     private Complete observe(NativeCompilationResult.Checked definition, DerivedInput.Pin expected,
             Snapshot supplied, BooleanSupplier cancelled) {
@@ -64,7 +69,7 @@ public final class DerivedGraphProjectionAdapter {
         var physicalLogical = new NativeDefinition.Logical(logical.entityTypes(), logical.relations(), logical.rules(), logical.operationCapabilities());
         var projected = new PhysicalGraphProjection().project(physicalLogical, binding, definition.logicalDigest(),
                 definition.bindingDigests().get(binding.id()), supplied.documents(), cancelled);
-        if (projected instanceof ProjectionResult.Rejected rejected) fail(rejected.diagnostics().getFirst().code());
+        if (projected instanceof ProjectionResult.Rejected rejected) fail(rejected.diagnostics().isEmpty() ? "PROJECTION_REFUSED" : rejected.diagnostics().getFirst().code(), diagnostics(rejected.diagnostics()));
         var physical = (ProjectionResult.Accepted) projected;
         Map<String, String> actualDigests = new TreeMap<>();
         for (var source : physical.projection().documents()) {
@@ -148,10 +153,23 @@ public final class DerivedGraphProjectionAdapter {
         return new NativeDefinition.ExpandedName(name.namespaceUri(), name.localName());
     }
     private static void cancellation(BooleanSupplier cancelled) { if (cancelled.getAsBoolean()) fail("CANCELLED"); }
-    private static void fail(String code) { throw new Failure(code); }
+    private static void fail(String code) { throw new Failure(code, List.of()); }
+    private static void fail(String code, List<PlanDiagnostic> diagnostics) { throw new Failure(code, diagnostics); }
+    private static List<PlanDiagnostic> diagnostics(List<GraphDiagnostic> diagnostics) {
+        return diagnostics.stream().limit(256).map(diagnostic -> {
+            String pointer = diagnostic.documentId().isBlank() ? "/documents" : "/documents/" + diagnostic.documentId();
+            if (!diagnostic.projectionId().isBlank()) pointer += "/projections/" + diagnostic.projectionId();
+            String message = diagnostic.projectionId().isBlank()
+                    ? "Projection refused while reading document " + display(diagnostic.documentId()) + "."
+                    : "Projection refused while reading document " + display(diagnostic.documentId()) + " and projection " + display(diagnostic.projectionId()) + ".";
+            return new PlanDiagnostic("semantic", diagnostic.code(), pointer, message);
+        }).toList();
+    }
+    private static String display(String value) { return value == null || value.isBlank() ? "the declared inventory" : value; }
     private static final class Failure extends RuntimeException {
         private final String code;
-        private Failure(String code) { super(null, null, false, false); this.code = code; }
+        private final List<PlanDiagnostic> diagnostics;
+        private Failure(String code, List<PlanDiagnostic> diagnostics) { super(null, null, false, false); this.code = code; this.diagnostics = List.copyOf(diagnostics); }
     }
 
 }

@@ -26,9 +26,9 @@ class V3PlanReplyTest {
     }
     @Test void summaryKeepsMissingAndCompleteEmptyComputedPartitionsDistinct() throws Exception {
         var physical=new HostedPlanService.View("plan-a","2",new NativeCommand.Reference("00000000-0000-4000-8000-000000000009","2"),"binding-a","destination-a",Optional.empty(),
-                new HostedPlanService.Counts(1,2,3),new HostedPlanService.Counts(0,0,0),true,false,false,List.of("EXPORT_UNAVAILABLE"),Optional.empty());
+                new HostedPlanService.Counts(1,2,3),new HostedPlanService.Counts(0,0,0),true,false,false,List.of("EXPORT_UNAVAILABLE"),List.of(),Optional.empty());
         var reply=new V3PlanReply.Summary(new HostedPlanService.V3View(physical,Optional.of(new HostedPlanService.ComputedCounts(0,0,0)),Optional.empty()));
-        String expected="{\"planId\":\"plan-a\",\"revision\":\"2\",\"definition\":{\"objectId\":\"00000000-0000-4000-8000-000000000009\",\"workspaceRevision\":\"2\"},\"bindingId\":\"binding-a\",\"destinationId\":\"destination-a\",\"currentCounts\":{\"documents\":1,\"entities\":2,\"relations\":3},\"targetCounts\":{\"documents\":0,\"entities\":0,\"relations\":0},\"observedDestination\":null,\"inspectionValid\":true,\"targetComplete\":false,\"exportAvailable\":false,\"blockers\":[\"EXPORT_UNAVAILABLE\"],\"currentComputedCounts\":{\"nodes\":0,\"memberships\":0,\"cooccurrences\":0},\"targetComputedCounts\":null}";
+        String expected="{\"planId\":\"plan-a\",\"revision\":\"2\",\"definition\":{\"objectId\":\"00000000-0000-4000-8000-000000000009\",\"workspaceRevision\":\"2\"},\"bindingId\":\"binding-a\",\"destinationId\":\"destination-a\",\"currentCounts\":{\"documents\":1,\"entities\":2,\"relations\":3},\"targetCounts\":{\"documents\":0,\"entities\":0,\"relations\":0},\"observedDestination\":null,\"inspectionValid\":true,\"targetComplete\":false,\"exportAvailable\":false,\"blockers\":[\"EXPORT_UNAVAILABLE\"],\"diagnostics\":[],\"currentComputedCounts\":{\"nodes\":0,\"memberships\":0,\"cooccurrences\":0},\"targetComputedCounts\":null}";
         assertEquals(expected,encoded(reply));assertFalse(reply.toString().contains("destination-a"));
     }
     @Test void allRepliesRequireActualV3OwnershipAndPureChecksDoNotExpireReservation() throws Exception {

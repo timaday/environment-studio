@@ -336,6 +336,24 @@ export function V3PlanInspection({
           {plan.blockers.length > 0 && (
             <p className="v3-plan-blockers">Backend blockers: {plan.blockers.join(", ")}</p>
           )}
+          {plan.diagnostics.length > 0 && (
+            <section className="v3-plan-diagnostics" aria-label="Inspection diagnostics">
+              <h3>Where to look</h3>
+              <p>
+                Inspection stayed blocked. These safe location hints name the declared document or
+                projection to review.
+              </p>
+              <ul>
+                {plan.diagnostics.map((diagnostic) => (
+                  <li key={`${diagnostic.phase}:${diagnostic.code}:${diagnostic.pointer}`}>
+                    <strong>{diagnostic.code}</strong>
+                    <code>{diagnostic.pointer}</code>
+                    <span>{diagnostic.message}</span>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
           {plan.observedDestination && (
             <details>
               <summary>Observed destination evidence</summary>

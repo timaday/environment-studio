@@ -2,6 +2,7 @@ package studio.environment.server.plan;
 
 import java.util.*;
 import studio.environment.core.plan.HostedPlanService;
+import studio.environment.core.plan.PlanDiagnostic;
 import studio.environment.core.session.SessionLedger;
 import static studio.environment.core.plan.PlanDefinition.Version.V3;
 
@@ -61,6 +62,14 @@ sealed interface V3PlanReply {
         }
         @Override public String toString(){return "V3PlanReply.Status[redacted]";}
     }
+    private static Map<String,Object> diagnostic(PlanDiagnostic diagnostic) {
+        var result=new LinkedHashMap<String,Object>();
+        result.put("phase",diagnostic.phase());
+        result.put("code",diagnostic.code());
+        result.put("pointer",diagnostic.pointer());
+        result.put("message",diagnostic.message());
+        return Collections.unmodifiableMap(result);
+    }
     record Summary(HostedPlanService.V3View value) implements V3PlanReply {
         public Summary { Objects.requireNonNull(value); }
         public Map<String,Object> wire() {
@@ -74,6 +83,7 @@ sealed interface V3PlanReply {
             result.put("observedDestination",view.observedDestination().orElse(null));
             result.put("inspectionValid",view.inspectionValid());result.put("targetComplete",view.targetComplete());
             result.put("exportAvailable",false);result.put("blockers",view.blockers());
+            result.put("diagnostics",view.diagnostics().stream().map(V3PlanReply::diagnostic).toList());
             view.activeOperationId().ifPresent(id->result.put("activeOperationId",id));
             result.put("currentComputedCounts",value.currentComputedCounts().orElse(null));
             result.put("targetComputedCounts",value.targetComputedCounts().orElse(null));

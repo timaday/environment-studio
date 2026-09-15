@@ -66,6 +66,48 @@ function stateFixture(
   };
 }
 
+it("shows safe projection diagnostics when inspection remains blocked", () => {
+  const state = stateFixture({
+    phase: "loaded",
+    plan: {
+      planId: "50000000-0000-0000-0000-000000000001",
+      revision: "1",
+      definition: { objectId: "50000000-0000-0000-0000-000000000002", workspaceRevision: "2" },
+      bindingId: "mock",
+      destinationId: "mock",
+      currentCounts: { documents: 0, entities: 0, relations: 0 },
+      targetCounts: { documents: 0, entities: 0, relations: 0 },
+      inspectionValid: false,
+      targetComplete: false,
+      exportAvailable: false,
+      blockers: ["PROJECTION_REFUSED", "INSPECTION_REQUIRED"],
+      diagnostics: [
+        {
+          phase: "semantic",
+          code: "REQUIRED_FIELD_MISSING",
+          pointer: "/documents/sheet-0/projections/items-0",
+          message: "Projection refused while reading document sheet-0 and projection items-0.",
+        },
+      ],
+      observedDestination: null,
+      currentComputedCounts: null,
+      targetComputedCounts: null,
+    },
+  });
+  render(
+    <V3PlanInspection
+      api={{} as never}
+      state={state}
+      versionSelector={null}
+      openDefinitions={vi.fn()}
+      inspectionUiEnabled
+    />,
+  );
+  expect(screen.getByRole("region", { name: "Inspection diagnostics" })).toBeVisible();
+  expect(screen.getByText("Where to look")).toBeVisible();
+  expect(screen.getByText("/documents/sheet-0/projections/items-0")).toBeVisible();
+});
+
 it("does not report unobserved physical counts as a measured empty graph", () => {
   const state = stateFixture({
     phase: "loaded",
@@ -81,6 +123,7 @@ it("does not report unobserved physical counts as a measured empty graph", () =>
       targetComplete: false,
       exportAvailable: false,
       blockers: ["MISSING_OBSERVATION"],
+      diagnostics: [],
       observedDestination: null,
       currentComputedCounts: null,
       targetComputedCounts: null,
@@ -132,6 +175,7 @@ it("keeps the inspected workspace visible while refresh is pending", () => {
       targetComplete: true,
       exportAvailable: false,
       blockers: [],
+      diagnostics: [],
       observedDestination: {
         engine: "postgresql",
         identity: { systemIdentifier: "7", databaseOid: "8", databaseName: "mock" },
@@ -212,6 +256,7 @@ it("hides target actions until current inspection is valid", () => {
       targetComplete: false,
       exportAvailable: false,
       blockers: ["INSPECTION_REQUIRED"],
+      diagnostics: [],
       observedDestination: null,
       currentComputedCounts: null,
       targetComputedCounts: null,
@@ -426,6 +471,7 @@ it("offers all three document modes without loading before disclosure", () => {
       targetComplete: true,
       exportAvailable: false,
       blockers: [],
+      diagnostics: [],
       observedDestination: {
         engine: "postgresql",
         identity: { systemIdentifier: "7", databaseOid: "8", databaseName: "mock" },

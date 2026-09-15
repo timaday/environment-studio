@@ -19,6 +19,7 @@ const plan: PlanSummary = {
   targetComplete: false,
   exportAvailable: false,
   blockers: [],
+  diagnostics: [],
   observedDestination: {
     engine: "postgresql",
     identity: { systemIdentifier: "1", databaseOid: "2", databaseName: "invented_db" },

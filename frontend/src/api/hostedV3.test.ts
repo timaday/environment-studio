@@ -43,6 +43,7 @@ const summary = {
   targetComplete: false,
   exportAvailable: false,
   blockers: ["INCOMPLETE_TARGET"],
+  diagnostics: [],
   observedDestination: {
     engine: "postgresql",
     identity: { systemIdentifier: "7", databaseOid: "8", databaseName: "mock" },
@@ -247,6 +248,17 @@ it("schema checks the independent request and response fixtures against the actu
   }))
     shape("workflow", name, value);
   for (const value of previews) shape("workflow", "previewResponse", value);
+});
+
+it("decodes safe plan diagnostics that identify the refused projection location", async () => {
+  const diagnostic = {
+    phase: "semantic",
+    code: "REQUIRED_FIELD_MISSING",
+    pointer: "/documents/sheet-0/projections/items-0",
+    message: "Projection refused while reading document sheet-0 and projection items-0.",
+  } as const;
+  const { api } = await client({ ...summary, diagnostics: [diagnostic] });
+  await expect(api.current()).resolves.toMatchObject({ diagnostics: [diagnostic] });
 });
 
 it("refuses a successful legacy summary missing required v3 evidence", async () => {

@@ -42,7 +42,9 @@ public final class HostedPlanService {
             int documents, int entities, boolean exportAvailable) { }
     public record Counts(int documents,int entities,int relations) { }
     public record View(String planId,String revision,NativeCommand.Reference definition,String bindingId,String destinationId,
-            Optional<PlanObservedDestination> observedDestination,Counts currentCounts,Counts targetCounts,boolean inspectionValid,boolean targetComplete,boolean exportAvailable,List<String> blockers,Optional<String> activeOperationId) { }
+            Optional<PlanObservedDestination> observedDestination,Counts currentCounts,Counts targetCounts,boolean inspectionValid,boolean targetComplete,boolean exportAvailable,List<String> blockers,List<PlanDiagnostic> diagnostics,Optional<String> activeOperationId) {
+        public View { blockers = List.copyOf(blockers); diagnostics = List.copyOf(diagnostics); }
+    }
     /** Package candidate context is server-owned evidence only; it is not export approval. */
     public record PackageContext(String planId,String revision,String bindingId,String destinationId,String logicalDigest,String bindingDigest,
             String definitionPublicationDigest,List<String> profilePublicationDigests,PlanObservedDestination observedDestination) {
@@ -88,7 +90,7 @@ public final class HostedPlanService {
         if(plan.target==null) blockers.add("TARGET_INCOMPLETE");
         if(blockers.size()>256 || blockers.stream().anyMatch(code->!code.matches("[A-Z][A-Z0-9_]{0,95}"))) throw new PlanRefusal(PROJECTION_REFUSED);
         return new View(plan.id,plan.revision.toString(),plan.definition.reference(),plan.binding,plan.destination.id(),Optional.ofNullable(plan.observedDestination).map(observed->observed.validity(plan.inspectionValid)),counts(plan.current),counts(plan.target),
-                plan.inspectionValid,plan.target!=null,false,List.copyOf(blockers),Optional.ofNullable(plan.active).map(operation->operation.id));
+                plan.inspectionValid,plan.target!=null,false,List.copyOf(blockers),plan.projectionDiagnostics,Optional.ofNullable(plan.active).map(operation->operation.id));
     }
     private static Counts counts(Content content) { return content==null?new Counts(0,0,0):new Counts(content.sources().size(),content.graph().entities().size(),content.graph().edges().size()); }
     /** Verification never holds the session/state locks while the adapter publishes bytes. */
@@ -122,6 +124,7 @@ public final class HostedPlanService {
         ObservationPort.Cancellation workCancellation;
         int readers;
         List<String> diagnostics=List.of();
+        List<PlanDiagnostic> projectionDiagnostics=List.of();
         final Set<String> profiles=new TreeSet<>();
         final Map<studio.environment.core.planning.TargetIntent.Ref,String> handles=new HashMap<>();
         final Map<String,studio.environment.core.planning.TargetIntent.Ref.Existing> originals=new HashMap<>();
@@ -465,16 +468,19 @@ public final class HostedPlanService {
                 enteredBytes-=plan.enteredBytes; plan.enteredBytes=0;
                 plan.current=accepted.content(); plan.target=v3?null:accepted.content(); plan.draft=Draft.empty(); plan.profiles.clear();
                 if(v3)plan.diagnostics=List.of("TARGET_INCOMPLETE");
+                plan.projectionDiagnostics=List.of();
                 plan.handles.clear(); plan.handles.putAll(observedHandles); plan.originals.clear();
                 observedHandles.forEach((ref,handle)->plan.originals.put(handle,(studio.environment.core.planning.TargetIntent.Ref.Existing)ref));
                 plan.observationFingerprint=complete.observation().fingerprint(); plan.observedDestination=observedContext.orElseThrow(); plan.inspectionValid=true;
                 plan.revision=plan.revision.add(BigInteger.ONE); operation.installed=Optional.of(plan.revision.toString());
                 operation.phase=Phase.SUCCEEDED; operation.code="SUCCEEDED";
-            } else { operation.phase=Phase.REFUSED; operation.code="RESOURCE_LIMIT"; plan.inspectionValid=false; }
+            } else { operation.phase=Phase.REFUSED; operation.code="RESOURCE_LIMIT"; plan.inspectionValid=false; plan.diagnostics=List.of("RESOURCE_LIMIT"); plan.projectionDiagnostics=List.of(); }
         } else {
             operation.phase=cancelled?Phase.CANCELLED:Phase.REFUSED;
-            operation.code=cancelled?"CANCELLED":result instanceof ObservationResult.Refused refusal?refusal.code().name():"PROJECTION_REFUSED";
+            operation.code=cancelled?"CANCELLED":result instanceof ObservationResult.Refused refusal?refusal.code().name():projected instanceof ContentResult.Rejected rejected && !rejected.codes().isEmpty()?rejected.codes().getFirst():"PROJECTION_REFUSED";
             plan.inspectionValid=false;
+            plan.diagnostics=cancelled?List.of("CANCELLED"):result instanceof ObservationResult.Refused refusal?List.of(refusal.code().name()):projected instanceof ContentResult.Rejected rejected?rejected.codes():List.of("PROJECTION_REFUSED");
+            plan.projectionDiagnostics=projected instanceof ContentResult.Rejected rejected?rejected.diagnostics():List.of();
         }
         if(operation.cleanup==Cleanup.COMPLETE) releaseOperation(operation);
         clearRetired(plan);
@@ -501,7 +507,7 @@ public final class HostedPlanService {
     private void clearRetired(Plan plan) {
         if(plan==null || !plan.retired || plan.active!=null || plan.rendering || plan.readers>0) return;
         retainedBytes-=plan.retainedBytes; enteredBytes-=plan.enteredBytes;
-        plan.review=null; plan.retainedBytes=0; plan.enteredBytes=0; plan.current=null; plan.target=null; plan.draft=Draft.empty(); plan.profiles.clear(); plan.observationFingerprint=null; plan.observedDestination=null;
+        plan.review=null; plan.retainedBytes=0; plan.enteredBytes=0; plan.current=null; plan.target=null; plan.draft=Draft.empty(); plan.profiles.clear(); plan.observationFingerprint=null; plan.observedDestination=null; plan.projectionDiagnostics=List.of();
         plan.handles.clear(); plan.originals.clear();
         leases.values().forEach(state->{ if(state.plan==plan) state.plan=null; });
     }

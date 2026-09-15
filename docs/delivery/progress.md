@@ -1474,3 +1474,11 @@ Ready: XML text documents may now contain one inert top-level `DOCTYPE` declarat
 Acceptance examples: `<!DOCTYPE ...><root/>` projects and no-op exports with the same bytes; replacing a qualified attribute preserves the original `DOCTYPE` in the target; `<!DOCTYPE ... [<!ENTITY e ...>]><root>&e;</root>` still refuses without leaking source content; a `DOCTYPE` after the root refuses.
 
 Evidence: focused XML/projection tests passed with 44 tests: `LosslessXmlAdapterTest` and `GraphProjectionAdapterTest`. Repository integrity, repository content and script unit checks passed. `scripts/studio.sh fast-package` passed and rebuilt the runnable hosted image path with startup/static UI/health/demo/denial/workspace checks.
+
+## Projection refusal location diagnostics — 15 September
+
+Ready: projection and mapping refusals remain fail-closed blockers, but v3 plan summaries and refused plan responses now carry bounded safe diagnostics so operators can see where to look. Diagnostics include phase, code, declaration-oriented pointer and an operator-safe message. They identify the declared inventory, document and projection where available, without observed XML/database values or source snippets. The hosted inspection view shows these hints in a compact “Where to look” panel when inspection remains blocked.
+
+Acceptance examples: a missing required mapped field reports `REQUIRED_FIELD_MISSING` with a pointer such as `/documents/sheet-0/projections/items-0`; an inventory mismatch can report `/documents`; stale pins, cancellation and failures before source processing may still have no source pointer. All such cases continue to block inspection validity, validation and export until corrected.
+
+Evidence: RED/green backend focus passed with 25 tests: `DerivedGraphProjectionAdapterTest`, `PlanControllerTest`, `V3PlanReplyTest` and `IndependentV3PlanReplyTest`. Frontend check passed. Frontend tests passed with 486 Vitest tests and 61 schema contract tests, including explicit v3 summary decoding and inspection-screen rendering of safe diagnostics.

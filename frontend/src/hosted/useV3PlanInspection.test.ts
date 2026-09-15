@@ -22,6 +22,7 @@ const summary = {
   targetComplete: true,
   exportAvailable: false,
   blockers: [],
+  diagnostics: [],
   observedDestination: {
     engine: "postgresql",
     identity: {

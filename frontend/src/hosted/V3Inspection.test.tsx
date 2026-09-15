@@ -17,6 +17,7 @@ const plan: PlanSummary = {
   targetComplete: false,
   exportAvailable: false,
   blockers: ["INSPECTION_REQUIRED"],
+  diagnostics: [],
   observedDestination: null,
   currentComputedCounts: null,
   targetComputedCounts: null,
