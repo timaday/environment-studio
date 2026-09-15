@@ -195,10 +195,13 @@ diagnostic XML_NAMESPACE_UNSUPPORTED pointing at that expanded name's namespaceU
 - `http://www.w3.org/2001/04/xmlenc#`
 - `http://www.w3.org/2009/xmlenc11#`
 
-These are element-vocabulary refusals. Attribute names and namespace declarations
+These are definition element-vocabulary refusals. Attribute names and namespace declarations
 retain their existing independently qualified behavior; a declaration alone does
-not invoke an unsupported mechanism. Compiler and parser use the same framework-free
-capability definition; lexical validity remains a separate requirement.
+not invoke an unsupported mechanism. The XML parser may still preserve XML Signature
+and XML Encryption elements as opaque document content when they are not part of a
+declared editable path; XInclude remains refused at document projection. Compiler
+and parser use the same framework-free capability source with separate definition
+and document-preservation gates; lexical validity remains a separate requirement.
 
 Previously stored compiler mechanism revision 1 results remain readable and exact
 retries retain the stored result. They cannot newly publish, create plans or authorize

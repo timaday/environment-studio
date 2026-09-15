@@ -22,7 +22,7 @@ public final class LosslessXmlAdapter {
     private static XmlResult rejected(String code) {
         String message = switch (code) {
             case "RESOURCE_LIMIT" -> "Reduce the document or edits to the documented resource limits.";
-            case "UNSUPPORTED_XML" -> "Supply XML 1.0 without DTD entity use or unsupported inclusion, signature or encryption constructs.";
+            case "UNSUPPORTED_XML" -> "Supply XML 1.0 without DTD entity use or unsupported active inclusion constructs.";
             case "STALE_SOURCE" -> "Bind the edit batch to the exact current source digest.";
             case "STALE_REFERENCE" -> "Select references from the current source revision.";
             case "EXPECTED_VALUE_MISMATCH" -> "Review the current attribute value before applying the replacement.";

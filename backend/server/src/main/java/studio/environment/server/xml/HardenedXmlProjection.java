@@ -79,7 +79,7 @@ final class HardenedXmlProjection {
     private static void projectElement(XMLStreamReader reader, String digest, List<XmlLexicalScanner.Element> lexical,
             List<ElementRef> elements) {
         String uri = empty(reader.getNamespaceURI());
-        if (!studio.environment.core.definitionv2.NativeXmlCapabilities.supportsElementNamespace(uri)) throw new XmlRefusal("UNSUPPORTED_XML");
+        if (!studio.environment.core.definitionv2.NativeXmlCapabilities.supportsDocumentElementNamespace(uri)) throw new XmlRefusal("UNSUPPORTED_XML");
         if (elements.size() >= lexical.size()) throw new XmlRefusal("INVALID_XML");
         var element = lexical.get(elements.size());
         String qualifiedName = qualified(reader.getPrefix(), reader.getLocalName());

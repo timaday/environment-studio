@@ -2,7 +2,7 @@
 
 ## XML
 
-DTD processing, external entities, XInclude and external schema access are disabled. One inert top-level DOCTYPE declaration may appear in source XML for compatibility with existing PostgreSQL text CLOBs; the parser strips it from the internal projection copy, never resolves or validates it, never applies default attributes and never expands custom entities from it. The original DOCTYPE bytes remain visible in comparison and are preserved in exported target XML unless an otherwise qualified edit changes those bytes. The exact parser's safety flags must be asserted; unavailable hardening fails initialization. Use a closed pinned local dependency bundle. Bound document
+DTD processing, external entities, active XInclude and external schema access are disabled. One inert top-level DOCTYPE declaration may appear in source XML for compatibility with existing PostgreSQL text CLOBs; the parser strips it from the internal projection copy, never resolves or validates it, never applies default attributes and never expands custom entities from it. The original DOCTYPE bytes remain visible in comparison and are preserved in exported target XML unless an otherwise qualified edit changes those bytes. XML Signature and XML Encryption elements are preserved and compared as opaque content; definitions cannot map or edit through those namespaces until separately qualified. The exact parser's safety flags must be asserted; unavailable hardening fails initialization. Use a closed pinned local dependency bundle. Bound document
 count, chars/bytes, depth, attributes, references, selector work and total
 operation time; measure supported capacities on representative data.
 

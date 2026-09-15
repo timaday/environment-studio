@@ -4,12 +4,16 @@ import java.util.Set;
 
 /** Element-vocabulary limits shared by static publication checks and the qualified XML adapter. */
 public final class NativeXmlCapabilities {
-    private static final Set<String> UNSUPPORTED_ELEMENT_NAMESPACES = Set.of(
+    private static final Set<String> ACTIVE_DOCUMENT_NAMESPACES = Set.of("http://www.w3.org/2001/XInclude");
+    private static final Set<String> UNSUPPORTED_DEFINITION_ELEMENT_NAMESPACES = Set.of(
         "http://www.w3.org/2001/XInclude", "http://www.w3.org/2000/09/xmldsig#",
         "http://www.w3.org/2009/xmldsig11#", "http://www.w3.org/2001/04/xmlenc#",
         "http://www.w3.org/2009/xmlenc11#");
     private NativeXmlCapabilities() { }
     public static boolean supportsElementNamespace(String namespace) {
-        return namespace != null && !UNSUPPORTED_ELEMENT_NAMESPACES.contains(namespace);
+        return namespace != null && !UNSUPPORTED_DEFINITION_ELEMENT_NAMESPACES.contains(namespace);
+    }
+    public static boolean supportsDocumentElementNamespace(String namespace) {
+        return namespace != null && !ACTIVE_DOCUMENT_NAMESPACES.contains(namespace);
     }
 }

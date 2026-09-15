@@ -8,8 +8,7 @@ operation qualification. No public HTTP endpoint accepts arbitrary XML patches.
 ## Source and projection
 
 Accept exact XML characters with a source digest; retain the original sequence.
-Reject malformed Unicode/XML, DTD entity use requiring declarations, XInclude,
-XML signatures/encryption and unsupported XML versions. Accept one inert top-level DOCTYPE declaration only as preserved source text; strip it from the internal parser input so no DTD validation, default attributes or external resolution can affect projection. Support XML 1.0, named
+Reject malformed Unicode/XML, DTD entity use requiring declarations, active XInclude and unsupported XML versions. Accept one inert top-level DOCTYPE declaration only as preserved source text; strip it from the internal parser input so no DTD validation, default attributes or external resolution can affect projection. XML Signature and XML Encryption elements are accepted only as opaque preserved content: the adapter does not validate signatures, decrypt payloads, infer signed coverage or allow definitions to map/edit through those namespaces. Support XML 1.0, named
 predefined/numeric references, namespaces, comments, processing instructions,
 CDATA, either attribute quote style, CR/LF variants and self-closing elements.
 Qualified parser hardening disables all external entity/schema/DTD access and
@@ -74,7 +73,7 @@ comments/CDATA/PI containing angle brackets, CRLF, astral Unicode, empty element
 self-closing parent expansion and cross-document one-to-two building blocks.
 Assert non-interference outside the explicitly edited spans and no-op equality.
 
-Adverse cases include malformed input, XXE/DTD entity use, non-prolog DOCTYPE, XInclude, signed/encrypted XML,
+Adverse cases include malformed input, XXE/DTD entity use, non-prolog DOCTYPE, active XInclude, attempts to define editable paths through XML Signature/Encryption namespaces,
 limits, stale source, wrong expected value, invalid insertion namespace, wrong
 parent/anchor, overlapping removals/replacements and a final operation failure.
 Use independent expected text plus conforming-parser semantic checks, not just

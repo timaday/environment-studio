@@ -41,6 +41,13 @@ class LosslessXmlAdapterTest {
         var target = apply(source, new ReplaceAttribute(source.elements().getFirst().attributes().getFirst(), "old", "new"));
         assertEquals("<?xml version='1.0'?>\n<!DOCTYPE orb SYSTEM 'mock.dtd'>\n<orb tone='new'><arc/></orb>", target.source());
     }
+    @Test void signatureAndEncryptionElementsAreOpaquePreservedContent() {
+        for (String xml : List.of("<s:Signature xmlns:s='http://www.w3.org/2000/09/xmldsig#'><s:Value>mock</s:Value></s:Signature>",
+                "<e:EncryptedData xmlns:e='http://www.w3.org/2001/04/xmlenc#'><e:CipherData/></e:EncryptedData>")) {
+            var source = project(xml);
+            assertEquals(xml, apply(source).source());
+        }
+    }
     @Test void doctypeDefaultsAreNotAppliedAndEntityUseStillRefuses() {
         String xml = "<!DOCTYPE orb [<!ATTLIST orb tone CDATA 'default'>]><orb/>";
         var source = project(xml);
@@ -70,9 +77,7 @@ class LosslessXmlAdapterTest {
                 new InsertElement(parent, Optional.empty(), "<new-b/>")).source());
     }
     @ParameterizedTest @ValueSource(strings = {"<", "<a><b></a>", "<!DOCTYPE a [<!ENTITY e 'private-canary'>]><a>&e;</a>",
-            "<a xmlns:i='http://www.w3.org/2001/XInclude'><i:include href='private-canary'/></a>",
-            "<s:Signature xmlns:s='http://www.w3.org/2000/09/xmldsig#'/>",
-            "<e:EncryptedData xmlns:e='http://www.w3.org/2001/04/xmlenc#'/>", "<?xml version='1.1'?><a/>"})
+            "<a xmlns:i='http://www.w3.org/2001/XInclude'><i:include href='private-canary'/></a>", "<?xml version='1.1'?><a/>"})
     void rejectsUnsupportedOrMalformedXmlWithoutSourceLeak(String xml) {
         var result = assertInstanceOf(XmlResult.Rejected.class, adapter.project(xml));
         assertFalse(result.toString().contains("private-canary"));

@@ -40,7 +40,8 @@ class XmlNamespaceReadinessTest {
             var incomplete = assertInstanceOf(NativeCompilationResult.Incomplete.class, compiled);
             assertTrue(incomplete.diagnostics().stream().anyMatch(d -> d.code().equals("XML_NAMESPACE_UNSUPPORTED") && d.pointer().equals("/bindings/0/documents/0/entities/0/path/" + position + "/namespaceUri")));
             String xml = position == 0 ? "<tiles xmlns='" + namespace + "'/>" : "<tiles xmlns='urn:mock:tiles'><glyph xmlns='" + namespace + "'/></tiles>";
-            assertInstanceOf(XmlResult.Rejected.class, new LosslessXmlAdapter().project(xml));
+            if (namespace.equals("http://www.w3.org/2001/XInclude")) assertInstanceOf(XmlResult.Rejected.class, new LosslessXmlAdapter().project(xml));
+            else assertEquals(xml, assertInstanceOf(XmlResult.Accepted.class, new LosslessXmlAdapter().project(xml)).document().source());
         }
     }
 }

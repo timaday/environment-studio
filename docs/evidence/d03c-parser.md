@@ -66,8 +66,7 @@ awareness, DTD off, external entities off, entity replacement on, validation off
 lazy parsing off, empty external DTD access and the existing parser resource bounds.
 Unavailable/ignored settings fail initialization. The resolver always throws;
 external-DTD probes observed zero resolver calls. XML 1.1, DTD events reaching StAX and entity use that requires DTD declarations refuse. A single top-level DOCTYPE is stripped before parser projection and preserved in source/target bytes.
-StAX performs no XInclude processing; expanded-name refusal of inclusion, signature
-and encryption namespaces remains in place. Schema-location hints remain inert data.
+StAX performs no XInclude processing; expanded-name refusal of active inclusion remains in place. XML Signature and XML Encryption namespaces are preserved as opaque document content and remain unavailable to definition paths. Schema-location hints remain inert data.
 
 Lexical preflight still enforces exact-source Unicode and size/token limits. The
 adapter joins StAX expanded names/decoded values with the original lexical spans,

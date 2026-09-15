@@ -84,7 +84,7 @@ Boundary experiments exercised exactly 1,048,576 UTF-16 units, depth 128,
 each boundary. Lexical tokens count markup/text runs, attributes and references;
 the scanner bounds them before SAX can construct semantic projections. Invalid
 Unicode, undeclared references, multiple roots, malformed attributes, DTD entity use, non-prolog DOCTYPE,
-XInclude, signatures/encryption and XML 1.1 return safe refusals. Inert top-level DOCTYPE declarations are preserved in source/target text and stripped only from the parser projection copy. Full-target
+active XInclude and XML 1.1 return safe refusals. XML Signature and XML Encryption elements are preserved as opaque content when not selected by definitions. Inert top-level DOCTYPE declarations are preserved in source/target text and stripped only from the parser projection copy. Full-target
 size/depth overflow is also refused without a partial result.
 
 Guard experiments cover stale digests, foreign/forged references, wrong values,

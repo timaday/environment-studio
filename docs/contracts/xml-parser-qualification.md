@@ -57,8 +57,7 @@ required settings fail adapter initialization; no fallback parser is selected.
 
 Reject DTD events, entity use that requires DTD declarations and XML 1.1. An absent XML declaration has XML 1.0 semantics as
 defined by the specification, not inferred application defaults. StAX performs
-no XInclude processing; continue refusing XInclude, signature and encryption
-namespaces through expanded-name checks. Uploaded schema-location attributes
+no XInclude processing; continue refusing active XInclude through expanded-name checks. XML Signature and XML Encryption elements are projected as opaque preserved content only; definition publication still refuses editable paths through those namespaces. Uploaded schema-location attributes
 remain data and do not activate a schema loader.
 
 Join independently parsed names/decoded attributes with the existing exact
