@@ -128,6 +128,31 @@ it("reports inconclusive cleanup as quarantined capacity", async () => {
   );
 });
 
+it("explains PostgreSQL storage admission refusals without blaming credentials", async () => {
+  const get = vi.fn().mockResolvedValue({
+    operationId: operation.operationId,
+    planId: plan.planId,
+    phase: "refused",
+    code: "STORAGE_UNSUPPORTED",
+    cleanup: "complete",
+  });
+  render(
+    <V3Inspection
+      api={{ get } as unknown as HostedApi}
+      plan={{ ...plan, activeOperationId: operation.operationId }}
+      enabled
+      refresh={vi.fn()}
+    />,
+  );
+  await userEvent.click(screen.getByRole("button", { name: "Check operation status" }));
+  expect(await screen.findByText("Inspection did not complete")).toBeVisible();
+  expect(screen.getByText(/connection reached PostgreSQL/)).toBeVisible();
+  expect(
+    screen.getByText(/XML storage shape outside the PostgreSQL 16.11 text pilot/),
+  ).toBeVisible();
+  expect(screen.queryByText(/rejected the supplied credentials/)).not.toBeInTheDocument();
+});
+
 it("stops automatic refresh after a refused terminal status with pending cleanup", async () => {
   vi.useFakeTimers();
   const get = vi.fn().mockResolvedValue({

@@ -41,6 +41,8 @@ const outcomeMessage = (operation: Operation) => {
     return "The database rejected the supplied credentials. Start another inspection and enter the credentials again.";
   if (operation.code === "DESTINATION_DENIED" || operation.code === "INVALID_DESTINATION")
     return "The destination did not match the allowed PostgreSQL target. Check the connection target before retrying.";
+  if (operation.code === "STORAGE_UNSUPPORTED")
+    return "The connection reached PostgreSQL, but the selected definition points to a table or XML storage shape outside the PostgreSQL 16.11 text pilot. Check the table, key column, XML text column, unique key and table safety restrictions.";
   if (operation.code === "OBSERVATION_REFUSED")
     return "The read-only observation was refused before current configuration evidence could be captured.";
   if (operation.code === "RESOURCE_LIMIT" || operation.code === "CAPACITY")
