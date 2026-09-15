@@ -20,12 +20,16 @@ not hosted publication/inspection/export. Current operational v3 availability
 remains disabled until its complete integrated paths qualify.
 
 Require an exact declared binding, matching destination engine and existing
-operation-policy/storage/visibility/TLS/destination checks. The adapter shares
-the same four physical operations/quarantines across v2 and v3, with the same
-one-shot reservations, deadlines, bounded XML/inventory, cancellation, rollback
-and confirmed closure. Ordinary write-capable accounts remain eligible under the
-closed read-only operation policy. No new SQL, grant probing, connection pool,
-write execution or fallback conversion is introduced by version selection.
+operation-policy/storage/visibility/TLS/destination checks. The PostgreSQL 16.11
+text pilot admits ordinary tables with enabled triggers during read-only
+inspection; inspection does not execute trigger bodies. RLS, policies,
+partitioning/inheritance, non-heap storage, unsupported column/key shapes and
+missing unique keys remain fail-closed. The adapter shares the same four physical
+operations/quarantines across v2 and v3, with the same one-shot reservations,
+deadlines, bounded XML/inventory, cancellation, rollback and confirmed closure.
+Ordinary write-capable accounts remain eligible under the closed read-only
+operation policy. No new SQL, grant probing, connection pool, write execution or
+fallback conversion is introduced by version selection.
 
 The result retains the exact v3 logical and selected binding digests. Its closed
 fingerprint object has the same field structure, strict native framing and source

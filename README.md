@@ -288,3 +288,25 @@ private workspace; real XML, schemas, mappings and even value-free real profiles
 never enter this repository. Share only generic feedback through the Q workflow.
 Scalar-only replacement does not fulfill the requested topology-change workflow.
 Unsupported engine/storage/client combinations stay visibly unavailable.
+
+
+### PostgreSQL 16.11 storage admission probe
+
+If inspection returns `STORAGE_UNSUPPORTED` after a valid PostgreSQL 16.11
+connection, the selected definition reached the database but the declared table,
+key column or XML storage shape is outside the pilot's admitted metadata rules.
+Run the generic metadata-only probe without selecting row data or XML:
+
+```sh
+psql "postgresql://<host>:<port>/<database>" \
+  -v schema_name=public \
+  -v table_name=app_config \
+  -v key_column=id \
+  -v xml_column=config_xml \
+  -v key_type=INT64 \
+  -f scripts/postgres16_storage_probe.sql
+```
+
+Use `key_type=TEXT` when the definition declares a text key. The probe reports
+only catalog checks such as version, encoding, ordinary table status, enabled-trigger count, RLS
+restrictions, column types and the single-column unique key requirement.

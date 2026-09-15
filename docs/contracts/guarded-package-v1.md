@@ -84,7 +84,9 @@ hex. Include unchanged dependencies. The initial native binding has one physical
 table and changes only XML inside existing rows; no row INSERT/DELETE, arbitrary
 predicate/expression or auxiliary SQL is allowed. Derive intended UPDATEs solely
 from unequal original and target bytes. Structural entity creation/removal remains
-inside XML and does not authorize row defaults, sequences or trigger effects.
+inside XML and does not authorize row defaults or sequences. PostgreSQL16 pilot
+updates may fire enabled target-table triggers; those effects are target database
+behavior, not separately authored package actions.
 
 All JSON objects are closed, duplicate keys reject and large revisions/keys use
 canonical strings. Count/byte/port tokens are canonical unsigned decimal integers,
@@ -223,19 +225,20 @@ by a future binding, use stable order. Never fall back to weaker locks. After
 locking, independently check destination identity and full storage/visibility/
 write-effect eligibility. Recheck exact schema/types/keys/encoding, ordinary
 local table status, required metadata access and complete visibility. Reject
-triggers, DML rewrite rules, generated/custom expression effects, unsupported
-constraints/access methods or any unqualified route that could execute external
-effects or change unselected data. Read-adapter metadata checks alone do not
+DML rewrite rules, generated/custom expression effects, unsupported constraints/
+access methods or any unqualified route that could execute unselected data changes
+outside the ordinary PostgreSQL16 trigger behavior explicitly admitted for this
+pilot. Read-adapter metadata checks alone do not
 establish write-effect safety. No DDL, custom routine, autonomous transaction or
 transaction boundary may appear in the guarded program.
 
 Initial write-effect eligibility is conservative and template-versioned. PostgreSQL
 requires an ordinary permanent local heap with no inheritance/partitioning, RLS,
-policies, triggers, DML rewrite rules or generated/identity columns. Qualify only
+policies, DML rewrite rules or generated/identity columns. Qualify only
 immediate valid uniqueness and built-in plain btree indexes: no predicates,
 expressions, custom access methods/operator classes or unqualified collations.
 Oracle requires an ordinary permanent local heap: no IOT, partition/external/
-nested/temporary storage, triggers, VPD/redaction, virtual/identity columns,
+nested/temporary storage, VPD/redaction, virtual/identity columns,
 domain/function indexes or unqualified constraint expressions. Also reject
 materialized-view logs, Flashback Data Archive enrollment and FGA policies on
 the bound table using complete DBA catalog visibility. These conservative
@@ -345,7 +348,7 @@ not proof that this particular execution caused the state.
 
 Qualify both actual clients with independent complete mock-state witnesses:
 one-to-two cross-document changes, unchanged dependencies, wrong destination,
-missing/extra rows, concurrency/locks, schema/rule/trigger drift, row-count mismatch,
+missing/extra rows, concurrency/locks, schema/rule drift, trigger behavior, row-count mismatch,
 failed final DML and post-state guard, Unicode/NULL/empty/full-size boundaries and
 Oracle LOB cleanup. Challenge startup files, password no-echo/history, SP2 before
 readiness, forbidden appended tail, fragmented/oversized output, EOF, parent/child

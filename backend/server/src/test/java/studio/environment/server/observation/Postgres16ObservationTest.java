@@ -8,7 +8,7 @@ import studio.environment.core.definitionv2.NativeDefinition.Engine;
 import studio.environment.core.observation.ObservationResult.*;
 
 class Postgres16ObservationTest {
-    private static final class Database extends ReadOperationPolicyTest.Database {
+    private static class Database extends ReadOperationPolicyTest.Database {
         private final String version;
         Database(String version) { super(Engine.POSTGRESQL); this.version = version; }
         @Override List<List<String>> rows(String sql) throws SQLException {
@@ -38,6 +38,18 @@ class Postgres16ObservationTest {
             assertFalse(database.sourceRead());
             assertEquals(1, database.opens); assertEquals(1, database.rollbacks); assertEquals(1, database.closes);
         }
+    }
+
+    @Test void postgresql16TextPilotAllowsEnabledTriggersOnTheSelectedTable() {
+        var database = new Database("160011") {
+            @Override List<List<String>> rows(String sql) throws SQLException {
+                if (sql.equals(ReadQuery.PG_TRIGGERS.text)) return List.of(List.of("1"));
+                return super.rows(sql);
+            }
+        };
+        var result = assertInstanceOf(Complete.class, database.observe());
+        assertEquals(ReadOperationPolicyTest.XML, result.observation().documents().getFirst().xml());
+        assertTrue(database.sourceRead());
     }
 
     @Test void newlySupportedVersionCannotWaiveReadModeOrVisibilityChecks() {

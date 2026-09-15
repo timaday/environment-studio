@@ -63,8 +63,10 @@ retried documents into one result.
 
 The binding covers the whole exact quoted table, including unchanged dependencies.
 Initially require an ordinary local base table with no inheritance/partitioning,
-views, synonyms, foreign/external table, enabled DML triggers or unqualified
-storage behavior. Verify exact built-in key type (`text` or int64 as declared)
+views, synonyms, foreign/external table or unqualified storage behavior.
+PostgreSQL text inspection allows enabled triggers because the read-only
+inspection does not execute trigger bodies; Oracle trigger restrictions remain
+separate. Verify exact built-in key type (`text` or int64 as declared)
 and XML storage (`text` or `CLOB`), nullability and a qualified unique key.
 For PostgreSQL, one or more fully qualified immediate primary/unique constraints
 on the same declared single key establish uniqueness. Redundant qualifying
@@ -131,8 +133,9 @@ table SELECT and schema USAGE; ownership and
 active inherited read grants satisfy these checks. Column-level write grants remain
 acceptable; column-only SELECT is not advertised as sufficient for the explicit
 lock. Refuse system-catalog/information-schema source bindings, nonordinary storage,
-RLS flags/policies, unsupported triggers and incomplete metadata regardless of any
-owner/BYPASSRLS privileges. No global role/write/delegation scan or pg_settings ACL
+RLS flags/policies and incomplete metadata regardless of any owner/BYPASSRLS
+privileges. PostgreSQL enabled triggers are admitted for inspection; Oracle
+unsupported triggers remain refused. No global role/write/delegation scan or pg_settings ACL
 baseline is needed: those operations are absent from the closed execution surface.
 
 Oracle executes `SET TRANSACTION READ ONLY` as the first transaction statement.

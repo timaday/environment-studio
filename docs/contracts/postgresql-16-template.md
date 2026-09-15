@@ -25,7 +25,7 @@ is the reference; exact disposable execution remains required.
 Acceptance uses actual generated SQL against independently invented mock rows in
 an isolated exact16.11 container. Check successful target bytes with unchanged
 sibling content, explicit transaction rollback, independent committed readback,
-stale original/complete-membership/destination and disallowed-trigger refusal,
+stale original/complete-membership/destination refusal,
 and SQL-error transaction abort without partial changes. Challenge relevant
 guard removal with independent expected-state witnesses. Record identity, client,
 image digest and exact candidate; do not reuse18.6 results as16.11 qualification.

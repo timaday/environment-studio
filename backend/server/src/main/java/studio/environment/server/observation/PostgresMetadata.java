@@ -26,7 +26,6 @@ final class PostgresMetadata {
         long oid = Long.parseLong(table.getFirst());
         sql.empty(ReadQuery.PG_INHERITANCE, Code.STORAGE_UNSUPPORTED, oid, oid);
         sql.empty(ReadQuery.PG_POLICIES, Code.VISIBILITY_UNQUALIFIED, oid);
-        sql.empty(ReadQuery.PG_TRIGGERS, Code.STORAGE_UNSUPPORTED, oid);
         sql.empty(ReadQuery.PG_ACCESS_METHOD, Code.STORAGE_UNSUPPORTED, oid);
         if (!"true".equals(sql.scalar(ReadQuery.PG_TABLE_ACCESS, relation))
                 || !"true".equals(sql.scalar(ReadQuery.PG_SCHEMA_ACCESS, binding.schema()))) throw new ObservationFailure(Code.READ_ACCESS_DENIED);
