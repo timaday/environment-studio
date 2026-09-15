@@ -33,6 +33,22 @@ class LosslessXmlAdapterTest {
         assertThrows(UnsupportedOperationException.class, () -> source.elements().clear());
         assertThrows(UnsupportedOperationException.class, () -> source.elements().get(1).ancestry().clear());
     }
+    @Test void inertDoctypeIsStrippedOnlyForParsingAndPreservedThroughPatch() {
+        String xml = "<?xml version='1.0'?>\n<!DOCTYPE orb SYSTEM 'mock.dtd'>\n<orb tone='old'><arc/></orb>";
+        var source = project(xml);
+        assertEquals(xml, apply(source).source());
+        assertEquals("old", source.elements().getFirst().attributes().getFirst().value());
+        var target = apply(source, new ReplaceAttribute(source.elements().getFirst().attributes().getFirst(), "old", "new"));
+        assertEquals("<?xml version='1.0'?>\n<!DOCTYPE orb SYSTEM 'mock.dtd'>\n<orb tone='new'><arc/></orb>", target.source());
+    }
+    @Test void doctypeDefaultsAreNotAppliedAndEntityUseStillRefuses() {
+        String xml = "<!DOCTYPE orb [<!ATTLIST orb tone CDATA 'default'>]><orb/>";
+        var source = project(xml);
+        assertTrue(source.elements().getFirst().attributes().isEmpty());
+        assertEquals(xml, apply(source).source());
+        assertInstanceOf(XmlResult.Rejected.class, adapter.project("<!DOCTYPE orb [<!ENTITY e 'private-canary'>]><orb>&e;</orb>"));
+        rejected(adapter.project("<orb/><!DOCTYPE orb SYSTEM 'mock.dtd'>"), "UNSUPPORTED_XML");
+    }
     @Test void attributeReplacementPreservesOtherEqualValuesQuotesWhitespaceAndEntities() {
         var source = project("<orb tone = 'same' other=\"same\"><arc tone='same'/></orb>");
         var target = apply(source, new ReplaceAttribute(source.elements().getFirst().attributes().getFirst(), "same", "A'&<\r\n\t😀"));

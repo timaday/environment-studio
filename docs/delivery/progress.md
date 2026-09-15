@@ -1466,3 +1466,11 @@ Ready: PostgreSQL 16.11 inspection and guarded package membership now default to
 Acceptance examples: a table may contain extra rows with `xml_column IS NULL` or `xml_column = ''` without blocking inspection when the definition declares only the valid XML rows. Missing declared eligible keys or extra non-empty XML rows still block observation/export as inventory mismatch. If a previously declared source row becomes null or empty before inspection/export, it is no longer eligible and the complete eligible membership check blocks the result. Package SQL verifies the same eligible membership before and after updates.
 
 Evidence: focused PostgreSQL source-scope test and duplicate-key regression passed. Broader server checks passed with 38 tests: `ReadOperationPolicyTest`, `PostgresUniqueKeyTest`, `Postgres16ObservationTest`, `Postgres16TemplateTest` and `TransactionTemplatesTest`.
+
+## Inert DOCTYPE preservation for PostgreSQL XML text — 15 September
+
+Ready: XML text documents may now contain one inert top-level `DOCTYPE` declaration for compatibility with existing PostgreSQL text CLOB content. The declaration is stripped only from the hardened parser input, so no DTD validation, external resolution, default attribute application or custom entity expansion can influence projection. The original XML bytes, including the `DOCTYPE`, remain part of the source digest, Raw/Placeholders/Formatted comparison input and exported target XML unless an explicitly qualified edit changes those bytes. Entity use that requires DTD declarations, non-prolog `DOCTYPE`, XML 1.1, XInclude and signed/encrypted XML remain refused.
+
+Acceptance examples: `<!DOCTYPE ...><root/>` projects and no-op exports with the same bytes; replacing a qualified attribute preserves the original `DOCTYPE` in the target; `<!DOCTYPE ... [<!ENTITY e ...>]><root>&e;</root>` still refuses without leaking source content; a `DOCTYPE` after the root refuses.
+
+Evidence: focused XML/projection tests passed with 44 tests: `LosslessXmlAdapterTest` and `GraphProjectionAdapterTest`. Repository integrity, repository content and script unit checks passed. `scripts/studio.sh fast-package` passed and rebuilt the runnable hosted image path with startup/static UI/health/demo/denial/workspace checks.

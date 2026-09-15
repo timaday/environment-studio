@@ -46,6 +46,7 @@ final class XmlLexicalScanner {
             } else if (source.startsWith("<!--", position)) terminated("-->", 4);
             else if (source.startsWith("<![CDATA[", position)) terminated("]]>", 9);
             else if (source.startsWith("<?", position)) terminated("?>", 2);
+            else if (source.startsWith("<!DOCTYPE", position) && stack.isEmpty() && elements.isEmpty()) doctype();
             else if (source.startsWith("<!", position)) throw new XmlRefusal("UNSUPPORTED_XML");
             else if (source.startsWith("</", position)) close();
             else open();
@@ -113,6 +114,39 @@ final class XmlLexicalScanner {
         int end = source.indexOf(delimiter, position + prefixLength);
         if (end < 0) throw new XmlRefusal("INVALID_XML");
         position = end + delimiter.length();
+    }
+    private void doctype() { position = doctypeEnd(source, position); }
+    static Span topLevelDoctypeSpan(String source) {
+        int current = 0;
+        while (current < source.length()) {
+            while (current < source.length() && isWhitespace(source.charAt(current))) current++;
+            if (source.startsWith("<!--", current)) current = terminatedEnd(source, current, "-->", 4);
+            else if (source.startsWith("<?", current)) current = terminatedEnd(source, current, "?>", 2);
+            else if (source.startsWith("<!DOCTYPE", current)) return new Span(current, doctypeEnd(source, current));
+            else return null;
+        }
+        return null;
+    }
+    private static int terminatedEnd(String text, int start, String delimiter, int prefixLength) {
+        int end = text.indexOf(delimiter, start + prefixLength);
+        if (end < 0) throw new XmlRefusal("INVALID_XML");
+        return end + delimiter.length();
+    }
+    private static int doctypeEnd(String text, int start) {
+        int position = start + "<!DOCTYPE".length();
+        int bracketDepth = 0;
+        char quote = 0;
+        while (position < text.length()) {
+            char c = text.charAt(position++);
+            if (quote != 0) {
+                if (c == quote) quote = 0;
+            } else if (c == '\'' || c == '"') quote = c;
+            else if (c == '[') bracketDepth++;
+            else if (c == ']') {
+                if (bracketDepth > 0) bracketDepth--;
+            } else if (c == '>' && bracketDepth == 0) return position;
+        }
+        throw new XmlRefusal("INVALID_XML");
     }
     private void references(int start, int end) {
         for (int i = start; i < end; i++) if (source.charAt(i) == '&') token();

@@ -50,12 +50,12 @@ again; no automatic source replacement is supported.
 Use the explicit qualified `WstxInputFactory` with set-and-readback verification
 for namespace awareness, DTD disabled, external entities disabled, entity
 replacement enabled, validation disabled, lazy parsing disabled and external DTD
-access empty. Install an XMLResolver which always refuses and never opens a URI.
+access empty. A single top-level DOCTYPE may be stripped before StAX parsing for compatibility, but it remains part of the source digest, comparison text and exported target bytes. Install an XMLResolver which always refuses and never opens a URI.
 Bound element depth to 128, attributes per element to 256, elements to 20,000 and
 characters to 1,048,576 in addition to lexical preflight budgets. Unavailable
 required settings fail adapter initialization; no fallback parser is selected.
 
-Reject DTD events and XML 1.1. An absent XML declaration has XML 1.0 semantics as
+Reject DTD events, entity use that requires DTD declarations and XML 1.1. An absent XML declaration has XML 1.0 semantics as
 defined by the specification, not inferred application defaults. StAX performs
 no XInclude processing; continue refusing XInclude, signature and encryption
 namespaces through expanded-name checks. Uploaded schema-location attributes

@@ -98,7 +98,7 @@ exact large integer text; namespace-qualified versus unqualified attributes;
 optional absence/present-empty; dangling/empty references; zero/excess outgoing
 cardinality; missing/nearest/multiple containment parents; cycles; and zero/excess
 entity counts with arbitrary-precision bounds. Safety tests exercise malformed
-XML, DTD/external entities, invalid surrogate sequences and safe diagnostics.
+XML, DTD entity use/external entities, invalid surrogate sequences and safe diagnostics. Inert top-level DOCTYPE source text remains visible and export-preserved while parser semantics are disabled.
 
 Resource boundary examples exercise 128 accepted versus 129 declared documents,
 20,000 accepted versus 20,001 projected entities across documents, 50,000 accepted

@@ -26,10 +26,11 @@ final class HardenedXmlProjection {
         // Mandatory: the char-level name scanner alone does not reject unpaired surrogates.
         var lexical = new XmlLexicalScanner(source).scan();
         String digest = digest(source);
+        String parserSource = parserSource(source);
         List<ElementRef> elements = new ArrayList<>();
         XMLStreamReader reader = null;
         try {
-            reader = factory().createXMLStreamReader(new StringReader(source));
+            reader = factory().createXMLStreamReader(new StringReader(parserSource));
             if (reader.getVersion() != null && !reader.getVersion().equals("1.0")) throw new XmlRefusal("UNSUPPORTED_XML");
             while (reader.hasNext()) {
                 int event = reader.next();
@@ -45,6 +46,11 @@ final class HardenedXmlProjection {
         }
     }
     static WstxInputFactory factory() { return configure(new WstxInputFactory()); }
+    private static String parserSource(String source) {
+        Span doctype = XmlLexicalScanner.topLevelDoctypeSpan(source);
+        if (doctype == null) return source;
+        return source.substring(0, doctype.start()) + source.substring(doctype.end());
+    }
     static WstxInputFactory configure(WstxInputFactory factory) {
         try {
             property(factory, XMLInputFactory.IS_NAMESPACE_AWARE, true);
