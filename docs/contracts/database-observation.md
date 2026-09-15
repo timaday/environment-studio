@@ -215,10 +215,13 @@ length bounds within the same snapshot before transferring values, qualify the
 actual text/LOB transfer and prefetch settings, and retain incremental limits.
 
 Close result streams, LOB handles, statements and physical connections on every
-path. Roll back the read transaction. Cancellation, abort and close are separate
-steps: a requested cancel is not confirmed cleanup. If work/cleanup cannot be
-confirmed within the bound, return INCONCLUSIVE and retain the session's resource
-reservation/quarantine; no observation or later export authority survives it.
+path. Roll back the read transaction. If the JDBC driver refuses before returning
+a connection, the adapter has no app-owned connection to roll back or close; it
+must still discard credentials and may report cleanup COMPLETE for that bounded
+failure. Cancellation, abort and close are separate steps: a requested cancel is
+not confirmed cleanup. If app-owned work/cleanup cannot be confirmed within the
+bound, return INCONCLUSIVE and retain the session's resource reservation/quarantine;
+no observation or later export authority survives it.
 At the final completed-work result check, recheck the original cancellation
 flag, including cancellation during rollback or connection close. With no earlier
 latched terminal reason, an observed cancellation selects `CANCELLED`; it cannot

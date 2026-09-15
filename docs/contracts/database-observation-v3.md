@@ -36,7 +36,8 @@ fingerprint object has the same field structure, strict native framing and sourc
 ordering as v2, with metadata `adapterVersion: jdbc-observation-v3` and domain
 `ES-OBSERVATION-3` followed by a zero byte. Engine operation-policy identifiers,
 storage mechanism versions, expected/observed physical identity, source digests
-and successful cleanup semantics remain unchanged. Both the versioned domain
+and cleanup semantics remain unchanged, including complete cleanup for bounded
+connection-open refusals that return no app-owned JDBC connection. Both the versioned domain
 and adapter metadata distinguish v3 observations; no old fingerprint is promoted
 or rehashed into new evidence. Only executed successful checks may construct a
 complete observation. Independent XML/derived projection and final-target

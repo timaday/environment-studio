@@ -26,7 +26,7 @@ class ReadOperationPolicyTest {
         final Engine engine;
         final List<String> statements=new ArrayList<>();
         int opens,rollbacks,closes;
-        boolean owner=true,readAccess=true,rls,fga,denyMetadata,setupFailure,modeMismatch,lateModeMismatch,autocommitMismatch;
+        boolean owner=true,readAccess=true,rls,fga,denyMetadata,setupFailure,modeMismatch,lateModeMismatch,autocommitMismatch,openFailure;
         String user="mock_owner",common="NO",vendor="N";
         int modeChecks;
         Database(Engine engine) { this.engine=engine; }
@@ -34,6 +34,7 @@ class ReadOperationPolicyTest {
         ObservationDestination destination() { return new ObservationDestination("mock",engine,"localhost",1234,"mock_db",ObservationDestination.Transport.DISPOSABLE_LOOPBACK,"","mock-transport",identity(),"mock-provisioning-v1",engine==Engine.POSTGRESQL?"postgresql-read-operation-v1":"oracle-read-operation-v1"); }
         Connection open() {
             opens++;
+            if(openFailure) throw new RuntimeException("mock-open-refused");
             return proxy(Connection.class,(p,m,a)-> switch(m.getName()) {
                 case "prepareStatement" -> statement((String)a[0]);
                 case "getAutoCommit" -> autocommitMismatch;
@@ -103,6 +104,15 @@ class ReadOperationPolicyTest {
             assertEquals("jdbc-observation-v2",metadata.get("adapterVersion"));
         }
     }
+    @Test void failedConnectionOpenHasNoOwnedConnectionToCleanAndReleasesCapacity() {
+        var database=new Database(Engine.POSTGRESQL);database.openFailure=true;
+        var refused=assertInstanceOf(Refused.class,database.observe());
+        assertEquals(Code.DATABASE_FAILURE,refused.code());
+        assertEquals(Cleanup.COMPLETE,refused.cleanup());
+        assertEquals(1,database.opens);assertEquals(0,database.rollbacks);assertEquals(0,database.closes);
+        assertFalse(database.sourceRead());
+    }
+
     @Test void setupAndSnapshotMismatchNeverReachLockOrSourceAndNeverReconnect() {
         for(int adverse=0;adverse<3;adverse++) {
             var database=new Database(Engine.POSTGRESQL);database.setupFailure=adverse==0;database.modeMismatch=adverse==1;database.autocommitMismatch=adverse==2;

@@ -128,6 +128,31 @@ it("reports inconclusive cleanup as quarantined capacity", async () => {
   );
 });
 
+it("explains PostgreSQL connection failures as retryable setup problems", async () => {
+  const get = vi.fn().mockResolvedValue({
+    operationId: operation.operationId,
+    planId: plan.planId,
+    phase: "refused",
+    code: "DATABASE_FAILURE",
+    cleanup: "complete",
+  });
+  render(
+    <V3Inspection
+      api={{ get } as unknown as HostedApi}
+      plan={{ ...plan, activeOperationId: operation.operationId }}
+      enabled
+      refresh={vi.fn()}
+    />,
+  );
+  await userEvent.click(screen.getByRole("button", { name: "Check operation status" }));
+  expect(await screen.findByText("Inspection did not complete")).toBeVisible();
+  expect(screen.getByText(/could not open or complete the PostgreSQL connection/)).toBeVisible();
+  expect(
+    screen.getByText(/JDBC connection string, network route, database name, username and password/),
+  ).toBeVisible();
+  expect(screen.getByText(/Credentials were discarded/)).toBeVisible();
+});
+
 it("explains PostgreSQL storage admission refusals without blaming credentials", async () => {
   const get = vi.fn().mockResolvedValue({
     operationId: operation.operationId,

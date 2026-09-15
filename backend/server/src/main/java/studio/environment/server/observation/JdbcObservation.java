@@ -179,7 +179,7 @@ public final class JdbcObservation implements ObservationPort {
             catch (SQLException | IOException | RuntimeException failed) { failure = cancellation.cancelled() ? Code.CANCELLED : Code.DATABASE_FAILURE; }
             finally {
                 cleanupStarted = System.nanoTime();
-                boolean clean = !attempted;
+                boolean clean = connection == null;
                 if (connection != null) {
                     clean = true;
                     try { connection.rollback(); } catch (SQLException | RuntimeException failed) { clean = false; }

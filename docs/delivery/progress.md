@@ -1450,3 +1450,11 @@ PostgreSQL 16.11 pilot workflow. The fast Docker package skipped Docker-stage
 Maven/UI tests by design. Release qualification limitations for client capability,
 content policy, review, GHCR/HiveForge and external production data remain as
 previously recorded.
+
+## Inspection cleanup refusal correction — 15 September
+
+Ready: failed PostgreSQL connection-open attempts that return no JDBC connection now refuse as `DATABASE_FAILURE` with cleanup `COMPLETE` instead of `CLEANUP_INCONCLUSIVE`. Studio owns no transaction or connection handle in that path, still closes the one-use credential buffers, installs no current evidence and requires a fresh inspection retry. Cleanup remains inconclusive when an app-owned connection, statement or cancellation cannot be proven closed.
+
+Acceptance examples: wrong username/password, wrong database name, refused socket or network setup failure should no longer quarantine inspection capacity once the driver returns without a connection. A rollback/close/abort failure after a connection exists must still quarantine capacity. The hosted inspection UI now explains `DATABASE_FAILURE` as a retryable PostgreSQL connection/setup problem and points operators to the JDBC connection string, network route, database name, username and password.
+
+Evidence: RED server test `ReadOperationPolicyTest#failedConnectionOpenHasNoOwnedConnectionToCleanAndReleasesCapacity` initially failed with `CLEANUP_INCONCLUSIVE`. After the fix, the focused test passed. Related observation suite passed with 20 tests: `ReadOperationPolicyTest`, `V3ObservationTest` and `Postgres16ObservationTest`. Frontend inspection state tests passed with 484 Vitest tests and 61 schema contract tests.

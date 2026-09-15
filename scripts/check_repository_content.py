@@ -11,6 +11,7 @@ DATA_SUFFIXES = {".xml", ".xsd", ".wsdl", ".sql", ".ddl", ".csv", ".tsv",
                  ".dmp", ".dump", ".db", ".sqlite", ".sqlite3", ".bak"}
 TOOL_XML = {"backend/pom.xml", "backend/core/pom.xml", "backend/server/pom.xml",
             "backend/qualified-xml-parser/pom.xml", "backend/tools/guarded-supervisor/pom.xml"}
+TOOL_DATA_ARTIFACTS = {"scripts/postgres16_storage_probe.sql"}
 EXTERNAL_ROOTS = {"private-fixtures", "workspace-data", "exports", "external-config"}
 REGULAR_MODES = {"100644", "100755"}
 MANIFEST_FIELDS = {"schemaVersion", "purpose", "origin", "artifacts"}
@@ -89,7 +90,8 @@ def assess(files, modes=None):
                 errors.add(f"UNREGISTERED_MOCK: {name}")
             if path.name == "provenance.json" and len(path.parts) != 3:
                 errors.add(f"INVALID_MOCK_MANIFEST_PATH: {name}")
-        if path.suffix.lower() in DATA_SUFFIXES and name not in registered and name not in TOOL_XML:
+        if (path.suffix.lower() in DATA_SUFFIXES and name not in registered
+                and name not in TOOL_XML and name not in TOOL_DATA_ARTIFACTS):
             errors.add(f"UNREGISTERED_DATA_ARTIFACT: {name}")
         if name not in registered and native_model_shape(name, content):
             errors.add(f"EXTERNAL_MODEL_SHAPE: {name}")

@@ -43,6 +43,8 @@ const outcomeMessage = (operation: Operation) => {
     return "The destination did not match the allowed PostgreSQL target. Check the connection target before retrying.";
   if (operation.code === "STORAGE_UNSUPPORTED")
     return "The connection reached PostgreSQL, but the selected definition points to a table or XML storage shape outside the PostgreSQL 16.11 text pilot. Check the table, key column, XML text column, unique key and table safety restrictions.";
+  if (operation.code === "DATABASE_FAILURE")
+    return "The read-only inspection could not open or complete the PostgreSQL connection. Check the JDBC connection string, network route, database name, username and password, then start another inspection with fresh credentials.";
   if (operation.code === "OBSERVATION_REFUSED")
     return "The read-only observation was refused before current configuration evidence could be captured.";
   if (operation.code === "RESOURCE_LIMIT" || operation.code === "CAPACITY")

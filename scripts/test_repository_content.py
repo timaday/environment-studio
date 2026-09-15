@@ -19,6 +19,7 @@ class RepositoryContentTest(unittest.TestCase):
         files = mock_files()
         files["backend/pom.xml"] = b"<project/>"
         files["schemas/definition.schema.json"] = b'{"type":"object","properties":{"entityTypes":{}}}'
+        files["scripts/postgres16_storage_probe.sql"] = b"select check_name, result from generic_probe"
         self.assertEqual([], assess(files))
 
     def test_unregistered_database_artifacts_are_rejected(self):

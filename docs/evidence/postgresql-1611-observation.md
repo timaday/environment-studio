@@ -38,12 +38,14 @@ This is loopback plaintext testing, not production transport qualification.
   respective codes and complete cleanup.
 - A test-only write probe on the adapter's original connection receives SQLSTATE
   25006. The adapter subsequently refuses the aborted transaction and closes it.
-- Wrong password refuses with CLEANUP_INCONCLUSIVE and closed credentials. The
-  existing adapter cannot prove cleanup after a failed connection open. An earlier
-  runner incorrectly expected complete cleanup; that failed assertion is preserved
-  in `es-pg1611-observation-adverse1-20260911.log`. No production cleanup rule was
-  relaxed. External observation of no retained server session does not promote the
-  application result to complete.
+- 15 September 2026 correction: a failed connection-open attempt that returns no
+  JDBC connection is refused as DATABASE_FAILURE with cleanup COMPLETE. Studio
+  owns no transaction or connection handle in that path; credentials are still
+  closed and no observation evidence is installed. Cleanup remains INCONCLUSIVE
+  when an app-owned connection, statement or cancellation cannot be proven closed.
+  The earlier wrong-password CLEANUP_INCONCLUSIVE evidence is preserved as the
+  pre-correction behavior in `es-pg1611-observation-adverse1-20260911.log` and
+  `es-pg1611-observation-adverse2-20260911.log`.
 
 Every final case compares complete exact row bytes before/after and independently
 checks zero remaining sessions for the test account. The initial single-case
